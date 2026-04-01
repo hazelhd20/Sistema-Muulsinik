@@ -1,0 +1,253 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+ * Design System Tokens — Muulsinik ERP
+ * Inspirado en el diseño de referencia (diseño.webp):
+ * - Fondo gris claro (#F0EFF5)
+ * - Sidebar y tarjetas en blanco
+ * - Acento púrpura/violeta como color primario
+ * - Bordes redondeados grandes (2xl)
+ * - Sombras suaves
+ * - Tipografía Plus Jakarta Sans
+ */
+@theme {
+    /* Tipografía principal */
+    --font-sans: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* === Colores Semánticos del Sistema === */
+
+    /* Primary — Púrpura/Violeta inspirado en el diseño */
+    --color-primary-50: #f5f3ff;
+    --color-primary-100: #ede9fe;
+    --color-primary-200: #ddd6fe;
+    --color-primary-300: #c4b5fd;
+    --color-primary-400: #a78bfa;
+    --color-primary-500: #8b5cf6;
+    --color-primary-600: #7c3aed;
+    --color-primary-700: #6d28d9;
+    --color-primary-800: #5b21b6;
+    --color-primary-900: #4c1d95;
+
+    /* Surface — Fondos y superficies */
+    --color-surface-main: #F0EFF5;
+    --color-surface-card: #FFFFFF;
+    --color-surface-sidebar: #FFFFFF;
+    --color-surface-hover: #F8F7FC;
+    --color-surface-active: #EDE9FE;
+
+    /* Textos */
+    --color-text-primary: #1E1B2E;
+    --color-text-secondary: #6B7280;
+    --color-text-muted: #9CA3AF;
+
+    /* Estado */
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-danger: #EF4444;
+    --color-info: #3B82F6;
+}
+
+/* === Estilos Base === */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-surface-main);
+    color: var(--color-text-primary);
+}
+
+/* === Scrollbar personalizada === */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* === Clases utilitarias para el sistema de diseño === */
+@layer components {
+    /* Tarjeta base del sistema */
+    .card {
+        background-color: var(--color-surface-card);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Botón primario */
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: var(--color-primary-600);
+        color: white;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border-radius: 0.75rem;
+        transition: all 150ms ease;
+        cursor: pointer;
+        border: none;
+    }
+    .btn-primary:hover {
+        background-color: var(--color-primary-700);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    /* Botón secundario */
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: var(--color-surface-card);
+        color: var(--color-text-primary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+        transition: all 150ms ease;
+        cursor: pointer;
+    }
+    .btn-secondary:hover {
+        background-color: var(--color-surface-hover);
+        border-color: #d1d5db;
+    }
+
+    /* Input base */
+    .input {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        background-color: var(--color-surface-main);
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--color-text-primary);
+        transition: all 150ms ease;
+    }
+    .input:focus {
+        outline: none;
+        border-color: var(--color-primary-400);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    .input::placeholder {
+        color: var(--color-text-muted);
+    }
+
+    /* Badge/chip */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 9999px;
+        letter-spacing: 0.025em;
+    }
+    .badge-primary {
+        background-color: var(--color-primary-100);
+        color: var(--color-primary-700);
+    }
+    .badge-success {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    .badge-warning {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    .badge-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Sidebar nav link */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        border-radius: 0.75rem;
+        transition: all 150ms ease;
+        text-decoration: none;
+    }
+    .nav-link:hover {
+        background-color: var(--color-surface-hover);
+        color: var(--color-text-primary);
+    }
+    .nav-link.active {
+        background-color: var(--color-surface-active);
+        color: var(--color-primary-700);
+    }
+
+    /* Stat card (tarjetas de estadísticas del dashboard) */
+    .stat-card {
+        background-color: var(--color-surface-card);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    }
+    .stat-card .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* Tabla base */
+    .table-container {
+        background-color: var(--color-surface-card);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    }
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table-container th {
+        text-align: left;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .table-container td {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.875rem;
+        color: var(--color-text-primary);
+        border-bottom: 1px solid #f9fafb;
+    }
+    .table-container tr:hover td {
+        background-color: var(--color-surface-hover);
+    }
+}

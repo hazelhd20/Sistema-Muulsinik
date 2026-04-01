@@ -1,0 +1,88 @@
+<div class="space-y-6">
+    {{-- Logo y título --}}
+    <div class="text-center">
+        <div class="mx-auto w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mb-4 shadow-lg shadow-primary-600/20">
+            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-text-primary">Muulsinik ERP</h1>
+        <p class="text-sm text-text-secondary mt-1">Sistema de Gestión para Constructora</p>
+    </div>
+
+    {{-- Card de login --}}
+    <div class="card" style="padding: 2rem;">
+        <h2 class="text-lg font-semibold text-text-primary mb-1">Iniciar Sesión</h2>
+        <p class="text-sm text-text-muted mb-6">Ingresa tus credenciales para continuar</p>
+
+        {{-- Error global --}}
+        @if($errorMessage)
+            <div class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <span>{{ $errorMessage }}</span>
+            </div>
+        @endif
+
+        <form wire:submit="authenticate" class="space-y-4">
+            {{-- Email --}}
+            <div>
+                <label for="login-email" class="block text-sm font-medium text-text-primary mb-1.5">Correo electrónico</label>
+                <input
+                    wire:model="email"
+                    type="email"
+                    id="login-email"
+                    class="input"
+                    placeholder="tu@correo.com"
+                    autofocus
+                    autocomplete="email"
+                >
+                @error('email')
+                    <p class="mt-1 text-xs text-danger">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Password --}}
+            <div>
+                <label for="login-password" class="block text-sm font-medium text-text-primary mb-1.5">Contraseña</label>
+                <input
+                    wire:model="password"
+                    type="password"
+                    id="login-password"
+                    class="input"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                >
+                @error('password')
+                    <p class="mt-1 text-xs text-danger">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Remember + Forgot --}}
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input wire:model="remember" type="checkbox" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm text-text-secondary">Recordarme</span>
+                </label>
+            </div>
+
+            {{-- Submit --}}
+            <button type="submit" class="btn-primary w-full" wire:loading.attr="disabled">
+                <span wire:loading.remove wire:target="authenticate">Iniciar Sesión</span>
+                <span wire:loading wire:target="authenticate" class="flex items-center gap-2">
+                    <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
+                        <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" class="opacity-75"/>
+                    </svg>
+                    Verificando...
+                </span>
+            </button>
+        </form>
+    </div>
+
+    <p class="text-center text-xs text-text-muted">
+        Muulsinik ERP v1.0 &copy; {{ date('Y') }}
+    </p>
+</div>
