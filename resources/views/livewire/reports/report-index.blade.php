@@ -1,4 +1,4 @@
-<div>
+ <div>
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -90,7 +90,7 @@
                 </div>
                 <div class="mt-4 space-y-2">
                     @php
-                        $catColors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
+                        $catColors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
                     @endphp
                     @foreach($expenseByCategory->take(5) as $i => $cat)
                         <div class="flex items-center justify-between text-sm">
@@ -217,12 +217,12 @@
                     datasets: [{
                         label: 'Gastos',
                         data: data.map(d => d.total),
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                        borderColor: '#0230c8',
+                        backgroundColor: 'rgba(2, 48, 200, 0.08)',
                         fill: true,
                         tension: 0.4,
                         borderWidth: 2.5,
-                        pointBackgroundColor: '#8b5cf6',
+                        pointBackgroundColor: '#0230c8',
                         pointRadius: 4,
                         pointHoverRadius: 6,
                     }]
@@ -266,7 +266,7 @@
             if (!ctx) return;
             const data = @json($expenseByCategory);
             const labels = @json($categoryLabels);
-            const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
+            const colors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {

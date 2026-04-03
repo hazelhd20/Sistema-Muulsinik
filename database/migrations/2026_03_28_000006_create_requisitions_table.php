@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->text('description')->nullable();
-            $table->enum('status', ['pendiente', 'aprobada', 'rechazada'])->default('pendiente');
+            $table->enum('status', ['borrador', 'pendiente', 'aprobada', 'rechazada'])->default('borrador');
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->text('rejection_comment')->nullable();
             $table->date('date')->nullable();
             $table->date('need_date')->nullable();
             $table->timestamps();

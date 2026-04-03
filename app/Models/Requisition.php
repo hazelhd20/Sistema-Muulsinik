@@ -10,7 +10,8 @@ class Requisition extends Model
 {
     protected $fillable = [
         'project_id', 'description', 'status',
-        'created_by', 'approved_by', 'date', 'need_date',
+        'created_by', 'approved_by', 'rejection_comment',
+        'date', 'need_date',
     ];
 
     protected $casts = [

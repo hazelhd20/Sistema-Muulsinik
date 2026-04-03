@@ -14,45 +14,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Roles del sistema (RF-AUTH-02)
+        // Roles del sistema — ERS v2.0 §2.3 (RF-AUTH-02)
+        // Reducido de 5 a 3 roles funcionales para constructora pequeña.
         $roles = [
             [
                 'name' => 'Administrador',
                 'permissions' => ['*'],
             ],
             [
-                'name' => 'Gerente de Proyecto',
+                'name' => 'Encargado de Compras',
                 'permissions' => [
-                    'proyectos.ver', 'proyectos.editar',
-                    'gastos.ver', 'gastos.crear',
-                    'requisiciones.ver', 'requisiciones.aprobar',
-                    'reportes.ver', 'documentos.ver',
-                ],
-            ],
-            [
-                'name' => 'Comprador',
-                'permissions' => [
-                    'requisiciones.ver', 'requisiciones.crear', 'requisiciones.editar',
+                    'requisiciones.ver', 'requisiciones.crear', 'requisiciones.editar', 'requisiciones.aprobar',
                     'proveedores.ver', 'proveedores.crear', 'proveedores.editar',
-                    'cotizaciones.cargar', 'productos.ver',
+                    'cotizaciones.cargar',
+                    'productos.ver', 'productos.crear',
+                    'reportes.ver',
+                    'gastos.ver',
+                    'documentos.ver',
+                    'proyectos.ver',
                 ],
             ],
             [
-                'name' => 'Supervisor de Campo',
+                'name' => 'Supervisor / Operativo',
                 'permissions' => [
                     'proyectos.ver',
                     'gastos.ver', 'gastos.crear',
                     'requisiciones.ver', 'requisiciones.crear',
                     'documentos.ver',
-                ],
-            ],
-            [
-                'name' => 'Contador',
-                'permissions' => [
-                    'proyectos.ver',
-                    'gastos.ver',
                     'reportes.ver',
-                    'presupuestos.ver',
                 ],
             ],
         ];

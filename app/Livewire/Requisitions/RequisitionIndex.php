@@ -34,6 +34,11 @@ class RequisitionIndex extends Component
     public string $itemPrice = '';
     public $itemSupplierId = '';
 
+    // Rechazo con comentario obligatorio (RF-REQ-09)
+    public bool $showRejectModal = false;
+    public ?int $rejectingId = null;
+    public string $rejectionComment = '';
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -43,6 +48,8 @@ class RequisitionIndex extends Component
     {
         $this->resetForm();
         $this->reqNeedDate = now()->addDays(7)->format('Y-m-d');
+        // RF-AUTH-03: Prellenar con el proyecto activo del selector global
+        $this->reqProjectId = session('active_project_id', '');
         $this->showCreateModal = true;
     }
 
@@ -88,10 +95,11 @@ class RequisitionIndex extends Component
             return;
         }
 
+        // RF-REQ-09: Nuevas requisiciones inician como borrador
         $requisition = Requisition::create([
             'project_id' => $this->reqProjectId,
             'description' => $this->reqDescription,
-            'status' => 'pendiente',
+            'status' => 'borrador',
             'created_by' => auth()->id(),
             'date' => now(),
             'need_date' => $this->reqNeedDate,
@@ -110,13 +118,27 @@ class RequisitionIndex extends Component
 
         $this->showCreateModal = false;
         $this->resetForm();
-        session()->flash('success', 'Requisición creada exitosamente.');
+        session()->flash('success', 'Requisición creada como borrador.');
     }
 
-    /** Aprobar requisición (RF-REQ-02). */
+    /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente). */
+    public function submitForApproval(int $requisitionId): void
+    {
+        $req = Requisition::findOrFail($requisitionId);
+        if ($req->status !== 'borrador') {
+            return;
+        }
+        $req->update(['status' => 'pendiente']);
+        session()->flash('success', 'Requisición enviada a aprobación.');
+    }
+
+    /** RF-REQ-09: Aprobar requisición (Pendiente → Aprobada). */
     public function approve(int $requisitionId): void
     {
         $req = Requisition::findOrFail($requisitionId);
+        if ($req->status !== 'pendiente') {
+            return;
+        }
         $req->update([
             'status' => 'aprobada',
             'approved_by' => auth()->id(),
@@ -124,14 +146,31 @@ class RequisitionIndex extends Component
         session()->flash('success', 'Requisición aprobada.');
     }
 
-    /** Rechazar requisición (RF-REQ-02). */
-    public function reject(int $requisitionId): void
+    /** RF-REQ-09: Abrir modal de rechazo (Pendiente → Rechazada). */
+    public function openRejectModal(int $requisitionId): void
     {
-        $req = Requisition::findOrFail($requisitionId);
+        $this->rejectingId = $requisitionId;
+        $this->rejectionComment = '';
+        $this->showRejectModal = true;
+    }
+
+    /** RF-REQ-09: Rechazar con comentario obligatorio. */
+    public function confirmReject(): void
+    {
+        $this->validate([
+            'rejectionComment' => 'required|min:5|max:500',
+        ]);
+
+        $req = Requisition::findOrFail($this->rejectingId);
         $req->update([
             'status' => 'rechazada',
             'approved_by' => auth()->id(),
+            'rejection_comment' => $this->rejectionComment,
         ]);
+
+        $this->showRejectModal = false;
+        $this->rejectingId = null;
+        $this->rejectionComment = '';
         session()->flash('success', 'Requisición rechazada.');
     }
 

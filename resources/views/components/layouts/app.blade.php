@@ -140,6 +140,9 @@
                         </div>
                     </div>
 
+                    {{-- Center: Global Project Selector (RF-AUTH-03 / RNF-USA-07) --}}
+                    <livewire:project-selector />
+
                     {{-- Right: Notifications + Profile --}}
                     <div class="flex items-center gap-3">
                         <button class="relative p-2 rounded-xl hover:bg-surface-hover transition" id="btn-notifications">

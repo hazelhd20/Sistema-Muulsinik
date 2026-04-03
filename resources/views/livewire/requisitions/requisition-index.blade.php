@@ -28,6 +28,7 @@
         </div>
         <select wire:model.live="statusFilter" class="input w-auto min-w-[160px]">
             <option value="">Todos los estados</option>
+            <option value="borrador">Borrador</option>
             <option value="pendiente">Pendiente</option>
             <option value="aprobada">Aprobada</option>
             <option value="rechazada">Rechazada</option>
@@ -48,15 +49,15 @@
                     {{-- Left info --}}
                     <div class="flex items-start gap-4 flex-1 min-w-0">
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                            {{ $req->status === 'pendiente' ? 'bg-amber-100' : ($req->status === 'aprobada' ? 'bg-green-100' : 'bg-red-100') }}">
-                            <i data-lucide="{{ $req->status === 'pendiente' ? 'clock' : ($req->status === 'aprobada' ? 'check-circle' : 'x-circle') }}"
-                               class="w-5 h-5 {{ $req->status === 'pendiente' ? 'text-amber-600' : ($req->status === 'aprobada' ? 'text-green-600' : 'text-red-600') }}"></i>
+                            {{ match($req->status) { 'borrador' => 'bg-gray-100', 'pendiente' => 'bg-amber-100', 'aprobada' => 'bg-green-100', 'rechazada' => 'bg-red-100', default => 'bg-gray-100' } }}">
+                            <i data-lucide="{{ match($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file' } }}"
+                               class="w-5 h-5 {{ match($req->status) { 'borrador' => 'text-gray-600', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-600', default => 'text-gray-600' } }}"></i>
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 mb-1">
                                 <h3 class="font-semibold text-text-primary truncate">{{ $req->description }}</h3>
                                 @php
-                                    $sColors = ['pendiente' => 'badge-warning', 'aprobada' => 'badge-success', 'rechazada' => 'badge-danger'];
+                                    $sColors = ['borrador' => 'badge-secondary', 'pendiente' => 'badge-warning', 'aprobada' => 'badge-success', 'rechazada' => 'badge-danger'];
                                 @endphp
                                 <span class="badge {{ $sColors[$req->status] ?? '' }} shrink-0">{{ ucfirst($req->status) }}</span>
                             </div>
@@ -85,18 +86,25 @@
                         </div>
 
                         <div class="flex items-center gap-1">
+                            @if($req->status === 'borrador')
+                                <button wire:click="submitForApproval({{ $req->id }})" wire:confirm="¿Enviar esta requisición a aprobación?" class="p-2 rounded-lg bg-primary-50 hover:bg-primary-100 text-primary-600 transition" title="Enviar a aprobación">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                </button>
+                            @endif
                             @if($req->status === 'pendiente')
                                 <button wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?" class="p-2 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 transition" title="Aprobar">
                                     <i data-lucide="check" class="w-4 h-4"></i>
                                 </button>
-                                <button wire:click="reject({{ $req->id }})" wire:confirm="¿Rechazar esta requisición?" class="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition" title="Rechazar">
+                                <button wire:click="openRejectModal({{ $req->id }})" class="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition" title="Rechazar">
                                     <i data-lucide="x" class="w-4 h-4"></i>
                                 </button>
                             @endif
-                            <button wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición?"
-                                class="p-2 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            @if(in_array($req->status, ['borrador', 'rechazada']))
+                                <button wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición?"
+                                    class="p-2 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -271,6 +279,32 @@
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="createRequisition">Crear Requisición</span>
                             <span wire:loading wire:target="createRequisition">Creando...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Reject Modal (RF-REQ-09: comentario obligatorio) --}}
+    @if($showRejectModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showRejectModal', false)"></div>
+            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
+                <div class="p-6 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-text-primary">Rechazar Requisición</h2>
+                    <p class="text-sm text-text-muted">Indica el motivo del rechazo (obligatorio)</p>
+                </div>
+                <form wire:submit="confirmReject" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-1.5">Motivo del rechazo *</label>
+                        <textarea wire:model="rejectionComment" class="input" rows="3" placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
+                        @error('rejectionComment') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" wire:click="$set('showRejectModal', false)" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-danger text-white font-medium hover:bg-red-700 transition text-sm">
+                            Confirmar Rechazo
                         </button>
                     </div>
                 </form>

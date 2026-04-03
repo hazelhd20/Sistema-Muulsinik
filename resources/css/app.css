@@ -10,7 +10,7 @@
  * Inspirado en el diseño de referencia (diseño.webp):
  * - Fondo gris claro (#F0EFF5)
  * - Sidebar y tarjetas en blanco
- * - Acento púrpura/violeta como color primario
+ * - Acento azul (#0230c8) como color primario
  * - Bordes redondeados grandes (2xl)
  * - Sombras suaves
  * - Tipografía Plus Jakarta Sans
@@ -22,24 +22,24 @@
 
     /* === Colores Semánticos del Sistema === */
 
-    /* Primary — Púrpura/Violeta inspirado en el diseño */
-    --color-primary-50: #f5f3ff;
-    --color-primary-100: #ede9fe;
-    --color-primary-200: #ddd6fe;
-    --color-primary-300: #c4b5fd;
-    --color-primary-400: #a78bfa;
-    --color-primary-500: #8b5cf6;
-    --color-primary-600: #7c3aed;
-    --color-primary-700: #6d28d9;
-    --color-primary-800: #5b21b6;
-    --color-primary-900: #4c1d95;
+    /* Primary — Azul Corporativo (#0230c8) */
+    --color-primary-50: #eef4ff;
+    --color-primary-100: #e0ebff;
+    --color-primary-200: #c7d8fe;
+    --color-primary-300: #a5bcfc;
+    --color-primary-400: #8199f8;
+    --color-primary-500: #5a72f0;
+    --color-primary-600: #0230c8;
+    --color-primary-700: #02249e;
+    --color-primary-800: #011d82;
+    --color-primary-900: #021a6e;
 
     /* Surface — Fondos y superficies */
     --color-surface-main: #F0EFF5;
     --color-surface-card: #FFFFFF;
     --color-surface-sidebar: #FFFFFF;
-    --color-surface-hover: #F8F7FC;
-    --color-surface-active: #EDE9FE;
+    --color-surface-hover: #F5F8FF;
+    --color-surface-active: #e0ebff;
 
     /* Textos */
     --color-text-primary: #1E1B2E;
@@ -104,7 +104,7 @@ body {
     .btn-primary:hover {
         background-color: var(--color-primary-700);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        box-shadow: 0 4px 12px rgba(2, 48, 200, 0.3);
     }
     .btn-primary:active {
         transform: translateY(0);
@@ -145,7 +145,7 @@ body {
     .input:focus {
         outline: none;
         border-color: var(--color-primary-400);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        box-shadow: 0 0 0 3px rgba(2, 48, 200, 0.1);
     }
     .input::placeholder {
         color: var(--color-text-muted);
