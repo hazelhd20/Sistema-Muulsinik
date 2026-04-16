@@ -10,12 +10,19 @@ class RequisitionItem extends Model
     protected $fillable = [
         'requisition_id', 'product_id', 'product_name',
         'quantity', 'unit', 'unit_price', 'supplier_id',
+        'homologation_status',
     ];
 
     protected $casts = [
         'quantity' => 'decimal:4',
         'unit_price' => 'decimal:2',
     ];
+
+    /** Indica si el producto ya fue homologado con el catálogo maestro. */
+    public function isHomologated(): bool
+    {
+        return $this->homologation_status === 'homologated';
+    }
 
     public function requisition(): BelongsTo
     {

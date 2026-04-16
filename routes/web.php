@@ -7,6 +7,7 @@ use App\Livewire\Expenses\ExpenseIndex;
 use App\Livewire\Products\ProductIndex;
 use App\Livewire\Projects\ProjectIndex;
 use App\Livewire\Reports\ReportIndex;
+use App\Livewire\Requisitions\QuotationWizard;
 use App\Livewire\Requisitions\RequisitionIndex;
 use App\Livewire\Suppliers\SupplierIndex;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,7 @@ Route::middleware('auth')->group(function () {
 
     // Requisiciones (RF-REQ)
     Route::get('/requisiciones', RequisitionIndex::class)->name('requisiciones.index');
+    Route::get('/requisiciones/subir-cotizacion', QuotationWizard::class)->name('requisiciones.upload');
 
     // Proveedores (RF-PROV)
     Route::get('/proveedores', SupplierIndex::class)->name('proveedores.index');

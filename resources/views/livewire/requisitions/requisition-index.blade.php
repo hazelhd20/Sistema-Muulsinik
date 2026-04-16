@@ -5,10 +5,16 @@
             <h1 class="text-2xl font-bold text-text-primary">Requisiciones</h1>
             <p class="text-sm text-text-muted">Crea, aprueba y gestiona requisiciones de materiales</p>
         </div>
-        <button wire:click="openCreateModal" class="btn-primary">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            Nueva Requisición
-        </button>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
+                <i data-lucide="scan-line" class="w-4 h-4"></i>
+                Subir Cotización
+            </a>
+            <button wire:click="openCreateModal" class="btn-secondary">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Nueva Manual
+            </button>
+        </div>
     </div>
 
     @if(session('success'))
