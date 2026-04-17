@@ -134,7 +134,7 @@
                             <input
                                 type="search"
                                 placeholder="Buscar proyectos, gastos, requisiciones..."
-                                class="input pl-10 w-80 bg-surface-card"
+                                class="input pl-10 w-80"
                                 id="global-search"
                             >
                         </div>
