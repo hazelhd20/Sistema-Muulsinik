@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiStructurerService
 {
-    private const MODEL = 'gemini-2.0-flash';
-
     /**
      * ¿Está disponible la integración con Gemini?
      * Retorna false si no hay API key configurada.
@@ -28,6 +26,15 @@ class GeminiStructurerService
     public function isAvailable(): bool
     {
         return !empty(config('gemini.api_key'));
+    }
+
+    /**
+     * Obtiene el modelo de Gemini configurado.
+     * Configurable vía GEMINI_MODEL en .env.
+     */
+    private function getModel(): string
+    {
+        return config('gemini.model', env('GEMINI_MODEL', 'gemini-flash-latest'));
     }
 
     /**
@@ -48,7 +55,7 @@ class GeminiStructurerService
         $prompt = $this->buildExtractionPrompt($rawText);
 
         try {
-            $result = Gemini::generativeModel(model: self::MODEL)
+            $result = Gemini::generativeModel(model: $this->getModel())
                 ->generateContent($prompt);
 
             $responseText = $result->text();
@@ -106,7 +113,7 @@ class GeminiStructurerService
         PROMPT;
 
         try {
-            $result = Gemini::generativeModel(model: self::MODEL)
+            $result = Gemini::generativeModel(model: $this->getModel())
                 ->generateContent($prompt);
 
             $responseText = $result->text();
@@ -163,7 +170,7 @@ class GeminiStructurerService
         PROMPT;
 
         try {
-            $result = Gemini::generativeModel(model: self::MODEL)
+            $result = Gemini::generativeModel(model: $this->getModel())
                 ->generateContent($prompt);
 
             $responseText = trim($result->text());

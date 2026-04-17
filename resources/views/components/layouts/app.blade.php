@@ -23,7 +23,7 @@
     <div class="flex min-h-screen">
         {{-- ===== SIDEBAR ===== --}}
         <aside
-            class="fixed inset-y-0 left-0 z-40 w-64 bg-surface-card flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-auto"
+            class="fixed inset-y-0 left-0 z-40 w-64 bg-surface-card flex flex-col transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen"
             :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
         >
             {{-- Brand --}}
