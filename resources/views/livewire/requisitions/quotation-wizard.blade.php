@@ -126,16 +126,15 @@
                         wire:target="processUpload"
                         class="btn-primary w-full mt-6 py-3 text-base"
                     >
-                        <span wire:loading.remove wire:target="processUpload" class="flex items-center justify-center gap-2">
+                        <span wire:loading.class="opacity-0" wire:target="processUpload" class="flex items-center justify-center gap-2 transition-opacity">
                             <i data-lucide="scan-line" class="w-5 h-5"></i>
                             Procesar Cotización
                         </span>
-                        <span wire:loading wire:target="processUpload" class="flex items-center justify-center gap-2">
+                        <span wire:loading wire:target="processUpload" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                             <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                             </svg>
-                            Procesando...
                         </span>
                     </button>
                 @endif
@@ -243,12 +242,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Proyecto *</label>
-                            <select wire:model="projectId" class="input">
-                                <option value="">Seleccionar proyecto...</option>
-                                @foreach($projects as $proj)
-                                    <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-                                @endforeach
-                            </select>
+                            <x-custom-select 
+                                wire:model="projectId" 
+                                :options="$projects->pluck('name', 'id')->toArray()" 
+                                placeholder="Seleccionar proyecto..." 
+                            />
                             @error('projectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
 
@@ -261,12 +259,12 @@
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Proveedor</label>
                             <div class="flex gap-2">
-                                <select wire:model="supplierId" class="input flex-1">
-                                    <option value="">{{ $supplierName ?: 'Seleccionar proveedor...' }}</option>
-                                    @foreach($suppliers as $sup)
-                                        <option value="{{ $sup->id }}">{{ $sup->trade_name }}</option>
-                                    @endforeach
-                                </select>
+                                <x-custom-select 
+                                    wire:model="supplierId" 
+                                    :options="$suppliers->pluck('trade_name', 'id')->toArray()" 
+                                    placeholder="{{ $supplierName ?: 'Seleccionar proveedor...' }}" 
+                                    class="flex-1"
+                                />
                                 @if($supplierName && !$supplierId)
                                     <span class="px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-xs font-medium self-center whitespace-nowrap">
                                         Detectado: {{ Str::limit($supplierName, 20) }}
@@ -335,17 +333,12 @@
 
                                             {{-- Unidad --}}
                                             <td class="px-3 py-2">
-                                                <select wire:model="items.{{ $i }}.unit" class="input text-sm">
-                                                    <option value="pza">Pieza</option>
-                                                    <option value="kg">Kg</option>
-                                                    <option value="m">Metro</option>
-                                                    <option value="m2">m²</option>
-                                                    <option value="m3">m³</option>
-                                                    <option value="lt">Litro</option>
-                                                    <option value="bulto">Bulto</option>
-                                                    <option value="rollo">Rollo</option>
-                                                    <option value="caja">Caja</option>
-                                                </select>
+                                                <x-custom-select 
+                                                    wire:model="items.{{ $i }}.unit" 
+                                                    :options="['pza' => 'Pieza', 'kg' => 'Kg', 'm' => 'Metro', 'm2' => 'm²', 'm3' => 'm³', 'lt' => 'Litro', 'bulto' => 'Bulto', 'rollo' => 'Rollo', 'caja' => 'Caja', 'servicio' => 'Servicio', 'lote' => 'Lote', 'galon' => 'Galón', 'tramo' => 'Tramo']" 
+                                                    placeholder="Unidad..." 
+                                                    class="text-sm"
+                                                />
                                             </td>
 
                                             {{-- Precio Unitario --}}
@@ -465,16 +458,15 @@
                 <div class="flex items-center gap-3">
                     <a href="{{ route('requisiciones.index') }}" class="btn-secondary">Cancelar</a>
                     <button type="submit" class="btn-primary py-2.5 px-6" wire:loading.attr="disabled" wire:target="saveRequisition">
-                        <span wire:loading.remove wire:target="saveRequisition" class="flex items-center gap-2">
+                        <span wire:loading.class="opacity-0" wire:target="saveRequisition" class="flex items-center gap-2 transition-opacity">
                             <i data-lucide="save" class="w-4 h-4"></i>
                             Guardar Requisición
                         </span>
-                        <span wire:loading wire:target="saveRequisition" class="flex items-center gap-2">
-                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <span wire:loading wire:target="saveRequisition" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                             </svg>
-                            Guardando...
                         </span>
                     </button>
                 </div>

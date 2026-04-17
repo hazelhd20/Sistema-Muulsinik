@@ -32,19 +32,18 @@
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar requisición..." class="input pl-10">
         </div>
-        <select wire:model.live="statusFilter" class="input w-auto min-w-[160px]">
-            <option value="">Todos los estados</option>
-            <option value="borrador">Borrador</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="aprobada">Aprobada</option>
-            <option value="rechazada">Rechazada</option>
-        </select>
-        <select wire:model.live="projectFilter" class="input w-auto min-w-[180px]">
-            <option value="">Todos los proyectos</option>
-            @foreach($projects as $proj)
-                <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-            @endforeach
-        </select>
+        <x-custom-select 
+            wire:model.live="statusFilter" 
+            :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" 
+            placeholder="Todos los estados" 
+            class="w-auto min-w-[160px]"
+        />
+        <x-custom-select 
+            wire:model.live="projectFilter" 
+            :options="$projects->pluck('name', 'id')->toArray()" 
+            placeholder="Todos los proyectos" 
+            class="w-auto min-w-[180px]"
+        />
     </div>
 
     {{-- Requisitions list --}}
@@ -151,12 +150,8 @@
             </div>
         @empty
             <div class="card text-center py-12">
-                <i data-lucide="clipboard-list" class="w-12 h-12 mx-auto mb-3 text-text-muted opacity-40"></i>
-                <h3 class="text-lg font-semibold text-text-primary mb-1">No hay requisiciones</h3>
-                <p class="text-sm text-text-muted mb-4">Crea tu primera requisición de materiales</p>
-                <button wire:click="openCreateModal" class="btn-primary">
-                    <i data-lucide="plus" class="w-4 h-4"></i>Nueva Requisición
-                </button>
+                <i data-lucide="clipboard-list" class="w-10 h-10 mx-auto mb-2 text-text-muted opacity-40"></i>
+                <p class="text-text-muted">No hay requisiciones registradas</p>
             </div>
         @endforelse
     </div>
@@ -283,8 +278,13 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="createRequisition">Crear Requisición</span>
-                            <span wire:loading wire:target="createRequisition">Creando...</span>
+                            <span wire:loading.class="opacity-0" wire:target="createRequisition" class="transition-opacity">Crear Requisición</span>
+                            <span wire:loading wire:target="createRequisition" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                            </span>
                         </button>
                     </div>
                 </form>

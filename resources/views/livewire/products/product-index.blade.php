@@ -23,12 +23,12 @@
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar producto..." class="input pl-10">
         </div>
-        <select wire:model.live="categoryFilter" class="input w-auto min-w-[180px]">
-            <option value="">Todas las categorías</option>
-            @foreach($categories as $key => $label)
-                <option value="{{ $key }}">{{ $label }}</option>
-            @endforeach
-        </select>
+        <x-custom-select 
+            wire:model.live="categoryFilter" 
+            :options="$categories" 
+            placeholder="Todas las categorías" 
+            class="w-auto min-w-[180px]"
+        />
     </div>
 
     {{-- Products table --}}
@@ -83,11 +83,7 @@
                     <tr>
                         <td colspan="5" class="text-center py-12">
                             <i data-lucide="package" class="w-10 h-10 mx-auto mb-2 text-text-muted opacity-40"></i>
-                            <p class="font-medium text-text-primary mb-1">No hay productos en el catálogo</p>
-                            <p class="text-sm text-text-muted mb-4">Agrega productos para homologar nombres entre proveedores</p>
-                            <button wire:click="openCreateModal" class="btn-primary">
-                                <i data-lucide="plus" class="w-4 h-4"></i>Agregar Producto
-                            </button>
+                            <p class="text-text-muted">No hay productos en el catálogo</p>
                         </td>
                     </tr>
                 @endforelse
@@ -118,22 +114,20 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Unidad *</label>
-                            <select wire:model="unit" class="input">
-                                <option value="">Seleccionar...</option>
-                                @foreach($units as $key => $label)
-                                    <option value="{{ $key }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
+                            <x-custom-select 
+                                wire:model="unit" 
+                                :options="$units" 
+                                placeholder="Seleccionar..." 
+                            />
                             @error('unit') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
-                            <select wire:model="category" class="input">
-                                <option value="">Seleccionar...</option>
-                                @foreach($categories as $key => $label)
-                                    <option value="{{ $key }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
+                            <x-custom-select 
+                                wire:model="category" 
+                                :options="$categories" 
+                                placeholder="Seleccionar..." 
+                            />
                             @error('category') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -197,12 +191,11 @@
                         <p class="text-xs font-semibold text-text-primary uppercase tracking-wider">Agregar alias</p>
                         <input wire:model="aliasName" type="text" class="input" placeholder="Nombre como lo llama el proveedor *">
                         @error('aliasName') <p class="text-xs text-danger">{{ $message }}</p> @enderror
-                        <select wire:model="aliasSupplierId" class="input">
-                            <option value="">Proveedor (opcional)</option>
-                            @foreach($suppliers as $sup)
-                                <option value="{{ $sup->id }}">{{ $sup->trade_name }}</option>
-                            @endforeach
-                        </select>
+                        <x-custom-select 
+                            wire:model="aliasSupplierId" 
+                            :options="$suppliers->pluck('trade_name', 'id')->toArray()" 
+                            placeholder="Proveedor (opcional)" 
+                        />
                         <button type="submit" class="btn-primary w-full text-sm">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>Agregar Alias
                         </button>

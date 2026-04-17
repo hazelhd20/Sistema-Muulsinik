@@ -6,19 +6,18 @@
             <p class="text-sm text-text-muted">Análisis financiero y operativo del sistema</p>
         </div>
         <div class="flex items-center gap-3">
-            <select wire:model.live="projectFilter" class="input w-auto min-w-[180px]">
-                <option value="">Todos los proyectos</option>
-                @foreach($projects as $proj)
-                    <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-                @endforeach
-            </select>
-            <select wire:model.live="period" class="input w-auto min-w-[140px]">
-                <option value="week">Última semana</option>
-                <option value="month">Último mes</option>
-                <option value="quarter">Último trimestre</option>
-                <option value="year">Último año</option>
-                <option value="all">Todo</option>
-            </select>
+            <x-custom-select 
+                wire:model.live="projectFilter" 
+                :options="$projects->pluck('name', 'id')->toArray()" 
+                placeholder="Todos los proyectos" 
+                class="w-auto min-w-[180px]"
+            />
+            <x-custom-select 
+                wire:model.live="period" 
+                :options="['week' => 'Última semana', 'month' => 'Último mes', 'quarter' => 'Último trimestre', 'year' => 'Último año', 'all' => 'Todo']" 
+                class="w-auto min-w-[140px]"
+                placeholder=""
+            />
         </div>
     </div>
 

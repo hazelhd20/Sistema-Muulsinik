@@ -24,13 +24,12 @@
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar proyecto o cliente..." class="input pl-10">
         </div>
-        <select wire:model.live="statusFilter" class="input w-auto min-w-[160px]">
-            <option value="">Todos los estados</option>
-            <option value="activo">Activo</option>
-            <option value="en_pausa">En Pausa</option>
-            <option value="completado">Completado</option>
-            <option value="cancelado">Cancelado</option>
-        </select>
+        <x-custom-select 
+            wire:model.live="statusFilter" 
+            :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" 
+            placeholder="Todos los estados" 
+            class="w-auto min-w-[160px]"
+        />
     </div>
 
     {{-- Projects Grid --}}
@@ -101,13 +100,8 @@
             </div>
         @empty
             <div class="col-span-full card text-center py-12">
-                <i data-lucide="folder-open" class="w-12 h-12 mx-auto mb-3 text-text-muted opacity-40"></i>
-                <h3 class="text-lg font-semibold text-text-primary mb-1">No hay proyectos</h3>
-                <p class="text-sm text-text-muted mb-4">Comienza creando tu primer proyecto de construcción</p>
-                <button wire:click="openCreateModal" class="btn-primary">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Crear Proyecto
-                </button>
+                <i data-lucide="folder-open" class="w-10 h-10 mx-auto mb-2 text-text-muted opacity-40"></i>
+                <p class="text-text-muted">No hay proyectos registrados</p>
             </div>
         @endforelse
     </div>
@@ -167,8 +161,13 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="createProject">Crear Proyecto</span>
-                            <span wire:loading wire:target="createProject">Creando...</span>
+                            <span wire:loading.class="opacity-0" wire:target="createProject" class="transition-opacity">Crear Proyecto</span>
+                            <span wire:loading wire:target="createProject" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                            </span>
                         </button>
                     </div>
                 </form>

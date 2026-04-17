@@ -23,18 +23,18 @@
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar documento..." class="input pl-10">
         </div>
-        <select wire:model.live="projectFilter" class="input w-auto min-w-[180px]">
-            <option value="">Todos los proyectos</option>
-            @foreach($projects as $proj)
-                <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-            @endforeach
-        </select>
-        <select wire:model.live="categoryFilter" class="input w-auto min-w-[160px]">
-            <option value="">Todas las categorías</option>
-            @foreach($categoryLabels as $key => $label)
-                <option value="{{ $key }}">{{ $label }}</option>
-            @endforeach
-        </select>
+        <x-custom-select 
+            wire:model.live="projectFilter" 
+            :options="$projects->pluck('name', 'id')->toArray()" 
+            placeholder="Todos los proyectos" 
+            class="w-auto min-w-[180px]"
+        />
+        <x-custom-select 
+            wire:model.live="categoryFilter" 
+            :options="$categoryLabels" 
+            placeholder="Todas las categorías" 
+            class="w-auto min-w-[160px]"
+        />
     </div>
 
     {{-- Documents grid --}}
@@ -124,21 +124,20 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Proyecto *</label>
-                            <select wire:model="docProjectId" class="input">
-                                <option value="">Seleccionar...</option>
-                                @foreach($projects as $proj)
-                                    <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-                                @endforeach
-                            </select>
+                            <x-custom-select 
+                                wire:model="docProjectId" 
+                                :options="$projects->pluck('name', 'id')->toArray()" 
+                                placeholder="Seleccionar..." 
+                            />
                             @error('docProjectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
-                            <select wire:model="docCategory" class="input">
-                                @foreach($categoryLabels as $key => $label)
-                                    <option value="{{ $key }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
+                            <x-custom-select 
+                                wire:model="docCategory" 
+                                :options="$categoryLabels" 
+                                placeholder="" 
+                            />
                         </div>
                     </div>
                     <div>
@@ -158,8 +157,13 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showUploadModal', false)" class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="uploadDocument">Subir Documento</span>
-                            <span wire:loading wire:target="uploadDocument">Guardando...</span>
+                            <span wire:loading.class="opacity-0" wire:target="uploadDocument" class="transition-opacity">Subir Documento</span>
+                            <span wire:loading wire:target="uploadDocument" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                            </span>
                         </button>
                     </div>
                 </form>

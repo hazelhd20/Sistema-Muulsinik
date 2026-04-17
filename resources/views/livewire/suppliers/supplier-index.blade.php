@@ -77,12 +77,8 @@
             </div>
         @empty
             <div class="col-span-full card text-center py-12">
-                <i data-lucide="truck" class="w-12 h-12 mx-auto mb-3 text-text-muted opacity-40"></i>
-                <h3 class="text-lg font-semibold text-text-primary mb-1">No hay proveedores</h3>
-                <p class="text-sm text-text-muted mb-4">Comienza registrando tus primeros proveedores</p>
-                <button wire:click="openCreateModal" class="btn-primary">
-                    <i data-lucide="plus" class="w-4 h-4"></i>Agregar Proveedor
-                </button>
+                <i data-lucide="truck" class="w-10 h-10 mx-auto mb-2 text-text-muted opacity-40"></i>
+                <p class="text-text-muted">No hay proveedores registrados</p>
             </div>
         @endforelse
     </div>

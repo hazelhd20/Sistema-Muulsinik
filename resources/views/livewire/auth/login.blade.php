@@ -1,14 +1,7 @@
 <div class="space-y-6">
     {{-- Logo y título --}}
     <div class="text-center">
-        <div class="mx-auto w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mb-4 shadow-lg shadow-primary-600/20">
-            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-text-primary">Muulsinik ERP</h1>
-        <p class="text-sm text-text-secondary mt-1">Sistema de Gestión para Constructora</p>
+        <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="mx-auto h-32 mb-4">
     </div>
 
     {{-- Card de login --}}
@@ -69,14 +62,13 @@
             </div>
 
             {{-- Submit --}}
-            <button type="submit" class="btn-primary w-full" wire:loading.attr="disabled">
-                <span wire:loading.remove wire:target="authenticate">Iniciar Sesión</span>
-                <span wire:loading wire:target="authenticate" class="flex items-center gap-2">
-                    <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
-                        <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" class="opacity-75"/>
+            <button type="submit" class="btn-primary w-full relative" wire:loading.attr="disabled">
+                <span wire:loading.class="opacity-0" wire:target="authenticate" class="transition-opacity">Iniciar Sesión</span>
+                <span wire:loading wire:target="authenticate" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    Verificando...
                 </span>
             </button>
         </form>

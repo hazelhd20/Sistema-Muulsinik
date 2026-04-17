@@ -27,14 +27,8 @@
             :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
         >
             {{-- Brand --}}
-            <div class="flex items-center gap-3 px-6 h-16 border-b border-gray-100 shrink-0">
-                <div class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                </div>
-                <span class="text-lg font-bold text-text-primary">Muulsinik</span>
+            <div class="flex items-center justify-center px-6 h-24 border-b border-gray-100 shrink-0">
+                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="h-14 object-contain">
             </div>
 
             {{-- Navigation --}}
