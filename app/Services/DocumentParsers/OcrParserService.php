@@ -2,21 +2,35 @@
 
 namespace App\Services\DocumentParsers;
 
+use App\Services\AI\GeminiStructurerService;
 use Illuminate\Support\Str;
 use thiagoalessio\TesseractOCR\TesseractOCR;
 
 /**
  * RF-REQ-01 — Aplica OCR (Tesseract) a imágenes y PDFs escaneados.
- * Extrae texto bruto e intenta aplicar heurísticas de regex
- * para identificar productos, cantidades y precios.
+ * Extrae texto bruto y delega a Gemini AI para estructuración inteligente.
+ * Si Gemini no está disponible, aplica heurísticas de regex como fallback.
  */
 class OcrParserService implements ParserInterface
 {
+    public function __construct(
+        private readonly GeminiStructurerService $gemini,
+    ) {}
+
     /** {@inheritdoc} */
     public function parse(string $filePath): array
     {
         $rawText = $this->runOcr($filePath);
 
+        // Intentar estructuración inteligente con Gemini AI
+        $aiResult = $this->gemini->structureRawText($rawText);
+
+        if ($aiResult !== null) {
+            $aiResult['raw_text'] = $rawText;
+            return $aiResult;
+        }
+
+        // Fallback: heurísticas de regex
         return $this->structureFromText($rawText);
     }
 
@@ -44,8 +58,8 @@ class OcrParserService implements ParserInterface
     }
 
     /**
-     * Estructura la salida OCR en campos identificables.
-     * Misma lógica heurística que PdfTextParserService para consistencia.
+     * Fallback: Estructura la salida OCR en campos identificables mediante regex.
+     * Se usa solo cuando Gemini AI no está disponible o falla.
      */
     private function structureFromText(string $rawText): array
     {

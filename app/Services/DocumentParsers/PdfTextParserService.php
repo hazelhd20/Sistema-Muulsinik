@@ -2,15 +2,21 @@
 
 namespace App\Services\DocumentParsers;
 
+use App\Services\AI\GeminiStructurerService;
 use Smalot\PdfParser\Parser;
 use Illuminate\Support\Str;
 
 /**
  * RF-REQ-01 — Extrae texto de PDFs con contenido digital seleccionable.
- * Usa smalot/pdfparser para lectura directa sin dependencias externas.
+ * Usa smalot/pdfparser para lectura directa y Gemini AI para estructuración.
+ * Si Gemini no está disponible, aplica heurísticas de regex como fallback.
  */
 class PdfTextParserService implements ParserInterface
 {
+    public function __construct(
+        private readonly GeminiStructurerService $gemini,
+    ) {}
+
     /**
      * Determina si el PDF tiene texto seleccionable (no escaneado).
      * Se usa en la Factory para decidir si pasa a OCR.
@@ -36,12 +42,22 @@ class PdfTextParserService implements ParserInterface
         $pdf     = $parser->parseFile($filePath);
         $rawText = $pdf->getText();
 
+        // Intentar estructuración inteligente con Gemini AI
+        $aiResult = $this->gemini->structureRawText($rawText);
+
+        if ($aiResult !== null) {
+            $aiResult['raw_text'] = $rawText;
+            return $aiResult;
+        }
+
+        // Fallback: heurísticas de regex
         return $this->structureFromText($rawText);
     }
 
     /**
-     * Intenta extraer proveedor, tienda y líneas de productos
+     * Fallback: Intenta extraer proveedor, tienda y líneas de productos
      * a partir del texto plano mediante heurísticas y regex.
+     * Se usa solo cuando Gemini AI no está disponible o falla.
      */
     private function structureFromText(string $rawText): array
     {

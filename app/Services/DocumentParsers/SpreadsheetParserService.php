@@ -2,12 +2,14 @@
 
 namespace App\Services\DocumentParsers;
 
+use App\Services\AI\GeminiStructurerService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
  * RF-REQ-01 — Lee datos directamente de celdas de archivos XLSX.
  * Intenta detectar automáticamente las columnas de producto,
  * cantidad, unidad y precio unitario mediante heurísticas de encabezado.
+ * Después de la extracción, usa Gemini AI para limpiar nombres de productos.
  */
 class SpreadsheetParserService implements ParserInterface
 {
@@ -21,6 +23,10 @@ class SpreadsheetParserService implements ParserInterface
         'unit'       => ['unidad', 'u.m.', 'um', 'medida', 'unit'],
         'unit_price' => ['precio', 'p.u.', 'pu', 'costo', 'unit price', 'precio unitario', 'valor'],
     ];
+
+    public function __construct(
+        private readonly GeminiStructurerService $gemini,
+    ) {}
 
     /** {@inheritdoc} */
     public function parse(string $filePath): array
@@ -49,20 +55,26 @@ class SpreadsheetParserService implements ParserInterface
             }
         }
 
-        // Si no se detectaron encabezados, retornar todo como texto crudo
+        // Si no se detectaron encabezados, intentar con Gemini AI sobre el texto crudo
         if ($headerRow === null) {
+            $rawText  = implode("\n", $rawLines);
+            $aiResult = $this->gemini->structureRawText($rawText);
+
+            if ($aiResult !== null) {
+                $aiResult['raw_text'] = $rawText;
+                return $aiResult;
+            }
+
             return [
                 'supplier' => null,
                 'store'    => null,
                 'items'    => [],
-                'raw_text' => implode("\n", $rawLines),
+                'raw_text' => $rawText,
             ];
         }
 
         // Paso 2: leer las filas de datos
         $items = [];
-        $dataStarted = false;
-
         foreach ($rows as $rowIndex => $row) {
             if ($rowIndex <= $headerRow) {
                 continue;
@@ -80,6 +92,9 @@ class SpreadsheetParserService implements ParserInterface
                 'unit_price' => $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price')),
             ];
         }
+
+        // Paso 3: Limpiar nombres de productos con Gemini AI
+        $items = $this->cleanItemNamesWithAI($items);
 
         // Intentar encontrar el proveedor en las filas previas al encabezado
         $supplier = null;
@@ -100,6 +115,35 @@ class SpreadsheetParserService implements ParserInterface
             'items'    => $items,
             'raw_text' => implode("\n", $rawLines),
         ];
+    }
+
+    /**
+     * Usa Gemini AI para limpiar nombres de productos (quitar códigos, viñetas, etc.).
+     * Si la IA falla, devuelve los ítems sin modificar (graceful degradation).
+     *
+     * @param  array<int, array{name: string, quantity: ?float, unit: ?string, unit_price: ?float}> $items
+     * @return array<int, array{name: string, quantity: ?float, unit: ?string, unit_price: ?float}>
+     */
+    private function cleanItemNamesWithAI(array $items): array
+    {
+        if (empty($items)) {
+            return $items;
+        }
+
+        $dirtyNames = array_column($items, 'name');
+        $cleaned    = $this->gemini->cleanProductNames($dirtyNames);
+
+        if ($cleaned === null) {
+            return $items;
+        }
+
+        foreach ($items as $i => &$item) {
+            if (isset($cleaned[$i]) && !empty($cleaned[$i])) {
+                $item['name'] = $cleaned[$i];
+            }
+        }
+
+        return $items;
     }
 
     /**
