@@ -45,6 +45,7 @@
                     x-on:dragover.prevent="isDragging = true"
                     x-on:dragleave.prevent="isDragging = false"
                     x-on:drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
+                    x-on:file-cleared.window="$nextTick(() => { if ($refs.fileInput) $refs.fileInput.value = '' })"
                     class="relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer"
                     :class="isDragging ? 'border-primary-500 bg-primary-50/50 scale-[1.02]' : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20'"
                     @click="$refs.fileInput.click()"
@@ -53,7 +54,7 @@
                         x-ref="fileInput"
                         type="file"
                         wire:model="file"
-                        accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                        accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                         class="hidden"
                     >
 
@@ -95,17 +96,34 @@
 
                 {{-- File selected preview --}}
                 @if($file && !$errors->has('file'))
+                    @php
+                        $ext = strtolower($file->getClientOriginalExtension());
+                        $fileIconMap = [
+                            'pdf'  => ['icon' => 'file-text',  'bg' => 'bg-red-100',    'text' => 'text-red-600'],
+                            'xlsx' => ['icon' => 'file-spreadsheet', 'bg' => 'bg-green-100',  'text' => 'text-green-600'],
+                            'xls'  => ['icon' => 'file-spreadsheet', 'bg' => 'bg-green-100',  'text' => 'text-green-600'],
+                            'jpg'  => ['icon' => 'image',      'bg' => 'bg-amber-100',  'text' => 'text-amber-600'],
+                            'jpeg' => ['icon' => 'image',      'bg' => 'bg-amber-100',  'text' => 'text-amber-600'],
+                            'png'  => ['icon' => 'image',      'bg' => 'bg-emerald-100','text' => 'text-emerald-600'],
+                        ];
+                        $fileStyle = $fileIconMap[$ext] ?? ['icon' => 'file', 'bg' => 'bg-gray-100', 'text' => 'text-gray-600'];
+                    @endphp
                     <div class="mt-4 p-4 rounded-xl bg-surface-main border border-gray-100 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                                <i data-lucide="file-text" class="w-5 h-5 text-primary-600"></i>
+                            <div class="w-10 h-10 rounded-lg {{ $fileStyle['bg'] }} flex items-center justify-center">
+                                <i data-lucide="{{ $fileStyle['icon'] }}" class="w-5 h-5 {{ $fileStyle['text'] }}"></i>
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-text-primary">{{ $file->getClientOriginalName() }}</p>
                                 <p class="text-xs text-text-muted">{{ number_format($file->getSize() / 1024, 1) }} KB</p>
                             </div>
                         </div>
-                        <button wire:click="$set('file', null)" class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                        <button
+                            type="button"
+                            wire:click="removeFile"
+                            class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition"
+                            title="Quitar archivo"
+                        >
                             <i data-lucide="x" class="w-4 h-4"></i>
                         </button>
                     </div>

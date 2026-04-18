@@ -176,7 +176,12 @@
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
         document.addEventListener('livewire:navigated', () => lucide.createIcons());
         if (typeof Livewire !== 'undefined') {
-            Livewire.hook('morph.updated', () => lucide.createIcons());
+            // commit cubre TODOS los cambios del DOM (morph, elementos nuevos, wire:key)
+            Livewire.hook('commit', ({ succeed }) => {
+                succeed(() => {
+                    queueMicrotask(() => lucide.createIcons());
+                });
+            });
         }
     </script>
 </body>

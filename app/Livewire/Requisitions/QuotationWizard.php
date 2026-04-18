@@ -34,6 +34,7 @@ class QuotationWizard extends Component
     /* ── Paso 1: Upload ──────────────────────────────── */
     public $file;
     public ?int $quotationId = null;
+    public int $fileInputKey = 0;
 
     /* ── Paso 2: Processing status ───────────────────── */
     public string $processingStatus = 'pending';
@@ -68,17 +69,31 @@ class QuotationWizard extends Component
     public function updatedFile(): void
     {
         $this->validate([
-            'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            'file' => 'required|file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
         ], [
-            'file.max'   => 'El archivo no debe superar los 20 MB.',
-            'file.mimes' => 'Formatos permitidos: PDF, JPG, PNG, XLSX.',
+            'file.max'       => 'El archivo no debe superar los 20 MB.',
+            'file.mimetypes' => 'Formatos permitidos: PDF, JPG, JPEG, PNG, XLSX, XLS.',
         ]);
+    }
+
+    /**
+     * Elimina el archivo seleccionado y resetea el estado del input.
+     *
+     * Se usa un método dedicado en lugar de $set('file', null)
+     * porque WithFileUploads requiere limpiar la referencia interna
+     * del TemporaryUploadedFile para que el input acepte un nuevo archivo.
+     */
+    public function removeFile(): void
+    {
+        $this->file = null;
+        $this->resetValidation('file');
+        $this->dispatch('file-cleared');
     }
 
     public function processUpload(): void
     {
         $this->validate([
-            'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            'file' => 'required|file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
         ]);
 
         // Guardar el archivo en storage

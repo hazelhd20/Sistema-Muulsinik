@@ -47,6 +47,12 @@ class OcrParserService implements ParserInterface
             $ocr->executable($tesseractPath);
         }
 
+        // Configurar el directorio de datos de entrenamiento si existe
+        $tessdataDir = storage_path('app/tessdata');
+        if (file_exists($tessdataDir)) {
+            $ocr->tessdataDir($tessdataDir);
+        }
+
         // Idioma: español por defecto, con fallback a inglés
         $lang = config('services.tesseract.lang', env('TESSERACT_LANG', 'spa'));
         $ocr->lang($lang);
