@@ -34,7 +34,6 @@ class QuotationWizard extends Component
     /* ── Paso 1: Upload ──────────────────────────────── */
     public $file;
     public ?int $quotationId = null;
-    public int $fileInputKey = 0;
 
     /* ── Paso 2: Processing status ───────────────────── */
     public string $processingStatus = 'pending';
@@ -59,7 +58,7 @@ class QuotationWizard extends Component
     public function mount(): void
     {
         $this->projectId = session('active_project_id', '');
-        $this->needDate  = now()->addDays(7)->format('Y-m-d');
+        $this->needDate = now()->addDays(7)->format('Y-m-d');
     }
 
     /* ═══════════════════════════════════════════════════
@@ -71,7 +70,7 @@ class QuotationWizard extends Component
         $this->validate([
             'file' => 'required|file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
         ], [
-            'file.max'       => 'El archivo no debe superar los 20 MB.',
+            'file.max' => 'El archivo no debe superar los 20 MB.',
             'file.mimetypes' => 'Formatos permitidos: PDF, JPG, JPEG, PNG, XLSX, XLS.',
         ]);
     }
@@ -87,7 +86,6 @@ class QuotationWizard extends Component
     {
         $this->file = null;
         $this->resetValidation('file');
-        $this->dispatch('file-cleared');
     }
 
     public function processUpload(): void
@@ -99,24 +97,24 @@ class QuotationWizard extends Component
         // Guardar el archivo en storage
         $path = $this->file->store('quotations', 'local');
         $originalName = $this->file->getClientOriginalName();
-        $extension    = strtolower($this->file->getClientOriginalExtension());
-        $mimeType     = $this->file->getMimeType();
+        $extension = strtolower($this->file->getClientOriginalExtension());
+        $mimeType = $this->file->getMimeType();
 
         // Crear registro de cotización
         $quotation = Quotation::create([
-            'project_id'        => $this->projectId ?: null,
-            'file_path'         => $path,
-            'file_type'         => $mimeType,
+            'project_id' => $this->projectId ?: null,
+            'file_path' => $path,
+            'file_type' => $mimeType,
             'original_filename' => $originalName,
-            'status'            => 'pending',
-            'uploaded_by'       => auth()->id(),
+            'status' => 'pending',
+            'uploaded_by' => auth()->id(),
         ]);
 
         $this->quotationId = $quotation->id;
 
         // Determinar si el procesamiento es síncrono o asíncrono
-        $factory    = app(DocumentParserFactory::class);
-        $filePath   = Storage::disk('local')->path($path);
+        $factory = app(DocumentParserFactory::class);
+        $filePath = Storage::disk('local')->path($path);
         $resolution = $factory->resolve($filePath, $mimeType, $extension);
 
         if ($resolution['async']) {
@@ -132,9 +130,9 @@ class QuotationWizard extends Component
                 $result = $resolution['parser']->parse($filePath);
 
                 $quotation->update([
-                    'status'       => 'completed',
-                    'raw_text'     => $result['raw_text'] ?? '',
-                    'parsed_data'  => $result,
+                    'status' => 'completed',
+                    'raw_text' => $result['raw_text'] ?? '',
+                    'parsed_data' => $result,
                     'processed_at' => now(),
                 ]);
 
@@ -143,7 +141,7 @@ class QuotationWizard extends Component
 
             } catch (\Throwable $e) {
                 $quotation->update([
-                    'status'        => 'failed',
+                    'status' => 'failed',
                     'error_message' => $e->getMessage(),
                 ]);
                 $this->processingStatus = 'failed';
@@ -193,7 +191,7 @@ class QuotationWizard extends Component
         }
 
         $quotation->update([
-            'status'        => 'pending',
+            'status' => 'pending',
             'error_message' => null,
         ]);
 
@@ -214,10 +212,10 @@ class QuotationWizard extends Component
         $data = $quotation->parsed_data ?? [];
 
         $this->supplierName = $data['supplier'] ?? '';
-        $this->storeName    = $data['store'] ?? '';
-        $this->rawText      = $data['raw_text'] ?? '';
-        $this->items        = [];
-        $this->warnings     = [];
+        $this->storeName = $data['store'] ?? '';
+        $this->rawText = $data['raw_text'] ?? '';
+        $this->items = [];
+        $this->warnings = [];
 
         // Intentar asociar proveedor existente
         if ($this->supplierName) {
@@ -233,9 +231,9 @@ class QuotationWizard extends Component
             $suggestions = $homologationService->findSuggestions($item['name'] ?? '');
 
             $this->items[] = [
-                'name'       => $item['name'] ?? '',
-                'quantity'   => $item['quantity'] ?? 0,
-                'unit'       => $item['unit'] ?? 'pza',
+                'name' => $item['name'] ?? '',
+                'quantity' => $item['quantity'] ?? 0,
+                'unit' => $item['unit'] ?? 'pza',
                 'unit_price' => $item['unit_price'] ?? 0,
                 'product_id' => !empty($suggestions) && $suggestions[0]['similarity'] === 100
                     ? $suggestions[0]['id']
@@ -290,11 +288,11 @@ class QuotationWizard extends Component
     public function addItem(): void
     {
         $this->items[] = [
-            'name'                => '',
-            'quantity'            => 1,
-            'unit'                => 'pza',
-            'unit_price'          => 0,
-            'product_id'          => null,
+            'name' => '',
+            'quantity' => 1,
+            'unit' => 'pza',
+            'unit_price' => 0,
+            'product_id' => null,
             'homologation_status' => 'pending',
         ];
     }
@@ -344,38 +342,38 @@ class QuotationWizard extends Component
     public function saveRequisition(): void
     {
         $this->validate([
-            'projectId'       => 'required|exists:projects,id',
-            'description'     => 'required|min:3|max:500',
-            'needDate'        => 'required|date',
-            'items'           => 'required|array|min:1',
-            'items.*.name'    => 'required|string|min:1',
+            'projectId' => 'required|exists:projects,id',
+            'description' => 'required|min:3|max:500',
+            'needDate' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.name' => 'required|string|min:1',
         ], [
             'projectId.required' => 'Selecciona un proyecto.',
             'description.required' => 'Agrega una descripción para la requisición.',
-            'items.required'     => 'Agrega al menos un producto.',
-            'items.min'          => 'Agrega al menos un producto.',
+            'items.required' => 'Agrega al menos un producto.',
+            'items.min' => 'Agrega al menos un producto.',
         ]);
 
         // RF-REQ-09: la requisición inicia como borrador
         $requisition = Requisition::create([
-            'project_id'  => $this->projectId,
+            'project_id' => $this->projectId,
             'description' => $this->description,
-            'status'      => 'borrador',
-            'created_by'  => auth()->id(),
-            'date'        => now(),
-            'need_date'   => $this->needDate,
+            'status' => 'borrador',
+            'created_by' => auth()->id(),
+            'date' => now(),
+            'need_date' => $this->needDate,
         ]);
 
         // Guardar ítems con estado de homologación
         foreach ($this->items as $item) {
             RequisitionItem::create([
-                'requisition_id'      => $requisition->id,
-                'product_id'          => $item['product_id'] ?? null,
-                'product_name'        => $item['name'],
-                'quantity'            => $item['quantity'] ?? 0,
-                'unit'                => $item['unit'] ?? 'pza',
-                'unit_price'          => $item['unit_price'] ?? 0,
-                'supplier_id'         => $this->supplierId ?: null,
+                'requisition_id' => $requisition->id,
+                'product_id' => $item['product_id'] ?? null,
+                'product_name' => $item['name'],
+                'quantity' => $item['quantity'] ?? 0,
+                'unit' => $item['unit'] ?? 'pza',
+                'unit_price' => $item['unit_price'] ?? 0,
+                'supplier_id' => $this->supplierId ?: null,
                 'homologation_status' => $item['homologation_status'] ?? 'pending',
             ]);
         }
@@ -386,18 +384,18 @@ class QuotationWizard extends Component
             if ($quotation) {
                 $quotation->update([
                     'requisition_id' => $requisition->id,
-                    'supplier_id'    => $this->supplierId ?: null,
+                    'supplier_id' => $this->supplierId ?: null,
                 ]);
 
                 // RF-DOC-02: vincular archivo al repositorio documental automáticamente
                 Document::create([
-                    'project_id'     => $this->projectId,
+                    'project_id' => $this->projectId,
                     'requisition_id' => $requisition->id,
-                    'name'           => $quotation->original_filename ?? 'Cotización',
-                    'category'       => 'cotizaciones',
-                    'file_path'      => $quotation->file_path,
-                    'version'        => 1,
-                    'uploaded_by'    => auth()->id(),
+                    'name' => $quotation->original_filename ?? 'Cotización',
+                    'category' => 'cotizaciones',
+                    'file_path' => $quotation->file_path,
+                    'version' => 1,
+                    'uploaded_by' => auth()->id(),
                 ]);
             }
         }
@@ -411,18 +409,18 @@ class QuotationWizard extends Component
      */
     public function resetWizard(): void
     {
-        $this->step             = 1;
-        $this->file             = null;
-        $this->quotationId      = null;
+        $this->step = 1;
+        $this->file = null;
+        $this->quotationId = null;
         $this->processingStatus = 'pending';
-        $this->errorMessage     = null;
-        $this->supplierName     = '';
-        $this->supplierId       = '';
-        $this->storeName        = '';
-        $this->description      = '';
-        $this->items            = [];
-        $this->warnings         = [];
-        $this->rawText          = '';
+        $this->errorMessage = null;
+        $this->supplierName = '';
+        $this->supplierId = '';
+        $this->storeName = '';
+        $this->description = '';
+        $this->items = [];
+        $this->warnings = [];
+        $this->rawText = '';
         $this->homologationSuggestions = [];
     }
 
@@ -430,12 +428,14 @@ class QuotationWizard extends Component
     #[Title('Subir Cotización')]
     public function render()
     {
-        $projects  = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
+        $projects = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('trade_name')->get();
-        $products  = Product::orderBy('canonical_name')->get();
+        $products = Product::orderBy('canonical_name')->get();
 
         return view('livewire.requisitions.quotation-wizard', compact(
-            'projects', 'suppliers', 'products'
+            'projects',
+            'suppliers',
+            'products'
         ));
     }
 }

@@ -45,7 +45,6 @@
                     x-on:dragover.prevent="isDragging = true"
                     x-on:dragleave.prevent="isDragging = false"
                     x-on:drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
-                    x-on:file-cleared.window="$nextTick(() => { if ($refs.fileInput) $refs.fileInput.value = '' })"
                     class="relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer"
                     :class="isDragging ? 'border-primary-500 bg-primary-50/50 scale-[1.02]' : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20'"
                     @click="$refs.fileInput.click()"
@@ -121,6 +120,7 @@
                         <button
                             type="button"
                             wire:click="removeFile"
+                            x-on:click="$refs.fileInput.value = ''"
                             class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition"
                             title="Quitar archivo"
                         >
