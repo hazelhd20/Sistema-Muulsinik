@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-text-primary">Catálogo de Productos</h1>
-            <p class="text-sm text-text-muted">Catálogo maestro y homologación de nombres por proveedor</p>
+            <p class="text-sm text-text-muted">Catálogo maestro de productos y aliases por proveedor</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -108,7 +108,7 @@
                     <div>
                         <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre canónico *</label>
                         <input wire:model="canonicalName" type="text" class="input" placeholder="Ej. Cemento Portland CPC 30R">
-                        <p class="mt-1 text-xs text-text-muted">Nombre estándar que homologa todos los aliases de proveedores</p>
+                        <p class="mt-1 text-xs text-text-muted">Nombre estándar del producto en el catálogo interno</p>
                         @error('canonicalName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -151,7 +151,7 @@
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-text-primary">Aliases de Homologación</h2>
+                        <h2 class="text-lg font-semibold text-text-primary">Aliases por Proveedor</h2>
                         <p class="text-xs text-text-muted">{{ $viewingProduct->canonical_name }} · {{ $units[$viewingProduct->unit] ?? $viewingProduct->unit }}</p>
                     </div>
                     <button wire:click="$set('showAliasModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">

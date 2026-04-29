@@ -4,13 +4,12 @@ namespace App\Livewire\Requisitions;
 
 use App\Jobs\ProcessQuotationJob;
 use App\Models\Document;
-use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\RequisitionItem;
 use App\Models\Supplier;
+use App\Services\DataNormalizerService;
 use App\Services\DocumentParsers\DocumentParserFactory;
-use App\Services\HomologationService;
 use App\Services\TaxNormalizerService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -19,11 +18,11 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 /**
- * RF-REQ-01 a RF-REQ-07 — Wizard de 3 pasos para subir cotizaciones.
+ * RF-REQ-01 a RF-REQ-06 — Wizard de 3 pasos para subir cotizaciones.
  *
  * Paso 1: Upload del archivo (drag-and-drop).
  * Paso 2: Procesamiento (barra de progreso + polling).
- * Paso 3: Formulario editable con datos extraídos y homologación.
+ * Paso 3: Formulario editable con datos extraídos y normalización.
  */
 class QuotationWizard extends Component
 {
@@ -52,9 +51,6 @@ class QuotationWizard extends Component
 
     /* ── Alertas de campos incompletos ────────────────── */
     public array $warnings = [];
-
-    /* ── Homologación ────────────────────────────────── */
-    public array $homologationSuggestions = [];
 
     /* ── Contexto fiscal (IVA) ───────────────────────── */
 
@@ -209,15 +205,19 @@ class QuotationWizard extends Component
 
     /**
      * Carga los datos extraídos del Quotation al formulario editable.
-     * Incluye normalización fiscal vía TaxNormalizerService.
+     * Incluye normalización fiscal vía TaxNormalizerService
+     * y normalización de datos vía DataNormalizerService.
      */
     private function loadParsedData(Quotation $quotation): void
     {
         $data = $quotation->parsed_data ?? [];
 
         // Normalizar datos fiscales antes de cargar al formulario
-        $normalizer = app(TaxNormalizerService::class);
-        $data = $normalizer->normalize($data);
+        $taxNormalizer = app(TaxNormalizerService::class);
+        $data = $taxNormalizer->normalize($data);
+
+        // Normalizar datos (unidades, texto) vía DataNormalizerService
+        $dataNormalizer = app(DataNormalizerService::class);
 
         $this->supplierName = $data['supplier'] ?? '';
         $this->storeName    = $data['store'] ?? '';
@@ -238,19 +238,23 @@ class QuotationWizard extends Component
             $this->quotationIncludesTax = $hasResolvedTax ? false : null;
         }
 
-        // Intentar asociar proveedor existente
+        // Intentar asociar proveedor existente con fuzzy matching
         if ($this->supplierName) {
-            $supplier = Supplier::where('trade_name', 'LIKE', "%{$this->supplierName}%")->first();
-            if ($supplier) {
-                $this->supplierId = $supplier->id;
+            $supplierMatch = $dataNormalizer->findMatchingSupplier($this->supplierName);
+
+            if ($supplierMatch !== null) {
+                $this->supplierId = $supplierMatch['supplier']->id;
+                // Si es fuzzy match, mantener el nombre detectado como referencia
+                if ($supplierMatch['source'] === 'exact_trade_name') {
+                    $this->supplierName = '';
+                }
             }
         }
 
-        // Cargar ítems extraídos
-        $homologationService = app(HomologationService::class);
-        foreach ($data['items'] ?? [] as $index => $item) {
-            $suggestions = $homologationService->findSuggestions($item['name'] ?? '');
+        // Cargar ítems extraídos con normalización de unidades
+        $normalizedItems = $dataNormalizer->normalizeItems($data['items'] ?? []);
 
+        foreach ($normalizedItems as $item) {
             $this->items[] = [
                 'name'                => $item['name'] ?? '',
                 'quantity'            => $item['quantity'] ?? 0,
@@ -259,15 +263,8 @@ class QuotationWizard extends Component
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount'          => $item['tax_amount'] ?? null,
                 'tax_source'          => $item['tax_source'] ?? null,
-                'product_id'          => !empty($suggestions) && $suggestions[0]['similarity'] === 100
-                    ? $suggestions[0]['id']
-                    : null,
-                'homologation_status' => !empty($suggestions) && $suggestions[0]['similarity'] === 100
-                    ? 'homologated'
-                    : 'pending',
+                'product_id'          => null,
             ];
-
-            $this->homologationSuggestions[$index] = $suggestions;
         }
 
         // RF-REQ-06: Detectar campos incompletos
@@ -325,7 +322,6 @@ class QuotationWizard extends Component
             'tax_amount'          => null,
             'tax_source'          => null,
             'product_id'          => null,
-            'homologation_status' => 'pending',
         ];
     }
 
@@ -333,38 +329,6 @@ class QuotationWizard extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
-        unset($this->homologationSuggestions[$index]);
-        $this->homologationSuggestions = array_values($this->homologationSuggestions);
-    }
-
-    /**
-     * Homologa un ítem seleccionando un producto del catálogo.
-     */
-    public function homologateItem(int $index, int $productId): void
-    {
-        if (!isset($this->items[$index])) {
-            return;
-        }
-
-        $product = Product::find($productId);
-        if (!$product) {
-            return;
-        }
-
-        $this->items[$index]['product_id'] = $productId;
-        $this->items[$index]['homologation_status'] = 'homologated';
-    }
-
-    /**
-     * Quita la homologación de un ítem (lo deja pendiente).
-     */
-    public function unhomologateItem(int $index): void
-    {
-        if (!isset($this->items[$index])) {
-            return;
-        }
-        $this->items[$index]['product_id'] = null;
-        $this->items[$index]['homologation_status'] = 'pending';
     }
 
     /* ── Acciones fiscales (IVA) ─────────────────────── */
@@ -429,7 +393,7 @@ class QuotationWizard extends Component
             'need_date'   => null,
         ]);
 
-        // Guardar ítems con estado de homologación y datos fiscales
+        // Guardar ítems con datos fiscales
         foreach ($this->items as $item) {
             RequisitionItem::create([
                 'requisition_id'      => $requisition->id,
@@ -442,7 +406,6 @@ class QuotationWizard extends Component
                 'tax_amount'          => $item['tax_amount'] ?? null,
                 'tax_source'          => $item['tax_source'] ?? null,
                 'supplier_id'         => $this->supplierId ?: null,
-                'homologation_status' => $item['homologation_status'] ?? 'pending',
             ]);
         }
 
@@ -489,7 +452,6 @@ class QuotationWizard extends Component
         $this->items            = [];
         $this->warnings         = [];
         $this->rawText          = '';
-        $this->homologationSuggestions = [];
         $this->quotationIncludesTax   = null;
         $this->taxDetectedByAI        = false;
     }
@@ -500,10 +462,9 @@ class QuotationWizard extends Component
     {
         $projects  = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('trade_name')->get();
-        $products  = Product::orderBy('canonical_name')->get();
 
         return view('livewire.requisitions.quotation-wizard', compact(
-            'projects', 'suppliers', 'products'
+            'projects', 'suppliers'
         ));
     }
 }

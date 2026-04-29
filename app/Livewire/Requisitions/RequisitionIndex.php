@@ -140,13 +140,6 @@ class RequisitionIndex extends Component
             return;
         }
 
-        // Verificar que todos los ítems estén homologados antes de aprobar
-        $pendingItems = $req->items()->where('homologation_status', 'pending')->count();
-        if ($pendingItems > 0) {
-            session()->flash('error', "No se puede aprobar: {$pendingItems} producto(s) sin homologar. Homologa todos los productos antes de aprobar.");
-            return;
-        }
-
         $req->update([
             'status' => 'aprobada',
             'approved_by' => auth()->id(),

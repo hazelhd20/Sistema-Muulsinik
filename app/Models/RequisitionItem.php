@@ -11,7 +11,6 @@ class RequisitionItem extends Model
         'requisition_id', 'product_id', 'product_name',
         'quantity', 'unit', 'unit_price', 'unit_price_original',
         'tax_amount', 'tax_source', 'supplier_id',
-        'homologation_status',
     ];
 
     protected $casts = [
@@ -20,12 +19,6 @@ class RequisitionItem extends Model
         'unit_price_original'  => 'decimal:2',
         'tax_amount'           => 'decimal:2',
     ];
-
-    /** Indica si el producto ya fue homologado con el catálogo maestro. */
-    public function isHomologated(): bool
-    {
-        return $this->homologation_status === 'homologated';
-    }
 
     /**
      * Precio unitario con IVA incluido.

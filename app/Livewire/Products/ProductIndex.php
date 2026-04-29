@@ -99,7 +99,7 @@ class ProductIndex extends Component
         $this->aliasSupplierId = '';
     }
 
-    /** Agregar alias de homologación (RF-REQ-05). */
+    /** Agregar alias de proveedor para este producto. */
     public function addAlias(): void
     {
         $this->validate([

@@ -12,10 +12,8 @@ use Illuminate\Support\Facades\Log;
  * Si en el futuro se cambia de Gemini a OpenAI u otro proveedor,
  * solo se modifica esta clase, no el resto de la aplicación.
  *
- * Responsabilidades:
+ * Responsabilidad única:
  * - Estructurar texto crudo de cotizaciones en JSON limpio de ítems.
- * - Limpiar nombres de productos (quitar códigos, viñetas, etc.).
- * - Seleccionar el mejor match de homologación entre candidatos.
  */
 class GeminiStructurerService
 {
@@ -81,132 +79,7 @@ class GeminiStructurerService
         }
     }
 
-    /**
-     * Limpia una lista de nombres de productos eliminando códigos internos,
-     * viñetas, numeración y caracteres irrelevantes.
-     *
-     * @param  array<int, string> $names
-     * @return array<int, string>|null Lista de nombres limpiados, o null si falla.
-     */
-    public function cleanProductNames(array $names): ?array
-    {
-        if (!$this->isAvailable() || empty($names)) {
-            return null;
-        }
 
-        $namesList = implode("\n", array_map(
-            fn (int $i, string $n) => ($i + 1) . ". {$n}",
-            array_keys($names),
-            array_values($names),
-        ));
-
-        $prompt = <<<PROMPT
-        Eres un experto en materiales de construcción y cotizaciones en México.
-
-        Te daré una lista de nombres de productos tal como aparecen en una cotización de un proveedor.
-        Muchos incluyen códigos internos del proveedor, viñetas, números de partida, claves SKU o caracteres basura al inicio.
-
-        Tu tarea es devolver SOLO el nombre limpio y legible de cada producto, conservando:
-        - El nombre real del material/producto
-        - Especificaciones relevantes (medidas, calibre, marca, modelo, etc.)
-
-        Elimina:
-        - Códigos de producto del proveedor (ej: "M-20384", "SKU-123", "3020-A")
-        - Numeración de lista (ej: "1.", "2.", "- ", "* ")
-        - Caracteres basura o ruido del OCR
-
-        IMPORTANTE: Devuelve SOLO un JSON array de strings, sin texto adicional. Ejemplo:
-        ["Cemento Portland Gris CPC 30R 50kg", "Varilla corrugada 3/8 12m"]
-
-        Lista de nombres a limpiar:
-        {$namesList}
-        PROMPT;
-
-        try {
-            $result = Gemini::generativeModel(model: $this->getModel())
-                ->generateContent($prompt);
-
-            $responseText = $result->text();
-            $cleaned = $this->extractJsonArray($responseText);
-
-            if ($cleaned === null || count($cleaned) !== count($names)) {
-                return null;
-            }
-
-            return $cleaned;
-        } catch (\Throwable $e) {
-            Log::warning('Gemini AI: Error al limpiar nombres de productos.', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
-    }
-
-    /**
-     * Selecciona el mejor candidato de homologación usando IA.
-     *
-     * @param  string $extractedName  Nombre tal como se extrajo de la cotización
-     * @param  array<int, array{id: int, canonical_name: string, similarity: int}> $candidates
-     * @return int|null  El ID del producto mejor match, o null si la IA no puede decidir.
-     */
-    public function rankHomologationCandidates(string $extractedName, array $candidates): ?int
-    {
-        if (!$this->isAvailable() || empty($candidates)) {
-            return null;
-        }
-
-        $candidatesList = implode("\n", array_map(
-            fn (array $c) => "ID:{$c['id']} → \"{$c['canonical_name']}\"",
-            $candidates,
-        ));
-
-        $prompt = <<<PROMPT
-        Eres un experto en materiales de construcción en México.
-
-        Un proveedor cotizó el siguiente producto:
-        "{$extractedName}"
-
-        En nuestro catálogo interno tenemos los siguientes candidatos:
-        {$candidatesList}
-
-        ¿Cuál de estos candidatos es el MISMO producto que cotizó el proveedor?
-        Considera sinónimos, abreviaturas comunes del sector construcción (ej: "cal" = "calibre", "pza" = "pieza", "cem" = "cemento"), marcas, y especificaciones técnicas.
-
-        Si estás seguro del match, responde SOLO con el ID numérico (ej: 42).
-        Si ninguno coincide con certeza, responde SOLO con: null
-
-        Respuesta (solo el ID o null):
-        PROMPT;
-
-        try {
-            $result = Gemini::generativeModel(model: $this->getModel())
-                ->generateContent($prompt);
-
-            $responseText = trim($result->text());
-
-            if ($responseText === 'null' || $responseText === 'NULL') {
-                return null;
-            }
-
-            $id = filter_var($responseText, FILTER_VALIDATE_INT);
-
-            if ($id === false) {
-                return null;
-            }
-
-            // Verificar que el ID realmente está en los candidatos
-            $validIds = array_column($candidates, 'id');
-            return in_array($id, $validIds) ? $id : null;
-        } catch (\Throwable $e) {
-            Log::warning('Gemini AI: Error al rankear candidatos de homologación.', [
-                'error'          => $e->getMessage(),
-                'extracted_name' => $extractedName,
-            ]);
-
-            return null;
-        }
-    }
 
     /**
      * Construye el prompt para extracción estructurada de ítems.
@@ -244,18 +117,36 @@ class GeminiStructurerService
                     "unit": "pza",
                     "unit_price": 150.50,
                     "tax_amount": 24.08,
-                    "price_includes_tax": false
+                    "price_includes_tax": false,
+                    "line_subtotal": 1505.00,
+                    "line_total": 1745.80
                 }
             ]
         }
 
-        Reglas importantes:
+        REGLAS CRÍTICAS PARA DISTINGUIR COLUMNAS (MUY IMPORTANTE):
+        Muchas cotizaciones mexicanas usan nombres de columnas que pueden confundirse entre sí. Debes distinguir correctamente:
+        - "Precio" o "P.U." o "Precio Unitario" o "Costo" → es el PRECIO UNITARIO de UNA unidad. Va en "unit_price".
+        - "Importe" o "Subtotal" o "Monto" → es el SUBTOTAL DE LÍNEA (cantidad × precio unitario, SIN IVA). Va en "line_subtotal".
+        - "Impuesto" o "IVA" o "I.V.A." → es el MONTO DE IVA de esa línea. Va en "tax_amount".
+        - "Importe Neto" o "Total" o "Neto" o "Total con IVA" → es el TOTAL DE LÍNEA (subtotal + IVA). Va en "line_total".
+
+        Para identificar correctamente cuál es cuál:
+        1. El PRECIO UNITARIO es siempre el valor más PEQUEÑO por producto. Si multiplicas cantidad × precio unitario deberías obtener el subtotal.
+        2. El SUBTOTAL DE LÍNEA (importe) es = cantidad × precio unitario.
+        3. El IMPUESTO es un monto menor, normalmente ~16% del subtotal.
+        4. El TOTAL DE LÍNEA (importe neto) es = subtotal + impuesto.
+        5. Si solo hay 2 columnas numéricas y una es mucho mayor que la otra, la grande probablemente es subtotal/total y la pequeña es precio unitario.
+
+        Reglas generales:
         - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
         - En "unit": normaliza a: pza, kg, m, m2, m3, lt, bulto, rollo, pieza, metro, litro, caja, paquete.
-        - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, pon 0.
+        - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
         - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
         - En "price_includes_tax": true si el precio unitario YA tiene IVA incluido, false si el IVA se suma aparte, null si no puedes determinarlo.
         - En "quantity": si no se identifica, pon 1.
+        - En "line_subtotal": si aparece el subtotal/importe de la línea (cantidad × precio sin IVA), pon ese valor. Si no, pon null.
+        - En "line_total": si aparece el total/importe neto de la línea (con IVA), pon ese valor. Si no, pon null.
 
         Reglas sobre tax_info:
         - "tax_rate": la tasa de IVA detectada (normalmente 0.16 en México). null si no se detecta.
@@ -263,7 +154,7 @@ class GeminiStructurerService
         - "tax_detected": true si encontraste CUALQUIER referencia a IVA, impuestos, o desglose fiscal en el documento. false si no hay ninguna mención.
         - "subtotal", "tax_total", "grand_total": extráelos si aparecen en la cotización. null si no aparecen.
 
-        Indicadores comunes de IVA: "IVA incluido", "IVA incl.", "más IVA", "+ IVA", "+ 16%", "Subtotal", "Total", "IVA:", "impuesto", "16%", "c/IVA", "s/IVA".
+        Indicadores comunes de IVA: "IVA incluido", "IVA incl.", "más IVA", "+ IVA", "+ 16%", "Subtotal", "Total", "IVA:", "impuesto", "16%", "c/IVA", "s/IVA", "I.V.A.", "I.V.A".
 
         - Ignora líneas que no sean productos (encabezados, pies de página, datos bancarios, etc.).
         - Si el texto es ilegible o no se identifica ningún producto, devuelve items como array vacío.
@@ -301,13 +192,27 @@ class GeminiStructurerService
             if (empty($item['name'])) {
                 continue;
             }
+
+            $unitPrice    = isset($item['unit_price']) ? (float) $item['unit_price'] : null;
+            $quantity     = isset($item['quantity']) ? (float) $item['quantity'] : null;
+            $lineSubtotal = isset($item['line_subtotal']) ? (float) $item['line_subtotal'] : null;
+            $lineTotal    = isset($item['line_total']) ? (float) $item['line_total'] : null;
+            $taxAmount    = isset($item['tax_amount']) ? (float) $item['tax_amount'] : null;
+
+            // Validación cruzada: detectar si unit_price es realmente un subtotal
+            $unitPrice = $this->crossValidateUnitPrice(
+                $unitPrice, $quantity, $lineSubtotal, $lineTotal, $taxAmount
+            );
+
             $items[] = [
                 'name'               => trim($item['name']),
-                'quantity'           => isset($item['quantity']) ? (float) $item['quantity'] : null,
+                'quantity'           => $quantity,
                 'unit'               => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
-                'unit_price'         => isset($item['unit_price']) ? (float) $item['unit_price'] : null,
-                'tax_amount'         => isset($item['tax_amount']) ? (float) $item['tax_amount'] : null,
+                'unit_price'         => $unitPrice,
+                'tax_amount'         => $taxAmount,
                 'price_includes_tax' => $item['price_includes_tax'] ?? null,
+                'line_subtotal'      => $lineSubtotal,
+                'line_total'         => $lineTotal,
             ];
         }
 
@@ -333,21 +238,82 @@ class GeminiStructurerService
     }
 
     /**
-     * Extrae un JSON array de la respuesta, tolerando markdown code fences.
+     * Validación cruzada del precio unitario extraído por la IA.
      *
-     * @return array<int, string>|null
+     * Detecta y corrige el caso donde la IA confunde el subtotal de línea
+     * (importe) con el precio unitario. Esto ocurre cuando la cotización
+     * usa "precio" para referirse al subtotal de línea.
+     *
+     * Heurística: Si unit_price × quantity ≈ line_subtotal, está bien.
+     * Si unit_price ≈ line_subtotal y quantity > 1, el unit_price es realmente el subtotal.
      */
-    private function extractJsonArray(string $responseText): ?array
-    {
-        $cleaned = preg_replace('/^```(?:json)?\s*/i', '', trim($responseText));
-        $cleaned = preg_replace('/\s*```$/i', '', $cleaned);
-
-        $data = json_decode($cleaned, true);
-
-        if (!is_array($data)) {
-            return null;
+    private function crossValidateUnitPrice(
+        ?float $unitPrice,
+        ?float $quantity,
+        ?float $lineSubtotal,
+        ?float $lineTotal,
+        ?float $taxAmount,
+    ): ?float {
+        if ($unitPrice === null || $unitPrice <= 0) {
+            // Sin precio unitario: intentar inferir desde subtotal/total
+            return $this->inferUnitPriceFromLineValues($quantity, $lineSubtotal, $lineTotal, $taxAmount);
         }
 
-        return array_values(array_map('trim', $data));
+        $qty = ($quantity !== null && $quantity > 1) ? $quantity : null;
+
+        // Si no hay quantity > 1 ni subtotal, no podemos validar
+        if ($qty === null || $lineSubtotal === null) {
+            return $unitPrice;
+        }
+
+        $expectedSubtotal = $unitPrice * $qty;
+        $tolerance = 0.02; // Tolerancia para errores de redondeo
+
+        // Caso normal: unit_price × qty ≈ subtotal → correcto
+        if (abs($expectedSubtotal - $lineSubtotal) / max($lineSubtotal, 1) < $tolerance) {
+            return $unitPrice;
+        }
+
+        // Caso sospechoso: unit_price ≈ subtotal → la IA confundió las columnas
+        if (abs($unitPrice - $lineSubtotal) / max($lineSubtotal, 1) < $tolerance) {
+            $corrected = round($lineSubtotal / $qty, 2);
+            Log::info('Gemini AI: Corrección automática de unit_price (era subtotal de línea).', [
+                'original_unit_price' => $unitPrice,
+                'corrected_unit_price' => $corrected,
+                'quantity' => $qty,
+                'line_subtotal' => $lineSubtotal,
+            ]);
+            return $corrected;
+        }
+
+        return $unitPrice;
     }
+
+    /**
+     * Infiere el precio unitario desde los totales de línea cuando
+     * no se extrajo directamente.
+     */
+    private function inferUnitPriceFromLineValues(
+        ?float $quantity,
+        ?float $lineSubtotal,
+        ?float $lineTotal,
+        ?float $taxAmount,
+    ): ?float {
+        $qty = ($quantity !== null && $quantity > 0) ? $quantity : 1.0;
+
+        if ($lineSubtotal !== null && $lineSubtotal > 0) {
+            return round($lineSubtotal / $qty, 2);
+        }
+
+        if ($lineTotal !== null && $lineTotal > 0) {
+            $base = ($taxAmount !== null && $taxAmount > 0)
+                ? $lineTotal - $taxAmount
+                : $lineTotal;
+
+            return round($base / $qty, 2);
+        }
+
+        return null;
+    }
+
 }

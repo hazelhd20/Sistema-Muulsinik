@@ -3,29 +3,46 @@
 namespace App\Services\DocumentParsers;
 
 use App\Services\AI\GeminiStructurerService;
+use App\Services\DataNormalizerService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
  * RF-REQ-01 — Lee datos directamente de celdas de archivos XLSX.
  * Intenta detectar automáticamente las columnas de producto,
  * cantidad, unidad y precio unitario mediante heurísticas de encabezado.
- * Después de la extracción, usa Gemini AI para limpiar nombres de productos.
+ * Aplica normalización determinista de datos vía DataNormalizerService.
+ * Si no detecta headers, delega a Gemini AI como fallback.
  */
 class SpreadsheetParserService implements ParserInterface
 {
     /**
      * Mapeo flexible de encabezados comunes a campos del sistema.
-     * Se buscan coincidencias parciales (case-insensitive).
+     *
+     * IMPORTANTE: El orden de los mapeos importa.
+     * Los campos más específicos (como 'line_total') se evalúan antes
+     * que los genéricos (como 'unit_price') para evitar que "importe neto"
+     * sea capturado erróneamente como "precio unitario" por contener "importe".
+     *
+     * Variaciones comunes en cotizaciones mexicanas:
+     * - "precio" / "p.u." → precio unitario
+     * - "importe" → subtotal de línea (cantidad × precio)
+     * - "impuesto" → IVA de línea
+     * - "importe neto" / "total" → total con IVA por línea
      */
     private const HEADER_MAP = [
-        'name'       => ['producto', 'material', 'descripcion', 'descripción', 'articulo', 'artículo', 'nombre', 'concepto', 'item'],
-        'quantity'   => ['cantidad', 'cant', 'qty', 'pzas', 'unidades'],
-        'unit'       => ['unidad', 'u.m.', 'um', 'medida', 'unit'],
-        'unit_price' => ['precio', 'p.u.', 'pu', 'costo', 'unit price', 'precio unitario', 'valor'],
+        'name'          => ['producto', 'material', 'descripcion', 'descripción', 'articulo', 'artículo', 'nombre', 'concepto', 'item'],
+        'quantity'      => ['cantidad', 'cant', 'qty', 'pzas', 'unidades'],
+        'unit'          => ['unidad', 'u.m.', 'um', 'medida', 'unit'],
+        // Campos más específicos primero para evitar matcheos ambiguos
+        'line_total'    => ['importe neto', 'total neto', 'monto total', 'total con iva', 'neto'],
+        'line_subtotal' => ['importe', 'subtotal', 'sub total', 'monto'],
+        'tax_amount'    => ['impuesto', 'iva', 'i.v.a.', 'i.v.a', 'tax'],
+        'unit_price'    => ['precio unitario', 'p. unitario', 'p.u.', 'pu', 'precio', 'costo', 'unit price', 'costo unitario', 'valor unitario'],
     ];
 
     public function __construct(
         private readonly GeminiStructurerService $gemini,
+        private readonly DataNormalizerService $normalizer,
     ) {}
 
     /** {@inheritdoc} */
@@ -62,6 +79,8 @@ class SpreadsheetParserService implements ParserInterface
 
             if ($aiResult !== null) {
                 $aiResult['raw_text'] = $rawText;
+                // Normalizar unidades de los ítems extraídos por IA
+                $aiResult['items'] = $this->normalizer->normalizeItems($aiResult['items'] ?? []);
                 return $aiResult;
             }
 
@@ -86,18 +105,30 @@ class SpreadsheetParserService implements ParserInterface
                 continue;
             }
 
+            $quantity     = $this->toFloat($this->getCellValue($row, $columnMap, 'quantity'));
+            $unitPrice    = $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price'));
+            $lineSubtotal = $this->toFloat($this->getCellValue($row, $columnMap, 'line_subtotal'));
+            $lineTotal    = $this->toFloat($this->getCellValue($row, $columnMap, 'line_total'));
+            $taxAmount    = $this->toFloat($this->getCellValue($row, $columnMap, 'tax_amount'));
+
+            // Inferir unit_price si no se detectó pero hay subtotal y cantidad
+            $unitPrice = $this->inferUnitPrice($unitPrice, $quantity, $lineSubtotal, $lineTotal, $taxAmount);
+
+            // Normalizar unidad vía DataNormalizerService
+            $rawUnit = $this->getCellValue($row, $columnMap, 'unit') ?: 'pza';
+            $normalizedUnit = $this->normalizer->normalizeUnit($rawUnit);
+
             $items[] = [
-                'name'               => $name,
-                'quantity'           => $this->toFloat($this->getCellValue($row, $columnMap, 'quantity')),
-                'unit'               => $this->getCellValue($row, $columnMap, 'unit') ?: 'pza',
-                'unit_price'         => $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price')),
-                'tax_amount'         => null,
+                'name'               => trim($name),
+                'quantity'           => $quantity,
+                'unit'               => $normalizedUnit,
+                'unit_price'         => $unitPrice,
+                'tax_amount'         => $taxAmount,
                 'price_includes_tax' => null,
+                'line_subtotal'      => $lineSubtotal,
+                'line_total'         => $lineTotal,
             ];
         }
-
-        // Paso 3: Limpiar nombres de productos con Gemini AI
-        $items = $this->cleanItemNamesWithAI($items);
 
         // Intentar encontrar el proveedor en las filas previas al encabezado
         $supplier = null;
@@ -122,57 +153,97 @@ class SpreadsheetParserService implements ParserInterface
     }
 
     /**
-     * Usa Gemini AI para limpiar nombres de productos (quitar códigos, viñetas, etc.).
-     * Si la IA falla, devuelve los ítems sin modificar (graceful degradation).
+     * Infiere el precio unitario cuando no se detectó directamente.
      *
-     * @param  array<int, array{name: string, quantity: ?float, unit: ?string, unit_price: ?float}> $items
-     * @return array<int, array{name: string, quantity: ?float, unit: ?string, unit_price: ?float}>
+     * Prioridad:
+     * 1. Si ya se tiene unit_price → usarlo.
+     * 2. Si hay subtotal y cantidad → subtotal / cantidad.
+     * 3. Si hay total, impuesto y cantidad → (total - impuesto) / cantidad.
+     * 4. Si hay total y cantidad (sin impuesto) → total / cantidad.
      */
-    private function cleanItemNamesWithAI(array $items): array
-    {
-        if (empty($items)) {
-            return $items;
+    private function inferUnitPrice(
+        ?float $unitPrice,
+        ?float $quantity,
+        ?float $lineSubtotal,
+        ?float $lineTotal,
+        ?float $taxAmount,
+    ): ?float {
+        if ($unitPrice !== null && $unitPrice > 0) {
+            return $unitPrice;
         }
 
-        $dirtyNames = array_column($items, 'name');
-        $cleaned    = $this->gemini->cleanProductNames($dirtyNames);
+        $qty = ($quantity !== null && $quantity > 0) ? $quantity : 1.0;
 
-        if ($cleaned === null) {
-            return $items;
+        if ($lineSubtotal !== null && $lineSubtotal > 0) {
+            return round($lineSubtotal / $qty, 2);
         }
 
-        foreach ($items as $i => &$item) {
-            if (isset($cleaned[$i]) && !empty($cleaned[$i])) {
-                $item['name'] = $cleaned[$i];
-            }
+        if ($lineTotal !== null && $lineTotal > 0) {
+            $base = ($taxAmount !== null && $taxAmount > 0)
+                ? $lineTotal - $taxAmount
+                : $lineTotal;
+
+            return round($base / $qty, 2);
         }
 
-        return $items;
+        return null;
     }
 
     /**
      * Detecta columnas de encabezado a partir de nombres conocidos.
+     *
+     * Usa un enfoque de "longest match first": evalúa las keywords
+     * más largas primero para evitar que "precio" capture la columna
+     * "precio unitario" cuando ambas existen.
      *
      * @return array<string, string> campo => letra_columna
      */
     private function detectHeaders(array $row): array
     {
         $map = [];
+        $assignedColumns = [];
+
+        // Pre-normalizar todas las celdas del encabezado
+        $normalizedCells = [];
         foreach ($row as $col => $cellValue) {
             if (empty($cellValue)) {
                 continue;
             }
-            $normalized = mb_strtolower(trim((string) $cellValue));
+            $normalizedCells[$col] = mb_strtolower(trim((string) $cellValue));
+        }
 
-            foreach (self::HEADER_MAP as $field => $keywords) {
-                foreach ($keywords as $keyword) {
-                    if (str_contains($normalized, $keyword)) {
-                        $map[$field] = $col;
-                        break 2;
-                    }
+        // Construir lista plana de (campo, keyword, longitud) y ordenar por longitud descendente
+        $matchCandidates = [];
+        foreach (self::HEADER_MAP as $field => $keywords) {
+            foreach ($keywords as $keyword) {
+                $matchCandidates[] = [
+                    'field'   => $field,
+                    'keyword' => $keyword,
+                    'length'  => mb_strlen($keyword),
+                ];
+            }
+        }
+        usort($matchCandidates, fn ($a, $b) => $b['length'] <=> $a['length']);
+
+        // Asignar columnas: keywords más largas primero, cada columna solo se asigna una vez
+        foreach ($matchCandidates as $candidate) {
+            if (isset($map[$candidate['field']])) {
+                continue; // Campo ya mapeado
+            }
+
+            foreach ($normalizedCells as $col => $normalized) {
+                if (in_array($col, $assignedColumns, true)) {
+                    continue; // Columna ya asignada a otro campo
+                }
+
+                if (str_contains($normalized, $candidate['keyword'])) {
+                    $map[$candidate['field']] = $col;
+                    $assignedColumns[] = $col;
+                    break;
                 }
             }
         }
+
         return $map;
     }
 

@@ -1,4 +1,3 @@
-@use('Illuminate\Support\Str')
 <div>
     {{-- ═══════ WIZARD HEADER ═══════ --}}
     <div class="mb-8">
@@ -370,13 +369,12 @@
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-surface-main">
-                                        <th class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[26%]">Producto</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">Cant.</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">Unidad</th>
-                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">P.U. s/IVA</th>
-                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">IVA U.</th>
-                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">Subtotal</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[18%]">Homologación</th>
+                                        <th class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[32%]">Producto</th>
+                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">Cant.</th>
+                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[12%]">Unidad</th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[14%]">P.U. s/IVA</th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">IVA U.</th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[14%]">Subtotal</th>
                                         <th class="px-3 py-2.5 w-[5%]"></th>
                                     </tr>
                                 </thead>
@@ -422,49 +420,6 @@
                                                 ${{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0), 2, '.', ',') }}
                                             </td>
 
-                                            {{-- Homologación --}}
-                                            <td class="px-3 py-2">
-                                                @if(($item['homologation_status'] ?? 'pending') === 'homologated')
-                                                    <div class="flex items-center gap-1.5">
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs font-medium">
-                                                            <i data-lucide="check-circle" class="w-3 h-3"></i>
-                                                            Homologado
-                                                        </span>
-                                                        <button type="button" wire:click="unhomologateItem({{ $i }})" class="p-0.5 rounded hover:bg-red-50 text-text-muted hover:text-danger transition" title="Quitar homologación">
-                                                            <i data-lucide="x" class="w-3 h-3"></i>
-                                                        </button>
-                                                    </div>
-                                                @else
-                                                    <div x-data="{ open: false }" class="relative">
-                                                        @if(!empty($homologationSuggestions[$i]))
-                                                            <button type="button" @click="open = !open" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100 transition">
-                                                                <i data-lucide="search" class="w-3 h-3"></i>
-                                                                {{ count($homologationSuggestions[$i]) }} sugerencia(s)
-                                                            </button>
-                                                            <div x-show="open" @click.outside="open = false" x-transition class="absolute z-30 top-full left-0 mt-1 bg-white shadow-xl rounded-xl border border-gray-100 w-64 overflow-hidden">
-                                                                <div class="p-2 border-b border-gray-100">
-                                                                    <p class="text-xs font-semibold text-text-muted">Seleccionar producto del catálogo:</p>
-                                                                </div>
-                                                                @foreach($homologationSuggestions[$i] as $suggestion)
-                                                                    <button type="button"
-                                                                        wire:click="homologateItem({{ $i }}, {{ $suggestion['id'] }})"
-                                                                        @click="open = false"
-                                                                        class="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 transition flex items-center justify-between">
-                                                                        <span class="truncate">{{ $suggestion['canonical_name'] }}</span>
-                                                                        <span class="text-xs text-text-muted shrink-0 ml-2">{{ $suggestion['similarity'] }}%</span>
-                                                                    </button>
-                                                                @endforeach
-                                                            </div>
-                                                        @else
-                                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gray-100 text-text-muted text-xs">
-                                                                <i data-lucide="circle-dashed" class="w-3 h-3"></i>
-                                                                Pendiente
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                            </td>
-
                                             {{-- Delete --}}
                                             <td class="px-3 py-2">
                                                 <button type="button" wire:click="removeItem({{ $i }})" class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
@@ -479,20 +434,13 @@
                                         $subtotalSinIva = collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
                                         $totalIva = collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['tax_amount'] ?? 0));
                                         $totalConIva = $subtotalSinIva + $totalIva;
-                                        $pendingCount = collect($items)->where('homologation_status', 'pending')->count();
                                     @endphp
                                     <tr class="border-t border-gray-100 bg-surface-main">
                                         <td colspan="5" class="px-3 py-2 text-right text-sm text-text-muted">Subtotal (sin IVA):</td>
                                         <td class="px-3 py-2 text-right text-sm font-medium text-text-primary">
                                             ${{ number_format($subtotalSinIva, 2, '.', ',') }}
                                         </td>
-                                        <td colspan="2" rowspan="3" class="px-3 py-2 align-middle">
-                                            @if($pendingCount > 0)
-                                                <span class="text-xs text-amber-600">{{ $pendingCount }} sin homologar</span>
-                                            @else
-                                                <span class="text-xs text-green-600">✓ Todos homologados</span>
-                                            @endif
-                                        </td>
+                                        <td></td>
                                     </tr>
                                     <tr class="bg-surface-main">
                                         <td colspan="5" class="px-3 py-2 text-right text-sm text-text-muted">IVA (16%):</td>
@@ -503,12 +451,14 @@
                                                 <span class="text-xs text-amber-500">Pendiente</span>
                                             @endif
                                         </td>
+                                        <td></td>
                                     </tr>
                                     <tr class="border-t-2 border-gray-200 bg-surface-main">
                                         <td colspan="5" class="px-3 py-3 text-right text-sm font-semibold text-text-primary">Total con IVA:</td>
                                         <td class="px-3 py-3 text-right text-base font-bold text-primary-600">
                                             ${{ number_format($totalConIva, 2, '.', ',') }}
                                         </td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
                             </table>
