@@ -60,13 +60,16 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 mb-1">
-                                <h3 class="font-semibold text-text-primary truncate">{{ $req->description }}</h3>
+                                <h3 class="font-semibold text-text-primary truncate">{{ $req->number ?? 'REQ-' . $req->id }}</h3>
                                 @php
                                     $sColors = ['borrador' => 'badge-secondary', 'pendiente' => 'badge-warning', 'aprobada' => 'badge-success', 'rechazada' => 'badge-danger'];
                                 @endphp
                                 <span class="badge {{ $sColors[$req->status] ?? '' }} shrink-0">{{ ucfirst($req->status) }}</span>
                             </div>
                             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+                                @if($req->annotations)
+                                    <span class="w-full text-sm text-text-muted truncate mb-2" title="{{ $req->annotations }}">{{ $req->annotations }}</span>
+                                @endif
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="hard-hat" class="w-3 h-3"></i>{{ $req->project->name ?? '—' }}
                                 </span>
@@ -183,15 +186,15 @@
                             @error('reqProjectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de necesidad *</label>
-                            <input wire:model="reqNeedDate" type="date" class="input">
-                            @error('reqNeedDate') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de creación *</label>
+                            <input wire:model="reqDate" type="date" class="input">
+                            @error('reqDate') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Descripción *</label>
-                        <textarea wire:model="reqDescription" class="input" rows="2" placeholder="Descripción de la requisición..."></textarea>
-                        @error('reqDescription') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        <label class="block text-sm font-medium text-text-primary mb-1.5">Anotaciones</label>
+                        <textarea wire:model="reqAnnotations" class="input" rows="2" placeholder="Anotaciones de la requisición (opcional)..."></textarea>
+                        @error('reqAnnotations') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Add items --}}

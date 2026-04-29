@@ -41,6 +41,7 @@
             <div class="p-8">
                 {{-- Drag & Drop Zone --}}
                 <div
+                    wire:key="upload-zone"
                     x-data="{ isDragging: false }"
                     x-on:dragover.prevent="isDragging = true"
                     x-on:dragleave.prevent="isDragging = false"
@@ -50,16 +51,17 @@
                     @click="$refs.fileInput.click()"
                 >
                     <input
+                        id="file-upload-input"
                         x-ref="fileInput"
                         type="file"
                         wire:model="file"
-                        accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                        accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
                         class="hidden"
                     >
 
                     <div class="flex flex-col items-center gap-4">
                         <div class="w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center">
-                            <i data-lucide="upload-cloud" class="w-8 h-8 text-primary-600"></i>
+                            <i data-lucide="upload-cloud" class="w-8 h-8 text-primary-600" wire:ignore></i>
                         </div>
 
                         <div>
@@ -97,41 +99,32 @@
                 @if($file && !$errors->has('file'))
                     @php
                         $ext = strtolower($file->getClientOriginalExtension());
-                        $fileIconMap = [
-                            'pdf'  => ['icon' => 'file-text',  'bg' => 'bg-red-100',    'text' => 'text-red-600'],
-                            'xlsx' => ['icon' => 'file-spreadsheet', 'bg' => 'bg-green-100',  'text' => 'text-green-600'],
-                            'xls'  => ['icon' => 'file-spreadsheet', 'bg' => 'bg-green-100',  'text' => 'text-green-600'],
-                            'jpg'  => ['icon' => 'image',      'bg' => 'bg-amber-100',  'text' => 'text-amber-600'],
-                            'jpeg' => ['icon' => 'image',      'bg' => 'bg-amber-100',  'text' => 'text-amber-600'],
-                            'png'  => ['icon' => 'image',      'bg' => 'bg-emerald-100','text' => 'text-emerald-600'],
-                        ];
-                        $fileStyle = $fileIconMap[$ext] ?? ['icon' => 'file', 'bg' => 'bg-gray-100', 'text' => 'text-gray-600'];
+                        $iconData = match(true) {
+                            in_array($ext, ['jpg', 'jpeg', 'png']) => ['icon' => 'image', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-100'],
+                            in_array($ext, ['xlsx', 'xls']) => ['icon' => 'file-spreadsheet', 'color' => 'text-blue-600', 'bg' => 'bg-blue-100'],
+                            $ext === 'pdf' => ['icon' => 'file-text', 'color' => 'text-red-600', 'bg' => 'bg-red-100'],
+                            default => ['icon' => 'file', 'color' => 'text-primary-600', 'bg' => 'bg-primary-100'],
+                        };
                     @endphp
-                    <div class="mt-4 p-4 rounded-xl bg-surface-main border border-gray-100 flex items-center justify-between">
+                    <div wire:key="file-preview-{{ md5($file->getClientOriginalName()) }}" x-data x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })" class="mt-4 p-4 rounded-xl bg-surface-main border border-gray-100 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg {{ $fileStyle['bg'] }} flex items-center justify-center">
-                                <i data-lucide="{{ $fileStyle['icon'] }}" class="w-5 h-5 {{ $fileStyle['text'] }}"></i>
+                            <div class="w-10 h-10 rounded-lg {{ $iconData['bg'] }} flex items-center justify-center">
+                                <i data-lucide="{{ $iconData['icon'] }}" class="w-5 h-5 {{ $iconData['color'] }}" wire:ignore></i>
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-text-primary">{{ $file->getClientOriginalName() }}</p>
                                 <p class="text-xs text-text-muted">{{ number_format($file->getSize() / 1024, 1) }} KB</p>
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            wire:click="removeFile"
-                            x-on:click="$refs.fileInput.value = ''"
-                            class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition"
-                            title="Quitar archivo"
-                        >
-                            <i data-lucide="x" class="w-4 h-4"></i>
+                        <button wire:key="btn-remove-file" type="button" wire:click="$set('file', null)" @click="document.getElementById('file-upload-input').value = ''" class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                            <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
                         </button>
                     </div>
                 @endif
 
                 @error('file')
-                    <div class="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
-                        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+                    <div wire:key="upload-error" x-data x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })" class="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0" wire:ignore></i>
                         {{ $message }}
                     </div>
                 @enderror
@@ -139,13 +132,15 @@
                 {{-- Process Button --}}
                 @if($file && !$errors->has('file'))
                     <button
+                        wire:key="process-btn"
+                        type="button"
                         wire:click="processUpload"
                         wire:loading.attr="disabled"
                         wire:target="processUpload"
                         class="btn-primary w-full mt-6 py-3 text-base"
                     >
                         <span wire:loading.class="opacity-0" wire:target="processUpload" class="flex items-center justify-center gap-2 transition-opacity">
-                            <i data-lucide="scan-line" class="w-5 h-5"></i>
+                            <i data-lucide="scan-line" class="w-5 h-5" wire:ignore></i>
                             Procesar Cotización
                         </span>
                         <span wire:loading wire:target="processUpload" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -162,7 +157,7 @@
 
     {{-- ═══════ PASO 2: PROCESAMIENTO ═══════ --}}
     @if($step === 2)
-        <div class="card max-w-lg mx-auto" wire:poll.2s="checkProcessingStatus">
+        <div class="card max-w-lg mx-auto" wire:poll.2s="checkProcessingStatus" x-data x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
             <div class="p-8 text-center">
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Animación de procesamiento --}}
@@ -175,7 +170,7 @@
                         </div>
                         <h2 class="text-xl font-bold text-text-primary mb-2">Procesando tu cotización</h2>
                         <p class="text-sm text-text-muted">
-                            Estamos extrayendo la información del documento mediante OCR.<br>
+                            Estamos extrayendo la información del documento mediante Inteligencia Artificial.<br>
                             Esto puede tomar hasta 30 segundos...
                         </p>
                     </div>
@@ -227,7 +222,7 @@
 
     {{-- ═══════ PASO 3: FORMULARIO EDITABLE ═══════ --}}
     @if($step === 3)
-        <form wire:submit="saveRequisition">
+        <form wire:submit="saveRequisition" x-data x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
 
             {{-- RF-REQ-06: Alertas de campos incompletos --}}
             @if(count($warnings) > 0)
@@ -269,9 +264,9 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de necesidad *</label>
-                            <input wire:model="needDate" type="date" class="input">
-                            @error('needDate') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de creación *</label>
+                            <input wire:model="date" type="date" class="input">
+                            @error('date') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -298,9 +293,9 @@
                     </div>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Descripción *</label>
-                        <textarea wire:model="description" class="input" rows="2" placeholder="Descripción de la requisición..."></textarea>
-                        @error('description') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        <label class="block text-sm font-medium text-text-primary mb-1.5">Anotaciones</label>
+                        <textarea wire:model="annotations" class="input" rows="2" placeholder="Anotaciones de la requisición (opcional)..."></textarea>
+                        @error('annotations') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>

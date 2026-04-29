@@ -9,10 +9,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Requisition extends Model
 {
     protected $fillable = [
-        'project_id', 'description', 'status',
+        'project_id', 'number', 'annotations', 'status',
         'created_by', 'approved_by', 'rejection_comment',
         'date', 'need_date',
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($requisition) {
+            if (empty($requisition->number)) {
+                $projectPrefix = 'PRJ';
+                if ($requisition->project) {
+                    $projectPrefix = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $requisition->project->name), 0, 3));
+                }
+                $requisition->number = sprintf('%s%d-REQ%04d', $projectPrefix, $requisition->project_id, $requisition->id);
+                $requisition->saveQuietly();
+            }
+        });
+    }
 
     protected $casts = [
         'date' => 'date',

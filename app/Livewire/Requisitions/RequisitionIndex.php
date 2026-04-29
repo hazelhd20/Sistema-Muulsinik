@@ -23,8 +23,8 @@ class RequisitionIndex extends Component
 
     // Campos de la requisición
     public $reqProjectId = '';
-    public string $reqDescription = '';
-    public string $reqNeedDate = '';
+    public string $reqAnnotations = '';
+    public string $reqDate = '';
 
     // Ítems temporales para la nueva requisición
     public array $items = [];
@@ -47,7 +47,7 @@ class RequisitionIndex extends Component
     public function openCreateModal(): void
     {
         $this->resetForm();
-        $this->reqNeedDate = now()->addDays(7)->format('Y-m-d');
+        $this->reqDate = now()->format('Y-m-d');
         // RF-AUTH-03: Prellenar con el proyecto activo del selector global
         $this->reqProjectId = session('active_project_id', '');
         $this->showCreateModal = true;
@@ -86,8 +86,8 @@ class RequisitionIndex extends Component
     {
         $this->validate([
             'reqProjectId' => 'required|exists:projects,id',
-            'reqDescription' => 'required|min:5|max:500',
-            'reqNeedDate' => 'required|date',
+            'reqAnnotations' => 'nullable|max:500',
+            'reqDate' => 'required|date',
         ]);
 
         if (empty($this->items)) {
@@ -98,11 +98,11 @@ class RequisitionIndex extends Component
         // RF-REQ-09: Nuevas requisiciones inician como borrador
         $requisition = Requisition::create([
             'project_id' => $this->reqProjectId,
-            'description' => $this->reqDescription,
+            'annotations' => $this->reqAnnotations,
             'status' => 'borrador',
             'created_by' => auth()->id(),
-            'date' => now(),
-            'need_date' => $this->reqNeedDate,
+            'date' => $this->reqDate,
+            'need_date' => null,
         ]);
 
         foreach ($this->items as $item) {
@@ -191,8 +191,8 @@ class RequisitionIndex extends Component
     private function resetForm(): void
     {
         $this->reqProjectId = '';
-        $this->reqDescription = '';
-        $this->reqNeedDate = '';
+        $this->reqAnnotations = '';
+        $this->reqDate = '';
         $this->items = [];
         $this->itemName = '';
         $this->itemQuantity = '';
@@ -205,7 +205,7 @@ class RequisitionIndex extends Component
     public function render()
     {
         $requisitions = Requisition::with(['project', 'creator', 'items'])
-            ->when($this->search, fn ($q) => $q->where('description', 'like', "%{$this->search}%"))
+            ->when($this->search, fn ($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
             ->latest()

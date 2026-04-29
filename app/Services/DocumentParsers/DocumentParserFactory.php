@@ -29,9 +29,9 @@ class DocumentParserFactory
     {
         $extension = strtolower($extension);
 
-        // XLSX → lectura directa de celdas (síncrono)
+        // XLSX → lectura directa de celdas (síncrono pero despachado a la cola para mostrar la pantalla de procesamiento)
         if ($extension === 'xlsx' || $extension === 'xls') {
-            return ['parser' => $this->spreadsheetParser, 'async' => false];
+            return ['parser' => $this->spreadsheetParser, 'async' => true];
         }
 
         // PDF → detectar si tiene texto digital o es escaneado
@@ -39,7 +39,7 @@ class DocumentParserFactory
             $hasText = $this->pdfParser->hasExtractableText($filePath);
 
             return $hasText
-                ? ['parser' => $this->pdfParser, 'async' => false]
+                ? ['parser' => $this->pdfParser, 'async' => true]
                 : ['parser' => $this->ocrParser, 'async' => true];
         }
 
