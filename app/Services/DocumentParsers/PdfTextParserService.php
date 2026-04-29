@@ -70,10 +70,12 @@ class PdfTextParserService implements ParserInterface
             // Buscar patrón de producto:  "Nombre producto   2   pza   $150.00"
             if (preg_match('/^(.+?)\s+(\d+[\.,]?\d*)\s+(pza|pz|kg|m|m2|m3|lt|bulto|rollo|pieza|metro|litro|caja|und|paquete)\b[.\s]*[\$]?\s*(\d[\d,]*\.?\d*)/iu', $line, $m)) {
                 $items[] = [
-                    'name'       => trim($m[1]),
-                    'quantity'   => (float) str_replace(',', '', $m[2]),
-                    'unit'       => strtolower(trim($m[3])),
-                    'unit_price' => (float) str_replace(',', '', $m[4]),
+                    'name'               => trim($m[1]),
+                    'quantity'           => (float) str_replace(',', '', $m[2]),
+                    'unit'               => strtolower(trim($m[3])),
+                    'unit_price'         => (float) str_replace(',', '', $m[4]),
+                    'tax_amount'         => null,
+                    'price_includes_tax' => null,
                 ];
             }
         }
@@ -89,6 +91,7 @@ class PdfTextParserService implements ParserInterface
         return [
             'supplier' => $supplier,
             'store'    => $store,
+            'tax_info' => null,
             'items'    => $items,
             'raw_text' => $rawText,
         ];

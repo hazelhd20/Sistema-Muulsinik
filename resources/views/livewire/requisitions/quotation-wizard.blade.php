@@ -300,6 +300,54 @@
                 </div>
             </div>
 
+            {{-- IVA Toggle — visible cuando la IA no pudo detectar --}}
+            @if($quotationIncludesTax === null && count($items) > 0)
+                <div class="card mb-6 border-amber-200 bg-amber-50/50">
+                    <div class="p-5">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                                <i data-lucide="receipt" class="w-5 h-5 text-amber-600" wire:ignore></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-semibold text-amber-900 mb-1">¿Los precios incluyen IVA?</h3>
+                                <p class="text-xs text-amber-700 mb-3">No se detectó información de IVA en la cotización. Indica si los precios ya incluyen el 16% de IVA.</p>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" wire:click="setTaxInclusion(false)"
+                                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-text-primary border border-gray-200 hover:border-primary-300 hover:bg-primary-50">
+                                        Precios antes de IVA
+                                    </button>
+                                    <button type="button" wire:click="setTaxInclusion(true)"
+                                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-text-primary border border-gray-200 hover:border-primary-300 hover:bg-primary-50">
+                                        Precios con IVA incluido
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @elseif($quotationIncludesTax !== null && count($items) > 0)
+                {{-- Estado resuelto: badge informativo compacto --}}
+                <div class="card mb-6">
+                    <div class="px-5 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm">
+                            <i data-lucide="receipt" class="w-4 h-4 text-green-600" wire:ignore></i>
+                            <span class="text-text-primary font-medium">IVA:</span>
+                            @if($quotationIncludesTax)
+                                <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium">Precios con IVA incluido — se desglosa automáticamente</span>
+                            @else
+                                <span class="px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs font-medium">Precios sin IVA — se calcula al 16%</span>
+                            @endif
+                            @if($taxDetectedByAI)
+                                <span class="text-xs text-text-muted">(detectado por IA)</span>
+                            @endif
+                        </div>
+                        <button type="button" wire:click="$set('quotationIncludesTax', null)" class="text-xs text-text-muted hover:text-primary-600 transition">
+                            Cambiar
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             {{-- Products Table --}}
             <div class="card mb-6">
                 <div class="p-6">
@@ -322,13 +370,14 @@
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-surface-main">
-                                        <th class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[30%]">Producto</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">Cant.</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">Unidad</th>
-                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[12%]">Precio U.</th>
-                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[12%]">Subtotal</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[20%]">Homologación</th>
-                                        <th class="px-3 py-2.5 w-[6%]"></th>
+                                        <th class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[26%]">Producto</th>
+                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">Cant.</th>
+                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">Unidad</th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">P.U. s/IVA</th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">IVA U.</th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">Subtotal</th>
+                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[18%]">Homologación</th>
+                                        <th class="px-3 py-2.5 w-[5%]"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -354,12 +403,21 @@
                                                 />
                                             </td>
 
-                                            {{-- Precio Unitario --}}
+                                            {{-- Precio Unitario (sin IVA) --}}
                                             <td class="px-3 py-2">
                                                 <input wire:model="items.{{ $i }}.unit_price" type="number" step="0.01" class="input text-sm text-right" placeholder="0.00">
                                             </td>
 
-                                            {{-- Subtotal (calculado) --}}
+                                            {{-- IVA unitario --}}
+                                            <td class="px-3 py-2 text-right text-xs text-text-muted">
+                                                @if(isset($item['tax_amount']) && $item['tax_amount'] > 0)
+                                                    ${{ number_format($item['tax_amount'], 2, '.', ',') }}
+                                                @else
+                                                    <span class="text-gray-300">—</span>
+                                                @endif
+                                            </td>
+
+                                            {{-- Subtotal sin IVA (calculado) --}}
                                             <td class="px-3 py-2 text-right font-medium text-text-primary">
                                                 ${{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0), 2, '.', ',') }}
                                             </td>
@@ -417,20 +475,39 @@
                                     @endforeach
                                 </tbody>
                                 <tfoot>
-                                    <tr class="border-t-2 border-gray-200 bg-surface-main">
-                                        <td colspan="4" class="px-3 py-3 text-right text-sm font-semibold text-text-primary">Total estimado:</td>
-                                        <td class="px-3 py-3 text-right text-base font-bold text-primary-600">
-                                            ${{ number_format(collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)), 2, '.', ',') }}
+                                    @php
+                                        $subtotalSinIva = collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
+                                        $totalIva = collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['tax_amount'] ?? 0));
+                                        $totalConIva = $subtotalSinIva + $totalIva;
+                                        $pendingCount = collect($items)->where('homologation_status', 'pending')->count();
+                                    @endphp
+                                    <tr class="border-t border-gray-100 bg-surface-main">
+                                        <td colspan="5" class="px-3 py-2 text-right text-sm text-text-muted">Subtotal (sin IVA):</td>
+                                        <td class="px-3 py-2 text-right text-sm font-medium text-text-primary">
+                                            ${{ number_format($subtotalSinIva, 2, '.', ',') }}
                                         </td>
-                                        <td colspan="2" class="px-3 py-3">
-                                            @php
-                                                $pendingCount = collect($items)->where('homologation_status', 'pending')->count();
-                                            @endphp
+                                        <td colspan="2" rowspan="3" class="px-3 py-2 align-middle">
                                             @if($pendingCount > 0)
                                                 <span class="text-xs text-amber-600">{{ $pendingCount }} sin homologar</span>
                                             @else
                                                 <span class="text-xs text-green-600">✓ Todos homologados</span>
                                             @endif
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-surface-main">
+                                        <td colspan="5" class="px-3 py-2 text-right text-sm text-text-muted">IVA (16%):</td>
+                                        <td class="px-3 py-2 text-right text-sm font-medium text-text-muted">
+                                            @if($totalIva > 0)
+                                                ${{ number_format($totalIva, 2, '.', ',') }}
+                                            @else
+                                                <span class="text-xs text-amber-500">Pendiente</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t-2 border-gray-200 bg-surface-main">
+                                        <td colspan="5" class="px-3 py-3 text-right text-sm font-semibold text-text-primary">Total con IVA:</td>
+                                        <td class="px-3 py-3 text-right text-base font-bold text-primary-600">
+                                            ${{ number_format($totalConIva, 2, '.', ',') }}
                                         </td>
                                     </tr>
                                 </tfoot>

@@ -36,7 +36,7 @@ class SpreadsheetParserService implements ParserInterface
         $rows        = $sheet->toArray(null, true, true, true);
 
         if (empty($rows)) {
-            return ['supplier' => null, 'store' => null, 'items' => [], 'raw_text' => ''];
+            return ['supplier' => null, 'store' => null, 'tax_info' => null, 'items' => [], 'raw_text' => ''];
         }
 
         // Paso 1: encontrar la fila de encabezados
@@ -68,6 +68,7 @@ class SpreadsheetParserService implements ParserInterface
             return [
                 'supplier' => null,
                 'store'    => null,
+                'tax_info' => null,
                 'items'    => [],
                 'raw_text' => $rawText,
             ];
@@ -86,10 +87,12 @@ class SpreadsheetParserService implements ParserInterface
             }
 
             $items[] = [
-                'name'       => $name,
-                'quantity'   => $this->toFloat($this->getCellValue($row, $columnMap, 'quantity')),
-                'unit'       => $this->getCellValue($row, $columnMap, 'unit') ?: 'pza',
-                'unit_price' => $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price')),
+                'name'               => $name,
+                'quantity'           => $this->toFloat($this->getCellValue($row, $columnMap, 'quantity')),
+                'unit'               => $this->getCellValue($row, $columnMap, 'unit') ?: 'pza',
+                'unit_price'         => $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price')),
+                'tax_amount'         => null,
+                'price_includes_tax' => null,
             ];
         }
 
@@ -112,6 +115,7 @@ class SpreadsheetParserService implements ParserInterface
         return [
             'supplier' => $supplier,
             'store'    => null,
+            'tax_info' => null,
             'items'    => $items,
             'raw_text' => implode("\n", $rawLines),
         ];

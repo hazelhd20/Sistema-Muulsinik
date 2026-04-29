@@ -41,9 +41,19 @@ class GeminiStructurerService
      * Estructura texto crudo de una cotización en ítems limpios.
      *
      * Recibe el texto tal cual sale del OCR o PDF parser y devuelve
-     * un array estructurado con los productos identificados.
+     * un array estructurado con los productos identificados, incluyendo
+     * información fiscal (IVA) cuando está disponible.
      *
-     * @return array{supplier: ?string, store: ?string, items: array<int, array{name: string, quantity: ?float, unit: ?string, unit_price: ?float}>}|null
+     * @return array{
+     *   supplier: ?string,
+     *   store: ?string,
+     *   tax_info: ?array{tax_rate: ?float, prices_include_tax: ?bool, tax_detected: bool,
+     *     subtotal: ?float, tax_total: ?float, grand_total: ?float},
+     *   items: array<int, array{
+     *     name: string, quantity: ?float, unit: ?string,
+     *     unit_price: ?float, tax_amount: ?float, price_includes_tax: ?bool
+     *   }>
+     * }|null
      *         null si la IA no está disponible o falla.
      */
     public function structureRawText(string $rawText): ?array
@@ -200,6 +210,11 @@ class GeminiStructurerService
 
     /**
      * Construye el prompt para extracción estructurada de ítems.
+     *
+     * El prompt instruye a Gemini para:
+     * 1. Extraer productos con precios TAL COMO aparecen (sin modificar).
+     * 2. Detectar información fiscal (IVA desglosado, incluido, etc.).
+     * 3. Indicar por producto si su precio incluye IVA.
      */
     private function buildExtractionPrompt(string $rawText): string
     {
@@ -214,12 +229,22 @@ class GeminiStructurerService
         {
             "supplier": "Nombre del proveedor o empresa (o null si no se identifica)",
             "store": "Nombre de la sucursal/tienda (o null si no se identifica)",
+            "tax_info": {
+                "tax_rate": 0.16,
+                "prices_include_tax": true,
+                "tax_detected": true,
+                "subtotal": 5000.00,
+                "tax_total": 800.00,
+                "grand_total": 5800.00
+            },
             "items": [
                 {
                     "name": "Nombre limpio del producto (sin códigos del proveedor, sin viñetas)",
                     "quantity": 10.0,
                     "unit": "pza",
-                    "unit_price": 150.50
+                    "unit_price": 150.50,
+                    "tax_amount": 24.08,
+                    "price_includes_tax": false
                 }
             ]
         }
@@ -227,9 +252,20 @@ class GeminiStructurerService
         Reglas importantes:
         - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
         - En "unit": normaliza a: pza, kg, m, m2, m3, lt, bulto, rollo, pieza, metro, litro, caja, paquete.
-        - En "unit_price": solo el precio unitario (sin IVA, sin total). Si no se identifica, pon 0.
+        - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, pon 0.
+        - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
+        - En "price_includes_tax": true si el precio unitario YA tiene IVA incluido, false si el IVA se suma aparte, null si no puedes determinarlo.
         - En "quantity": si no se identifica, pon 1.
-        - Ignora subtotales, totales, IVA, y líneas que no sean productos.
+
+        Reglas sobre tax_info:
+        - "tax_rate": la tasa de IVA detectada (normalmente 0.16 en México). null si no se detecta.
+        - "prices_include_tax": true si los precios de los productos YA incluyen IVA, false si el IVA se suma aparte, null si no se puede determinar.
+        - "tax_detected": true si encontraste CUALQUIER referencia a IVA, impuestos, o desglose fiscal en el documento. false si no hay ninguna mención.
+        - "subtotal", "tax_total", "grand_total": extráelos si aparecen en la cotización. null si no aparecen.
+
+        Indicadores comunes de IVA: "IVA incluido", "IVA incl.", "más IVA", "+ IVA", "+ 16%", "Subtotal", "Total", "IVA:", "impuesto", "16%", "c/IVA", "s/IVA".
+
+        - Ignora líneas que no sean productos (encabezados, pies de página, datos bancarios, etc.).
         - Si el texto es ilegible o no se identifica ningún producto, devuelve items como array vacío.
 
         Texto crudo de la cotización:
@@ -242,7 +278,7 @@ class GeminiStructurerService
     /**
      * Parsea una respuesta JSON de Gemini, tolerando markdown code fences.
      *
-     * @return array{supplier: ?string, store: ?string, items: array}|null
+     * @return array{supplier: ?string, store: ?string, tax_info: ?array, items: array}|null
      */
     private function parseJsonResponse(string $responseText): ?array
     {
@@ -259,23 +295,39 @@ class GeminiStructurerService
             return null;
         }
 
-        // Normalizar la estructura
+        // Normalizar la estructura de ítems
         $items = [];
         foreach ($data['items'] as $item) {
             if (empty($item['name'])) {
                 continue;
             }
             $items[] = [
-                'name'       => trim($item['name']),
-                'quantity'   => isset($item['quantity']) ? (float) $item['quantity'] : null,
-                'unit'       => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
-                'unit_price' => isset($item['unit_price']) ? (float) $item['unit_price'] : null,
+                'name'               => trim($item['name']),
+                'quantity'           => isset($item['quantity']) ? (float) $item['quantity'] : null,
+                'unit'               => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
+                'unit_price'         => isset($item['unit_price']) ? (float) $item['unit_price'] : null,
+                'tax_amount'         => isset($item['tax_amount']) ? (float) $item['tax_amount'] : null,
+                'price_includes_tax' => $item['price_includes_tax'] ?? null,
+            ];
+        }
+
+        // Normalizar tax_info
+        $taxInfo = $data['tax_info'] ?? null;
+        if (is_array($taxInfo)) {
+            $taxInfo = [
+                'tax_rate'             => $taxInfo['tax_rate'] ?? null,
+                'prices_include_tax'   => $taxInfo['prices_include_tax'] ?? null,
+                'tax_detected'         => $taxInfo['tax_detected'] ?? false,
+                'subtotal'             => isset($taxInfo['subtotal']) ? (float) $taxInfo['subtotal'] : null,
+                'tax_total'            => isset($taxInfo['tax_total']) ? (float) $taxInfo['tax_total'] : null,
+                'grand_total'          => isset($taxInfo['grand_total']) ? (float) $taxInfo['grand_total'] : null,
             ];
         }
 
         return [
             'supplier' => $data['supplier'] ?? null,
             'store'    => $data['store'] ?? null,
+            'tax_info' => $taxInfo,
             'items'    => $items,
         ];
     }

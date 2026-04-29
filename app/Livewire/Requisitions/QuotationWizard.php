@@ -11,6 +11,7 @@ use App\Models\RequisitionItem;
 use App\Models\Supplier;
 use App\Services\DocumentParsers\DocumentParserFactory;
 use App\Services\HomologationService;
+use App\Services\TaxNormalizerService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -49,11 +50,26 @@ class QuotationWizard extends Component
     public array $items = [];
     public string $rawText = '';
 
-    /* ── Alertas de campos inompletos ────────────────── */
+    /* ── Alertas de campos incompletos ────────────────── */
     public array $warnings = [];
 
     /* ── Homologación ────────────────────────────────── */
     public array $homologationSuggestions = [];
+
+    /* ── Contexto fiscal (IVA) ───────────────────────── */
+
+    /**
+     * null  = Gemini no pudo determinar si los precios incluyen IVA (toggle visible).
+     * true  = Los precios incluyen IVA (confirmado por IA o usuario).
+     * false = Los precios NO incluyen IVA.
+     */
+    public ?bool $quotationIncludesTax = null;
+
+    /**
+     * true = La IA detectó información de IVA en la cotización.
+     * false = No se encontró ninguna referencia a IVA.
+     */
+    public bool $taxDetectedByAI = false;
 
     public function mount(): void
     {
@@ -193,16 +209,34 @@ class QuotationWizard extends Component
 
     /**
      * Carga los datos extraídos del Quotation al formulario editable.
+     * Incluye normalización fiscal vía TaxNormalizerService.
      */
     private function loadParsedData(Quotation $quotation): void
     {
         $data = $quotation->parsed_data ?? [];
+
+        // Normalizar datos fiscales antes de cargar al formulario
+        $normalizer = app(TaxNormalizerService::class);
+        $data = $normalizer->normalize($data);
 
         $this->supplierName = $data['supplier'] ?? '';
         $this->storeName    = $data['store'] ?? '';
         $this->rawText      = $data['raw_text'] ?? '';
         $this->items        = [];
         $this->warnings     = [];
+
+        // Extraer contexto fiscal global
+        $taxInfo = $data['tax_info'] ?? [];
+        $this->taxDetectedByAI = $taxInfo['tax_detected'] ?? false;
+
+        if (isset($taxInfo['prices_include_tax'])) {
+            $this->quotationIncludesTax = $taxInfo['prices_include_tax'];
+        } else {
+            // Si algún ítem ya tiene tax_source resuelto, no necesitamos toggle
+            $hasResolvedTax = collect($data['items'] ?? [])
+                ->contains(fn ($item) => !empty($item['tax_source']));
+            $this->quotationIncludesTax = $hasResolvedTax ? false : null;
+        }
 
         // Intentar asociar proveedor existente
         if ($this->supplierName) {
@@ -218,11 +252,14 @@ class QuotationWizard extends Component
             $suggestions = $homologationService->findSuggestions($item['name'] ?? '');
 
             $this->items[] = [
-                'name'       => $item['name'] ?? '',
-                'quantity'   => $item['quantity'] ?? 0,
-                'unit'       => $item['unit'] ?? 'pza',
-                'unit_price' => $item['unit_price'] ?? 0,
-                'product_id' => !empty($suggestions) && $suggestions[0]['similarity'] === 100
+                'name'                => $item['name'] ?? '',
+                'quantity'            => $item['quantity'] ?? 0,
+                'unit'                => $item['unit'] ?? 'pza',
+                'unit_price'          => $item['unit_price'] ?? 0,
+                'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
+                'tax_amount'          => $item['tax_amount'] ?? null,
+                'tax_source'          => $item['tax_source'] ?? null,
+                'product_id'          => !empty($suggestions) && $suggestions[0]['similarity'] === 100
                     ? $suggestions[0]['id']
                     : null,
                 'homologation_status' => !empty($suggestions) && $suggestions[0]['similarity'] === 100
@@ -256,6 +293,11 @@ class QuotationWizard extends Component
             $this->warnings[] = 'No se detectaron productos — agrégalos manualmente.';
         }
 
+        // Alerta de IVA no detectado
+        if ($this->quotationIncludesTax === null && !empty($this->items)) {
+            $this->warnings[] = 'No se detectó si los precios incluyen IVA — indica si los precios ya incluyen el impuesto.';
+        }
+
         foreach ($this->items as $i => $item) {
             $row = $i + 1;
             if (empty($item['name'])) {
@@ -279,6 +321,9 @@ class QuotationWizard extends Component
             'quantity'            => 1,
             'unit'                => 'pza',
             'unit_price'          => 0,
+            'unit_price_original' => 0,
+            'tax_amount'          => null,
+            'tax_source'          => null,
             'product_id'          => null,
             'homologation_status' => 'pending',
         ];
@@ -322,6 +367,40 @@ class QuotationWizard extends Component
         $this->items[$index]['homologation_status'] = 'pending';
     }
 
+    /* ── Acciones fiscales (IVA) ─────────────────────── */
+
+    /**
+     * Toggle global: El usuario indica si los precios incluyen IVA.
+     * Recalcula todos los ítems que no tengan tax_source resuelto.
+     */
+    public function setTaxInclusion(bool $includesTax): void
+    {
+        $this->quotationIncludesTax = $includesTax;
+        $normalizer = app(TaxNormalizerService::class);
+
+        foreach ($this->items as $i => $item) {
+            // Solo recalcular ítems que no tienen IVA ya resuelto por el proveedor
+            $existingSource = $item['tax_source'] ?? null;
+            if ($existingSource === 'supplier_per_item') {
+                continue;
+            }
+
+            $originalPrice = (float) ($item['unit_price_original'] ?? $item['unit_price'] ?? 0);
+            if ($originalPrice <= 0) {
+                continue;
+            }
+
+            $resolved = $normalizer->resolveForUserChoice($originalPrice, $includesTax);
+
+            $this->items[$i]['unit_price']  = $resolved['unit_price'];
+            $this->items[$i]['tax_amount']  = $resolved['tax_amount'];
+            $this->items[$i]['tax_source']  = $resolved['tax_source'];
+        }
+
+        // Limpiar la advertencia de IVA
+        $this->detectWarnings();
+    }
+
     /* ═══════════════════════════════════════════════════
      *  GUARDAR REQUISICIÓN
      * ═══════════════════════════════════════════════════ */
@@ -350,7 +429,7 @@ class QuotationWizard extends Component
             'need_date'   => null,
         ]);
 
-        // Guardar ítems con estado de homologación
+        // Guardar ítems con estado de homologación y datos fiscales
         foreach ($this->items as $item) {
             RequisitionItem::create([
                 'requisition_id'      => $requisition->id,
@@ -359,6 +438,9 @@ class QuotationWizard extends Component
                 'quantity'            => $item['quantity'] ?? 0,
                 'unit'                => $item['unit'] ?? 'pza',
                 'unit_price'          => $item['unit_price'] ?? 0,
+                'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
+                'tax_amount'          => $item['tax_amount'] ?? null,
+                'tax_source'          => $item['tax_source'] ?? null,
                 'supplier_id'         => $this->supplierId ?: null,
                 'homologation_status' => $item['homologation_status'] ?? 'pending',
             ]);
@@ -408,6 +490,8 @@ class QuotationWizard extends Component
         $this->warnings         = [];
         $this->rawText          = '';
         $this->homologationSuggestions = [];
+        $this->quotationIncludesTax   = null;
+        $this->taxDetectedByAI        = false;
     }
 
     #[Layout('components.layouts.app')]

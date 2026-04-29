@@ -14,7 +14,22 @@ interface ParserInterface
      * @return array{
      *   supplier: ?string,
      *   store: ?string,
-     *   items: array<int, array{name: string, quantity: ?float, unit: ?string, unit_price: ?float}>,
+     *   tax_info: ?array{
+     *     tax_rate: ?float,
+     *     prices_include_tax: ?bool,
+     *     tax_detected: bool,
+     *     subtotal: ?float,
+     *     tax_total: ?float,
+     *     grand_total: ?float,
+     *   },
+     *   items: array<int, array{
+     *     name: string,
+     *     quantity: ?float,
+     *     unit: ?string,
+     *     unit_price: ?float,
+     *     tax_amount: ?float,
+     *     price_includes_tax: ?bool,
+     *   }>,
      *   raw_text: string,
      * }
      */
