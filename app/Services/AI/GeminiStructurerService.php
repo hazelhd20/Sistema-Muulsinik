@@ -116,6 +116,7 @@ class GeminiStructurerService
                     "quantity": 10.0,
                     "unit": "pza",
                     "unit_price": 150.50,
+                    "discount": 0.00,
                     "tax_amount": 24.08,
                     "price_includes_tax": false,
                     "line_subtotal": 1505.00,
@@ -130,18 +131,24 @@ class GeminiStructurerService
         - "Importe" o "Subtotal" o "Monto" → es el SUBTOTAL DE LÍNEA (cantidad × precio unitario, SIN IVA). Va en "line_subtotal".
         - "Impuesto" o "IVA" o "I.V.A." → es el MONTO DE IVA de esa línea. Va en "tax_amount".
         - "Importe Neto" o "Total" o "Neto" o "Total con IVA" → es el TOTAL DE LÍNEA (subtotal + IVA). Va en "line_total".
+        - "Descuento" → Si aparece una columna de descuento, ponlo en "discount".
 
         Para identificar correctamente cuál es cuál:
         1. El PRECIO UNITARIO es siempre el valor más PEQUEÑO por producto. Si multiplicas cantidad × precio unitario deberías obtener el subtotal.
-        2. El SUBTOTAL DE LÍNEA (importe) es = cantidad × precio unitario.
+        2. El SUBTOTAL DE LÍNEA (importe) es = (cantidad × precio unitario) - descuento.
         3. El IMPUESTO es un monto menor, normalmente ~16% del subtotal.
         4. El TOTAL DE LÍNEA (importe neto) es = subtotal + impuesto.
         5. Si solo hay 2 columnas numéricas y una es mucho mayor que la otra, la grande probablemente es subtotal/total y la pequeña es precio unitario.
+        6. VALIDACIONES LÓGICAS (Aplica esto mentalmente antes de responder):
+           - Un DESCUENTO NUNCA será mayor que el subtotal o el precio unitario. Si una columna parece "Descuento" pero su valor es mayor que el subtotal, probablemente sea el Total con IVA.
+           - El IVA normalmente es el 16% (0.16) o el 8% (0.08) del subtotal. Si el supuesto IVA es mayor que el subtotal, te has equivocado de columna.
+           - El Total SIEMPRE debe ser mayor o igual al Subtotal.
 
         Reglas generales:
         - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
         - En "unit": normaliza a: pza, kg, m, m2, m3, lt, bulto, rollo, pieza, metro, litro, caja, paquete.
         - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
+        - En "discount": pon el valor del descuento si aparece. Si no, pon 0.
         - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
         - En "price_includes_tax": true si el precio unitario YA tiene IVA incluido, false si el IVA se suma aparte, null si no puedes determinarlo.
         - En "quantity": si no se identifica, pon 1.
@@ -193,26 +200,18 @@ class GeminiStructurerService
                 continue;
             }
 
-            $unitPrice    = isset($item['unit_price']) ? (float) $item['unit_price'] : null;
-            $quantity     = isset($item['quantity']) ? (float) $item['quantity'] : null;
-            $lineSubtotal = isset($item['line_subtotal']) ? (float) $item['line_subtotal'] : null;
-            $lineTotal    = isset($item['line_total']) ? (float) $item['line_total'] : null;
-            $taxAmount    = isset($item['tax_amount']) ? (float) $item['tax_amount'] : null;
-
-            // Validación cruzada: detectar si unit_price es realmente un subtotal
-            $unitPrice = $this->crossValidateUnitPrice(
-                $unitPrice, $quantity, $lineSubtotal, $lineTotal, $taxAmount
-            );
+            $validated = $this->crossValidateRow($item);
 
             $items[] = [
                 'name'               => trim($item['name']),
-                'quantity'           => $quantity,
+                'quantity'           => $validated['quantity'],
                 'unit'               => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
-                'unit_price'         => $unitPrice,
-                'tax_amount'         => $taxAmount,
+                'unit_price'         => $validated['unit_price'],
+                'discount'           => $validated['discount'],
+                'tax_amount'         => $validated['tax_amount'],
                 'price_includes_tax' => $item['price_includes_tax'] ?? null,
-                'line_subtotal'      => $lineSubtotal,
-                'line_total'         => $lineTotal,
+                'line_subtotal'      => $validated['line_subtotal'],
+                'line_total'         => $validated['line_total'],
             ];
         }
 
@@ -234,6 +233,109 @@ class GeminiStructurerService
             'store'    => $data['store'] ?? null,
             'tax_info' => $taxInfo,
             'items'    => $items,
+        ];
+    }
+
+    /**
+     * Aplica reglas de validación lógica y deduce valores erróneos 
+     * en base a incoherencias numéricas típicas de la IA.
+     */
+    private function crossValidateRow(array $item): array
+    {
+        $unitPrice    = isset($item['unit_price']) ? (float) $item['unit_price'] : null;
+        $quantity     = isset($item['quantity']) ? (float) $item['quantity'] : null;
+        $discount     = isset($item['discount']) ? (float) $item['discount'] : null;
+        $lineSubtotal = isset($item['line_subtotal']) ? (float) $item['line_subtotal'] : null;
+        $lineTotal    = isset($item['line_total']) ? (float) $item['line_total'] : null;
+        $taxAmount    = isset($item['tax_amount']) ? (float) $item['tax_amount'] : null;
+
+        // 1. Descuento absurdo (mayor que el subtotal o el unit_price)
+        // La IA frecuentemente confunde la columna de Total con Descuento si están cerca.
+        if ($discount !== null && $discount > 0) {
+            $baseForDiscount = $lineSubtotal ?? ($unitPrice !== null && $quantity !== null ? $unitPrice * $quantity : null);
+            if ($baseForDiscount !== null && $discount > $baseForDiscount) {
+                // Si el "descuento" es gigantesco, probablemente es el Total
+                if ($lineTotal === null || $lineTotal < $discount) {
+                    $lineTotal = $discount;
+                }
+                Log::info('Gemini AI: Corrección automática de discount (era mayor al subtotal, posible Total).', [
+                    'original_discount' => $discount,
+                    'new_line_total' => $lineTotal
+                ]);
+                $discount = 0.0;
+            }
+        }
+
+        // 2. IVA absurdo (mayor que el subtotal)
+        // La IA a veces confunde el Total con el IVA.
+        if ($taxAmount !== null && $lineSubtotal !== null && $taxAmount > $lineSubtotal) {
+            if ($lineTotal === null || $lineTotal < $taxAmount) {
+                $lineTotal = $taxAmount;
+            }
+            Log::info('Gemini AI: Corrección automática de tax_amount (era mayor al subtotal, posible Total).', [
+                'original_tax_amount' => $taxAmount,
+                'new_line_total' => $lineTotal
+            ]);
+            $taxAmount = null;
+        }
+
+        // 3. Subtotal y Total invertidos
+        if ($lineSubtotal !== null && $lineTotal !== null && $lineSubtotal > $lineTotal) {
+            $temp = $lineSubtotal;
+            $lineSubtotal = $lineTotal;
+            $lineTotal = $temp;
+            Log::info('Gemini AI: Corrección automática (Subtotal y Total estaban invertidos).');
+        }
+
+        // 4. Validación cruzada de Unit Price (detectar subtotal confundido con P.U.)
+        $unitPrice = $this->crossValidateUnitPrice($unitPrice, $quantity, $lineSubtotal, $lineTotal, $taxAmount);
+
+        // 5. Deducción de IVA por diferencia si falta
+        if ($taxAmount === null && $lineSubtotal !== null && $lineTotal !== null && $lineTotal > $lineSubtotal) {
+            $diff = round($lineTotal - $lineSubtotal, 2);
+            $ratio = $lineSubtotal > 0 ? ($diff / $lineSubtotal) : 0;
+            // Si la diferencia se parece al 16% o al 8% (tolerancia amplia)
+            if (abs($ratio - 0.16) < 0.03 || abs($ratio - 0.08) < 0.03) {
+                $taxAmount = $diff;
+            }
+        }
+
+        // 6. Recalcular Subtotal si falta pero tenemos unitPrice, quantity y discount
+        if ($lineSubtotal === null && $unitPrice !== null && $quantity !== null) {
+            $calculatedSubtotal = round(($unitPrice * $quantity) - ($discount ?? 0), 2);
+            if ($calculatedSubtotal > 0) {
+                $lineSubtotal = $calculatedSubtotal;
+            }
+        }
+
+        // 7. Convertir el IVA de línea a IVA Unitario
+        // El resto del sistema espera que tax_amount sea unitario. Como Gemini
+        // extrae el IVA total de la línea, lo dividimos por la cantidad.
+        if ($taxAmount !== null && $taxAmount > 0 && $quantity !== null && $quantity > 0) {
+            $ratioLine = $lineSubtotal > 0 ? ($taxAmount / $lineSubtotal) : 0;
+            $ratioUnit = $unitPrice > 0 ? ($taxAmount / $unitPrice) : 0;
+            
+            // Si el IVA es ~16% del Subtotal, es IVA de línea (lo esperado) -> convertir a unitario
+            if (abs($ratioLine - 0.16) < 0.05 || abs($ratioLine - 0.08) < 0.05) {
+                $taxAmount = round($taxAmount / $quantity, 2);
+            } 
+            // Si el IVA es ~16% del P.U., la IA ya lo extrajo unitario por error -> no hacer nada
+            elseif (abs($ratioUnit - 0.16) < 0.05 || abs($ratioUnit - 0.08) < 0.05) {
+                // Ya es unitario
+            }
+            // Si no cuadra, asumimos por seguridad que es de línea y lo dividimos
+            else {
+                 $taxAmount = round($taxAmount / $quantity, 2);
+            }
+        }
+
+        return [
+            'unit_price'    => $unitPrice,
+            'quantity'      => $quantity,
+            'discount'      => $discount,
+            'line_subtotal' => $lineSubtotal,
+            'line_total'    => $lineTotal,
+            'tax_amount'    => $taxAmount,
         ];
     }
 

@@ -369,13 +369,13 @@
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-surface-main">
-                                        <th class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[32%]">Producto</th>
-                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">Cant.</th>
+                                        <th class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[35%]">Producto</th>
+                                        <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">Cant.</th>
                                         <th class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[12%]">Unidad</th>
                                         <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[14%]">P.U. s/IVA</th>
-                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">IVA U.</th>
                                         <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[14%]">Subtotal</th>
-                                        <th class="px-3 py-2.5 w-[5%]"></th>
+                                        <th class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[11%]">Total</th>
+                                        <th class="px-3 py-2.5 w-[6%]"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -406,18 +406,16 @@
                                                 <input wire:model="items.{{ $i }}.unit_price" type="number" step="0.01" class="input text-sm text-right" placeholder="0.00">
                                             </td>
 
-                                            {{-- IVA unitario --}}
-                                            <td class="px-3 py-2 text-right text-xs text-text-muted">
-                                                @if(isset($item['tax_amount']) && $item['tax_amount'] > 0)
-                                                    ${{ number_format($item['tax_amount'], 2, '.', ',') }}
-                                                @else
-                                                    <span class="text-gray-300">—</span>
-                                                @endif
-                                            </td>
+
 
                                             {{-- Subtotal sin IVA (calculado) --}}
                                             <td class="px-3 py-2 text-right font-medium text-text-primary">
                                                 ${{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0), 2, '.', ',') }}
+                                            </td>
+
+                                            {{-- Total con IVA (calculado) --}}
+                                            <td class="px-3 py-2 text-right font-bold text-primary-600">
+                                                ${{ number_format((($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)) + (($item['quantity'] ?? 0) * ($item['tax_amount'] ?? 0)), 2, '.', ',') }}
                                             </td>
 
                                             {{-- Delete --}}
