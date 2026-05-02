@@ -263,6 +263,8 @@ class QuotationWizard extends Component
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount'          => $item['tax_amount'] ?? null,
                 'tax_source'          => $item['tax_source'] ?? null,
+                'line_subtotal'       => $item['line_subtotal'] ?? null,
+                'line_total'          => $item['line_total'] ?? null,
                 'product_id'          => null,
             ];
         }
@@ -321,6 +323,8 @@ class QuotationWizard extends Component
             'unit_price_original' => 0,
             'tax_amount'          => null,
             'tax_source'          => null,
+            'line_subtotal'       => null,
+            'line_total'          => null,
             'product_id'          => null,
         ];
     }
@@ -354,11 +358,14 @@ class QuotationWizard extends Component
                 continue;
             }
 
-            $resolved = $normalizer->resolveForUserChoice($originalPrice, $includesTax);
+            $quantity = (float) ($item['quantity'] ?? 1);
+            $resolved = $normalizer->resolveForUserChoice($originalPrice, $quantity, $includesTax);
 
-            $this->items[$i]['unit_price']  = $resolved['unit_price'];
-            $this->items[$i]['tax_amount']  = $resolved['tax_amount'];
-            $this->items[$i]['tax_source']  = $resolved['tax_source'];
+            $this->items[$i]['unit_price']    = $resolved['unit_price'];
+            $this->items[$i]['tax_amount']    = $resolved['tax_amount'];
+            $this->items[$i]['tax_source']    = $resolved['tax_source'];
+            $this->items[$i]['line_subtotal'] = $resolved['line_subtotal'];
+            $this->items[$i]['line_total']    = $resolved['line_total'];
         }
 
         // Limpiar la advertencia de IVA
@@ -390,7 +397,6 @@ class QuotationWizard extends Component
             'status'      => 'borrador',
             'created_by'  => auth()->id(),
             'date'        => $this->date,
-            'need_date'   => null,
         ]);
 
         // Guardar ítems con datos fiscales
@@ -405,6 +411,8 @@ class QuotationWizard extends Component
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount'          => $item['tax_amount'] ?? null,
                 'tax_source'          => $item['tax_source'] ?? null,
+                'line_subtotal'       => $item['line_subtotal'] ?? null,
+                'line_total'          => $item['line_total'] ?? null,
                 'supplier_id'         => $this->supplierId ?: null,
             ]);
         }

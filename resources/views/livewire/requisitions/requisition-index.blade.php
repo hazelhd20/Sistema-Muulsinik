@@ -141,7 +141,7 @@
                                                 <td class="px-4 py-2 font-medium">{{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
                                                 <td class="px-4 py-2 text-center">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }} {{ $item->unit }}</td>
                                                 <td class="px-4 py-2 text-right">${{ number_format($item->unit_price, 2, '.', ',') }}</td>
-                                                <td class="px-4 py-2 text-right font-medium">${{ number_format($item->quantity * $item->unit_price, 2, '.', ',') }}</td>
+                                                <td class="px-4 py-2 text-right font-medium">${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>

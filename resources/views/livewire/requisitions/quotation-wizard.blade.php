@@ -408,14 +408,20 @@
 
 
 
-                                            {{-- Subtotal sin IVA (calculado) --}}
+                                            {{-- Subtotal sin IVA (proveedor o calculado) --}}
                                             <td class="px-3 py-2 text-right font-medium text-text-primary">
-                                                ${{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0), 2, '.', ',') }}
+                                                @php
+                                                    $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
+                                                @endphp
+                                                ${{ number_format($itemSubtotal, 2, '.', ',') }}
                                             </td>
 
-                                            {{-- Total con IVA (calculado) --}}
+                                            {{-- Total con IVA (proveedor o calculado) --}}
                                             <td class="px-3 py-2 text-right font-bold text-primary-600">
-                                                ${{ number_format((($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)) + (($item['quantity'] ?? 0) * ($item['tax_amount'] ?? 0)), 2, '.', ',') }}
+                                                @php
+                                                    $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
+                                                @endphp
+                                                ${{ number_format($itemTotal, 2, '.', ',') }}
                                             </td>
 
                                             {{-- Delete --}}
@@ -429,9 +435,9 @@
                                 </tbody>
                                 <tfoot>
                                     @php
-                                        $subtotalSinIva = collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
-                                        $totalIva = collect($items)->sum(fn($item) => ($item['quantity'] ?? 0) * ($item['tax_amount'] ?? 0));
-                                        $totalConIva = $subtotalSinIva + $totalIva;
+                                        $subtotalSinIva = collect($items)->sum(fn($item) => $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)));
+                                        $totalIva = collect($items)->sum(fn($item) => $item['tax_amount'] ?? 0);
+                                        $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
                                     @endphp
                                     <tr class="border-t border-gray-100 bg-surface-main">
                                         <td colspan="5" class="px-3 py-2 text-right text-sm text-text-muted">Subtotal (sin IVA):</td>
@@ -469,22 +475,6 @@
                     @endif
                 </div>
             </div>
-
-            {{-- Raw Text (collapsible) --}}
-            @if($rawText)
-                <div class="card mb-6" x-data="{ showRaw: false }">
-                    <div class="p-4">
-                        <button type="button" @click="showRaw = !showRaw" class="flex items-center gap-2 text-sm font-medium text-text-muted hover:text-text-primary transition">
-                            <i data-lucide="code" class="w-4 h-4"></i>
-                            <span x-text="showRaw ? 'Ocultar texto extraído' : 'Ver texto extraído del documento'"></span>
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform" :class="showRaw && 'rotate-180'"></i>
-                        </button>
-                        <div x-show="showRaw" x-collapse class="mt-3">
-                            <pre class="p-4 bg-gray-900 text-gray-100 rounded-xl text-xs font-mono overflow-x-auto max-h-64 overflow-y-auto">{{ $rawText }}</pre>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
             {{-- Actions --}}
             <div class="flex items-center justify-between">

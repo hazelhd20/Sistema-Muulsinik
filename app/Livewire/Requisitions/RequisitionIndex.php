@@ -102,7 +102,6 @@ class RequisitionIndex extends Component
             'status' => 'borrador',
             'created_by' => auth()->id(),
             'date' => $this->reqDate,
-            'need_date' => null,
         ]);
 
         foreach ($this->items as $item) {

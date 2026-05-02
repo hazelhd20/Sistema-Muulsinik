@@ -464,26 +464,9 @@ class GeminiStructurerService
             }
         }
 
-        // 7. Convertir el IVA de línea a IVA Unitario
-        // El resto del sistema espera que tax_amount sea unitario. Como Gemini
-        // extrae el IVA total de la línea, lo dividimos por la cantidad.
-        if ($taxAmount !== null && $taxAmount > 0 && $quantity !== null && $quantity > 0) {
-            $ratioLine = $lineSubtotal > 0 ? ($taxAmount / $lineSubtotal) : 0;
-            $ratioUnit = $unitPrice > 0 ? ($taxAmount / $unitPrice) : 0;
-
-            // Si el IVA es ~16% del Subtotal, es IVA de línea (lo esperado) -> convertir a unitario
-            if (abs($ratioLine - 0.16) < 0.05 || abs($ratioLine - 0.08) < 0.05) {
-                $taxAmount = round($taxAmount / $quantity, 2);
-            }
-            // Si el IVA es ~16% del P.U., la IA ya lo extrajo unitario -> no hacer nada
-            elseif (abs($ratioUnit - 0.16) < 0.05 || abs($ratioUnit - 0.08) < 0.05) {
-                // Ya es unitario
-            }
-            // Si no cuadra, asumimos por seguridad que es de línea y lo dividimos
-            else {
-                $taxAmount = round($taxAmount / $quantity, 2);
-            }
-        }
+        // 7. Mantener tax_amount como IVA TOTAL de línea (no dividir entre cantidad).
+        // Dividir introduce errores de redondeo (ej: 552/7 = 78.857 → round → 78.86 × 7 = 552.02 ≠ 552.00).
+        // El sistema ahora almacena line_subtotal y line_total del proveedor directamente.
 
         return [
             'unit_price'    => $unitPrice,

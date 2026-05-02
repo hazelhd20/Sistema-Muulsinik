@@ -10,7 +10,9 @@ class RequisitionItem extends Model
     protected $fillable = [
         'requisition_id', 'product_id', 'product_name',
         'quantity', 'unit', 'unit_price', 'unit_price_original',
-        'tax_amount', 'tax_source', 'supplier_id',
+        'tax_amount', 'tax_source',
+        'line_subtotal', 'line_total',
+        'supplier_id',
     ];
 
     protected $casts = [
@@ -18,27 +20,59 @@ class RequisitionItem extends Model
         'unit_price'           => 'decimal:2',
         'unit_price_original'  => 'decimal:2',
         'tax_amount'           => 'decimal:2',
+        'line_subtotal'        => 'decimal:2',
+        'line_total'           => 'decimal:2',
     ];
 
     /**
      * Precio unitario con IVA incluido.
-     * Si no hay IVA registrado, devuelve el precio base.
+     * Si hay line_total del proveedor, lo deduce de ahí para máxima precisión.
+     * Si no, calcula a partir de tax_amount (IVA de línea) / quantity.
      */
     public function getUnitPriceWithTaxAttribute(): float
     {
-        return round((float) $this->unit_price + (float) ($this->tax_amount ?? 0), 2);
+        if ($this->line_total !== null && $this->quantity > 0) {
+            return round((float) $this->line_total / (float) $this->quantity, 2);
+        }
+
+        $taxPerUnit = ($this->tax_amount !== null && $this->quantity > 0)
+            ? (float) $this->tax_amount / (float) $this->quantity
+            : 0;
+
+        return round((float) $this->unit_price + $taxPerUnit, 2);
     }
 
-    /** Total de línea sin IVA. */
-    public function getLineTotalAttribute(): float
+    /**
+     * Subtotal de línea sin IVA.
+     *
+     * Prioridad: valor del proveedor (almacenado) → recálculo.
+     * El valor del proveedor es la fuente de verdad fiscal;
+     * el recálculo solo aplica si no se proporcionó.
+     */
+    public function getLineSubtotalComputedAttribute(): float
     {
+        if ($this->line_subtotal !== null) {
+            return (float) $this->line_subtotal;
+        }
+
         return round((float) $this->unit_price * (float) $this->quantity, 2);
     }
 
-    /** Total de línea con IVA. */
-    public function getLineTotalWithTaxAttribute(): float
+    /**
+     * Total de línea con IVA.
+     *
+     * Prioridad: valor del proveedor (almacenado) → recálculo.
+     */
+    public function getLineTotalComputedAttribute(): float
     {
-        return round($this->unit_price_with_tax * (float) $this->quantity, 2);
+        if ($this->line_total !== null) {
+            return (float) $this->line_total;
+        }
+
+        $subtotal = $this->line_subtotal_computed;
+        $tax = (float) ($this->tax_amount ?? 0);
+
+        return round($subtotal + $tax, 2);
     }
 
     /** Indica si el IVA fue resuelto (tiene fuente definida). */

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
@@ -32,11 +31,6 @@ class Project extends Model
     public function requisitions(): HasMany
     {
         return $this->hasMany(Requisition::class);
-    }
-
-    public function purchaseOrders(): HasMany
-    {
-        return $this->hasMany(PurchaseOrder::class);
     }
 
     /** Gasto total acumulado del proyecto. */
