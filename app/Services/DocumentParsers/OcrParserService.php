@@ -3,6 +3,7 @@
 namespace App\Services\DocumentParsers;
 
 use App\Services\AI\GeminiStructurerService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use thiagoalessio\TesseractOCR\TesseractOCR;
 
@@ -20,9 +21,41 @@ class OcrParserService implements ParserInterface
     /** {@inheritdoc} */
     public function parse(string $filePath): array
     {
+        // Estrategia Vision-First: enviar la imagen directamente a Gemini
+        // en vez de pasar por Tesseract OCR, que produce texto ruidoso en
+        // documentos con tablas complejas, múltiples columnas o baja resolución.
+        $visionResult = $this->tryVisionExtraction($filePath);
+
+        if ($visionResult !== null) {
+            return $visionResult;
+        }
+
+        // Fallback: pipeline clásico Tesseract → Gemini texto → regex
+        Log::info('OCR Parser: Vision no disponible o falló, usando pipeline Tesseract.', [
+            'path' => $filePath,
+        ]);
+
+        return $this->parseWithTesseract($filePath);
+    }
+
+    /**
+     * Intenta extraer datos directamente de la imagen vía Gemini Vision.
+     * Retorna null si Vision no está disponible o falla.
+     */
+    private function tryVisionExtraction(string $filePath): ?array
+    {
+        return $this->gemini->structureFromImage($filePath);
+    }
+
+    /**
+     * Pipeline clásico: Tesseract OCR → Gemini AI texto → regex fallback.
+     * Se usa solo cuando Gemini Vision no está disponible o falla.
+     */
+    private function parseWithTesseract(string $filePath): array
+    {
         $rawText = $this->runOcr($filePath);
 
-        // Intentar estructuración inteligente con Gemini AI
+        // Intentar estructuración inteligente con Gemini AI (texto)
         $aiResult = $this->gemini->structureRawText($rawText);
 
         if ($aiResult !== null) {
@@ -57,8 +90,15 @@ class OcrParserService implements ParserInterface
         $lang = config('services.tesseract.lang', env('TESSERACT_LANG', 'spa'));
         $ocr->lang($lang);
 
-        // PSM 6: asumir un bloque de texto uniforme (bueno para tablas)
-        $ocr->psm(6);
+        // PSM 3: Segmentación automática completa (default).
+        // Anteriormente estaba en 6 (bloque uniforme), lo que causaba
+        // que la primera fila de la tabla fuera descartada si Tesseract
+        // la interpretaba como parte de un bloque separado o del encabezado.
+        $ocr->psm(3);
+
+        // Preservar espacios entre palabras múltiples para mantener la
+        // alineación de columnas, crucial para cotizaciones estructuradas
+        $ocr->preserve_interword_spaces(1);
 
         return $ocr->run();
     }
