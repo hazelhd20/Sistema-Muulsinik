@@ -2,7 +2,6 @@
 
 namespace App\Services\DocumentParsers;
 
-use Illuminate\Http\UploadedFile;
 use RuntimeException;
 
 /**
@@ -11,12 +10,18 @@ use RuntimeException;
  *
  * Devuelve la instancia del parser correspondiente
  * sin que el usuario necesite seleccionarlo manualmente.
+ *
+ * Flujo por formato:
+ * - Imágenes (jpg, png, webp)  → VisionParser (Gemini Vision multimodal)
+ * - PDFs escaneados            → VisionParser (Gemini lee el PDF directamente)
+ * - PDFs con texto digital     → PdfTextParser (smalot extrae texto → Gemini texto)
+ * - Hojas de cálculo (xlsx)    → SpreadsheetParser (PhpSpreadsheet → Gemini texto)
  */
 class DocumentParserFactory
 {
     public function __construct(
         private readonly PdfTextParserService $pdfParser,
-        private readonly OcrParserService $ocrParser,
+        private readonly VisionParserService $visionParser,
         private readonly SpreadsheetParserService $spreadsheetParser,
     ) {}
 
@@ -29,7 +34,7 @@ class DocumentParserFactory
     {
         $extension = strtolower($extension);
 
-        // XLSX → lectura directa de celdas (síncrono pero despachado a la cola para mostrar la pantalla de procesamiento)
+        // XLSX/XLS → lectura directa de celdas
         if ($extension === 'xlsx' || $extension === 'xls') {
             return ['parser' => $this->spreadsheetParser, 'async' => true];
         }
@@ -38,14 +43,16 @@ class DocumentParserFactory
         if ($extension === 'pdf') {
             $hasText = $this->pdfParser->hasExtractableText($filePath);
 
+            // PDFs con texto digital: extraer texto y enviar a Gemini como texto
+            // PDFs escaneados: enviar directamente a Gemini Vision como Blob
             return $hasText
                 ? ['parser' => $this->pdfParser, 'async' => true]
-                : ['parser' => $this->ocrParser, 'async' => true];
+                : ['parser' => $this->visionParser, 'async' => true];
         }
 
-        // Imágenes → siempre OCR (asíncrono)
+        // Imágenes → Gemini Vision directamente (asíncrono)
         if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
-            return ['parser' => $this->ocrParser, 'async' => true];
+            return ['parser' => $this->visionParser, 'async' => true];
         }
 
         throw new RuntimeException("Formato de archivo no soportado: .{$extension}");

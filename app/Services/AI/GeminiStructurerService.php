@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Log;
  * Si en el futuro se cambia de Gemini a OpenAI u otro proveedor,
  * solo se modifica esta clase, no el resto de la aplicación.
  *
- * Responsabilidad única:
- * - Estructurar texto crudo de cotizaciones en JSON limpio de ítems.
+ * Responsabilidades:
+ * - structureFromFile(): Lectura visual directa de imágenes y PDFs escaneados.
+ * - structureRawText(): Estructuración de texto ya extraído (PDFs digitales, hojas de cálculo).
  */
 class GeminiStructurerService
 {
@@ -37,12 +38,89 @@ class GeminiStructurerService
         return config('gemini.model', env('GEMINI_MODEL', 'gemini-flash-latest'));
     }
 
+    // ──────────────────────────────────────────────────────────────
+    //  Método principal: Lectura visual directa (imágenes y PDFs)
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Estructura una cotización enviando el archivo directamente a Gemini Vision.
+     *
+     * Gemini recibe el archivo como Blob multimodal y "ve" el documento completo:
+     * layout, columnas, tablas y números, logrando extracción de alta precisión.
+     *
+     * Soporta imágenes (JPEG, PNG, WebP, HEIC, HEIF) y PDFs escaneados.
+     *
+     * @param  string  $filePath  Ruta absoluta al archivo.
+     * @return array{
+     *   supplier: ?string,
+     *   store: ?string,
+     *   tax_info: ?array,
+     *   items: array,
+     *   raw_text: string,
+     * }|null  null si la IA no está disponible o falla.
+     */
+    public function structureFromFile(string $filePath): ?array
+    {
+        if (!$this->isAvailable()) {
+            return null;
+        }
+
+        if (!file_exists($filePath) || !is_readable($filePath)) {
+            Log::warning('Gemini Vision: Archivo no accesible.', ['path' => $filePath]);
+            return null;
+        }
+
+        $mimeType = $this->resolveFileMimeType($filePath);
+        if ($mimeType === null) {
+            Log::warning('Gemini Vision: MIME type no soportado.', [
+                'path'          => $filePath,
+                'detected_mime' => mime_content_type($filePath),
+            ]);
+            return null;
+        }
+
+        $fileData = base64_encode(file_get_contents($filePath));
+        $prompt = $this->buildVisionPrompt();
+
+        try {
+            $result = Gemini::generativeModel(model: $this->getModel())
+                ->generateContent([
+                    $prompt,
+                    new Blob(
+                        mimeType: $mimeType,
+                        data: $fileData,
+                    ),
+                ]);
+
+            $responseText = $result->text();
+            $parsed = $this->parseJsonResponse($responseText);
+
+            if ($parsed !== null) {
+                $parsed['raw_text'] = $parsed['raw_text']
+                    ?? '[Extraído directamente por Gemini Vision]';
+            }
+
+            return $parsed;
+        } catch (\Throwable $e) {
+            Log::warning('Gemini Vision: Error al procesar archivo de cotización.', [
+                'error' => $e->getMessage(),
+                'path'  => $filePath,
+            ]);
+
+            return null;
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Método secundario: Estructuración de texto ya extraído
+    //  (usado por PdfTextParserService y SpreadsheetParserService)
+    // ──────────────────────────────────────────────────────────────
+
     /**
      * Estructura texto crudo de una cotización en ítems limpios.
      *
-     * Recibe el texto tal cual sale del OCR o PDF parser y devuelve
-     * un array estructurado con los productos identificados, incluyendo
-     * información fiscal (IVA) cuando está disponible.
+     * Recibe texto ya extraído por smalot/pdfparser o PhpSpreadsheet
+     * y devuelve un array estructurado con los productos identificados.
      *
      * @return array{
      *   supplier: ?string,
@@ -62,7 +140,7 @@ class GeminiStructurerService
             return null;
         }
 
-        $prompt = $this->buildExtractionPrompt($rawText);
+        $prompt = $this->buildTextPrompt($rawText);
 
         try {
             $result = Gemini::generativeModel(model: $this->getModel())
@@ -81,94 +159,74 @@ class GeminiStructurerService
         }
     }
 
-    /**
-     * Estructura una cotización enviando la imagen directamente a Gemini Vision.
-     *
-     * En vez de pasar por Tesseract OCR (que produce texto ruidoso en documentos
-     * complejos), esta función envía la imagen original como Blob multimodal.
-     * Gemini "ve" el documento completo: layout, columnas, tablas y números,
-     * logrando una extracción significativamente más precisa.
-     *
-     * @param  string  $filePath  Ruta absoluta al archivo de imagen.
-     * @return array{
-     *   supplier: ?string,
-     *   store: ?string,
-     *   tax_info: ?array,
-     *   items: array,
-     *   raw_text: string,
-     * }|null  null si la IA no está disponible o falla.
-     */
-    public function structureFromImage(string $filePath): ?array
-    {
-        if (!$this->isAvailable()) {
-            return null;
-        }
-
-        if (!file_exists($filePath) || !is_readable($filePath)) {
-            Log::warning('Gemini Vision: Archivo no accesible.', ['path' => $filePath]);
-            return null;
-        }
-
-        $mimeType = $this->resolveImageMimeType($filePath);
-        if ($mimeType === null) {
-            Log::warning('Gemini Vision: MIME type no soportado.', [
-                'path' => $filePath,
-                'detected_mime' => mime_content_type($filePath),
-            ]);
-            return null;
-        }
-
-        $imageData = base64_encode(file_get_contents($filePath));
-        $prompt = $this->buildVisionExtractionPrompt();
-
-        try {
-            $result = Gemini::generativeModel(model: $this->getModel())
-                ->generateContent([
-                    $prompt,
-                    new Blob(
-                        mimeType: $mimeType,
-                        data: $imageData,
-                    ),
-                ]);
-
-            $responseText = $result->text();
-            $parsed = $this->parseJsonResponse($responseText);
-
-            if ($parsed !== null) {
-                // Incluir un texto descriptivo como raw_text para auditoría,
-                // ya que no pasamos por Tesseract OCR.
-                $parsed['raw_text'] = $parsed['raw_text']
-                    ?? '[Extraído directamente por Gemini Vision desde imagen]';
-            }
-
-            return $parsed;
-        } catch (\Throwable $e) {
-            Log::warning('Gemini Vision: Error al procesar imagen de cotización.', [
-                'error'    => $e->getMessage(),
-                'path'     => $filePath,
-                'fallback' => 'Se intentará con Tesseract OCR como fallback.',
-            ]);
-
-            return null;
-        }
-    }
+    // ──────────────────────────────────────────────────────────────
+    //  Construcción de prompts
+    // ──────────────────────────────────────────────────────────────
 
     /**
-     * Construye el prompt para extracción estructurada de ítems.
+     * Prompt para lectura visual directa (imágenes y PDFs escaneados).
      *
-     * El prompt instruye a Gemini para:
-     * 1. Extraer productos con precios TAL COMO aparecen (sin modificar).
-     * 2. Detectar información fiscal (IVA desglosado, incluido, etc.).
-     * 3. Indicar por producto si su precio incluye IVA.
+     * Incluye instrucciones específicas de precisión visual que no aplican
+     * cuando el texto ya fue extraído digitalmente.
      */
-    private function buildExtractionPrompt(string $rawText): string
+    private function buildVisionPrompt(): string
     {
+        $rules = $this->buildExtractionRules();
+
         return <<<PROMPT
         Eres un experto en procesar cotizaciones de materiales de construcción en México.
 
-        A continuación recibirás texto crudo extraído de una cotización (puede venir de OCR, PDF o una hoja de cálculo).
-        El texto puede tener errores de OCR, estar desordenado o incluir información irrelevante (encabezados, pies de página, datos fiscales).
+        Te estoy mostrando un DOCUMENTO de una cotización. Lee el contenido directamente con máxima precisión.
 
+        INSTRUCCIONES DE LECTURA VISUAL (MUY IMPORTANTE):
+        - Lee CADA número exactamente como aparece. No inventes ni aproximes cifras.
+        - Presta especial atención a los dígitos que se confunden fácilmente: 0/O, 1/l/I, 5/S, 6/G, 8/B, etc.
+        - Las comas (,) en números son separadores de miles. Los puntos (.) son separadores decimales.
+        - Si un campo es ilegible, prefiere poner null en vez de inventar un valor.
+        - Lee las columnas de la tabla con cuidado: identifica primero los encabezados de cada columna antes de leer los datos.
+
+        {$rules}
+
+        - Si el documento es ilegible o no se identifica ningún producto, devuelve items como array vacío.
+        PROMPT;
+    }
+
+    /**
+     * Prompt para texto ya extraído (PDFs digitales, hojas de cálculo).
+     *
+     * El texto puede venir desordenado pero es digitalmente preciso,
+     * así que no necesita las instrucciones de lectura visual.
+     */
+    private function buildTextPrompt(string $rawText): string
+    {
+        $rules = $this->buildExtractionRules();
+
+        return <<<PROMPT
+        Eres un experto en procesar cotizaciones de materiales de construcción en México.
+
+        A continuación recibirás texto extraído digitalmente de una cotización (PDF o hoja de cálculo).
+        El texto puede estar desordenado o incluir información irrelevante (encabezados, pies de página, datos fiscales).
+
+        {$rules}
+
+        - Si el texto es ilegible o no se identifica ningún producto, devuelve items como array vacío.
+
+        Texto de la cotización:
+        ---
+        {$rawText}
+        ---
+        PROMPT;
+    }
+
+    /**
+     * Reglas de extracción compartidas entre ambos prompts.
+     *
+     * Centralizar las reglas en un solo lugar evita duplicación y garantiza
+     * que cualquier ajuste aplique tanto a Vision como a texto.
+     */
+    private function buildExtractionRules(): string
+    {
+        return <<<'RULES'
         Tu tarea es extraer la información estructurada del documento. Devuelve SOLO un JSON válido con el siguiente formato, sin texto adicional ni markdown:
 
         {
@@ -236,114 +294,19 @@ class GeminiStructurerService
         Indicadores comunes de IVA: "IVA incluido", "IVA incl.", "más IVA", "+ IVA", "+ 16%", "Subtotal", "Total", "IVA:", "impuesto", "16%", "c/IVA", "s/IVA", "I.V.A.", "I.V.A".
 
         - Ignora líneas que no sean productos (encabezados, pies de página, datos bancarios, etc.).
-        - Si el texto es ilegible o no se identifica ningún producto, devuelve items como array vacío.
-
-        Texto crudo de la cotización:
-        ---
-        {$rawText}
-        ---
-        PROMPT;
+        RULES;
     }
 
-    /**
-     * Construye el prompt para extracción visual directa desde una imagen.
-     *
-     * A diferencia de buildExtractionPrompt(), este prompt NO recibe texto crudo
-     * porque Gemini lee la imagen directamente. Las instrucciones enfatizan que
-     * debe leer con precisión cada número, código y texto del documento visual.
-     */
-    private function buildVisionExtractionPrompt(): string
-    {
-        return <<<PROMPT
-        Eres un experto en procesar cotizaciones de materiales de construcción en México.
-
-        Te estoy mostrando una IMAGEN de una cotización. Lee el documento directamente de la imagen con máxima precisión.
-
-        INSTRUCCIONES DE LECTURA VISUAL (MUY IMPORTANTE):
-        - Lee CADA número exactamente como aparece. No inventes ni aproximes cifras.
-        - Presta especial atención a los dígitos que se confunden fácilmente: 0/O, 1/l/I, 5/S, 6/G, 8/B, etc.
-        - Las comas (,) en números son separadores de miles. Los puntos (.) son separadores decimales.
-        - Si un campo es ilegible, prefiere poner null en vez de inventar un valor.
-        - Lee las columnas de la tabla con cuidado: identifica primero los encabezados de cada columna antes de leer los datos.
-
-        Tu tarea es extraer la información estructurada del documento. Devuelve SOLO un JSON válido con el siguiente formato, sin texto adicional ni markdown:
-
-        {
-            "supplier": "Nombre del proveedor o empresa (o null si no se identifica)",
-            "store": "Nombre de la sucursal/tienda (o null si no se identifica)",
-            "tax_info": {
-                "tax_rate": 0.16,
-                "prices_include_tax": true,
-                "tax_detected": true,
-                "subtotal": 5000.00,
-                "tax_total": 800.00,
-                "grand_total": 5800.00
-            },
-            "items": [
-                {
-                    "name": "Nombre limpio del producto (sin códigos del proveedor, sin viñetas)",
-                    "quantity": 10.0,
-                    "unit": "pza",
-                    "unit_price": 150.50,
-                    "discount": 0.00,
-                    "tax_amount": 24.08,
-                    "price_includes_tax": false,
-                    "line_subtotal": 1505.00,
-                    "line_total": 1745.80
-                }
-            ]
-        }
-
-        REGLAS CRÍTICAS PARA DISTINGUIR COLUMNAS (MUY IMPORTANTE):
-        Muchas cotizaciones mexicanas usan nombres de columnas que pueden confundirse entre sí. Debes distinguir correctamente:
-        - "Precio" o "P.U." o "Precio Unitario" o "Costo" → es el PRECIO UNITARIO de UNA unidad. Va en "unit_price".
-        - "Importe" o "Subtotal" o "Monto" → es el SUBTOTAL DE LÍNEA (cantidad × precio unitario, SIN IVA). Va en "line_subtotal".
-        - "Impuesto" o "IVA" o "I.V.A." → es el MONTO DE IVA de esa línea. Va en "tax_amount".
-        - "Importe Neto" o "Total" o "Neto" o "Total con IVA" → es el TOTAL DE LÍNEA (subtotal + IVA). Va en "line_total".
-        - "Descuento" → Si aparece una columna de descuento, ponlo en "discount".
-
-        Para identificar correctamente cuál es cuál:
-        1. El PRECIO UNITARIO es siempre el valor más PEQUEÑO por producto. Si multiplicas cantidad × precio unitario deberías obtener el subtotal.
-        2. El SUBTOTAL DE LÍNEA (importe) es = (cantidad × precio unitario) - descuento.
-        3. El IMPUESTO es un monto menor, normalmente ~16% del subtotal.
-        4. El TOTAL DE LÍNEA (importe neto) es = subtotal + impuesto.
-        5. Si solo hay 2 columnas numéricas y una es mucho mayor que la otra, la grande probablemente es subtotal/total y la pequeña es precio unitario.
-        6. VALIDACIONES LÓGICAS (Aplica esto mentalmente antes de responder):
-           - Un DESCUENTO NUNCA será mayor que el subtotal o el precio unitario.
-           - El IVA normalmente es el 16% (0.16) o el 8% (0.08) del subtotal.
-           - El Total SIEMPRE debe ser mayor o igual al Subtotal.
-
-        Reglas generales:
-        - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
-        - En "unit": normaliza a: pza, kg, m, m2, m3, lt, bulto, rollo, pieza, metro, litro, caja, paquete.
-        - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
-        - En "discount": pon el valor del descuento si aparece. Si no, pon 0.
-        - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
-        - En "price_includes_tax": true si el precio unitario YA tiene IVA incluido, false si el IVA se suma aparte, null si no puedes determinarlo.
-        - En "quantity": si no se identifica, pon 1.
-        - En "line_subtotal": si aparece el subtotal/importe de la línea (cantidad × precio sin IVA), pon ese valor. Si no, pon null.
-        - En "line_total": si aparece el total/importe neto de la línea (con IVA), pon ese valor. Si no, pon null.
-
-        Reglas sobre tax_info:
-        - "tax_rate": la tasa de IVA detectada (normalmente 0.16 en México). null si no se detecta.
-        - "prices_include_tax": true si los precios de los productos YA incluyen IVA, false si el IVA se suma aparte, null si no se puede determinar.
-        - "tax_detected": true si encontraste CUALQUIER referencia a IVA, impuestos, o desglose fiscal en el documento.
-        - "subtotal", "tax_total", "grand_total": extráelos si aparecen en la cotización. null si no aparecen.
-
-        Indicadores comunes de IVA: "IVA incluido", "IVA incl.", "más IVA", "+ IVA", "+ 16%", "Subtotal", "Total", "IVA:", "impuesto", "16%", "c/IVA", "s/IVA", "I.V.A.", "I.V.A".
-
-        - Ignora líneas que no sean productos (encabezados, pies de página, datos bancarios, etc.).
-        - Si la imagen es ilegible o no se identifica ningún producto, devuelve items como array vacío.
-        PROMPT;
-    }
+    // ──────────────────────────────────────────────────────────────
+    //  Resolución de MIME types para Vision
+    // ──────────────────────────────────────────────────────────────
 
     /**
      * Mapea la extensión del archivo a un MimeType soportado por Gemini Vision.
      *
-     * Retorna null si el tipo no es una imagen soportada, lo que permite
-     * al caller caer al flujo de Tesseract OCR como fallback.
+     * Retorna null si el formato no está soportado.
      */
-    private function resolveImageMimeType(string $filePath): ?MimeType
+    private function resolveFileMimeType(string $filePath): ?MimeType
     {
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
@@ -353,10 +316,14 @@ class GeminiStructurerService
             'webp'        => MimeType::IMAGE_WEBP,
             'heic'        => MimeType::IMAGE_HEIC,
             'heif'        => MimeType::IMAGE_HEIF,
+            'pdf'         => MimeType::APPLICATION_PDF,
             default       => null,
         };
     }
 
+    // ──────────────────────────────────────────────────────────────
+    //  Parseo y validación de respuesta
+    // ──────────────────────────────────────────────────────────────
 
     /**
      * Parsea una respuesta JSON de Gemini, tolerando markdown code fences.
@@ -421,8 +388,12 @@ class GeminiStructurerService
         ];
     }
 
+    // ──────────────────────────────────────────────────────────────
+    //  Validación cruzada de datos financieros
+    // ──────────────────────────────────────────────────────────────
+
     /**
-     * Aplica reglas de validación lógica y deduce valores erróneos 
+     * Aplica reglas de validación lógica y deduce valores erróneos
      * en base a incoherencias numéricas típicas de la IA.
      */
     private function crossValidateRow(array $item): array
@@ -499,18 +470,18 @@ class GeminiStructurerService
         if ($taxAmount !== null && $taxAmount > 0 && $quantity !== null && $quantity > 0) {
             $ratioLine = $lineSubtotal > 0 ? ($taxAmount / $lineSubtotal) : 0;
             $ratioUnit = $unitPrice > 0 ? ($taxAmount / $unitPrice) : 0;
-            
+
             // Si el IVA es ~16% del Subtotal, es IVA de línea (lo esperado) -> convertir a unitario
             if (abs($ratioLine - 0.16) < 0.05 || abs($ratioLine - 0.08) < 0.05) {
                 $taxAmount = round($taxAmount / $quantity, 2);
-            } 
-            // Si el IVA es ~16% del P.U., la IA ya lo extrajo unitario por error -> no hacer nada
+            }
+            // Si el IVA es ~16% del P.U., la IA ya lo extrajo unitario -> no hacer nada
             elseif (abs($ratioUnit - 0.16) < 0.05 || abs($ratioUnit - 0.08) < 0.05) {
                 // Ya es unitario
             }
             // Si no cuadra, asumimos por seguridad que es de línea y lo dividimos
             else {
-                 $taxAmount = round($taxAmount / $quantity, 2);
+                $taxAmount = round($taxAmount / $quantity, 2);
             }
         }
 
@@ -602,5 +573,4 @@ class GeminiStructurerService
 
         return null;
     }
-
 }
