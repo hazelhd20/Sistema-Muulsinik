@@ -196,7 +196,7 @@ class RequisitionIndex extends Component
     #[Title('Requisiciones')]
     public function render()
     {
-        $requisitions = Requisition::with(['project', 'creator', 'items'])
+        $requisitions = Requisition::with(['project', 'creator', 'items', 'quotations'])
             ->when($this->search, fn ($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))

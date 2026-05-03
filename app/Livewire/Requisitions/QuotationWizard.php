@@ -7,6 +7,8 @@ use App\Models\Document;
 use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\RequisitionItem;
+use App\Models\Measure;
+use App\Models\Product;
 use App\Models\Supplier;
 use App\Services\DataNormalizerService;
 use App\Services\DocumentParsers\DocumentParserFactory;
@@ -390,6 +392,24 @@ class QuotationWizard extends Component
             'items.min'          => 'Agrega al menos un producto.',
         ]);
 
+        // Auto-save Supplier if doesn't exist
+        $finalSupplierId = $this->supplierId;
+        if (empty($finalSupplierId) && !empty($this->supplierName)) {
+            $normalizer = app(DataNormalizerService::class);
+            $normalizedName = $normalizer->normalizeSupplierName($this->supplierName);
+            
+            // Try to find it by normalized name
+            $existingSupplier = Supplier::whereRaw('LOWER(trade_name) = ?', [$normalizedName])->first();
+            if ($existingSupplier) {
+                $finalSupplierId = $existingSupplier->id;
+            } else {
+                $newSupplier = Supplier::create([
+                    'trade_name' => $this->supplierName,
+                ]);
+                $finalSupplierId = $newSupplier->id;
+            }
+        }
+
         // RF-REQ-09: la requisición inicia como borrador
         $requisition = Requisition::create([
             'project_id'  => $this->projectId,
@@ -399,11 +419,42 @@ class QuotationWizard extends Component
             'date'        => $this->date,
         ]);
 
-        // Guardar ítems con datos fiscales
+        // Guardar ítems con datos fiscales y auto-guardado
         foreach ($this->items as $item) {
+            // Auto-save Product
+            $productId = $item['product_id'] ?? null;
+            if (empty($productId) && !empty($item['name'])) {
+                $normalizedProductName = app(DataNormalizerService::class)->normalizeText($item['name']);
+                $existingProduct = Product::whereRaw('LOWER(canonical_name) = ?', [$normalizedProductName])->first();
+                
+                if ($existingProduct) {
+                    $productId = $existingProduct->id;
+                } else {
+                    $newProduct = Product::create([
+                        'canonical_name' => $item['name'],
+                        'unit'           => $item['unit'] ?? 'pza',
+                    ]);
+                    $productId = $newProduct->id;
+                }
+            }
+
+            // Auto-save Measure
+            if (!empty($item['unit'])) {
+                $normalizedUnit = app(DataNormalizerService::class)->normalizeUnit($item['unit']);
+                $existingMeasure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
+                                          ->orWhere('abbreviation', $normalizedUnit)
+                                          ->first();
+                if (!$existingMeasure) {
+                    Measure::create([
+                        'name'         => ucfirst($item['unit']),
+                        'abbreviation' => $normalizedUnit,
+                    ]);
+                }
+            }
+
             RequisitionItem::create([
                 'requisition_id'      => $requisition->id,
-                'product_id'          => $item['product_id'] ?? null,
+                'product_id'          => $productId,
                 'product_name'        => $item['name'],
                 'quantity'            => $item['quantity'] ?? 0,
                 'unit'                => $item['unit'] ?? 'pza',
@@ -413,7 +464,7 @@ class QuotationWizard extends Component
                 'tax_source'          => $item['tax_source'] ?? null,
                 'line_subtotal'       => $item['line_subtotal'] ?? null,
                 'line_total'          => $item['line_total'] ?? null,
-                'supplier_id'         => $this->supplierId ?: null,
+                'supplier_id'         => $finalSupplierId ?: null,
             ]);
         }
 
@@ -423,7 +474,7 @@ class QuotationWizard extends Component
             if ($quotation) {
                 $quotation->update([
                     'requisition_id' => $requisition->id,
-                    'supplier_id'    => $this->supplierId ?: null,
+                    'supplier_id'    => $finalSupplierId ?: null,
                 ]);
 
                 // RF-DOC-02: vincular archivo al repositorio documental automáticamente
@@ -470,9 +521,10 @@ class QuotationWizard extends Component
     {
         $projects  = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('trade_name')->get();
+        $measures  = Measure::orderBy('name')->get();
 
         return view('livewire.requisitions.quotation-wizard', compact(
-            'projects', 'suppliers'
+            'projects', 'suppliers', 'measures'
         ));
     }
 }

@@ -1,4 +1,27 @@
-<div>
+<div x-data="{
+    showPreviewModal: false,
+    previewUrl: null,
+    previewType: null,
+    isPdf() {
+        return this.previewType === 'application/pdf' || (this.previewUrl && this.previewUrl.toLowerCase().includes('.pdf'));
+    },
+    isImage() {
+        return (this.previewType && this.previewType.startsWith('image/')) || (this.previewUrl && this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i));
+    },
+    openLocalPreview() {
+        const fileInput = document.getElementById('file-upload-input');
+        if (fileInput && fileInput.files.length > 0) {
+            this.previewUrl = URL.createObjectURL(fileInput.files[0]);
+            this.previewType = fileInput.files[0].type;
+            this.showPreviewModal = true;
+        }
+    },
+    openServerPreview(url, mimeType) {
+        this.previewUrl = url;
+        this.previewType = mimeType;
+        this.showPreviewModal = true;
+    }
+}">
     {{-- ═══════ WIZARD HEADER ═══════ --}}
     <div class="mb-8">
         <div class="flex items-center gap-3 mb-2">
@@ -115,9 +138,14 @@
                                 <p class="text-xs text-text-muted">{{ number_format($file->getSize() / 1024, 1) }} KB</p>
                             </div>
                         </div>
-                        <button wire:key="btn-remove-file" type="button" wire:click="$set('file', null)" @click="document.getElementById('file-upload-input').value = ''" class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
-                            <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="openLocalPreview" class="p-1.5 rounded-lg hover:bg-primary-50 text-primary-600 transition" title="Vista previa">
+                                <i data-lucide="eye" class="w-4 h-4" wire:ignore></i>
+                            </button>
+                            <button wire:key="btn-remove-file" type="button" wire:click="$set('file', null)" @click="document.getElementById('file-upload-input').value = ''" class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                                <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
+                            </button>
+                        </div>
                     </div>
                 @endif
 
@@ -246,10 +274,21 @@
             {{-- General Info --}}
             <div class="card mb-6">
                 <div class="p-6">
-                    <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                        <i data-lucide="info" class="w-5 h-5 text-primary-600"></i>
-                        Información General
-                    </h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-text-primary flex items-center gap-2">
+                            <i data-lucide="info" class="w-5 h-5 text-primary-600"></i>
+                            Información General
+                        </h2>
+                        @php
+                            $quotation = $quotationId ? \App\Models\Quotation::find($quotationId) : null;
+                        @endphp
+                        @if($quotation)
+                            <button type="button" @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')" class="btn-secondary text-sm">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                Ver Documento Original
+                            </button>
+                        @endif
+                    </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -270,16 +309,22 @@
 
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Proveedor</label>
-                            <div class="flex gap-2">
-                                <x-custom-select 
-                                    wire:model="supplierId" 
-                                    :options="$suppliers->pluck('trade_name', 'id')->toArray()" 
-                                    placeholder="{{ $supplierName ?: 'Seleccionar proveedor...' }}" 
-                                    class="flex-1"
-                                />
-                                @if($supplierName && !$supplierId)
-                                    <span class="px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-xs font-medium self-center whitespace-nowrap">
-                                        Detectado: {{ Str::limit($supplierName, 20) }}
+                            <div class="flex flex-col gap-1">
+                                <input 
+                                    type="text" 
+                                    wire:model="supplierName" 
+                                    list="suppliers-list" 
+                                    class="input" 
+                                    placeholder="Seleccionar o escribir nuevo proveedor..."
+                                >
+                                <datalist id="suppliers-list">
+                                    @foreach($suppliers as $supplier)
+                                        <option value="{{ $supplier->trade_name }}"></option>
+                                    @endforeach
+                                </datalist>
+                                @if($supplierName)
+                                    <span class="text-xs text-amber-600 font-medium">
+                                        <i data-lucide="info" class="w-3 h-3 inline"></i> Se guardará como nuevo si no existe en el sistema.
                                     </span>
                                 @endif
                             </div>
@@ -366,6 +411,11 @@
 
                     @if(count($items) > 0)
                         <div class="overflow-x-auto rounded-xl border border-gray-100">
+                            <datalist id="measures-list">
+                                @foreach($measures as $measure)
+                                    <option value="{{ $measure->name }}">{{ $measure->abbreviation ? '('.$measure->abbreviation.')' : '' }}</option>
+                                @endforeach
+                            </datalist>
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-surface-main">
@@ -393,12 +443,13 @@
 
                                             {{-- Unidad --}}
                                             <td class="px-3 py-2">
-                                                <x-custom-select 
+                                                <input 
+                                                    type="text" 
                                                     wire:model="items.{{ $i }}.unit" 
-                                                    :options="['pza' => 'Pieza', 'kg' => 'Kg', 'm' => 'Metro', 'm2' => 'm²', 'm3' => 'm³', 'lt' => 'Litro', 'bulto' => 'Bulto', 'rollo' => 'Rollo', 'caja' => 'Caja', 'servicio' => 'Servicio', 'lote' => 'Lote', 'galon' => 'Galón', 'tramo' => 'Tramo']" 
-                                                    placeholder="Unidad..." 
-                                                    class="text-sm"
-                                                />
+                                                    list="measures-list" 
+                                                    class="input text-sm" 
+                                                    placeholder="Unidad..."
+                                                >
                                             </td>
 
                                             {{-- Precio Unitario (sin IVA) --}}
@@ -436,8 +487,8 @@
                                 <tfoot>
                                     @php
                                         $subtotalSinIva = collect($items)->sum(fn($item) => $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)));
-                                        $totalIva = collect($items)->sum(fn($item) => $item['tax_amount'] ?? 0);
                                         $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
+                                        $totalIva = $totalConIva - $subtotalSinIva;
                                     @endphp
                                     <tr class="border-t border-gray-100 bg-surface-main">
                                         <td colspan="5" class="px-3 py-2 text-right text-sm text-text-muted">Subtotal (sin IVA):</td>
@@ -501,4 +552,36 @@
             </div>
         </form>
     @endif
+
+    {{-- ═══════ PREVIEW MODAL ═══════ --}}
+    <div x-show="showPreviewModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden" x-transition>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-surface-card">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
+                </h3>
+                <button @click="showPreviewModal = false" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-hidden bg-gray-50/50 p-4 relative">
+                <template x-if="isImage()">
+                    <img :src="previewUrl" class="w-full h-full object-contain rounded-lg">
+                </template>
+                <template x-if="isPdf()">
+                    <iframe :src="previewUrl" class="w-full h-full border border-gray-200 rounded-lg shadow-sm bg-white"></iframe>
+                </template>
+                <template x-if="!isImage() && !isPdf()">
+                    <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
+                        <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
+                        <p class="font-medium text-sm">Vista previa no disponible para este tipo de archivo.</p>
+                        <a :href="previewUrl" target="_blank" class="btn-secondary text-sm mt-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Descargar
+                        </a>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
 </div>

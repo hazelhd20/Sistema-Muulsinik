@@ -80,6 +80,11 @@
                     <i data-lucide="package" class="w-5 h-5"></i>
                     <span>Productos</span>
                 </a>
+
+                <a href="{{ url('/medidas') }}" class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
+                    <i data-lucide="ruler" class="w-5 h-5"></i>
+                    <span>Medidas</span>
+                </a>
             </nav>
 
             {{-- User Section --}}

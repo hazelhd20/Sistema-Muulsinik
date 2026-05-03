@@ -57,4 +57,24 @@ Route::middleware('auth')->group(function () {
 
     // Catálogo de Productos (RF-REQ-05)
     Route::get('/productos', ProductIndex::class)->name('productos.index');
+
+    // Catálogo de Medidas
+    Route::get('/medidas', \App\Livewire\Measures\MeasureIndex::class)->name('medidas.index');
+
+    // Previsualización de archivos
+    Route::get('/preview-file', function (\Illuminate\Http\Request $request) {
+        $path = $request->query('path');
+        $disk = $request->query('disk', 'local');
+        
+        if (!in_array($disk, ['local', 'public']) || !$path || str_contains($path, '..') || !\Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
+            abort(404);
+        }
+        
+        $mime = \Illuminate\Support\Facades\Storage::disk($disk)->mimeType($path);
+        
+        return response()->file(\Illuminate\Support\Facades\Storage::disk($disk)->path($path), [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . basename($path) . '"'
+        ]);
+    })->name('file.preview');
 });

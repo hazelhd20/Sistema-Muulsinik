@@ -1,4 +1,19 @@
-<div>
+<div x-data="{
+    showPreviewModal: false,
+    previewUrl: null,
+    previewType: null,
+    isPdf() {
+        return this.previewType === 'application/pdf' || (this.previewUrl && this.previewUrl.toLowerCase().includes('.pdf'));
+    },
+    isImage() {
+        return (this.previewType && this.previewType.startsWith('image/')) || (this.previewUrl && this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i));
+    },
+    openPreview(url, mimeType) {
+        this.previewUrl = url;
+        this.previewType = mimeType;
+        this.showPreviewModal = true;
+    }
+}">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -94,6 +109,17 @@
                         </div>
 
                         <div class="flex items-center gap-1">
+                            @if($req->quotations->isNotEmpty())
+                                @php
+                                    $firstQuot = $req->quotations->first();
+                                    $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                    $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                                @endphp
+                                <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" class="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition" title="Ver archivo adjunto">
+                                    <i data-lucide="file-search" class="w-4 h-4"></i>
+                                </button>
+                            @endif
+
                             @if($req->status === 'borrador')
                                 <button wire:click="submitForApproval({{ $req->id }})" wire:confirm="¿Enviar esta requisición a aprobación?" class="p-2 rounded-lg bg-primary-50 hover:bg-primary-100 text-primary-600 transition" title="Enviar a aprobación">
                                     <i data-lucide="send" class="w-4 h-4"></i>
@@ -319,5 +345,38 @@
                 </form>
             </div>
         </div>
+        </div>
     @endif
+
+    {{-- ═══════ PREVIEW MODAL ═══════ --}}
+    <div x-show="showPreviewModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden" x-transition>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-surface-card">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
+                </h3>
+                <button @click="showPreviewModal = false" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-hidden bg-gray-50/50 p-4 relative">
+                <template x-if="isImage()">
+                    <img :src="previewUrl" class="w-full h-full object-contain rounded-lg">
+                </template>
+                <template x-if="isPdf()">
+                    <iframe :src="previewUrl" class="w-full h-full border border-gray-200 rounded-lg shadow-sm bg-white"></iframe>
+                </template>
+                <template x-if="!isImage() && !isPdf()">
+                    <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
+                        <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
+                        <p class="font-medium text-sm">Vista previa no disponible para este tipo de archivo.</p>
+                        <a :href="previewUrl" target="_blank" class="btn-secondary text-sm mt-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Descargar
+                        </a>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
 </div>
