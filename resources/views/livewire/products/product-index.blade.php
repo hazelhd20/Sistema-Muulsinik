@@ -12,9 +12,7 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>{{ session('success') }}
-        </div>
+        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })"></div>
     @endif
 
     {{-- Filters --}}
@@ -160,7 +158,7 @@
                 </div>
                 <div class="p-6">
                     @if(session('alias_success'))
-                        <div class="mb-4 p-2 rounded-lg bg-green-50 text-green-700 text-xs">{{ session('alias_success') }}</div>
+                        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('alias_success') }}' })"></div>
                     @endif
 
                     {{-- Info card --}}

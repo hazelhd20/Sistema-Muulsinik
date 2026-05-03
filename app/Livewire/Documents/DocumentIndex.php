@@ -41,8 +41,6 @@ class DocumentIndex extends Component
     public function openUploadModal(): void
     {
         $this->resetForm();
-        // RF-AUTH-03: Prellenar con el proyecto activo del selector global
-        $this->docProjectId = session('active_project_id', '');
         $this->showUploadModal = true;
     }
 

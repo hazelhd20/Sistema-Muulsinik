@@ -48,8 +48,6 @@ class RequisitionIndex extends Component
     {
         $this->resetForm();
         $this->reqDate = now()->format('Y-m-d');
-        // RF-AUTH-03: Prellenar con el proyecto activo del selector global
-        $this->reqProjectId = session('active_project_id', '');
         $this->showCreateModal = true;
     }
 
@@ -197,9 +195,9 @@ class RequisitionIndex extends Component
     public function render()
     {
         $requisitions = Requisition::with(['project', 'creator', 'items', 'quotations'])
-            ->when($this->search, fn ($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
-            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-            ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
             ->latest()
             ->paginate(10);
 
@@ -207,7 +205,9 @@ class RequisitionIndex extends Component
         $suppliers = Supplier::orderBy('trade_name')->get();
 
         return view('livewire.requisitions.requisition-index', compact(
-            'requisitions', 'projects', 'suppliers'
+            'requisitions',
+            'projects',
+            'suppliers'
         ));
     }
 }

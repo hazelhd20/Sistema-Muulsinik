@@ -13,8 +13,8 @@
 
     {{-- Flash messages --}}
     @if(session('success'))
-        <div class="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
-            {{ session('success') }}
+        <div x-data
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })">
         </div>
     @endif
 
@@ -22,14 +22,11 @@
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <div class="relative flex-1">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar proyecto o cliente..." class="input pl-10">
+            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar proyecto o cliente..."
+                class="input pl-10">
         </div>
-        <x-custom-select 
-            wire:model.live="statusFilter" 
-            :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" 
-            placeholder="Todos los estados" 
-            class="w-auto min-w-[160px]"
-        />
+        <x-custom-select wire:model.live="statusFilter" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados"
+            class="w-auto min-w-[160px]" />
     </div>
 
     {{-- Projects Grid --}}
@@ -70,7 +67,8 @@
                             $percent = min($project->budget_used_percent, 100);
                             $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-500');
                         @endphp
-                        <div class="{{ $barColor }} h-full rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                        <div class="{{ $barColor }} h-full rounded-full transition-all duration-500"
+                            style="width: {{ $percent }}%"></div>
                     </div>
                     <div class="flex justify-between text-xs text-text-muted mt-1">
                         <span>${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
@@ -85,14 +83,13 @@
                         <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                        <a href="{{ url('/proyectos/' . $project->id) }}" class="p-1.5 rounded-lg hover:bg-surface-hover transition text-text-muted hover:text-primary-600">
+                        <a href="{{ url('/proyectos/' . $project->id) }}"
+                            class="p-1.5 rounded-lg hover:bg-surface-hover transition text-text-muted hover:text-primary-600">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </a>
-                        <button
-                            wire:click="deleteProject({{ $project->id }})"
+                        <button wire:click="deleteProject({{ $project->id }})"
                             wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
-                            class="p-1.5 rounded-lg hover:bg-red-50 transition text-text-muted hover:text-danger"
-                        >
+                            class="p-1.5 rounded-lg hover:bg-red-50 transition text-text-muted hover:text-danger">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -111,7 +108,8 @@
 
     {{-- Create Project Modal --}}
     @if($showCreateModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data x-init="$el.querySelector('input')?.focus()">
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data
+            x-init="$el.querySelector('input')?.focus()">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
@@ -130,7 +128,8 @@
 
                     <div>
                         <label class="block text-sm font-medium text-text-primary mb-1.5">Descripción</label>
-                        <textarea wire:model="description" class="input" rows="3" placeholder="Descripción breve del proyecto..."></textarea>
+                        <textarea wire:model="description" class="input" rows="3"
+                            placeholder="Descripción breve del proyecto..."></textarea>
                         @error('description') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
 
@@ -152,20 +151,26 @@
                             <input wire:model="startDate" type="date" class="input">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha estimada de término</label>
+                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha estimada de
+                                término</label>
                             <input wire:model="endDate" type="date" class="input">
                             @error('endDate') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
+                        <button type="button" wire:click="$set('showCreateModal', false)"
+                            class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.class="opacity-0" wire:target="createProject" class="transition-opacity">Crear Proyecto</span>
-                            <span wire:loading wire:target="createProject" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <span wire:loading.class="opacity-0" wire:target="createProject"
+                                class="transition-opacity">Crear Proyecto</span>
+                            <span wire:loading wire:target="createProject"
+                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                 <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+                                        fill="none" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                 </svg>
                             </span>
                         </button>

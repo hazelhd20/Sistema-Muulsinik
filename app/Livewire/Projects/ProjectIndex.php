@@ -82,9 +82,9 @@ class ProjectIndex extends Component
     public function render()
     {
         $projects = Project::query()
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
+            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('client', 'like', "%{$this->search}%"))
-            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->latest()
             ->paginate(12);
 

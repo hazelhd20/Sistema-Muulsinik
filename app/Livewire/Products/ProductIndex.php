@@ -142,8 +142,8 @@ class ProductIndex extends Component
     public function render()
     {
         $products = Product::withCount('aliases')
-            ->when($this->search, fn ($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
-            ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
+            ->when($this->search, fn($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
+            ->when($this->categoryFilter, fn($q) => $q->where('category', $this->categoryFilter))
             ->orderBy('canonical_name')
             ->paginate(15);
 
@@ -156,7 +156,11 @@ class ProductIndex extends Component
         $categories = $this->categories;
 
         return view('livewire.products.product-index', compact(
-            'products', 'viewingProduct', 'suppliers', 'units', 'categories'
+            'products',
+            'viewingProduct',
+            'suppliers',
+            'units',
+            'categories'
         ));
     }
 }

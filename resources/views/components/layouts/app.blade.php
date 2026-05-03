@@ -16,6 +16,9 @@
     {{-- Lucide Icons CDN --}}
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
+    {{-- SweetAlert2 CDN --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -129,9 +132,6 @@
                         </div>
                     </div>
 
-                    {{-- Center: Global Project Selector (RF-AUTH-03 / RNF-USA-07) --}}
-                    <livewire:project-selector />
-
                     {{-- Right: Notifications + Profile --}}
                     <div class="flex items-center gap-3">
                         <button class="relative p-2 rounded-xl hover:bg-surface-hover transition"
@@ -152,7 +152,8 @@
                             </div>
                             <div class="hidden md:block">
                                 <p class="text-sm font-semibold text-text-primary">
-                                    {{ auth()->user()->name ?? 'Usuario' }}</p>
+                                    {{ auth()->user()->name ?? 'Usuario' }}
+                                </p>
                                 <p class="text-xs text-text-muted">{{ auth()->user()->role->name ?? 'Sin rol' }}</p>
                             </div>
                         </div>
@@ -175,6 +176,45 @@
         if (typeof Livewire !== 'undefined') {
             Livewire.hook('morph.updated', () => lucide.createIcons());
         }
+
+        // Interceptar Livewire wire:confirm para usar SweetAlert2
+        document.addEventListener('click', e => {
+            let el = e.target.closest('[wire\\:confirm]');
+            if (el && !el.hasAttribute('data-confirmed')) {
+                e.preventDefault();
+                e.stopImmediatePropagation(); // Detiene el evento antes de que Livewire lo vea
+
+                let content = el.getAttribute('wire:confirm');
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: content,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0ea5e9',
+                    cancelButtonColor: '#ef4444',
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-lg',
+                        cancelButton: 'rounded-lg'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        el.setAttribute('data-confirmed', 'true');
+                        // Bypassear el window.confirm nativo temporalmente
+                        let originalConfirm = window.confirm;
+                        window.confirm = () => true;
+
+                        el.click(); // Disparar el clic de nuevo, esta vez pasará a Livewire
+
+                        window.confirm = originalConfirm;
+                        el.removeAttribute('data-confirmed');
+                    }
+                });
+            }
+        }, true); // Capturing phase para interceptar antes que Livewire
     </script>
 </body>
 

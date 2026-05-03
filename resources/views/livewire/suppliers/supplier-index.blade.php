@@ -12,15 +12,16 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>{{ session('success') }}
+        <div x-data
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })">
         </div>
     @endif
 
     {{-- Search --}}
     <div class="relative mb-6">
         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-        <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar por nombre o RFC..." class="input pl-10 max-w-md">
+        <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar por nombre o RFC..."
+            class="input pl-10 max-w-md">
     </div>
 
     {{-- Suppliers Grid --}}
@@ -62,15 +63,14 @@
 
                 {{-- Footer --}}
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <button wire:click="viewVendors({{ $supplier->id }})" class="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
+                    <button wire:click="viewVendors({{ $supplier->id }})"
+                        class="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
                         <i data-lucide="users" class="w-3.5 h-3.5"></i>
                         {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                     </button>
-                    <button
-                        wire:click="deleteSupplier({{ $supplier->id }})"
+                    <button wire:click="deleteSupplier({{ $supplier->id }})"
                         wire:confirm="¿Eliminar este proveedor y todos sus vendedores?"
-                        class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition"
-                    >
+                        class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -100,7 +100,8 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre comercial *</label>
-                            <input wire:model="tradeName" type="text" class="input" placeholder="Ej. Materiales del Sureste">
+                            <input wire:model="tradeName" type="text" class="input"
+                                placeholder="Ej. Materiales del Sureste">
                             @error('tradeName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
@@ -133,7 +134,8 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
+                        <button type="button" wire:click="$set('showCreateModal', false)"
+                            class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary">Registrar Proveedor</button>
                     </div>
                 </form>
@@ -157,7 +159,9 @@
                 </div>
                 <div class="p-6">
                     @if(session('vendor_success'))
-                        <div class="mb-4 p-2 rounded-lg bg-green-50 text-green-700 text-xs">{{ session('vendor_success') }}</div>
+                        <div x-data
+                            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('vendor_success') }}' })">
+                        </div>
                     @endif
 
                     {{-- Existing vendors --}}
@@ -170,7 +174,8 @@
                                         {{ $vendor->phone ?? '' }}{{ $vendor->phone && $vendor->email ? ' · ' : '' }}{{ $vendor->email ?? '' }}
                                     </p>
                                 </div>
-                                <button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?" class="p-1 rounded hover:bg-red-100 text-text-muted hover:text-danger">
+                                <button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
+                                    class="p-1 rounded hover:bg-red-100 text-text-muted hover:text-danger">
                                     <i data-lucide="x" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
@@ -190,7 +195,8 @@
                             </div>
                             <div class="flex gap-2">
                                 <button type="submit" class="btn-primary text-xs">Agregar</button>
-                                <button type="button" wire:click="$set('showAddVendor', false)" class="btn-secondary text-xs">Cancelar</button>
+                                <button type="button" wire:click="$set('showAddVendor', false)"
+                                    class="btn-secondary text-xs">Cancelar</button>
                             </div>
                         </form>
                     @else

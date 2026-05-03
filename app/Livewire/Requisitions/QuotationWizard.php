@@ -71,8 +71,7 @@ class QuotationWizard extends Component
 
     public function mount(): void
     {
-        $this->projectId = session('active_project_id', '');
-        $this->date  = now()->format('Y-m-d');
+        $this->date = now()->format('Y-m-d');
     }
 
     /* ═══════════════════════════════════════════════════

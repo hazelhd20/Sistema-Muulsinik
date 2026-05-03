@@ -46,8 +46,6 @@ class ExpenseIndex extends Component
     {
         $this->resetForm();
         $this->date = now()->format('Y-m-d');
-        // RF-AUTH-03: Prellenar con el proyecto activo del selector global
-        $this->projectId = session('active_project_id', '');
         $this->showCreateModal = true;
     }
 

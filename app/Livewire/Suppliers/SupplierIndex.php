@@ -136,7 +136,7 @@ class SupplierIndex extends Component
     public function render()
     {
         $suppliers = Supplier::withCount('vendors')
-            ->when($this->search, fn ($q) => $q->where('trade_name', 'like', "%{$this->search}%")
+            ->when($this->search, fn($q) => $q->where('trade_name', 'like', "%{$this->search}%")
                 ->orWhere('rfc', 'like', "%{$this->search}%"))
             ->latest()
             ->paginate(12);

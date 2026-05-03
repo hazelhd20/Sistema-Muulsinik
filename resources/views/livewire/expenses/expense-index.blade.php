@@ -5,34 +5,31 @@
             <h1 class="text-2xl font-bold text-text-primary">Control de Gastos</h1>
             <p class="text-sm text-text-muted">Registra y controla los gastos operativos por proyecto</p>
         </div>
-        <div class="flex items-center gap-3">
-            <div class="card flex items-center gap-3" style="padding: 0.75rem 1.25rem;">
-                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-text-muted">Gasto del mes</p>
-                    <p class="text-lg font-bold text-text-primary">${{ number_format($totalMonth, 0, '.', ',') }}</p>
-                </div>
+        <button wire:click="openCreateModal" class="btn-primary">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Registrar Gasto
+        </button>
+    </div>
+
+    {{-- Stats row --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="stat-card">
+            <div class="stat-icon bg-green-100">
+                <i data-lucide="trending-up" class="w-5 h-5 text-green-600"></i>
             </div>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                Registrar Gasto
-            </button>
+            <div>
+                <p class="text-xs text-text-muted mb-0.5">Gasto del mes</p>
+                <p class="text-xl font-bold text-text-primary">${{ number_format($totalMonth, 0, '.', ',') }}</p>
+            </div>
         </div>
     </div>
 
     {{-- Alerts --}}
     @if(session('success'))
-        <div class="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-            {{ session('success') }}
-        </div>
+        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })"></div>
     @endif
     @if(session('budget_alert'))
-        <div class="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium">
-            {{ session('budget_alert') }}
-        </div>
+        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' })"></div>
     @endif
 
     {{-- Filters --}}
@@ -41,19 +38,20 @@
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar gasto..." class="input pl-10">
         </div>
-        <x-custom-select 
-            wire:model.live="projectFilter" 
-            :options="$projects->pluck('name', 'id')->toArray()" 
-            placeholder="Todos los proyectos" 
+        <x-custom-select
+            wire:model.live="projectFilter"
+            :options="$projects->pluck('name', 'id')->toArray()"
+            placeholder="Todos los proyectos"
             class="w-auto min-w-[180px]"
         />
-        <x-custom-select 
-            wire:model.live="categoryFilter" 
-            :options="$categories" 
-            placeholder="Todas las categorías" 
+        <x-custom-select
+            wire:model.live="categoryFilter"
+            :options="$categories"
+            placeholder="Todas las categorías"
             class="w-auto min-w-[160px]"
         />
     </div>
+
 
     {{-- Table --}}
     <div class="table-container">
