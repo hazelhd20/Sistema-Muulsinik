@@ -9,8 +9,4 @@ class Product extends Model
 {
     protected $fillable = ['canonical_name', 'unit', 'description', 'category'];
 
-    public function aliases(): HasMany
-    {
-        return $this->hasMany(ProductAlias::class);
-    }
 }

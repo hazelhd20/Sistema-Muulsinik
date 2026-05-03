@@ -3,7 +3,6 @@
 namespace App\Livewire\Products;
 
 use App\Models\Product;
-use App\Models\ProductAlias;
 use App\Models\Supplier;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -17,18 +16,12 @@ class ProductIndex extends Component
     public string $search = '';
     public string $categoryFilter = '';
     public bool $showCreateModal = false;
-    public bool $showAliasModal = false;
-    public ?int $viewingProductId = null;
 
     // Campos del producto
     public string $canonicalName = '';
     public string $unit = '';
     public string $description = '';
     public string $category = '';
-
-    // Campos del alias
-    public string $aliasName = '';
-    public $aliasSupplierId = '';
 
     protected array $units = [
         'pza' => 'Pieza',
@@ -91,38 +84,6 @@ class ProductIndex extends Component
         session()->flash('success', 'Producto registrado en el catálogo maestro.');
     }
 
-    public function viewAliases(int $productId): void
-    {
-        $this->viewingProductId = $productId;
-        $this->showAliasModal = true;
-        $this->aliasName = '';
-        $this->aliasSupplierId = '';
-    }
-
-    /** Agregar alias de proveedor para este producto. */
-    public function addAlias(): void
-    {
-        $this->validate([
-            'aliasName' => 'required|min:2|max:255',
-            'aliasSupplierId' => 'nullable|exists:suppliers,id',
-        ]);
-
-        ProductAlias::create([
-            'product_id' => $this->viewingProductId,
-            'alias_name' => $this->aliasName,
-            'supplier_id' => $this->aliasSupplierId ?: null,
-        ]);
-
-        $this->aliasName = '';
-        $this->aliasSupplierId = '';
-        session()->flash('alias_success', 'Alias agregado.');
-    }
-
-    public function deleteAlias(int $aliasId): void
-    {
-        ProductAlias::findOrFail($aliasId)->delete();
-    }
-
     public function deleteProduct(int $productId): void
     {
         Product::findOrFail($productId)->delete();
@@ -141,15 +102,11 @@ class ProductIndex extends Component
     #[Title('Productos')]
     public function render()
     {
-        $products = Product::withCount('aliases')
+        $products = Product::query()
             ->when($this->search, fn($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
             ->when($this->categoryFilter, fn($q) => $q->where('category', $this->categoryFilter))
             ->orderBy('canonical_name')
             ->paginate(15);
-
-        $viewingProduct = $this->viewingProductId
-            ? Product::with(['aliases.supplier'])->find($this->viewingProductId)
-            : null;
 
         $suppliers = Supplier::orderBy('trade_name')->get();
         $units = $this->units;
@@ -157,7 +114,6 @@ class ProductIndex extends Component
 
         return view('livewire.products.product-index', compact(
             'products',
-            'viewingProduct',
             'suppliers',
             'units',
             'categories'

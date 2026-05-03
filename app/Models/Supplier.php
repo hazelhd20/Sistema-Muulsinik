@@ -21,8 +21,4 @@ class Supplier extends Model
         return $this->hasMany(Vendor::class);
     }
 
-    public function productAliases(): HasMany
-    {
-        return $this->hasMany(ProductAlias::class);
-    }
 }
