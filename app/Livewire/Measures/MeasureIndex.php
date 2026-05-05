@@ -67,7 +67,21 @@ class MeasureIndex extends Component
 
     public function delete(int $id): void
     {
-        Measure::findOrFail($id)->delete();
+        $measure = Measure::findOrFail($id);
+
+        $isUsed = \App\Models\RequisitionItem::where('unit', $measure->abbreviation)
+                    ->orWhere('unit', $measure->name)
+                    ->exists() ||
+                  \App\Models\Product::where('unit', $measure->abbreviation)
+                    ->orWhere('unit', $measure->name)
+                    ->exists();
+
+        if ($isUsed) {
+            session()->flash('error', 'No se puede eliminar: la medida está en uso por productos o requisiciones.');
+            return;
+        }
+
+        $measure->delete();
         session()->flash('success', 'Medida eliminada exitosamente.');
     }
 

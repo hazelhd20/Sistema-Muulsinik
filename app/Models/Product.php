@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['canonical_name', 'unit', 'description', 'category'];
+    protected $fillable = ['canonical_name', 'normalized_name', 'unit', 'description', 'category'];
+
+    protected static function booted()
+    {
+        static::saving(function ($product) {
+            if ($product->isDirty('canonical_name') && !empty($product->canonical_name)) {
+                $product->normalized_name = app(\App\Services\DataNormalizerService::class)->normalizeText($product->canonical_name);
+            }
+        });
+    }
 
 }

@@ -86,7 +86,14 @@ class ProductIndex extends Component
 
     public function deleteProduct(int $productId): void
     {
-        Product::findOrFail($productId)->delete();
+        $product = Product::findOrFail($productId);
+        
+        if (\App\Models\RequisitionItem::where('product_id', $productId)->exists()) {
+            session()->flash('error', 'No se puede eliminar: el producto está siendo utilizado en una requisición.');
+            return;
+        }
+
+        $product->delete();
         session()->flash('success', 'Producto eliminado del catálogo.');
     }
 

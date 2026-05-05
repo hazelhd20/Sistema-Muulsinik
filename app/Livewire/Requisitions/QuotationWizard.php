@@ -398,7 +398,7 @@ class QuotationWizard extends Component
             $normalizedName = $normalizer->normalizeSupplierName($this->supplierName);
             
             // Try to find it by normalized name
-            $existingSupplier = Supplier::whereRaw('LOWER(trade_name) = ?', [$normalizedName])->first();
+            $existingSupplier = Supplier::where('normalized_name', $normalizedName)->first();
             if ($existingSupplier) {
                 $finalSupplierId = $existingSupplier->id;
             } else {
@@ -424,7 +424,7 @@ class QuotationWizard extends Component
             $productId = $item['product_id'] ?? null;
             if (empty($productId) && !empty($item['name'])) {
                 $normalizedProductName = app(DataNormalizerService::class)->normalizeText($item['name']);
-                $existingProduct = Product::whereRaw('LOWER(canonical_name) = ?', [$normalizedProductName])->first();
+                $existingProduct = Product::where('normalized_name', $normalizedProductName)->first();
                 
                 if ($existingProduct) {
                     $productId = $existingProduct->id;

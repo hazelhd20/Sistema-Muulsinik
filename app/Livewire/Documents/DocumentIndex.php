@@ -76,7 +76,15 @@ class DocumentIndex extends Component
 
     public function deleteDocument(int $id): void
     {
-        Document::findOrFail($id)->delete();
+        $document = Document::findOrFail($id);
+
+        if ($document->requisition_id) {
+            session()->flash('error', 'No se puede eliminar: el documento pertenece a una requisición.');
+            return;
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
+        $document->delete();
         session()->flash('success', 'Documento eliminado.');
     }
 

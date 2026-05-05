@@ -115,7 +115,17 @@ class SupplierIndex extends Component
 
     public function deleteSupplier(int $supplierId): void
     {
-        Supplier::findOrFail($supplierId)->delete();
+        $supplier = Supplier::findOrFail($supplierId);
+
+        $isUsed = \App\Models\RequisitionItem::where('supplier_id', $supplierId)->exists() ||
+                  \App\Models\Quotation::where('supplier_id', $supplierId)->exists();
+
+        if ($isUsed) {
+            session()->flash('error', 'No se puede eliminar: el proveedor está siendo utilizado en requisiciones o cotizaciones.');
+            return;
+        }
+
+        $supplier->delete();
         session()->flash('success', 'Proveedor eliminado.');
     }
 

@@ -63,7 +63,18 @@ class ProjectIndex extends Component
 
     public function deleteProject(int $projectId): void
     {
-        Project::findOrFail($projectId)->delete();
+        $project = Project::findOrFail($projectId);
+
+        $hasDependencies = \App\Models\Requisition::where('project_id', $projectId)->exists() ||
+                           \App\Models\Expense::where('project_id', $projectId)->exists() ||
+                           \App\Models\Document::where('project_id', $projectId)->exists();
+
+        if ($hasDependencies) {
+            session()->flash('error', 'No se puede eliminar: el proyecto tiene requisiciones, gastos o documentos asociados.');
+            return;
+        }
+
+        $project->delete();
         session()->flash('success', 'Proyecto eliminado.');
     }
 

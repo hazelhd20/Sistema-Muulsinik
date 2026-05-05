@@ -16,6 +16,11 @@
             x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })">
         </div>
     @endif
+    @if(session('error'))
+        <div x-data
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' })">
+        </div>
+    @endif
 
     {{-- Search --}}
     <div class="relative mb-6">
