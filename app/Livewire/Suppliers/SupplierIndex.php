@@ -23,10 +23,7 @@ class SupplierIndex extends Component
     public string $legalName = '';
     public string $rfc = '';
     public string $category = '';
-    public string $phone = '';
-    public string $email = '';
-    public string $address = '';
-    public string $website = '';
+    public string $notes = '';
 
     // Campos vendedor
     public bool $showAddVendor = false;
@@ -52,10 +49,7 @@ class SupplierIndex extends Component
             'legalName' => 'nullable|max:255',
             'rfc' => 'nullable|max:13',
             'category' => 'nullable|max:255',
-            'phone' => 'nullable|max:20',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|max:500',
-            'website' => 'nullable|max:255',
+            'notes' => 'nullable|max:1000',
         ]);
 
         Supplier::create([
@@ -63,12 +57,7 @@ class SupplierIndex extends Component
             'legal_name' => $this->legalName ?: null,
             'rfc' => $this->rfc ?: null,
             'category' => $this->category ?: null,
-            'contact_info' => array_filter([
-                'phone' => $this->phone,
-                'email' => $this->email,
-                'address' => $this->address,
-                'website' => $this->website,
-            ]),
+            'notes' => $this->notes ?: null,
         ]);
 
         $this->showCreateModal = false;
@@ -135,10 +124,7 @@ class SupplierIndex extends Component
         $this->legalName = '';
         $this->rfc = '';
         $this->category = '';
-        $this->phone = '';
-        $this->email = '';
-        $this->address = '';
-        $this->website = '';
+        $this->notes = '';
     }
 
     #[Layout('components.layouts.app')]

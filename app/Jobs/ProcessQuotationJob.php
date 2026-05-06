@@ -54,8 +54,8 @@ class ProcessQuotationJob implements ShouldQueue
             // Guardar resultados en el registro
             $quotation->update([
                 'status'       => 'completed',
-                'raw_text'     => $result['raw_text'] ?? '',
-                'parsed_data'  => $result,
+                'raw_text'     => $result['raw_text'] ?? null,
+                'raw_parsed_data' => $result,
                 'processed_at' => now(),
             ]);
 

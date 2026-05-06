@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
-    protected $fillable = ['name', 'permissions'];
+    protected $fillable = ['name'];
 
-    protected $casts = [
-        'permissions' => 'array',
-    ];
+    public function rolePermissions(): HasMany
+    {
+        return $this->hasMany(RolePermission::class);
+    }
 
     /** Usuarios que pertenecen a este rol. */
     public function users(): HasMany

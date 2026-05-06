@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RequisitionItem extends Model
 {
     protected $fillable = [
-        'requisition_id', 'product_id', 'product_name',
-        'quantity', 'unit', 'unit_price', 'unit_price_original',
+        'requisition_id', 'product_id', 'measure_id',
+        'quantity', 'unit_price', 'unit_price_original',
         'tax_amount', 'tax_source',
         'line_subtotal', 'line_total',
         'supplier_id',
@@ -94,5 +94,10 @@ class RequisitionItem extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function measure(): BelongsTo
+    {
+        return $this->belongsTo(Measure::class);
     }
 }

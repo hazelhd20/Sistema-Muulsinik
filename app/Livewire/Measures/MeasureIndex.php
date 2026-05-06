@@ -69,12 +69,8 @@ class MeasureIndex extends Component
     {
         $measure = Measure::findOrFail($id);
 
-        $isUsed = \App\Models\RequisitionItem::where('unit', $measure->abbreviation)
-                    ->orWhere('unit', $measure->name)
-                    ->exists() ||
-                  \App\Models\Product::where('unit', $measure->abbreviation)
-                    ->orWhere('unit', $measure->name)
-                    ->exists();
+        $isUsed = \App\Models\RequisitionItem::where('measure_id', $measure->id)->exists() ||
+                  \App\Models\Product::where('measure_id', $measure->id)->exists();
 
         if ($isUsed) {
             session()->flash('error', 'No se puede eliminar: la medida está en uso por productos o requisiciones.');

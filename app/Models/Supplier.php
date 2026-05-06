@@ -9,7 +9,7 @@ class Supplier extends Model
 {
     protected $fillable = [
         'trade_name', 'normalized_name', 'legal_name', 'rfc',
-        'category', 'contact_info',
+        'category', 'notes',
     ];
 
     protected static function booted()
@@ -22,7 +22,7 @@ class Supplier extends Model
     }
 
     protected $casts = [
-        'contact_info' => 'array',
+        //
     ];
 
     public function vendors(): HasMany

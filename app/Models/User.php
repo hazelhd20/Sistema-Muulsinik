@@ -40,7 +40,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $permissions = $this->role->permissions ?? [];
+        $permissions = $this->role->rolePermissions->pluck('permission')->toArray();
 
         return in_array($permission, $permissions, true);
     }

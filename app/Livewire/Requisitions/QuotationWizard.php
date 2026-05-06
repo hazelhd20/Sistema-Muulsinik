@@ -131,8 +131,8 @@ class QuotationWizard extends Component
 
                 $quotation->update([
                     'status'       => 'completed',
-                    'raw_text'     => $result['raw_text'] ?? '',
-                    'parsed_data'  => $result,
+                    'raw_text'     => $result['raw_text'] ?? null,
+                    'raw_parsed_data' => $result,
                     'processed_at' => now(),
                 ]);
 
@@ -211,7 +211,7 @@ class QuotationWizard extends Component
      */
     private function loadParsedData(Quotation $quotation): void
     {
-        $data = $quotation->parsed_data ?? [];
+        $data = $quotation->raw_parsed_data ?? [];
 
         // Normalizar datos fiscales antes de cargar al formulario
         $taxNormalizer = app(TaxNormalizerService::class);
@@ -420,6 +420,24 @@ class QuotationWizard extends Component
 
         // Guardar ítems con datos fiscales y auto-guardado
         foreach ($this->items as $item) {
+            // Auto-save Measure
+            $measureId = null;
+            if (!empty($item['unit'])) {
+                $normalizedUnit = app(DataNormalizerService::class)->normalizeUnit($item['unit']);
+                $existingMeasure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
+                                          ->orWhere('abbreviation', $normalizedUnit)
+                                          ->first();
+                if ($existingMeasure) {
+                    $measureId = $existingMeasure->id;
+                } else {
+                    $newMeasure = Measure::create([
+                        'name'         => ucfirst($item['unit']),
+                        'abbreviation' => $normalizedUnit,
+                    ]);
+                    $measureId = $newMeasure->id;
+                }
+            }
+
             // Auto-save Product
             $productId = $item['product_id'] ?? null;
             if (empty($productId) && !empty($item['name'])) {
@@ -431,32 +449,17 @@ class QuotationWizard extends Component
                 } else {
                     $newProduct = Product::create([
                         'canonical_name' => $item['name'],
-                        'unit'           => $item['unit'] ?? 'pza',
+                        'measure_id'     => $measureId,
                     ]);
                     $productId = $newProduct->id;
-                }
-            }
-
-            // Auto-save Measure
-            if (!empty($item['unit'])) {
-                $normalizedUnit = app(DataNormalizerService::class)->normalizeUnit($item['unit']);
-                $existingMeasure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
-                                          ->orWhere('abbreviation', $normalizedUnit)
-                                          ->first();
-                if (!$existingMeasure) {
-                    Measure::create([
-                        'name'         => ucfirst($item['unit']),
-                        'abbreviation' => $normalizedUnit,
-                    ]);
                 }
             }
 
             RequisitionItem::create([
                 'requisition_id'      => $requisition->id,
                 'product_id'          => $productId,
-                'product_name'        => $item['name'],
+                'measure_id'          => $measureId,
                 'quantity'            => $item['quantity'] ?? 0,
-                'unit'                => $item['unit'] ?? 'pza',
                 'unit_price'          => $item['unit_price'] ?? 0,
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount'          => $item['tax_amount'] ?? null,

@@ -50,18 +50,12 @@
                     @endif
                 </div>
 
-                {{-- Contact info --}}
+                {{-- Notas --}}
                 <div class="space-y-1.5 mb-4 text-sm text-text-secondary">
-                    @if($supplier->contact_info['phone'] ?? null)
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="phone" class="w-3.5 h-3.5 text-text-muted"></i>
-                            <span>{{ $supplier->contact_info['phone'] }}</span>
-                        </div>
-                    @endif
-                    @if($supplier->contact_info['email'] ?? null)
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="mail" class="w-3.5 h-3.5 text-text-muted"></i>
-                            <span class="truncate">{{ $supplier->contact_info['email'] }}</span>
+                    @if($supplier->notes)
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="sticky-note" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
+                            <span class="line-clamp-2">{{ $supplier->notes }}</span>
                         </div>
                     @endif
                 </div>
@@ -121,21 +115,9 @@
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría</label>
                             <input wire:model="category" type="text" class="input" placeholder="Ej. Materiales">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Teléfono</label>
-                            <input wire:model="phone" type="tel" class="input">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Correo</label>
-                            <input wire:model="email" type="email" class="input">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Sitio web</label>
-                            <input wire:model="website" type="url" class="input">
-                        </div>
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Dirección</label>
-                            <input wire:model="address" type="text" class="input">
+                            <label class="block text-sm font-medium text-text-primary mb-1.5">Notas</label>
+                            <textarea wire:model="notes" class="input min-h-[80px]"></textarea>
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">

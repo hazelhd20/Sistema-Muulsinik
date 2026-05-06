@@ -62,7 +62,7 @@
                         <td>
                             <span class="badge badge-primary">{{ $categories[$product->category] ?? $product->category }}</span>
                         </td>
-                        <td class="text-sm text-text-secondary">{{ $units[$product->unit] ?? $product->unit }}</td>
+                        <td class="text-sm text-text-secondary">{{ $measures[$product->measure_id] ?? '' }}</td>
                         <td class="text-center">
                             <button
                                 wire:click="deleteProduct({{ $product->id }})"
@@ -109,11 +109,11 @@
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Unidad *</label>
                             <x-custom-select 
-                                wire:model="unit" 
-                                :options="$units" 
+                                wire:model="measureId" 
+                                :options="$measures" 
                                 placeholder="Seleccionar..." 
                             />
-                            @error('unit') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('measureId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>

@@ -19,24 +19,9 @@ class ProductIndex extends Component
 
     // Campos del producto
     public string $canonicalName = '';
-    public string $unit = '';
+    public string $measureId = '';
     public string $description = '';
     public string $category = '';
-
-    protected array $units = [
-        'pza' => 'Pieza',
-        'kg' => 'Kilogramo',
-        'm' => 'Metro',
-        'm2' => 'Metro cuadrado',
-        'm3' => 'Metro cúbico',
-        'lt' => 'Litro',
-        'bulto' => 'Bulto',
-        'rollo' => 'Rollo',
-        'ton' => 'Tonelada',
-        'cubo' => 'Cubo',
-        'tramo' => 'Tramo',
-        'servicio' => 'Servicio',
-    ];
 
     protected array $categories = [
         'acero' => 'Acero / Herrería',
@@ -67,14 +52,14 @@ class ProductIndex extends Component
     {
         $this->validate([
             'canonicalName' => 'required|min:2|max:255|unique:products,canonical_name',
-            'unit' => 'required',
+            'measureId' => 'required|exists:measures,id',
             'description' => 'nullable|max:500',
             'category' => 'required',
         ]);
 
         Product::create([
             'canonical_name' => $this->canonicalName,
-            'unit' => $this->unit,
+            'measure_id' => $this->measureId,
             'description' => $this->description ?: null,
             'category' => $this->category,
         ]);
@@ -100,7 +85,7 @@ class ProductIndex extends Component
     private function resetForm(): void
     {
         $this->canonicalName = '';
-        $this->unit = '';
+        $this->measureId = '';
         $this->description = '';
         $this->category = '';
     }
@@ -115,14 +100,14 @@ class ProductIndex extends Component
             ->orderBy('canonical_name')
             ->paginate(15);
 
-        $suppliers = Supplier::orderBy('trade_name')->get();
-        $units = $this->units;
+        $suppliers = \App\Models\Supplier::orderBy('trade_name')->get();
+        $measures = \App\Models\Measure::orderBy('name')->pluck('name', 'id')->toArray();
         $categories = $this->categories;
 
         return view('livewire.products.product-index', compact(
             'products',
             'suppliers',
-            'units',
+            'measures',
             'categories'
         ));
     }
