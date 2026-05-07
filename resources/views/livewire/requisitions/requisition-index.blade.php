@@ -90,6 +90,11 @@
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="user" class="w-3 h-3"></i>{{ $req->creator->name ?? '—' }}
                                 </span>
+                                @if($req->vendor)
+                                    <span class="flex items-center gap-1" title="Vendedor: {{ $req->vendor->name }}">
+                                        <i data-lucide="contact" class="w-3 h-3"></i>{{ $req->vendor->name }}
+                                    </span>
+                                @endif
                                 <span class="flex items-center gap-1">
                                     <i data-lucide="calendar" class="w-3 h-3"></i>{{ $req->date?->format('d/m/Y') }}
                                 </span>

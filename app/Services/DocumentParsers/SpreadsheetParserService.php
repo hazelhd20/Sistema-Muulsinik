@@ -53,7 +53,7 @@ class SpreadsheetParserService implements ParserInterface
         $rows        = $sheet->toArray(null, true, true, true);
 
         if (empty($rows)) {
-            return ['supplier' => null, 'store' => null, 'tax_info' => null, 'items' => [], 'raw_text' => ''];
+            return ['supplier' => null, 'store' => null, 'seller' => null, 'tax_info' => null, 'items' => [], 'raw_text' => ''];
         }
 
         // Paso 1: encontrar la fila de encabezados
@@ -87,6 +87,7 @@ class SpreadsheetParserService implements ParserInterface
             return [
                 'supplier' => null,
                 'store'    => null,
+                'seller'   => null,
                 'tax_info' => null,
                 'items'    => [],
                 'raw_text' => $rawText,
@@ -146,6 +147,7 @@ class SpreadsheetParserService implements ParserInterface
         return [
             'supplier' => $supplier,
             'store'    => null,
+            'seller'   => null,
             'tax_info' => null,
             'items'    => $items,
             'raw_text' => implode("\n", $rawLines),

@@ -349,6 +349,11 @@
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Tienda / Sucursal</label>
                             <input wire:model="storeName" type="text" class="input" placeholder="Sucursal (opcional)">
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1.5">Vendedor (Atiende)</label>
+                            <input wire:model="vendorName" type="text" class="input" placeholder="Nombre del vendedor (opcional)">
+                        </div>
                     </div>
 
                     <div class="mt-4">

@@ -91,6 +91,7 @@ class PdfTextParserService implements ParserInterface
         return [
             'supplier' => $supplier,
             'store'    => $store,
+            'seller'   => null,
             'tax_info' => null,
             'items'    => $items,
             'raw_text' => $rawText,

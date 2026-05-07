@@ -130,7 +130,8 @@ class GeminiStructurerService
      *   items: array<int, array{
      *     name: string, quantity: ?float, unit: ?string,
      *     unit_price: ?float, tax_amount: ?float, price_includes_tax: ?bool
-     *   }>
+     *   }>,
+     *   seller: ?string
      * }|null
      *         null si la IA no está disponible o falla.
      */
@@ -227,6 +228,7 @@ class GeminiStructurerService
     private function buildExtractionRules(): string
     {
         $categoriesList = \App\Models\Category::pluck('name')->implode(', ');
+        $unitsList      = \App\Models\Measure::pluck('abbreviation')->unique()->implode(', ');
 
         return <<<RULES
         Tu tarea es extraer la información estructurada del documento. Devuelve SOLO un JSON válido con el siguiente formato, sin texto adicional ni markdown:
@@ -234,6 +236,7 @@ class GeminiStructurerService
         {
             "supplier": "Nombre del proveedor o empresa (o null si no se identifica)",
             "store": "Nombre de la sucursal/tienda (o null si no se identifica)",
+            "seller": "Nombre de la persona que vende o atiende (o null si no se identifica)",
             "tax_info": {
                 "tax_rate": 0.16,
                 "prices_include_tax": true,
@@ -280,7 +283,7 @@ class GeminiStructurerService
         Reglas generales:
         - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
         - En "category": asigna la categoría de tu diccionario. Usa el nombre exacto de la categoría.
-        - En "unit": normaliza a: pza, kg, m, m2, m3, lt, bulto, rollo, pieza, metro, litro, caja, paquete.
+        - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete). Sé consistente.
         - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
         - En "discount": pon el valor del descuento si aparece. Si no, pon 0.
         - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
@@ -332,7 +335,7 @@ class GeminiStructurerService
     /**
      * Parsea una respuesta JSON de Gemini, tolerando markdown code fences.
      *
-     * @return array{supplier: ?string, store: ?string, tax_info: ?array, items: array}|null
+     * @return array{supplier: ?string, store: ?string, seller: ?string, tax_info: ?array, items: array}|null
      */
     private function parseJsonResponse(string $responseText): ?array
     {
@@ -388,6 +391,7 @@ class GeminiStructurerService
         return [
             'supplier' => $data['supplier'] ?? null,
             'store'    => $data['store'] ?? null,
+            'seller'   => $data['seller'] ?? null,
             'tax_info' => $taxInfo,
             'items'    => $items,
         ];

@@ -90,6 +90,18 @@ class DataNormalizerService
 
         // Lote
         'lote' => 'lote', 'lotes' => 'lote',
+
+        // Tambor
+        'tambor' => 'tambor', 'tambores' => 'tambor', 'tbr' => 'tambor',
+
+        // Cubeta
+        'cubeta' => 'cubeta', 'cubetas' => 'cubeta', 'cta' => 'cubeta',
+
+        // Millar
+        'millar' => 'millar', 'millares' => 'millar', 'mil' => 'millar',
+
+        // Atado
+        'atado' => 'atado', 'atados' => 'atado',
     ];
 
     /**
@@ -113,6 +125,10 @@ class DataNormalizerService
         'galon' => 'Galón',
         'servicio' => 'Servicio',
         'lote' => 'Lote',
+        'tambor' => 'Tambor',
+        'cubeta' => 'Cubeta',
+        'millar' => 'Millar',
+        'atado' => 'Atado',
     ];
 
     /**
@@ -221,6 +237,17 @@ class DataNormalizerService
         }
 
         return $this->normalizeText($text);
+    }
+
+    /**
+     * Normaliza un nombre de vendedor (persona).
+     *
+     * @param  string $rawName
+     * @return string
+     */
+    public function normalizeVendorName(string $rawName): string
+    {
+        return $this->normalizeText($rawName);
     }
 
     /* ═══════════════════════════════════════════════════

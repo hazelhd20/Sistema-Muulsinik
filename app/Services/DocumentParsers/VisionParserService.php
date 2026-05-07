@@ -38,6 +38,7 @@ class VisionParserService implements ParserInterface
         return [
             'supplier' => null,
             'store'    => null,
+            'seller'   => null,
             'tax_info' => null,
             'items'    => [],
             'raw_text' => '[No se pudo extraer texto del archivo]',

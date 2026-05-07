@@ -46,6 +46,7 @@ class QuotationWizard extends Component
     public string $supplierName = '';
     public $supplierId = '';
     public string $storeName = '';
+    public string $vendorName = '';
     public string $annotations = '';
     public string $date = '';
     public array $items = [];
@@ -236,6 +237,7 @@ class QuotationWizard extends Component
 
         $this->supplierName = $data['supplier'] ?? '';
         $this->storeName    = $data['store'] ?? '';
+        $this->vendorName   = $data['seller'] ?? '';
         $this->rawText      = $data['raw_text'] ?? '';
         $this->items        = [];
         $this->warnings     = [];
@@ -428,10 +430,32 @@ class QuotationWizard extends Component
                 $finalSupplierId = $newSupplier->id;
             }
         }
+        
+        // Auto-save Vendor (person) if name is provided
+        $finalVendorId = null;
+        if (!empty($this->vendorName) && $finalSupplierId) {
+            $normalizer = app(DataNormalizerService::class);
+            $normalizedVendorName = $normalizer->normalizeVendorName($this->vendorName);
+
+            $existingVendor = \App\Models\Vendor::where('supplier_id', $finalSupplierId)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($this->vendorName)])
+                ->first();
+            
+            if ($existingVendor) {
+                $finalVendorId = $existingVendor->id;
+            } else {
+                $newVendor = \App\Models\Vendor::create([
+                    'supplier_id' => $finalSupplierId,
+                    'name'        => $this->vendorName,
+                ]);
+                $finalVendorId = $newVendor->id;
+            }
+        }
 
         // RF-REQ-09: la requisición inicia como borrador
         $requisition = Requisition::create([
             'project_id'  => $this->projectId,
+            'vendor_id'   => $finalVendorId,
             'annotations' => $this->annotations,
             'status'      => 'borrador',
             'created_by'  => auth()->id(),
@@ -531,6 +555,7 @@ class QuotationWizard extends Component
         $this->supplierName     = '';
         $this->supplierId       = '';
         $this->storeName        = '';
+        $this->vendorName       = '';
         $this->annotations      = '';
         $this->items            = [];
         $this->warnings         = [];
