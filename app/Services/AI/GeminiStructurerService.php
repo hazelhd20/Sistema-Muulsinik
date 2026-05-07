@@ -226,7 +226,9 @@ class GeminiStructurerService
      */
     private function buildExtractionRules(): string
     {
-        return <<<'RULES'
+        $categoriesList = \App\Models\Category::pluck('name')->implode(', ');
+
+        return <<<RULES
         Tu tarea es extraer la información estructurada del documento. Devuelve SOLO un JSON válido con el siguiente formato, sin texto adicional ni markdown:
 
         {
@@ -243,6 +245,7 @@ class GeminiStructurerService
             "items": [
                 {
                     "name": "Nombre limpio del producto (sin códigos del proveedor, sin viñetas)",
+                    "category": "Clasifica el producto usando SOLO UNA de estas opciones: {$categoriesList}. Si no encaja en ninguna, usa 'Otros'",
                     "quantity": 10.0,
                     "unit": "pza",
                     "unit_price": 150.50,
@@ -276,6 +279,7 @@ class GeminiStructurerService
 
         Reglas generales:
         - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
+        - En "category": asigna la categoría de tu diccionario. Usa el nombre exacto de la categoría.
         - En "unit": normaliza a: pza, kg, m, m2, m3, lt, bulto, rollo, pieza, metro, litro, caja, paquete.
         - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
         - En "discount": pon el valor del descuento si aparece. Si no, pon 0.
@@ -356,6 +360,7 @@ class GeminiStructurerService
 
             $items[] = [
                 'name'               => trim($item['name']),
+                'category'           => isset($item['category']) ? trim($item['category']) : null,
                 'quantity'           => $validated['quantity'],
                 'unit'               => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
                 'unit_price'         => $validated['unit_price'],

@@ -67,11 +67,17 @@
                         <i data-lucide="users" class="w-3.5 h-3.5"></i>
                         {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                     </button>
-                    <button wire:click="deleteSupplier({{ $supplier->id }})"
-                        wire:confirm="¿Eliminar este proveedor y todos sus vendedores?"
-                        class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button wire:click="openEditSupplierModal({{ $supplier->id }})"
+                            class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition" title="Editar">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button wire:click="deleteSupplier({{ $supplier->id }})"
+                            wire:confirm="¿Eliminar este proveedor y todos sus vendedores?"
+                            class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         @empty
@@ -84,18 +90,18 @@
 
     <div class="mt-4">{{ $suppliers->links() }}</div>
 
-    {{-- Create Supplier Modal --}}
+    {{-- Create/Edit Supplier Modal --}}
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">Nuevo Proveedor</h2>
+                    <h2 class="text-lg font-semibold text-text-primary">{{ $editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
-                <form wire:submit="createSupplier" class="p-6 space-y-4">
+                <form wire:submit="saveSupplier" class="p-6 space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre comercial *</label>
@@ -123,7 +129,7 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary">Registrar Proveedor</button>
+                        <button type="submit" class="btn-primary">{{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}</button>
                     </div>
                 </form>
             </div>
@@ -161,10 +167,15 @@
                                         {{ $vendor->phone ?? '' }}{{ $vendor->phone && $vendor->email ? ' · ' : '' }}{{ $vendor->email ?? '' }}
                                     </p>
                                 </div>
-                                <button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
-                                    class="p-1 rounded hover:bg-red-100 text-text-muted hover:text-danger">
-                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                                </button>
+                                <div class="flex items-center gap-1">
+                                    <button wire:click="openEditVendor({{ $vendor->id }})" class="p-1 rounded hover:bg-gray-200 text-text-muted hover:text-primary-600 transition" title="Editar">
+                                        <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
+                                        class="p-1 rounded hover:bg-red-100 text-text-muted hover:text-danger">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
                             </div>
                         @empty
                             <p class="text-sm text-text-muted text-center py-4">Sin vendedores registrados</p>
@@ -173,7 +184,7 @@
 
                     {{-- Add vendor form --}}
                     @if($showAddVendor)
-                        <form wire:submit="addVendor" class="space-y-3 p-4 rounded-xl border border-gray-200">
+                        <form wire:submit="saveVendor" class="space-y-3 p-4 rounded-xl border border-gray-200 bg-gray-50/50">
                             <input wire:model="vendorName" type="text" class="input" placeholder="Nombre del vendedor *">
                             @error('vendorName') <p class="text-xs text-danger">{{ $message }}</p> @enderror
                             <div class="grid grid-cols-2 gap-3">
@@ -181,7 +192,7 @@
                                 <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
                             </div>
                             <div class="flex gap-2">
-                                <button type="submit" class="btn-primary text-xs">Agregar</button>
+                                <button type="submit" class="btn-primary text-xs">{{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}</button>
                                 <button type="button" wire:click="$set('showAddVendor', false)"
                                     class="btn-secondary text-xs">Cancelar</button>
                             </div>

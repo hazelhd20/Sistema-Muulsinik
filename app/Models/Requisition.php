@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Requisition extends Model
 {
     protected $fillable = [
-        'project_id', 'number', 'annotations', 'status',
+        'project_id', 'vendor_id', 'number', 'annotations', 'status',
         'created_by', 'approved_by', 'rejection_comment',
         'date',
     ];
@@ -36,6 +36,11 @@ class Requisition extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
     }
 
     public function creator(): BelongsTo

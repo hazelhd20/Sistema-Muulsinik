@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['canonical_name', 'normalized_name', 'measure_id', 'description', 'category'];
+    protected $fillable = ['canonical_name', 'normalized_name', 'measure_id', 'description', 'category_id'];
 
     protected static function booted()
     {
@@ -22,5 +22,10 @@ class Product extends Model
     public function measure(): BelongsTo
     {
         return $this->belongsTo(Measure::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 }

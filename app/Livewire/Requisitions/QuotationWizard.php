@@ -90,25 +90,39 @@ class QuotationWizard extends Component
 
     public function processUpload(): void
     {
-        $this->validate([
-            'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
-        ]);
+        try {
+            $this->validate([
+                'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            ]);
 
-        // Guardar el archivo en storage
-        $path = $this->file->store('quotations', 'local');
-        $originalName = $this->file->getClientOriginalName();
-        $extension    = strtolower($this->file->getClientOriginalExtension());
-        $mimeType     = $this->file->getMimeType();
+            if (!$this->file || !$this->file->exists()) {
+                throw new \Exception('El archivo temporal ya no existe.');
+            }
 
-        // Crear registro de cotización
-        $quotation = Quotation::create([
-            'project_id'        => $this->projectId ?: null,
-            'file_path'         => $path,
-            'file_type'         => $mimeType,
-            'original_filename' => $originalName,
-            'status'            => 'pending',
-            'uploaded_by'       => auth()->id(),
-        ]);
+            // Guardar el archivo en storage
+            $path = $this->file->store('quotations', 'local');
+            $originalName = $this->file->getClientOriginalName();
+            $extension    = strtolower($this->file->getClientOriginalExtension());
+            $mimeType     = $this->file->getMimeType();
+
+            // Crear registro de cotización
+            $quotation = Quotation::create([
+                'project_id'        => $this->projectId ?: null,
+                'file_path'         => $path,
+                'file_type'         => $mimeType,
+                'original_filename' => $originalName,
+                'status'            => 'pending',
+                'uploaded_by'       => auth()->id(),
+            ]);
+        } catch (\Exception $e) {
+            // Capturar errores de Flysystem (archivo no encontrado en temp)
+            if (str_contains($e->getMessage(), 'Unable to retrieve') || str_contains($e->getMessage(), 'file_size')) {
+                $this->addError('file', 'El archivo temporal ha expirado o ya no es válido. Por favor, selecciónalo de nuevo.');
+                $this->file = null;
+                return;
+            }
+            throw $e;
+        }
 
         $this->quotationId = $quotation->id;
 
@@ -256,10 +270,15 @@ class QuotationWizard extends Component
         $normalizedItems = $dataNormalizer->normalizeItems($data['items'] ?? []);
 
         foreach ($normalizedItems as $item) {
+            $matchedCategory = !empty($item['category']) 
+                ? $dataNormalizer->findMatchingCategory($item['category']) 
+                : null;
+
             $this->items[] = [
                 'name'                => $item['name'] ?? '',
                 'quantity'            => $item['quantity'] ?? 0,
                 'unit'                => $item['unit'] ?? 'pza',
+                'category_id'         => $matchedCategory?->id ?? null,
                 'unit_price'          => $item['unit_price'] ?? 0,
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount'          => $item['tax_amount'] ?? null,
@@ -320,6 +339,7 @@ class QuotationWizard extends Component
             'name'                => '',
             'quantity'            => 1,
             'unit'                => 'pza',
+            'category_id'         => null,
             'unit_price'          => 0,
             'unit_price_original' => 0,
             'tax_amount'          => null,
@@ -423,7 +443,8 @@ class QuotationWizard extends Component
             // Auto-save Measure
             $measureId = null;
             if (!empty($item['unit'])) {
-                $normalizedUnit = app(DataNormalizerService::class)->normalizeUnit($item['unit']);
+                $normalizer = app(DataNormalizerService::class);
+                $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
                 $existingMeasure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
                                           ->orWhere('abbreviation', $normalizedUnit)
                                           ->first();
@@ -431,7 +452,7 @@ class QuotationWizard extends Component
                     $measureId = $existingMeasure->id;
                 } else {
                     $newMeasure = Measure::create([
-                        'name'         => ucfirst($item['unit']),
+                        'name'         => $normalizer->getUnitName($normalizedUnit),
                         'abbreviation' => $normalizedUnit,
                     ]);
                     $measureId = $newMeasure->id;
@@ -450,6 +471,7 @@ class QuotationWizard extends Component
                     $newProduct = Product::create([
                         'canonical_name' => $item['name'],
                         'measure_id'     => $measureId,
+                        'category_id'    => $item['category_id'] ?? null,
                     ]);
                     $productId = $newProduct->id;
                 }
@@ -521,12 +543,13 @@ class QuotationWizard extends Component
     #[Title('Subir Cotización')]
     public function render()
     {
-        $projects  = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
-        $suppliers = Supplier::orderBy('trade_name')->get();
-        $measures  = Measure::orderBy('name')->get();
+        $projects   = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
+        $suppliers  = Supplier::orderBy('trade_name')->get();
+        $measures   = Measure::orderBy('name')->get();
+        $categories = \App\Models\Category::orderBy('name')->get();
 
         return view('livewire.requisitions.quotation-wizard', compact(
-            'projects', 'suppliers', 'measures'
+            'projects', 'suppliers', 'measures', 'categories'
         ));
     }
 }

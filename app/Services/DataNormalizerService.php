@@ -93,6 +93,29 @@ class DataNormalizerService
     ];
 
     /**
+     * Nombres completos canónicos para las unidades de medida del sistema.
+     * Mapea la abreviatura canónica (devuelta por normalizeUnit) a su nombre completo formal.
+     */
+    private const UNIT_NAMES = [
+        'pza' => 'Pieza',
+        'm' => 'Metro lineal',
+        'm2' => 'Metro cuadrado',
+        'm3' => 'Metro cúbico',
+        'kg' => 'Kilogramo',
+        'lt' => 'Litro',
+        'bulto' => 'Bulto',
+        'rollo' => 'Rollo',
+        'caja' => 'Caja',
+        'paquete' => 'Paquete',
+        'ton' => 'Tonelada',
+        'cubo' => 'Cubo',
+        'tramo' => 'Tramo',
+        'galon' => 'Galón',
+        'servicio' => 'Servicio',
+        'lote' => 'Lote',
+    ];
+
+    /**
      * Sufijos legales comunes en razones sociales mexicanas.
      * Se eliminan al normalizar nombres de proveedores.
      */
@@ -135,6 +158,17 @@ class DataNormalizerService
         $clean = preg_replace('/\s+/', ' ', $clean);
 
         return self::UNIT_MAP[$clean] ?? $clean;
+    }
+
+    /**
+     * Obtiene el nombre completo formal para una unidad canónica (abreviada).
+     *
+     * @param  string $canonicalUnit  Unidad canónica (e.g., "pza", "m2")
+     * @return string                 Nombre completo (e.g., "Pieza", "Metro cuadrado")
+     */
+    public function getUnitName(string $canonicalUnit): string
+    {
+        return self::UNIT_NAMES[$canonicalUnit] ?? ucfirst($canonicalUnit);
     }
 
     /**
@@ -255,11 +289,50 @@ class DataNormalizerService
     }
 
     /**
+     * Busca una categoría existente que coincida con el nombre crudo.
+     *
+     * @param  string $rawName  Nombre de la categoría (del OCR/IA)
+     * @return \App\Models\Category|null
+     */
+    public function findMatchingCategory(string $rawName): ?\App\Models\Category
+    {
+        if (empty(trim($rawName))) {
+            return null;
+        }
+
+        $normalized = $this->normalizeText($rawName);
+
+        // Intentar match exacto primero
+        $categories = \App\Models\Category::all();
+
+        foreach ($categories as $category) {
+            if ($this->normalizeText($category->name) === $normalized) {
+                return $category;
+            }
+        }
+
+        // Fuzzy match: buscar el mejor candidato por similitud
+        $bestMatch  = null;
+        $bestScore  = 0;
+
+        foreach ($categories as $category) {
+            $similarity = $this->calculateSimilarity($normalized, $this->normalizeText($category->name));
+            if ($similarity > $bestScore) {
+                $bestScore = $similarity;
+                $bestMatch = $category;
+            }
+        }
+
+        return ($bestMatch !== null && $bestScore >= 0.70) ? $bestMatch : null;
+    }
+
+    /**
      * Normaliza todos los ítems de una cotización parseada.
      *
      * Aplica normalización de Capa 1 a cada ítem:
      * - Unidad de medida → forma canónica
      * - Nombre del producto → limpieza básica de texto
+     * - Categoría → limpieza básica
      *
      * NO busca coincidencias en BD (eso es Capa 2, invocado aparte).
      *
@@ -277,6 +350,11 @@ class DataNormalizerService
             // Limpiar nombre (quitar espacios extra, pero preservar el texto original)
             if (!empty($item['name'])) {
                 $item['name'] = trim(preg_replace('/\s+/', ' ', $item['name']));
+            }
+
+            // Limpiar categoría
+            if (!empty($item['category'])) {
+                $item['category'] = trim(preg_replace('/\s+/', ' ', $item['category']));
             }
 
             return $item;

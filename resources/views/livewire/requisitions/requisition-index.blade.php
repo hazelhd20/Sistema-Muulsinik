@@ -220,7 +220,7 @@
                 </div>
                 <form wire:submit="createRequisition" class="p-6 space-y-5">
                     {{-- General info --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Proyecto *</label>
                             <select wire:model="reqProjectId" class="input">
@@ -230,6 +230,16 @@
                                 @endforeach
                             </select>
                             @error('reqProjectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1.5">Vendedor (Opcional)</label>
+                            <select wire:model="reqVendorId" class="input">
+                                <option value="">Seleccionar...</option>
+                                @foreach($vendors as $vendor)
+                                    <option value="{{ $vendor->id }}">{{ $vendor->name }} ({{ $vendor->supplier->trade_name ?? 'Sin Proveedor' }})</option>
+                                @endforeach
+                            </select>
+                            @error('reqVendorId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de creación *</label>

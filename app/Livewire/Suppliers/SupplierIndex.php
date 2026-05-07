@@ -31,6 +31,8 @@ class SupplierIndex extends Component
     public string $vendorPhone = '';
     public string $vendorEmail = '';
 
+    public ?int $editingSupplierId = null;
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -42,7 +44,20 @@ class SupplierIndex extends Component
         $this->showCreateModal = true;
     }
 
-    public function createSupplier(): void
+    public function openEditSupplierModal(int $supplierId): void
+    {
+        $supplier = Supplier::findOrFail($supplierId);
+        $this->editingSupplierId = $supplier->id;
+        $this->tradeName = $supplier->trade_name;
+        $this->legalName = $supplier->legal_name ?? '';
+        $this->rfc = $supplier->rfc ?? '';
+        $this->category = $supplier->category ?? '';
+        $this->notes = $supplier->notes ?? '';
+        
+        $this->showCreateModal = true;
+    }
+
+    public function saveSupplier(): void
     {
         $this->validate([
             'tradeName' => 'required|min:2|max:255',
@@ -52,30 +67,54 @@ class SupplierIndex extends Component
             'notes' => 'nullable|max:1000',
         ]);
 
-        Supplier::create([
-            'trade_name' => $this->tradeName,
-            'legal_name' => $this->legalName ?: null,
-            'rfc' => $this->rfc ?: null,
-            'category' => $this->category ?: null,
-            'notes' => $this->notes ?: null,
-        ]);
+        if ($this->editingSupplierId) {
+            Supplier::findOrFail($this->editingSupplierId)->update([
+                'trade_name' => $this->tradeName,
+                'legal_name' => $this->legalName ?: null,
+                'rfc' => $this->rfc ?: null,
+                'category' => $this->category ?: null,
+                'notes' => $this->notes ?: null,
+            ]);
+            session()->flash('success', 'Proveedor actualizado correctamente.');
+        } else {
+            Supplier::create([
+                'trade_name' => $this->tradeName,
+                'legal_name' => $this->legalName ?: null,
+                'rfc' => $this->rfc ?: null,
+                'category' => $this->category ?: null,
+                'notes' => $this->notes ?: null,
+            ]);
+            session()->flash('success', 'Proveedor registrado correctamente.');
+        }
 
         $this->showCreateModal = false;
         $this->resetForm();
-        session()->flash('success', 'Proveedor registrado correctamente.');
     }
+
+    public ?int $editingVendorId = null;
 
     public function viewVendors(int $supplierId): void
     {
         $this->viewingSupplierId = $supplierId;
         $this->showVendorsModal = true;
         $this->showAddVendor = false;
+        $this->editingVendorId = null;
         $this->vendorName = '';
         $this->vendorPhone = '';
         $this->vendorEmail = '';
     }
 
-    public function addVendor(): void
+    public function openEditVendor(int $vendorId): void
+    {
+        $vendor = Vendor::findOrFail($vendorId);
+        $this->editingVendorId = $vendor->id;
+        $this->vendorName = $vendor->name;
+        $this->vendorPhone = $vendor->phone ?? '';
+        $this->vendorEmail = $vendor->email ?? '';
+        $this->showAddVendor = true;
+    }
+
+    public function saveVendor(): void
     {
         $this->validate([
             'vendorName' => 'required|min:2|max:255',
@@ -83,18 +122,28 @@ class SupplierIndex extends Component
             'vendorEmail' => 'nullable|email|max:255',
         ]);
 
-        Vendor::create([
-            'supplier_id' => $this->viewingSupplierId,
-            'name' => $this->vendorName,
-            'phone' => $this->vendorPhone ?: null,
-            'email' => $this->vendorEmail ?: null,
-        ]);
+        if ($this->editingVendorId) {
+            Vendor::findOrFail($this->editingVendorId)->update([
+                'name' => $this->vendorName,
+                'phone' => $this->vendorPhone ?: null,
+                'email' => $this->vendorEmail ?: null,
+            ]);
+            session()->flash('vendor_success', 'Vendedor actualizado.');
+        } else {
+            Vendor::create([
+                'supplier_id' => $this->viewingSupplierId,
+                'name' => $this->vendorName,
+                'phone' => $this->vendorPhone ?: null,
+                'email' => $this->vendorEmail ?: null,
+            ]);
+            session()->flash('vendor_success', 'Vendedor agregado.');
+        }
 
         $this->vendorName = '';
         $this->vendorPhone = '';
         $this->vendorEmail = '';
         $this->showAddVendor = false;
-        session()->flash('vendor_success', 'Vendedor agregado.');
+        $this->editingVendorId = null;
     }
 
     public function deleteVendor(int $vendorId): void
@@ -120,6 +169,7 @@ class SupplierIndex extends Component
 
     private function resetForm(): void
     {
+        $this->editingSupplierId = null;
         $this->tradeName = '';
         $this->legalName = '';
         $this->rfc = '';

@@ -21,8 +21,8 @@ class RequisitionIndex extends Component
     public string $projectFilter = '';
     public bool $showCreateModal = false;
 
-    // Campos de la requisición
     public $reqProjectId = '';
+    public $reqVendorId = '';
     public string $reqAnnotations = '';
     public string $reqDate = '';
 
@@ -84,6 +84,7 @@ class RequisitionIndex extends Component
     {
         $this->validate([
             'reqProjectId' => 'required|exists:projects,id',
+            'reqVendorId' => 'nullable|exists:vendors,id',
             'reqAnnotations' => 'nullable|max:500',
             'reqDate' => 'required|date',
         ]);
@@ -96,6 +97,7 @@ class RequisitionIndex extends Component
         // RF-REQ-09: Nuevas requisiciones inician como borrador
         $requisition = Requisition::create([
             'project_id' => $this->reqProjectId,
+            'vendor_id' => $this->reqVendorId ?: null,
             'annotations' => $this->reqAnnotations,
             'status' => 'borrador',
             'created_by' => auth()->id(),
@@ -105,7 +107,8 @@ class RequisitionIndex extends Component
         foreach ($this->items as $item) {
             $measureId = null;
             if (!empty($item['unit'])) {
-                $normalizedUnit = app(\App\Services\DataNormalizerService::class)->normalizeUnit($item['unit']);
+                $normalizer = app(\App\Services\DataNormalizerService::class);
+                $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
                 $existingMeasure = \App\Models\Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
                                           ->orWhere('abbreviation', $normalizedUnit)
                                           ->first();
@@ -113,7 +116,7 @@ class RequisitionIndex extends Component
                     $measureId = $existingMeasure->id;
                 } else {
                     $newMeasure = \App\Models\Measure::create([
-                        'name'         => ucfirst($item['unit']),
+                        'name'         => $normalizer->getUnitName($normalizedUnit),
                         'abbreviation' => $normalizedUnit,
                     ]);
                     $measureId = $newMeasure->id;
@@ -211,6 +214,7 @@ class RequisitionIndex extends Component
     private function resetForm(): void
     {
         $this->reqProjectId = '';
+        $this->reqVendorId = '';
         $this->reqAnnotations = '';
         $this->reqDate = '';
         $this->items = [];
@@ -224,7 +228,7 @@ class RequisitionIndex extends Component
     #[Title('Requisiciones')]
     public function render()
     {
-        $requisitions = Requisition::with(['project', 'creator', 'items', 'quotations'])
+        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'items', 'quotations'])
             ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
@@ -233,11 +237,13 @@ class RequisitionIndex extends Component
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('trade_name')->get();
+        $vendors = \App\Models\Vendor::orderBy('name')->get();
 
         return view('livewire.requisitions.requisition-index', compact(
             'requisitions',
             'projects',
-            'suppliers'
+            'suppliers',
+            'vendors'
         ));
     }
 }

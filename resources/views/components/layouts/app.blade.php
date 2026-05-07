@@ -88,6 +88,11 @@
                     <i data-lucide="ruler" class="w-5 h-5"></i>
                     <span>Medidas</span>
                 </a>
+
+                <a href="{{ url('/categorias') }}" class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <span>Categorías</span>
+                </a>
             </nav>
 
             {{-- User Section --}}

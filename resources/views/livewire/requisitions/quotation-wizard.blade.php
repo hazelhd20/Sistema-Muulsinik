@@ -135,7 +135,13 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-text-primary">{{ $file->getClientOriginalName() }}</p>
-                                <p class="text-xs text-text-muted">{{ number_format($file->getSize() / 1024, 1) }} KB</p>
+                                @php
+                                    $fileSize = 0;
+                                    try {
+                                        $fileSize = $file->getSize();
+                                    } catch (\Exception $e) {}
+                                @endphp
+                                <p class="text-xs text-text-muted">{{ number_format($fileSize / 1024, 1) }} KB</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -436,13 +442,16 @@
                                 <thead>
                                     <tr class="bg-surface-main">
                                         <th
-                                            class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[35%]">
+                                            class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[25%]">
                                             Producto</th>
+                                        <th
+                                            class="text-left px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[12%]">
+                                            Categoría</th>
                                         <th
                                             class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[8%]">
                                             Cant.</th>
                                         <th
-                                            class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[12%]">
+                                            class="text-center px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[10%]">
                                             Unidad</th>
                                         <th
                                             class="text-right px-3 py-2.5 text-xs font-semibold text-text-muted uppercase w-[14%]">
@@ -458,11 +467,21 @@
                                 </thead>
                                 <tbody>
                                     @foreach($items as $i => $item)
-                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition">
+                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition" wire:key="item-row-{{ $i }}">
                                             {{-- Nombre --}}
                                             <td class="px-3 py-2">
                                                 <input wire:model="items.{{ $i }}.name" type="text" class="input text-sm"
                                                     placeholder="Nombre del producto">
+                                            </td>
+
+                                            {{-- Categoría --}}
+                                            <td class="px-3 py-2">
+                                                <select wire:model="items.{{ $i }}.category_id" class="input text-xs py-1">
+                                                    <option value="">Seleccionar...</option>
+                                                    @foreach($categories as $cat)
+                                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                                    @endforeach
+                                                </select>
                                             </td>
 
                                             {{-- Cantidad --}}

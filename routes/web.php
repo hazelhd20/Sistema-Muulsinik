@@ -61,6 +61,9 @@ Route::middleware('auth')->group(function () {
     // Catálogo de Medidas
     Route::get('/medidas', \App\Livewire\Measures\MeasureIndex::class)->name('medidas.index');
 
+    // Catálogo de Categorías
+    Route::get('/categorias', \App\Livewire\Products\CategoryIndex::class)->name('categorias.index');
+
     // Previsualización de archivos
     Route::get('/preview-file', function (\Illuminate\Http\Request $request) {
         $path = $request->query('path');

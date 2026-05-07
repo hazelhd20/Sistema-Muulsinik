@@ -60,10 +60,13 @@
                             </div>
                         </td>
                         <td>
-                            <span class="badge badge-primary">{{ $categories[$product->category] ?? $product->category }}</span>
+                            <span class="badge badge-primary">{{ $product->category->name ?? 'Sin categoría' }}</span>
                         </td>
                         <td class="text-sm text-text-secondary">{{ $measures[$product->measure_id] ?? '' }}</td>
                         <td class="text-center">
+                            <button wire:click="openEditModal({{ $product->id }})" class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition" title="Editar">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
                             <button
                                 wire:click="deleteProduct({{ $product->id }})"
                                 wire:confirm="¿Eliminar este producto?"
@@ -93,12 +96,12 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">Nuevo Producto</h2>
+                    <h2 class="text-lg font-semibold text-text-primary">{{ $editingId ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
-                <form wire:submit="createProduct" class="p-6 space-y-4">
+                <form wire:submit="saveProduct" class="p-6 space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre canónico *</label>
                         <input wire:model="canonicalName" type="text" class="input" placeholder="Ej. Cemento Portland CPC 30R">
@@ -118,11 +121,11 @@
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
                             <x-custom-select 
-                                wire:model="category" 
+                                wire:model="categoryId" 
                                 :options="$categories" 
                                 placeholder="Seleccionar..." 
                             />
-                            @error('category') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('categoryId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
@@ -131,7 +134,7 @@
                     </div>
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary">Crear Producto</button>
+                        <button type="submit" class="btn-primary">{{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}</button>
                     </div>
                 </form>
             </div>
