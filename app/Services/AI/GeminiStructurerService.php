@@ -282,7 +282,7 @@ class GeminiStructurerService
 
         Reglas generales:
         - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
-        - En "category": asigna la categoría de tu diccionario. Usa el nombre exacto de la categoría.
+        - En "category": intenta asignar una categoría de esta lista: [{$categoriesList}]. Si ninguna encaja razonablemente, sugiere una categoría nueva, corta y descriptiva.
         - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete). Sé consistente.
         - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
         - En "discount": pon el valor del descuento si aparece. Si no, pon 0.

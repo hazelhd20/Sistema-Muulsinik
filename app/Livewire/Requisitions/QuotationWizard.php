@@ -281,6 +281,7 @@ class QuotationWizard extends Component
                 'quantity'            => $item['quantity'] ?? 0,
                 'unit'                => $item['unit'] ?? 'pza',
                 'category_id'         => $matchedCategory?->id ?? null,
+                'category_name'       => $item['category'] ?? 'General',
                 'unit_price'          => $item['unit_price'] ?? 0,
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount'          => $item['tax_amount'] ?? null,
@@ -486,6 +487,20 @@ class QuotationWizard extends Component
             // Auto-save Product
             $productId = $item['product_id'] ?? null;
             if (empty($productId) && !empty($item['name'])) {
+                // Auto-resolve or create Category
+                $categoryId = $item['category_id'] ?? null;
+                if (empty($categoryId) && !empty($item['category_name'])) {
+                    $matchedCategory = $normalizer->findMatchingCategory($item['category_name']);
+                    if ($matchedCategory) {
+                        $categoryId = $matchedCategory->id;
+                    } else {
+                        $newCategory = \App\Models\Category::create([
+                            'name' => mb_convert_case($item['category_name'], MB_CASE_TITLE, "UTF-8")
+                        ]);
+                        $categoryId = $newCategory->id;
+                    }
+                }
+
                 $normalizedProductName = app(DataNormalizerService::class)->normalizeText($item['name']);
                 $existingProduct = Product::where('normalized_name', $normalizedProductName)->first();
                 
@@ -495,7 +510,7 @@ class QuotationWizard extends Component
                     $newProduct = Product::create([
                         'canonical_name' => $item['name'],
                         'measure_id'     => $measureId,
-                        'category_id'    => $item['category_id'] ?? null,
+                        'category_id'    => $categoryId,
                     ]);
                     $productId = $newProduct->id;
                 }
