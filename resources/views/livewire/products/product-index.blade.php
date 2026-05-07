@@ -12,24 +12,25 @@
     </div>
 
     @if(session('success'))
-        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()" wire:key="toast-success-{{ microtime(true) }}"></div>
+        <div x-data
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
+            wire:key="toast-success-{{ microtime(true) }}"></div>
     @endif
     @if(session('error'))
-        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()" wire:key="toast-error-{{ microtime(true) }}"></div>
+        <div x-data
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
+            wire:key="toast-error-{{ microtime(true) }}"></div>
     @endif
 
     {{-- Filters --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <div class="relative flex-1">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar producto..." class="input pl-10">
+            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar producto..."
+                class="input pl-10">
         </div>
-        <x-custom-select 
-            wire:model.live="categoryFilter" 
-            :options="$categories" 
-            placeholder="Todas las categorías" 
-            class="w-auto min-w-[180px]"
-        />
+        <x-custom-select wire:model.live="categoryFilter" :options="$categories" placeholder="Todas las categorías"
+            class="w-auto min-w-[180px]" />
     </div>
 
     {{-- Products table --}}
@@ -64,14 +65,13 @@
                         </td>
                         <td class="text-sm text-text-secondary">{{ $measures[$product->measure_id] ?? '' }}</td>
                         <td class="text-center">
-                            <button wire:click="openEditModal({{ $product->id }})" class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition" title="Editar">
+                            <button wire:click="openEditModal({{ $product->id }})"
+                                class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition"
+                                title="Editar">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
-                            <button
-                                wire:click="deleteProduct({{ $product->id }})"
-                                wire:confirm="¿Eliminar este producto?"
-                                class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition"
-                            >
+                            <button wire:click="deleteProduct({{ $product->id }})" wire:confirm="¿Eliminar este producto?"
+                                class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </td>
@@ -96,7 +96,8 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">{{ $editingId ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+                    <h2 class="text-lg font-semibold text-text-primary">
+                        {{ $editingId ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
@@ -104,37 +105,33 @@
                 <form wire:submit="saveProduct" class="p-6 space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre canónico *</label>
-                        <input wire:model="canonicalName" type="text" class="input" placeholder="Ej. Cemento Portland CPC 30R">
+                        <input wire:model="canonicalName" type="text" class="input"
+                            placeholder="Ej. Cemento Portland CPC 30R">
                         <p class="mt-1 text-xs text-text-muted">Nombre estándar del producto en el catálogo interno</p>
                         @error('canonicalName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Unidad *</label>
-                            <x-custom-select 
-                                wire:model="measureId" 
-                                :options="$measures" 
-                                placeholder="Seleccionar..." 
-                            />
+                            <x-custom-select wire:model="measureId" :options="$measures" placeholder="Seleccionar..." />
                             @error('measureId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
-                            <x-custom-select 
-                                wire:model="categoryId" 
-                                :options="$categories" 
-                                placeholder="Seleccionar..." 
-                            />
+                            <x-custom-select wire:model="categoryId" :options="$categories" placeholder="Seleccionar..." />
                             @error('categoryId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-text-primary mb-1.5">Descripción</label>
-                        <textarea wire:model="description" class="input" rows="2" placeholder="Descripción técnica opcional..."></textarea>
+                        <textarea wire:model="description" class="input" rows="2"
+                            placeholder="Descripción técnica opcional..."></textarea>
                     </div>
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary">{{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}</button>
+                        <button type="button" wire:click="$set('showCreateModal', false)"
+                            class="btn-secondary">Cancelar</button>
+                        <button type="submit"
+                            class="btn-primary">{{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}</button>
                     </div>
                 </form>
             </div>

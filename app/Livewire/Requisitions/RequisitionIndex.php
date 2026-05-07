@@ -110,13 +110,13 @@ class RequisitionIndex extends Component
                 $normalizer = app(\App\Services\DataNormalizerService::class);
                 $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
                 $existingMeasure = \App\Models\Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
-                                          ->orWhere('abbreviation', $normalizedUnit)
-                                          ->first();
+                    ->orWhere('abbreviation', $normalizedUnit)
+                    ->first();
                 if ($existingMeasure) {
                     $measureId = $existingMeasure->id;
                 } else {
                     $newMeasure = \App\Models\Measure::create([
-                        'name'         => $normalizer->getUnitName($normalizedUnit),
+                        'name' => $normalizer->getUnitName($normalizedUnit),
                         'abbreviation' => $normalizedUnit,
                     ]);
                     $measureId = $newMeasure->id;
@@ -125,24 +125,24 @@ class RequisitionIndex extends Component
 
             $normalizedProductName = app(\App\Services\DataNormalizerService::class)->normalizeText($item['name']);
             $existingProduct = \App\Models\Product::where('normalized_name', $normalizedProductName)->first();
-            
+
             if ($existingProduct) {
                 $productId = $existingProduct->id;
             } else {
                 $newProduct = \App\Models\Product::create([
                     'canonical_name' => $item['name'],
-                    'measure_id'     => $measureId,
+                    'measure_id' => $measureId,
                 ]);
                 $productId = $newProduct->id;
             }
 
             RequisitionItem::create([
                 'requisition_id' => $requisition->id,
-                'product_id'     => $productId,
-                'measure_id'     => $measureId,
-                'quantity'       => $item['quantity'],
-                'unit_price'     => $item['unit_price'],
-                'supplier_id'    => $item['supplier_id'],
+                'product_id' => $productId,
+                'measure_id' => $measureId,
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'supplier_id' => $item['supplier_id'],
             ]);
         }
 

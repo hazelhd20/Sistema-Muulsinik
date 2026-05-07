@@ -43,7 +43,7 @@
                     <div class="flex items-center gap-2">
                         <div
                             class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300
-                                {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
+                                    {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
                             @if($step > $num)
                                 <i data-lucide="check" class="w-4 h-4"></i>
                             @else
@@ -139,7 +139,8 @@
                                     $fileSize = 0;
                                     try {
                                         $fileSize = $file->getSize();
-                                    } catch (\Exception $e) {}
+                                    } catch (\Exception $e) {
+                                    }
                                 @endphp
                                 <p class="text-xs text-text-muted">{{ number_format($fileSize / 1024, 1) }} KB</p>
                             </div>
@@ -329,17 +330,20 @@
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Proveedor</label>
                             <div class="flex flex-col gap-1">
-                                <input type="text" wire:model="supplierName" list="suppliers-list" class="input"
+                                <input type="text" wire:model.live="supplierName" list="suppliers-list" class="input"
                                     placeholder="Seleccionar o escribir nuevo proveedor...">
                                 <datalist id="suppliers-list">
                                     @foreach($suppliers as $supplier)
                                         <option value="{{ $supplier->trade_name }}"></option>
                                     @endforeach
                                 </datalist>
-                                @if($supplierName)
+                                @if($supplierName && !$supplierId)
                                     <span class="text-xs text-amber-600 font-medium">
-                                        <i data-lucide="info" class="w-3 h-3 inline"></i> Se guardará como nuevo si no existe en
-                                        el sistema.
+                                        <i data-lucide="info" class="w-3 h-3 inline"></i> Se creará como nuevo proveedor.
+                                    </span>
+                                @elseif($supplierId)
+                                    <span class="text-xs text-green-600 font-medium">
+                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Proveedor seleccionado.
                                     </span>
                                 @endif
                             </div>
@@ -352,7 +356,25 @@
 
                         <div>
                             <label class="block text-sm font-medium text-text-primary mb-1.5">Vendedor (Atiende)</label>
-                            <input wire:model="vendorName" type="text" class="input" placeholder="Nombre del vendedor (opcional)">
+                            <div class="flex flex-col gap-1">
+                                <input wire:model.live="vendorName" type="text" list="vendors-list" class="input"
+                                    placeholder="Seleccionar o escribir nombre del vendedor...">
+                                <datalist id="vendors-list">
+                                    @foreach($vendors as $vendor)
+                                        <option value="{{ $vendor->name }}"></option>
+                                    @endforeach
+                                </datalist>
+                                @if($vendorName && $supplierId && !collect($vendors)->contains('name', $vendorName))
+                                    <span class="text-xs text-amber-600 font-medium">
+                                        <i data-lucide="info" class="w-3 h-3 inline"></i> Se creará como nuevo vendedor para
+                                        este proveedor.
+                                    </span>
+                                @elseif($vendorName && $supplierId && collect($vendors)->contains('name', $vendorName))
+                                    <span class="text-xs text-green-600 font-medium">
+                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Vendedor seleccionado.
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -440,7 +462,13 @@
                             <datalist id="measures-list">
                                 @foreach($measures as $measure)
                                     <option value="{{ $measure->name }}">
-                                        {{ $measure->abbreviation ? '(' . $measure->abbreviation . ')' : '' }}</option>
+                                        {{ $measure->abbreviation ? '(' . $measure->abbreviation . ')' : '' }}
+                                    </option>
+                                @endforeach
+                            </datalist>
+                            <datalist id="categories-list">
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->name }}"></option>
                                 @endforeach
                             </datalist>
                             <table class="w-full text-sm">
@@ -472,7 +500,8 @@
                                 </thead>
                                 <tbody>
                                     @foreach($items as $i => $item)
-                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition" wire:key="item-row-{{ $i }}">
+                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition"
+                                            wire:key="item-row-{{ $i }}">
                                             {{-- Nombre --}}
                                             <td class="px-3 py-2">
                                                 <input wire:model="items.{{ $i }}.name" type="text" class="input text-sm"
@@ -481,12 +510,9 @@
 
                                             {{-- Categoría --}}
                                             <td class="px-3 py-2">
-                                                <select wire:model="items.{{ $i }}.category_id" class="input text-xs py-1">
-                                                    <option value="">Seleccionar...</option>
-                                                    @foreach($categories as $cat)
-                                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                                    @endforeach
-                                                </select>
+                                                <input type="text" wire:model="items.{{ $i }}.category_name"
+                                                    list="categories-list" class="input text-xs py-1"
+                                                    placeholder="Categoría...">
                                             </td>
 
                                             {{-- Cantidad --}}

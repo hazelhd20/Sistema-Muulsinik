@@ -45,7 +45,7 @@ class ProductIndex extends Component
         $this->measureId = $product->measure_id;
         $this->description = $product->description ?? '';
         $this->categoryId = $product->category_id ?? '';
-        
+
         $this->showCreateModal = true;
     }
 
@@ -83,7 +83,7 @@ class ProductIndex extends Component
     public function deleteProduct(int $productId): void
     {
         $product = Product::findOrFail($productId);
-        
+
         if (\App\Models\RequisitionItem::where('product_id', $productId)->exists()) {
             session()->flash('error', 'No se puede eliminar: el producto está siendo utilizado en una requisición.');
             return;
