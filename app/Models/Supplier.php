@@ -16,6 +16,7 @@ class Supplier extends Model
     {
         static::saving(function ($supplier) {
             if ($supplier->isDirty('trade_name') && !empty($supplier->trade_name)) {
+                $supplier->trade_name = app(\App\Services\DataNormalizerService::class)->normalizeTitleCase($supplier->trade_name);
                 $supplier->normalized_name = app(\App\Services\DataNormalizerService::class)->normalizeSupplierName($supplier->trade_name);
             }
         });

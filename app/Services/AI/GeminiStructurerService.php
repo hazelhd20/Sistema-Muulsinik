@@ -234,9 +234,9 @@ class GeminiStructurerService
         Tu tarea es extraer la información estructurada del documento. Devuelve SOLO un JSON válido con el siguiente formato, sin texto adicional ni markdown:
 
         {
-            "supplier": "Nombre del proveedor o empresa (o null si no se identifica)",
-            "store": "Nombre de la sucursal/tienda (o null si no se identifica)",
-            "seller": "Nombre de la persona que vende o atiende (o null si no se identifica)",
+            "supplier": "Nombre del proveedor o empresa (Mayúsculas al inicio de cada palabra, ej: Materiales Pérez)",
+            "store": "Nombre de la sucursal/tienda (Mayúsculas al inicio de cada palabra)",
+            "seller": "Nombre de la persona que vende o atiende (Mayúsculas al inicio de cada palabra)",
             "tax_info": {
                 "tax_rate": 0.16,
                 "prices_include_tax": true,
@@ -247,8 +247,8 @@ class GeminiStructurerService
             },
             "items": [
                 {
-                    "name": "Nombre limpio del producto (sin códigos del proveedor, sin viñetas)",
-                    "category": "Clasifica el producto usando SOLO UNA de estas opciones: {$categoriesList}. Si no encaja en ninguna, usa 'Otros'",
+                    "name": "Nombre limpio del producto EN MAYÚSCULAS (ej: CEMENTO GRIS 50KG, sin códigos, sin viñetas)",
+                    "category": "Clasifica el producto usando SOLO UNA de estas opciones: {$categoriesList}. Si no encaja en ninguna, usa 'Otros'. (Mayúsculas al inicio de cada palabra)",
                     "quantity": 10.0,
                     "unit": "pza",
                     "unit_price": 150.50,
@@ -281,8 +281,9 @@ class GeminiStructurerService
            - El Total SIEMPRE debe ser mayor o igual al Subtotal.
 
         Reglas generales:
-        - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura.
-        - En "category": intenta asignar una categoría de esta lista: [{$categoriesList}]. Si ninguna encaja razonablemente, sugiere una categoría nueva, corta y descriptiva.
+        - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura. IMPORTANTE: El nombre debe estar TODO EN MAYÚSCULAS.
+        - En "category": intenta asignar una categoría de esta lista: [{$categoriesList}]. Si ninguna encaja razonablemente, sugiere una categoría nueva, corta y descriptiva. IMPORTANTE: Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
+        - En "supplier", "store" y "seller": Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
         - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete). Sé consistente.
         - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
         - En "discount": pon el valor del descuento si aparece. Si no, pon 0.

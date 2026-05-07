@@ -13,12 +13,14 @@
 
     @if (session()->has('success'))
         <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })">
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
+            wire:key="toast-success-{{ microtime(true) }}">
         </div>
     @endif
     @if (session()->has('error'))
         <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' })">
+            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
+            wire:key="toast-error-{{ microtime(true) }}">
         </div>
     @endif
 

@@ -26,10 +26,10 @@
 
     {{-- Alerts --}}
     @if(session('success'))
-        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' })"></div>
+        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()" wire:key="toast-success-{{ microtime(true) }}"></div>
     @endif
     @if(session('budget_alert'))
-        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' })"></div>
+        <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' }); $el.remove()" wire:key="toast-warning-{{ microtime(true) }}"></div>
     @endif
 
     {{-- Filters --}}

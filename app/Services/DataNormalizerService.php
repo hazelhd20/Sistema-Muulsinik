@@ -374,18 +374,29 @@ class DataNormalizerService
                 $item['unit'] = $this->normalizeUnit($item['unit']);
             }
 
-            // Limpiar nombre (quitar espacios extra, pero preservar el texto original)
+            // Limpiar nombre: TODO EN MAYÚSCULAS
             if (!empty($item['name'])) {
-                $item['name'] = trim(preg_replace('/\s+/', ' ', $item['name']));
+                $item['name'] = mb_strtoupper(trim(preg_replace('/\s+/', ' ', $item['name'])));
             }
 
-            // Limpiar categoría
+            // Limpiar categoría: Mayúscula al inicio de cada palabra
             if (!empty($item['category'])) {
-                $item['category'] = trim(preg_replace('/\s+/', ' ', $item['category']));
+                $item['category'] = $this->normalizeTitleCase($item['category']);
             }
 
             return $item;
         }, $items);
+    }
+
+    /**
+     * Normaliza un texto a Title Case (Mayúscula al inicio de cada palabra).
+     *
+     * @param  string $text
+     * @return string
+     */
+    public function normalizeTitleCase(string $text): string
+    {
+        return mb_convert_case(trim(preg_replace('/\s+/', ' ', $text)), MB_CASE_TITLE, "UTF-8");
     }
 
     /* ═══════════════════════════════════════════════════

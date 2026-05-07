@@ -235,9 +235,9 @@ class QuotationWizard extends Component
         // Normalizar datos (unidades, texto) vía DataNormalizerService
         $dataNormalizer = app(DataNormalizerService::class);
 
-        $this->supplierName = $data['supplier'] ?? '';
-        $this->storeName    = $data['store'] ?? '';
-        $this->vendorName   = $data['seller'] ?? '';
+        $this->supplierName = !empty($data['supplier']) ? $dataNormalizer->normalizeTitleCase($data['supplier']) : '';
+        $this->storeName    = !empty($data['store']) ? $dataNormalizer->normalizeTitleCase($data['store']) : '';
+        $this->vendorName   = !empty($data['seller']) ? $dataNormalizer->normalizeTitleCase($data['seller']) : '';
         $this->rawText      = $data['raw_text'] ?? '';
         $this->items        = [];
         $this->warnings     = [];

@@ -178,16 +178,38 @@
         // Inicializar Lucide Icons después de cada actualización de Livewire
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
         document.addEventListener('livewire:navigated', () => lucide.createIcons());
-        if (typeof Livewire !== 'undefined') {
+        document.addEventListener('livewire:init', () => {
             Livewire.hook('morph.updated', () => lucide.createIcons());
-        }
+        });
 
-        // Interceptar Livewire wire:confirm para usar SweetAlert2
+        // Toast handler for Livewire events (Livewire 3)
+        window.addEventListener('toast', event => {
+            const data = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: data.icon || 'success',
+                title: data.title || data.message
+            });
+        });
+
+        // Intercept session flashes from Livewire responses
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('morph.updated', (el, component) => {
+                // If a toast element was added, Alpine will handle it. 
+                // But we want to make sure it's removed so it can be re-added.
+            });
+        });
+
+        // Interceptor para wire:confirm con SweetAlert2
         document.addEventListener('click', e => {
             let el = e.target.closest('[wire\\:confirm]');
             if (el && !el.hasAttribute('data-confirmed')) {
                 e.preventDefault();
-                e.stopImmediatePropagation(); // Detiene el evento antes de que Livewire lo vea
+                e.stopImmediatePropagation();
 
                 let content = el.getAttribute('wire:confirm');
 
@@ -208,18 +230,15 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         el.setAttribute('data-confirmed', 'true');
-                        // Bypassear el window.confirm nativo temporalmente
                         let originalConfirm = window.confirm;
                         window.confirm = () => true;
-
-                        el.click(); // Disparar el clic de nuevo, esta vez pasará a Livewire
-
+                        el.click();
                         window.confirm = originalConfirm;
                         el.removeAttribute('data-confirmed');
                     }
                 });
             }
-        }, true); // Capturing phase para interceptar antes que Livewire
+        }, true);
     </script>
 </body>
 
