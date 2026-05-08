@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Suppliers;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Supplier;
 use App\Models\Vendor;
 use Livewire\Attributes\Layout;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class SupplierIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, EnforcesPermissions;
 
     public string $search = '';
     public bool $showCreateModal = false;
@@ -59,6 +60,8 @@ class SupplierIndex extends Component
 
     public function saveSupplier(): void
     {
+        if ($this->denyUnless('proveedores.crear', 'No tienes permiso para guardar proveedores.')) return;
+
         $this->validate([
             'tradeName' => 'required|min:2|max:255',
             'legalName' => 'nullable|max:255',
@@ -129,6 +132,8 @@ class SupplierIndex extends Component
 
     public function saveVendor(): void
     {
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para guardar vendedores.')) return;
+
         $this->validate([
             'vendorName' => 'required|min:2|max:255',
             'vendorPhone' => 'nullable|max:20',
@@ -161,11 +166,15 @@ class SupplierIndex extends Component
 
     public function deleteVendor(int $vendorId): void
     {
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para eliminar vendedores.')) return;
+
         Vendor::findOrFail($vendorId)->delete();
     }
 
     public function deleteSupplier(int $supplierId): void
     {
+        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.')) return;
+
         $supplier = Supplier::findOrFail($supplierId);
 
         $isUsed = \App\Models\RequisitionItem::where('supplier_id', $supplierId)->exists() ||

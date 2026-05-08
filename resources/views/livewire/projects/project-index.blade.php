@@ -90,13 +90,12 @@
                         <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                        <a href="{{ url('/proyectos/' . $project->id) }}"
-                            class="p-1.5 rounded-lg hover:bg-surface-hover transition text-text-muted hover:text-primary-600">
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                        </a>
+                        <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary" title="Editar">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
                         <button wire:click="deleteProject({{ $project->id }})"
                             wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
-                            class="p-1.5 rounded-lg hover:bg-red-50 transition text-text-muted hover:text-danger">
+                            class="btn-icon-danger" title="Eliminar">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -112,6 +111,90 @@
 
     {{-- Pagination --}}
     {{ $projects->links() }}
+
+    {{-- Edit Project Modal --}}
+    @if($showEditModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data
+            x-init="$el.querySelector('input')?.focus()">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showEditModal', false)"></div>
+            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-h2 text-text-primary">Editar Proyecto</h2>
+                    <button wire:click="$set('showEditModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
+                        <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
+                    </button>
+                </div>
+
+                <form wire:submit="updateProject" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre del proyecto *</label>
+                        <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
+                        @error('name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Descripción</label>
+                        <textarea wire:model="description" class="input" rows="3"
+                            placeholder="Descripción breve del proyecto..."></textarea>
+                        @error('description') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Cliente</label>
+                            <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
+                        </div>
+                        <div>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Presupuesto *</label>
+                            <input wire:model="budget" type="number" step="0.01" class="input" placeholder="0.00">
+                            @error('budget') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de inicio</label>
+                            <input wire:model="startDate" type="date" class="input">
+                        </div>
+                        <div>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha estimada de término</label>
+                            <input wire:model="endDate" type="date" class="input">
+                            @error('endDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Estado</label>
+                        <select wire:model="status" class="input">
+                            <option value="activo">Activo</option>
+                            <option value="en_pausa">En Pausa</option>
+                            <option value="completado">Completado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                        @error('status') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" wire:click="$set('showEditModal', false)"
+                            class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
+                            <span wire:loading.class="opacity-0" wire:target="updateProject"
+                                class="transition-opacity">Guardar Cambios</span>
+                            <span wire:loading wire:target="updateProject"
+                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+                                        fill="none" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 
     {{-- Create Project Modal --}}
     @if($showCreateModal)

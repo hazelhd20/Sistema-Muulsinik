@@ -68,6 +68,12 @@
             placeholder="Todas las categorías"
             class="w-auto min-w-[160px]"
         />
+        <x-custom-select
+            wire:model.live="periodFilter"
+            :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+            placeholder="Todos los períodos"
+            class="w-auto min-w-[170px]"
+        />
     </div>
 
 

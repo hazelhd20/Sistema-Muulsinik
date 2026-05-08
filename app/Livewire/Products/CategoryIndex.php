@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Products;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Category;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -10,7 +11,7 @@ use Livewire\WithPagination;
 
 class CategoryIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, EnforcesPermissions;
 
     public string $search = '';
 
@@ -43,6 +44,8 @@ class CategoryIndex extends Component
 
     public function save(): void
     {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+
         $this->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $this->editingId,
         ]);
@@ -64,6 +67,8 @@ class CategoryIndex extends Component
 
     public function delete(int $id): void
     {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+
         $category = Category::findOrFail($id);
 
         $isUsed = \App\Models\Product::where('category_id', $category->id)->exists();

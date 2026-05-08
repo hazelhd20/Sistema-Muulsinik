@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Documents;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Document;
 use App\Models\Project;
 use Livewire\Attributes\Layout;
@@ -12,7 +13,7 @@ use Livewire\WithPagination;
 
 class DocumentIndex extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads, EnforcesPermissions;
 
     public string $search = '';
     public string $projectFilter = '';
@@ -46,6 +47,8 @@ class DocumentIndex extends Component
 
     public function uploadDocument(): void
     {
+        if ($this->denyUnless('documentos.crear', 'No tienes permiso para subir documentos.')) return;
+
         $this->validate([
             'docName' => 'required|min:3|max:255',
             'docProjectId' => 'required|exists:projects,id',
@@ -76,6 +79,8 @@ class DocumentIndex extends Component
 
     public function deleteDocument(int $id): void
     {
+        if ($this->denyUnless('documentos.eliminar', 'No tienes permiso para eliminar documentos.')) return;
+
         $document = Document::findOrFail($id);
 
         if ($document->requisition_id) {

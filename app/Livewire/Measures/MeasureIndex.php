@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Measures;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Measure;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -10,7 +11,7 @@ use Livewire\WithPagination;
 
 class MeasureIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, EnforcesPermissions;
 
     public string $search = '';
 
@@ -46,6 +47,8 @@ class MeasureIndex extends Component
 
     public function save(): void
     {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+
         $this->validate();
 
         if ($this->editingId) {
@@ -67,6 +70,8 @@ class MeasureIndex extends Component
 
     public function delete(int $id): void
     {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+
         $measure = Measure::findOrFail($id);
 
         $isUsed = \App\Models\RequisitionItem::where('measure_id', $measure->id)->exists() ||

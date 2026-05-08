@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Products;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Category;
@@ -12,7 +13,7 @@ use Livewire\WithPagination;
 
 class ProductIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, EnforcesPermissions;
 
     public string $search = '';
     public string $categoryFilter = '';
@@ -51,6 +52,8 @@ class ProductIndex extends Component
 
     public function saveProduct(): void
     {
+        if ($this->denyUnless('productos.crear', 'No tienes permiso para guardar productos.')) return;
+
         $this->validate([
             'canonicalName' => 'required|min:2|max:255|unique:products,canonical_name,' . $this->editingId,
             'measureId' => 'required|exists:measures,id',
@@ -95,6 +98,8 @@ class ProductIndex extends Component
 
     public function deleteProduct(int $productId): void
     {
+        if ($this->denyUnless('productos.eliminar', 'No tienes permiso para eliminar productos.')) return;
+
         $product = Product::findOrFail($productId);
 
         if (\App\Models\RequisitionItem::where('product_id', $productId)->exists()) {

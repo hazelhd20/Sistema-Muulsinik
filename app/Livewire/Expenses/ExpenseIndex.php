@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Expenses;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Expense;
 use App\Models\Project;
 use Livewire\Attributes\Layout;
@@ -12,11 +13,12 @@ use Livewire\WithPagination;
 
 class ExpenseIndex extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads, EnforcesPermissions;
 
     public string $search = '';
     public string $projectFilter = '';
     public string $categoryFilter = '';
+    public string $periodFilter = '';
     public bool $showCreateModal = false;
 
     // Campos del formulario
@@ -42,6 +44,11 @@ class ExpenseIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedPeriodFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function openCreateModal(): void
     {
         $this->resetForm();
@@ -51,6 +58,8 @@ class ExpenseIndex extends Component
 
     public function createExpense(): void
     {
+        if ($this->denyUnless('gastos.crear', 'No tienes permiso para registrar gastos.')) return;
+
         $this->validate([
             'concept' => 'required|min:3|max:255',
             'amount' => 'required|numeric|min:0.01',
@@ -85,6 +94,8 @@ class ExpenseIndex extends Component
 
     public function deleteExpense(int $expenseId): void
     {
+        if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) return;
+
         Expense::findOrFail($expenseId)->delete();
         session()->flash('success', 'Gasto eliminado.');
     }
@@ -121,6 +132,15 @@ class ExpenseIndex extends Component
             ->when($this->search, fn ($q) => $q->where('concept', 'like', "%{$this->search}%"))
             ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
+            ->when($this->periodFilter, function ($q) {
+                match ($this->periodFilter) {
+                    'this_month'   => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
+                    'last_month'   => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
+                    'this_quarter' => $q->whereBetween('date', [now()->startOfQuarter(), now()->endOfQuarter()]),
+                    'this_year'    => $q->whereYear('date', now()->year),
+                    default        => null,
+                };
+            })
             ->latest('date')
             ->paginate(15);
 

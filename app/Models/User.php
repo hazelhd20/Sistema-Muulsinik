@@ -40,7 +40,12 @@ class User extends Authenticatable
             return false;
         }
 
-        $permissions = $this->role->rolePermissions->pluck('permission')->toArray();
+        $permissions = $this->role->permissions ?? [];
+
+        // Administrador con permiso comodín
+        if (in_array('*', $permissions, true)) {
+            return true;
+        }
 
         return in_array($permission, $permissions, true);
     }

@@ -19,6 +19,7 @@ class RequisitionIndex extends Component
     public string $search = '';
     public string $statusFilter = '';
     public string $projectFilter = '';
+    public string $periodFilter = '';
     public bool $showCreateModal = false;
 
     public $reqProjectId = '';
@@ -40,6 +41,11 @@ class RequisitionIndex extends Component
     public string $rejectionComment = '';
 
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPeriodFilter(): void
     {
         $this->resetPage();
     }
@@ -165,6 +171,11 @@ class RequisitionIndex extends Component
     /** RF-REQ-09: Aprobar requisición (Pendiente → Aprobada). */
     public function approve(int $requisitionId): void
     {
+        if (!auth()->user()->hasPermission('requisiciones.aprobar')) {
+            session()->flash('error', 'No tienes permiso para aprobar requisiciones.');
+            return;
+        }
+
         $req = Requisition::findOrFail($requisitionId);
         if ($req->status !== 'pendiente') {
             return;
@@ -188,6 +199,12 @@ class RequisitionIndex extends Component
     /** RF-REQ-09: Rechazar con comentario obligatorio. */
     public function confirmReject(): void
     {
+        if (!auth()->user()->hasPermission('requisiciones.aprobar')) {
+            session()->flash('error', 'No tienes permiso para rechazar requisiciones.');
+            $this->showRejectModal = false;
+            return;
+        }
+
         $this->validate([
             'rejectionComment' => 'required|min:5|max:500',
         ]);
@@ -232,6 +249,15 @@ class RequisitionIndex extends Component
             ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->periodFilter, function ($q) {
+                match ($this->periodFilter) {
+                    'this_month'   => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
+                    'last_month'   => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
+                    'this_quarter' => $q->whereBetween('date', [now()->startOfQuarter(), now()->endOfQuarter()]),
+                    'this_year'    => $q->whereYear('date', now()->year),
+                    default        => null,
+                };
+            })
             ->latest()
             ->paginate(10);
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RequisitionPdfController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Documents\DocumentIndex;
@@ -45,6 +46,7 @@ Route::middleware('auth')->group(function () {
     // Requisiciones (RF-REQ)
     Route::get('/requisiciones', RequisitionIndex::class)->name('requisiciones.index');
     Route::get('/requisiciones/subir-cotizacion', QuotationWizard::class)->name('requisiciones.upload');
+    Route::get('/requisiciones/{id}/pdf', [RequisitionPdfController::class, 'download'])->name('requisiciones.pdf');
 
     // Proveedores (RF-PROV)
     Route::get('/proveedores', SupplierIndex::class)->name('proveedores.index');

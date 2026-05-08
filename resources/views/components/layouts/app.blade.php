@@ -52,45 +52,60 @@
                     <span>Dashboard</span>
                 </a>
 
+                @if(auth()->user()->hasPermission('proyectos.ver'))
                 <a href="{{ url('/proyectos') }}" class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
                     <i data-lucide="hard-hat" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Proyectos</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermission('gastos.ver'))
                 <a href="{{ url('/gastos') }}" class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
                     <i data-lucide="wallet" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Gastos</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermission('requisiciones.ver'))
                 <a href="{{ url('/requisiciones') }}" class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
                     <i data-lucide="clipboard-list" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Requisiciones</span>
                 </a>
+                @endif
 
                 <p class="px-3 pt-5 pb-2 text-xs-fluid font-700 text-text-muted uppercase tracking-[0.08em]">Administración</p>
 
+                @if(auth()->user()->hasPermission('proveedores.ver'))
                 <a href="{{ url('/proveedores') }}" class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
                     <i data-lucide="truck" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Proveedores</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermission('documentos.ver'))
                 <a href="{{ url('/documentos') }}" class="nav-link {{ request()->is('documentos*') ? 'active' : '' }}">
                     <i data-lucide="folder-open" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Documentos</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermission('reportes.ver'))
                 <a href="{{ url('/reportes') }}" class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
                     <i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Reportes</span>
                 </a>
+                @endif
 
                 <p class="px-3 pt-5 pb-2 text-xs-fluid font-700 text-text-muted uppercase tracking-[0.08em]">Catálogos</p>
 
+                @if(auth()->user()->hasPermission('productos.ver'))
                 <a href="{{ url('/productos') }}" class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
                     <i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Productos</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermission('catalogos.ver'))
                 <a href="{{ url('/medidas') }}" class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
                     <i data-lucide="ruler" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Medidas</span>
@@ -100,6 +115,7 @@
                     <i data-lucide="layers" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Categorías</span>
                 </a>
+                @endif
             </nav>
 
             {{-- Bottom: Settings + Logout --}}

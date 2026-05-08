@@ -56,6 +56,9 @@
             class="w-auto min-w-[160px]" />
         <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
             placeholder="Todos los proyectos" class="w-auto min-w-[180px]" />
+        <x-custom-select wire:model.live="periodFilter"
+            :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+            placeholder="Todos los períodos" class="w-auto min-w-[170px]" />
     </div>
 
     {{-- Requisitions list --}}
@@ -162,7 +165,7 @@
                             </button>
                         @endif
 
-                        @if($req->status === 'pendiente')
+                        @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
                             <button wire:click="approve({{ $req->id }})"
                                 wire:confirm="¿Aprobar esta requisición?"
                                 class="btn-icon-primary" title="Aprobar">
@@ -173,6 +176,12 @@
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         @endif
+
+                        <a href="{{ route('requisiciones.pdf', $req->id) }}"
+                            target="_blank"
+                            class="btn-icon-primary" title="Descargar PDF">
+                            <i data-lucide="file-down" class="w-4 h-4"></i>
+                        </a>
 
                         @if(in_array($req->status, ['borrador', 'rechazada']))
                             <button wire:click="deleteRequisition({{ $req->id }})"
