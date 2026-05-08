@@ -59,147 +59,186 @@
     </div>
 
     {{-- Requisitions list --}}
-    <div class="space-y-4">
+    <div class="space-y-3">
         @forelse($requisitions as $req)
-            <div class="card hover:shadow-md transition-shadow">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    {{-- Left info --}}
-                    <div class="flex items-start gap-4 flex-1 min-w-0">
-                        <div
-                            class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                                {{ match ($req->status) { 'borrador' => 'bg-gray-50', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-green-50', 'rechazada' => 'bg-red-50', default => 'bg-gray-50'} }}">
-                            <i data-lucide="{{ match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file'} }}"
-                                class="w-5 h-5 {{ match ($req->status) { 'borrador' => 'text-gray-600', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-600', default => 'text-gray-600'} }}"></i>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <h3 class="font-semibold text-text-primary truncate">{{ $req->number ?? 'REQ-' . $req->id }}
-                                </h3>
-                @php
-                    $sColors = ['borrador' => 'badge-secondary', 'pendiente' => 'badge-warning', 'aprobada' => 'badge-success', 'rechazada' => 'badge-danger'];
-                @endphp
-                                <span
-                                    class="badge {{ $sColors[$req->status] ?? '' }} shrink-0">{{ ucfirst($req->status) }}</span>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
-                                @if($req->annotations)
-                                    <span class="w-full text-sm text-text-muted truncate mb-2"
-                                        title="{{ $req->annotations }}">{{ $req->annotations }}</span>
-                                @endif
-                                <span class="flex items-center gap-1">
-                                    <i data-lucide="hard-hat" class="w-3 h-3"></i>{{ $req->project->name ?? '—' }}
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <i data-lucide="user" class="w-3 h-3"></i>{{ $req->creator->name ?? '—' }}
-                                </span>
-                                @if($req->vendor)
-                                    <span class="flex items-center gap-1" title="Vendedor: {{ $req->vendor->name }}">
-                                        <i data-lucide="contact" class="w-3 h-3"></i>{{ $req->vendor->name }}
-                                    </span>
-                                @endif
-                                <span class="flex items-center gap-1">
-                                    <i data-lucide="calendar" class="w-3 h-3"></i>{{ $req->date?->format('d/m/Y') }}
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <i data-lucide="package" class="w-3 h-3"></i>{{ $req->items->count() }} productos
-                                </span>
-                            </div>
-                        </div>
+            @php
+                $sColors = ['borrador' => 'badge-secondary', 'pendiente' => 'badge-warning', 'aprobada' => 'badge-success', 'rechazada' => 'badge-danger'];
+                $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file' };
+                $iconBg = match ($req->status) { 'borrador' => 'bg-gray-50', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-green-50', 'rechazada' => 'bg-red-50', default => 'bg-gray-50' };
+                $iconColor = match ($req->status) { 'borrador' => 'text-gray-500', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-500', default => 'text-gray-500' };
+            @endphp
+            <div x-data="{ open: false }" class="card hover:shadow-md transition-shadow">
+
+                {{-- ── Cuerpo principal ── --}}
+                <div class="flex items-start gap-4">
+
+                    {{-- Ícono de estado --}}
+                    <div class="w-9 h-9 rounded-xl {{ $iconBg }} flex items-center justify-center shrink-0 mt-0.5">
+                        <i data-lucide="{{ $iconName }}" class="w-4 h-4 {{ $iconColor }}"></i>
                     </div>
 
-                    {{-- Right: total + actions --}}
-                    <div class="flex items-center gap-4 shrink-0">
-                        <div class="text-right">
-                            <p class="text-lg font-bold text-text-primary">${{ number_format($req->total, 2, '.', ',') }}
+                    {{-- Info central --}}
+                    <div class="flex-1 min-w-0">
+                        {{-- Fila 1: número + badge --}}
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <h3 class="text-sm font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}</h3>
+                            <span class="badge {{ $sColors[$req->status] ?? '' }} shrink-0">{{ ucfirst($req->status) }}</span>
+                        </div>
+
+                        {{-- Fila 2: metadatos primarios --}}
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="hard-hat" class="w-3 h-3 shrink-0"></i>
+                                <span class="truncate max-w-[160px]">{{ $req->project->name ?? '—' }}</span>
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="calendar" class="w-3 h-3 shrink-0"></i>
+                                {{ $req->date?->format('d/m/Y') }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="user" class="w-3 h-3 shrink-0"></i>
+                                {{ $req->creator->name ?? '—' }}
+                            </span>
+                            @if($req->vendor)
+                                <span class="flex items-center gap-1">
+                                    <i data-lucide="contact" class="w-3 h-3 shrink-0"></i>
+                                    {{ $req->vendor->name }}
+                                    @if($req->vendor->supplier)
+                                        <span class="text-text-muted/60">· {{ $req->vendor->supplier->trade_name }}</span>
+                                    @endif
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Fila 3: anotaciones (solo si existen) --}}
+                        @if($req->annotations)
+                            <p class="mt-1.5 text-xs text-text-muted italic truncate max-w-lg" title="{{ $req->annotations }}">
+                                "{{ $req->annotations }}"
                             </p>
-                            <p class="text-xs text-text-muted">Estimado</p>
-                        </div>
+                        @endif
+                    </div>
 
-                        <div class="flex items-center gap-1">
-                            @if($req->quotations->isNotEmpty())
-                                @php
-                                    $firstQuot = $req->quotations->first();
-                                    $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                    $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                @endphp
-                                <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
-                                    class="btn-icon-primary"
-                                    title="Ver archivo adjunto">
-                                    <i data-lucide="file-search" class="w-4 h-4"></i>
-                                </button>
-                            @endif
-
-                            @if($req->status === 'borrador')
-                                <button wire:click="submitForApproval({{ $req->id }})"
-                                    wire:confirm="¿Enviar esta requisición a aprobación?"
-                                    class="btn-icon-primary"
-                                    title="Enviar a aprobación">
-                                    <i data-lucide="send" class="w-4 h-4"></i>
-                                </button>
-                            @endif
-                            @if($req->status === 'pendiente')
-                                <button wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?"
-                                    class="btn-icon-primary"
-                                    title="Aprobar">
-                                    <i data-lucide="check" class="w-4 h-4"></i>
-                                </button>
-                                <button wire:click="openRejectModal({{ $req->id }})"
-                                    class="btn-icon-danger" title="Rechazar">
-                                    <i data-lucide="x" class="w-4 h-4"></i>
-                                </button>
-                            @endif
-                            @if(in_array($req->status, ['borrador', 'rechazada']))
-                                <button wire:click="deleteRequisition({{ $req->id }})"
-                                    wire:confirm="¿Eliminar esta requisición?"
-                                    class="btn-icon-danger">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            @endif
-                        </div>
+                    {{-- Total --}}
+                    <div class="text-right shrink-0">
+                        <p class="text-base font-bold text-text-primary leading-tight">${{ number_format($req->total, 2, '.', ',') }}</p>
+                        <p class="text-[11px] text-text-muted">estimado</p>
                     </div>
                 </div>
 
-                {{-- Items table (collapsible) --}}
-                @if($req->items->isNotEmpty())
-                    <div x-data="{ open: false }" class="mt-4">
+                {{-- ── Footer: trigger collapsible + acciones ── --}}
+                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+
+                    {{-- Trigger de productos --}}
+                    @if($req->items->isNotEmpty())
                         <button @click="open = !open"
-                            class="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform"
+                            class="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-primary-600 transition-colors">
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200"
                                 :class="open && 'rotate-180'"></i>
-                            <span x-text="open ? 'Ocultar productos' : 'Ver productos'"></span>
+                            <span>{{ $req->items->count() }} {{ $req->items->count() === 1 ? 'producto' : 'productos' }}</span>
                         </button>
-                        <div x-show="open" x-collapse class="mt-3">
-                            <div class="rounded-xl border border-gray-100 overflow-hidden">
-                                <table class="w-full text-sm">
-                                    <thead>
-                                        <tr class="bg-surface-main">
-                                            <th class="text-left px-4 py-2 text-xs font-semibold text-text-muted uppercase">
-                                                Producto</th>
-                                            <th class="text-center px-4 py-2 text-xs font-semibold text-text-muted uppercase">
-                                                Cantidad</th>
-                                            <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">P.
-                                                Unit.</th>
-                                            <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">
-                                                Subtotal</th>
+                    @else
+                        <span class="text-xs text-text-muted/50">Sin productos</span>
+                    @endif
+
+                    {{-- Acciones --}}
+                    <div class="flex items-center gap-1">
+                        @if($req->quotations->isNotEmpty())
+                            @php
+                                $firstQuot = $req->quotations->first();
+                                $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                            @endphp
+                            <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
+                                class="btn-icon-primary" title="Ver cotización adjunta">
+                                <i data-lucide="file-search" class="w-4 h-4"></i>
+                            </button>
+                        @endif
+
+                        @if($req->status === 'borrador')
+                            <button wire:click="submitForApproval({{ $req->id }})"
+                                wire:confirm="¿Enviar esta requisición a aprobación?"
+                                class="btn-icon-primary" title="Enviar a aprobación">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        @endif
+
+                        @if($req->status === 'pendiente')
+                            <button wire:click="approve({{ $req->id }})"
+                                wire:confirm="¿Aprobar esta requisición?"
+                                class="btn-icon-primary" title="Aprobar">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                            </button>
+                            <button wire:click="openRejectModal({{ $req->id }})"
+                                class="btn-icon-danger" title="Rechazar">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        @endif
+
+                        @if(in_array($req->status, ['borrador', 'rechazada']))
+                            <button wire:click="deleteRequisition({{ $req->id }})"
+                                wire:confirm="¿Eliminar esta requisición?"
+                                class="btn-icon-danger" title="Eliminar">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ── Tabla colapsable de productos ── --}}
+                @if($req->items->isNotEmpty())
+                    <div x-show="open" x-collapse class="mt-3">
+                        <div class="rounded-xl border border-gray-100 overflow-hidden overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="bg-surface-main">
+                                        <th class="text-left px-4 py-2 text-xs font-semibold text-text-muted uppercase">Producto</th>
+                                        <th class="text-center px-4 py-2 text-xs font-semibold text-text-muted uppercase">Cant.</th>
+                                        <th class="text-center px-4 py-2 text-xs font-semibold text-text-muted uppercase">Unidad</th>
+                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">P. Unit.</th>
+                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">Subtotal</th>
+                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">IVA</th>
+                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($req->items as $item)
+                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition-colors">
+                                            <td class="px-4 py-2 font-medium text-text-primary">{{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
+                                            <td class="px-4 py-2 text-center text-text-secondary">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
+                                            <td class="px-4 py-2 text-center text-text-muted">{{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
+                                            <td class="px-4 py-2 text-right text-text-secondary">${{ number_format($item->unit_price, 2, '.', ',') }}</td>
+                                            <td class="px-4 py-2 text-right text-text-secondary">${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
+                                            <td class="px-4 py-2 text-right">
+                                                @if($item->tax_amount !== null)
+                                                    <span class="text-text-muted">${{ number_format($item->tax_amount, 2, '.', ',') }}</span>
+                                                @else
+                                                    <span class="text-[11px] text-amber-500">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-right font-semibold text-text-primary">${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($req->items as $item)
-                                            <tr class="border-t border-gray-50">
-                                                <td class="px-4 py-2 font-medium">
-                                                    {{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
-                                                <td class="px-4 py-2 text-center">
-                                                    {{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}
-                                                    {{ $item->unit }}</td>
-                                                <td class="px-4 py-2 text-right">
-                                                    ${{ number_format($item->unit_price, 2, '.', ',') }}</td>
-                                                <td class="px-4 py-2 text-right font-medium">
-                                                    ${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    @php
+                                        $reqSubtotal = $req->items->sum(fn($i) => $i->line_subtotal_computed);
+                                        $reqTax      = $req->items->sum(fn($i) => (float)($i->tax_amount ?? 0));
+                                        $reqTotal    = $req->total;
+                                    @endphp
+                                    <tr class="border-t border-gray-200 bg-surface-main">
+                                        <td colspan="4" class="px-4 py-2 text-right text-xs text-text-muted">Totales:</td>
+                                        <td class="px-4 py-2 text-right text-xs font-medium text-text-secondary">${{ number_format($reqSubtotal, 2, '.', ',') }}</td>
+                                        <td class="px-4 py-2 text-right text-xs font-medium text-text-muted">
+                                            @if($reqTax > 0)
+                                                ${{ number_format($reqTax, 2, '.', ',') }}
+                                            @else
+                                                <span class="text-amber-500">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-2 text-right text-sm font-bold text-text-primary">${{ number_format($reqTotal, 2, '.', ',') }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 @endif
