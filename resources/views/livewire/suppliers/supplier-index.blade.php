@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Proveedores</h1>
-            <p class="text-sm text-text-muted">Administra proveedores y sus vendedores</p>
+            <h1 class="text-h1 text-text-primary">Proveedores</h1>
+            <p class="text-body text-text-muted">Administra proveedores y sus vendedores</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -43,7 +43,7 @@
                         <div class="min-w-0">
                             <h3 class="font-semibold text-text-primary truncate">{{ $supplier->trade_name }}</h3>
                             @if($supplier->rfc)
-                                <p class="text-xs text-text-muted font-mono">{{ $supplier->rfc }}</p>
+                                <p class="text-xs-fluid text-text-muted font-mono">{{ $supplier->rfc }}</p>
                             @endif
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                 </div>
 
                 {{-- Notas --}}
-                <div class="space-y-1.5 mb-4 text-sm text-text-secondary">
+                <div class="space-y-1.5 mb-4 text-body text-text-secondary">
                     @if($supplier->notes)
                         <div class="flex items-start gap-2">
                             <i data-lucide="sticky-note" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
@@ -65,7 +65,7 @@
                 {{-- Footer --}}
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100">
                     <button wire:click="viewVendors({{ $supplier->id }})"
-                        class="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
+                        class="text-xs-fluid font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
                         <i data-lucide="users" class="w-3.5 h-3.5"></i>
                         {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                     </button>
@@ -95,7 +95,7 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">{{ $editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+                    <h2 class="text-h2 text-text-primary">{{ $editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>

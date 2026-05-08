@@ -2,10 +2,10 @@
     {{-- ── Page header ─────────────────────────────────── --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary leading-tight">
+            <h1 class="text-h1 text-text-primary leading-tight">
                 Bienvenido, {{ explode(' ', auth()->user()->name ?? 'Usuario')[0] }}
             </h1>
-            <p class="text-sm text-text-muted mt-0.5">Aquí tienes un resumen de hoy</p>
+            <p class="text-body text-text-muted mt-0.5">Aquí tienes un resumen de hoy</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ url('/requisiciones') }}" class="btn-secondary">
@@ -29,20 +29,20 @@
         </div>
         <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <p class="text-primary-200 text-xs font-semibold tracking-widest uppercase mb-1.5">Panel de Control</p>
-                <h2 class="text-2xl font-bold mb-1 leading-tight">Muulsinik ERP</h2>
-                <p class="text-primary-200 text-sm max-w-md leading-relaxed">
+                <p class="text-primary-200 text-xs-fluid font-semibold tracking-widest uppercase mb-1.5">Panel de Control</p>
+                <h2 class="text-display mb-1 leading-tight">Muulsinik ERP</h2>
+                <p class="text-primary-200 text-body max-w-md leading-relaxed">
                     Gestiona proyectos de construcción, controla gastos y procesa requisiciones en un solo lugar.
                 </p>
             </div>
             <div class="flex items-center gap-3 shrink-0">
                 <div class="bg-white/10 rounded-xl px-4 py-3 text-center min-w-[80px]">
-                    <p class="text-2xl font-bold leading-none">{{ $activeProjects }}</p>
-                    <p class="text-primary-200 text-xs mt-1">Activos</p>
+                    <p class="text-h1 leading-none">{{ $activeProjects }}</p>
+                    <p class="text-primary-200 text-xs-fluid mt-1">Activos</p>
                 </div>
                 <div class="bg-white/10 rounded-xl px-4 py-3 text-center min-w-[80px]">
-                    <p class="text-2xl font-bold leading-none">{{ $pendingRequisitions }}</p>
-                    <p class="text-primary-200 text-xs mt-1">Pendientes</p>
+                    <p class="text-h1 leading-none">{{ $pendingRequisitions }}</p>
+                    <p class="text-primary-200 text-xs-fluid mt-1">Pendientes</p>
                 </div>
             </div>
         </div>
@@ -55,8 +55,8 @@
                 <i data-lucide="hard-hat" class="w-5 h-5 text-primary-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-xl font-bold text-text-primary leading-none">{{ $activeProjects }}</p>
-                <p class="text-xs text-text-muted mt-1">Proyectos activos</p>
+                <p class="text-h2 text-text-primary leading-none">{{ $activeProjects }}</p>
+                <p class="text-xs-fluid text-text-muted mt-1">Proyectos activos</p>
             </div>
         </div>
 
@@ -65,8 +65,8 @@
                 <i data-lucide="wallet" class="w-5 h-5 text-emerald-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-xl font-bold text-text-primary leading-none truncate">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
-                <p class="text-xs text-text-muted mt-1">Gasto del mes</p>
+                <p class="text-h2 text-text-primary leading-none truncate">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
+                <p class="text-xs-fluid text-text-muted mt-1">Gasto del mes</p>
             </div>
         </div>
 
@@ -75,8 +75,8 @@
                 <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-xl font-bold text-text-primary leading-none">{{ $pendingRequisitions }}</p>
-                <p class="text-xs text-text-muted mt-1">Req. pendientes</p>
+                <p class="text-h2 text-text-primary leading-none">{{ $pendingRequisitions }}</p>
+                <p class="text-xs-fluid text-text-muted mt-1">Req. pendientes</p>
             </div>
         </div>
 
@@ -85,8 +85,8 @@
                 <i data-lucide="truck" class="w-5 h-5 text-sky-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-xl font-bold text-text-primary leading-none">{{ $totalSuppliers }}</p>
-                <p class="text-xs text-text-muted mt-1">Proveedores</p>
+                <p class="text-h2 text-text-primary leading-none">{{ $totalSuppliers }}</p>
+                <p class="text-xs-fluid text-text-muted mt-1">Proveedores</p>
             </div>
         </div>
     </div>
@@ -98,10 +98,10 @@
         <div class="lg:col-span-2 card">
             <div class="flex items-start justify-between mb-5">
                 <div>
-                    <h2 class="text-sm font-semibold text-text-primary">Gastos Mensuales</h2>
-                    <p class="text-xs text-text-muted mt-0.5">Últimos 6 meses</p>
+                    <h2 class="text-small font-semibold text-text-primary">Gastos Mensuales</h2>
+                    <p class="text-xs-fluid text-text-muted mt-0.5">Últimos 6 meses</p>
                 </div>
-                <span class="text-xs font-semibold text-text-muted bg-surface-main px-2.5 py-1 rounded-lg">
+                <span class="text-xs-fluid font-semibold text-text-muted bg-surface-main px-2.5 py-1 rounded-lg">
                     ${{ number_format($totalExpenses, 0, '.', ',') }} acumulado
                 </span>
             </div>
@@ -112,16 +112,16 @@
 
         {{-- Quick stats --}}
         <div class="card flex flex-col">
-            <h2 class="text-sm font-semibold text-text-primary mb-4">Resumen</h2>
+            <h2 class="text-small font-semibold text-text-primary mb-4">Resumen</h2>
             <div class="space-y-2.5 flex-1">
                 <div class="flex items-center justify-between py-2.5 border-b border-gray-50">
                     <div class="flex items-center gap-2.5">
                         <div class="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center">
                             <i data-lucide="briefcase" class="w-3.5 h-3.5 text-primary-600"></i>
                         </div>
-                        <span class="text-sm text-text-secondary">Total proyectos</span>
+                        <span class="text-body text-text-secondary">Total proyectos</span>
                     </div>
-                    <span class="text-sm font-bold text-text-primary">{{ $totalProjects }}</span>
+                    <span class="text-body font-bold text-text-primary">{{ $totalProjects }}</span>
                 </div>
 
                 <div class="flex items-center justify-between py-2.5 border-b border-gray-50">
@@ -129,9 +129,9 @@
                         <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                             <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-600"></i>
                         </div>
-                        <span class="text-sm text-text-secondary">Gasto total</span>
+                        <span class="text-body text-text-secondary">Gasto total</span>
                     </div>
-                    <span class="text-sm font-bold text-text-primary">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
+                    <span class="text-body font-bold text-text-primary">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
                 </div>
 
                 <div class="flex items-center justify-between py-2.5 border-b border-gray-50">
@@ -139,9 +139,9 @@
                         <div class="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center">
                             <i data-lucide="users" class="w-3.5 h-3.5 text-sky-600"></i>
                         </div>
-                        <span class="text-sm text-text-secondary">Proveedores</span>
+                        <span class="text-body text-text-secondary">Proveedores</span>
                     </div>
-                    <span class="text-sm font-bold text-text-primary">{{ $totalSuppliers }}</span>
+                    <span class="text-body font-bold text-text-primary">{{ $totalSuppliers }}</span>
                 </div>
 
                 <div class="flex items-center justify-between py-2.5">
@@ -149,9 +149,9 @@
                         <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
                             <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-amber-600"></i>
                         </div>
-                        <span class="text-sm text-text-secondary">Req. aprobadas</span>
+                        <span class="text-body text-text-secondary">Req. aprobadas</span>
                     </div>
-                    <span class="text-sm font-bold text-text-primary">
+                    <span class="text-body font-bold text-text-primary">
                         {{ \App\Models\Requisition::where('status', 'aprobada')->count() }}
                     </span>
                 </div>
@@ -159,7 +159,7 @@
 
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <a href="{{ url('/reportes') }}"
-                    class="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 transition">
+                    class="flex items-center justify-center gap-1.5 text-xs-fluid font-semibold text-primary-600 hover:text-primary-700 transition">
                     Ver reportes completos
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                 </a>
@@ -173,9 +173,9 @@
         {{-- Proyectos recientes --}}
         <div class="table-container">
             <div class="px-5 py-3.5 flex items-center justify-between border-b border-gray-100">
-                <h2 class="text-sm font-semibold text-text-primary">Proyectos Recientes</h2>
+                <h2 class="text-small font-semibold text-text-primary">Proyectos Recientes</h2>
                 <a href="{{ url('/proyectos') }}"
-                    class="text-xs font-semibold text-primary-600 hover:text-primary-700 transition">Ver todos →</a>
+                    class="text-xs-fluid font-semibold text-primary-600 hover:text-primary-700 transition">Ver todos →</a>
             </div>
             <table>
                 <thead>
@@ -197,15 +197,15 @@
                         @endphp
                         <tr>
                             <td>
-                                <p class="font-medium text-text-primary text-[13px]">{{ $project->name }}</p>
-                                <p class="text-[11px] text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
+                                <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
                             </td>
                             <td>
                                 <span class="badge {{ $statusColors[$project->status] ?? 'badge-secondary' }}">
                                     {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                 </span>
                             </td>
-                            <td class="text-right text-[13px] font-semibold text-text-primary">
+                            <td class="text-right text-small font-semibold text-text-primary">
                                 ${{ number_format($project->budget, 0, '.', ',') }}
                             </td>
                         </tr>
@@ -213,7 +213,7 @@
                         <tr>
                             <td colspan="3" class="text-center py-10">
                                 <i data-lucide="folder-open" class="w-8 h-8 mx-auto mb-2 text-text-muted opacity-30"></i>
-                                <p class="text-sm text-text-muted">Sin proyectos registrados</p>
+                                <p class="text-body text-text-muted">Sin proyectos registrados</p>
                             </td>
                         </tr>
                     @endforelse
@@ -224,9 +224,9 @@
         {{-- Requisiciones recientes --}}
         <div class="table-container">
             <div class="px-5 py-3.5 flex items-center justify-between border-b border-gray-100">
-                <h2 class="text-sm font-semibold text-text-primary">Requisiciones Recientes</h2>
+                <h2 class="text-small font-semibold text-text-primary">Requisiciones Recientes</h2>
                 <a href="{{ url('/requisiciones') }}"
-                    class="text-xs font-semibold text-primary-600 hover:text-primary-700 transition">Ver todas →</a>
+                    class="text-xs-fluid font-semibold text-primary-600 hover:text-primary-700 transition">Ver todas →</a>
             </div>
             <table>
                 <thead>
@@ -248,23 +248,23 @@
                         @endphp
                         <tr>
                             <td>
-                                <p class="font-medium text-text-primary text-[13px]">
+                                <p class="font-medium text-text-primary text-small">
                                     {{ $req->number ?? 'REQ-' . $req->id }}
                                 </p>
-                                <p class="text-[11px] text-text-muted">{{ $req->creator->name ?? '' }}</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $req->creator->name ?? '' }}</p>
                             </td>
                             <td>
                                 <span class="badge {{ $reqStatusColors[$req->status] ?? 'badge-secondary' }}">
                                     {{ ucfirst($req->status) }}
                                 </span>
                             </td>
-                            <td class="text-[13px] text-text-secondary">{{ $req->project->name ?? '—' }}</td>
+                            <td class="text-small text-text-secondary">{{ $req->project->name ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="3" class="text-center py-10">
                                 <i data-lucide="clipboard" class="w-8 h-8 mx-auto mb-2 text-text-muted opacity-30"></i>
-                                <p class="text-sm text-text-muted">Sin requisiciones</p>
+                                <p class="text-body text-text-muted">Sin requisiciones</p>
                             </td>
                         </tr>
                     @endforelse

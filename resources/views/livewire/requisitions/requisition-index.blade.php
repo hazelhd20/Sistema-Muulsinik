@@ -17,8 +17,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Requisiciones</h1>
-            <p class="text-sm text-text-muted">Crea, aprueba y gestiona requisiciones de materiales</p>
+            <h1 class="text-h1 text-text-primary">Requisiciones</h1>
+            <p class="text-body text-text-muted">Crea, aprueba y gestiona requisiciones de materiales</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
@@ -81,12 +81,12 @@
                     <div class="flex-1 min-w-0">
                         {{-- Fila 1: número + badge --}}
                         <div class="flex items-center gap-2 mb-1.5">
-                            <h3 class="text-sm font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}</h3>
+                            <h3 class="text-small font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}</h3>
                             <span class="badge {{ $sColors[$req->status] ?? '' }} shrink-0">{{ ucfirst($req->status) }}</span>
                         </div>
 
                         {{-- Fila 2: metadatos primarios --}}
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs-fluid text-text-muted">
                             <span class="flex items-center gap-1">
                                 <i data-lucide="hard-hat" class="w-3 h-3 shrink-0"></i>
                                 <span class="truncate max-w-[160px]">{{ $req->project->name ?? '—' }}</span>
@@ -112,7 +112,7 @@
 
                         {{-- Fila 3: anotaciones (solo si existen) --}}
                         @if($req->annotations)
-                            <p class="mt-1.5 text-xs text-text-muted italic truncate max-w-lg" title="{{ $req->annotations }}">
+                            <p class="mt-1.5 text-xs-fluid text-text-muted italic truncate max-w-lg" title="{{ $req->annotations }}">
                                 "{{ $req->annotations }}"
                             </p>
                         @endif
@@ -120,8 +120,8 @@
 
                     {{-- Total --}}
                     <div class="text-right shrink-0">
-                        <p class="text-base font-bold text-text-primary leading-tight">${{ number_format($req->total, 2, '.', ',') }}</p>
-                        <p class="text-[11px] text-text-muted">estimado</p>
+                        <p class="text-h2 text-text-primary leading-tight">${{ number_format($req->total, 2, '.', ',') }}</p>
+                        <p class="text-xs-fluid text-text-muted">estimado</p>
                     </div>
                 </div>
 
@@ -131,13 +131,13 @@
                     {{-- Trigger de productos --}}
                     @if($req->items->isNotEmpty())
                         <button @click="open = !open"
-                            class="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-primary-600 transition-colors">
+                            class="flex items-center gap-1.5 text-xs-fluid font-medium text-text-muted hover:text-primary-600 transition-colors">
                             <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200"
                                 :class="open && 'rotate-180'"></i>
                             <span>{{ $req->items->count() }} {{ $req->items->count() === 1 ? 'producto' : 'productos' }}</span>
                         </button>
                     @else
-                        <span class="text-xs text-text-muted/50">Sin productos</span>
+                        <span class="text-xs-fluid text-text-muted/50">Sin productos</span>
                     @endif
 
                     {{-- Acciones --}}
@@ -191,13 +191,13 @@
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-surface-main">
-                                        <th class="text-left px-4 py-2 text-xs font-semibold text-text-muted uppercase">Producto</th>
-                                        <th class="text-center px-4 py-2 text-xs font-semibold text-text-muted uppercase">Cant.</th>
-                                        <th class="text-center px-4 py-2 text-xs font-semibold text-text-muted uppercase">Unidad</th>
-                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">P. Unit.</th>
-                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">Subtotal</th>
-                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">IVA</th>
-                                        <th class="text-right px-4 py-2 text-xs font-semibold text-text-muted uppercase">Total</th>
+                                        <th class="text-left px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Producto</th>
+                                        <th class="text-center px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Cant.</th>
+                                        <th class="text-center px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Unidad</th>
+                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">P. Unit.</th>
+                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Subtotal</th>
+                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">IVA</th>
+                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -212,7 +212,7 @@
                                                 @if($item->tax_amount !== null)
                                                     <span class="text-text-muted">${{ number_format($item->tax_amount, 2, '.', ',') }}</span>
                                                 @else
-                                                    <span class="text-[11px] text-amber-500">—</span>
+                                                    <span class="text-xs-fluid text-amber-500">—</span>
                                                 @endif
                                             </td>
                                             <td class="px-4 py-2 text-right font-semibold text-text-primary">${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
@@ -226,16 +226,16 @@
                                         $reqTotal    = $req->total;
                                     @endphp
                                     <tr class="border-t border-gray-200 bg-surface-main">
-                                        <td colspan="4" class="px-4 py-2 text-right text-xs text-text-muted">Totales:</td>
-                                        <td class="px-4 py-2 text-right text-xs font-medium text-text-secondary">${{ number_format($reqSubtotal, 2, '.', ',') }}</td>
-                                        <td class="px-4 py-2 text-right text-xs font-medium text-text-muted">
+                                        <td colspan="4" class="px-4 py-2 text-right text-xs-fluid text-text-muted">Totales:</td>
+                                        <td class="px-4 py-2 text-right text-xs-fluid font-medium text-text-secondary">${{ number_format($reqSubtotal, 2, '.', ',') }}</td>
+                                        <td class="px-4 py-2 text-right text-xs-fluid font-medium text-text-muted">
                                             @if($reqTax > 0)
                                                 ${{ number_format($reqTax, 2, '.', ',') }}
                                             @else
                                                 <span class="text-amber-500">—</span>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-2 text-right text-sm font-bold text-text-primary">${{ number_format($reqTotal, 2, '.', ',') }}</td>
+                                        <td class="px-4 py-2 text-right text-small font-bold text-text-primary">${{ number_format($reqTotal, 2, '.', ',') }}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -268,52 +268,52 @@
                     {{-- General info --}}
                     <div class="grid grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Proyecto *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
                             <select wire:model="reqProjectId" class="input">
                                 <option value="">Seleccionar...</option>
                                 @foreach($projects as $proj)
                                     <option value="{{ $proj->id }}">{{ $proj->name }}</option>
                                 @endforeach
                             </select>
-                            @error('reqProjectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('reqProjectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Vendedor (Opcional)</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Vendedor (Opcional)</label>
                             <select wire:model="reqVendorId" class="input">
                                 <option value="">Seleccionar...</option>
                                 @foreach($vendors as $vendor)
                                     <option value="{{ $vendor->id }}">{{ $vendor->name }} ({{ $vendor->supplier->trade_name ?? 'Sin Proveedor' }})</option>
                                 @endforeach
                             </select>
-                            @error('reqVendorId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('reqVendorId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de creación *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de creación *</label>
                             <input wire:model="reqDate" type="date" class="input">
-                            @error('reqDate') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('reqDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Anotaciones</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Anotaciones</label>
                         <textarea wire:model="reqAnnotations" class="input" rows="2"
                             placeholder="Anotaciones de la requisición (opcional)..."></textarea>
-                        @error('reqAnnotations') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('reqAnnotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Add items --}}
                     <div class="border-t border-gray-100 pt-5">
-                        <h3 class="text-sm font-semibold text-text-primary mb-3">Productos</h3>
+                        <h3 class="text-small font-semibold text-text-primary mb-3">Productos</h3>
 
                         {{-- Existing items --}}
                         @if(count($items) > 0)
                             <div class="rounded-xl border border-gray-100 overflow-hidden mb-4">
-                                <table class="w-full text-sm">
+                                <table class="w-full text-body">
                                     <thead>
                                         <tr class="bg-surface-main">
-                                            <th class="text-left px-3 py-2 text-xs font-semibold text-text-muted">Producto</th>
-                                            <th class="text-center px-3 py-2 text-xs font-semibold text-text-muted">Cant.</th>
-                                            <th class="text-right px-3 py-2 text-xs font-semibold text-text-muted">Precio</th>
-                                            <th class="text-right px-3 py-2 text-xs font-semibold text-text-muted">Subtotal</th>
+                                            <th class="text-left px-3 py-2 text-xs-fluid font-semibold text-text-muted">Producto</th>
+                                            <th class="text-center px-3 py-2 text-xs-fluid font-semibold text-text-muted">Cant.</th>
+                                            <th class="text-right px-3 py-2 text-xs-fluid font-semibold text-text-muted">Precio</th>
+                                            <th class="text-right px-3 py-2 text-xs-fluid font-semibold text-text-muted">Subtotal</th>
                                             <th class="px-3 py-2"></th>
                                         </tr>
                                     </thead>
@@ -337,9 +337,9 @@
                                     <tfoot>
                                         <tr class="border-t border-gray-200 bg-surface-main">
                                             <td colspan="3"
-                                                class="px-3 py-2 text-right text-sm font-semibold text-text-primary">Total
+                                                class="px-3 py-2 text-right text-body font-semibold text-text-primary">Total
                                                 estimado:</td>
-                                            <td class="px-3 py-2 text-right text-sm font-bold text-text-primary">
+                                            <td class="px-3 py-2 text-right text-body font-bold text-text-primary">
                                                 ${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}
                                             </td>
                                             <td></td>
@@ -352,17 +352,17 @@
                         {{-- Add item form --}}
                         <div class="grid grid-cols-12 gap-2 items-end">
                             <div class="col-span-4">
-                                <label class="block text-xs font-medium text-text-muted mb-1">Producto</label>
-                                <input wire:model="itemName" type="text" class="input text-sm" placeholder="Nombre">
+                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Producto</label>
+                                <input wire:model="itemName" type="text" class="input text-body" placeholder="Nombre">
                             </div>
                             <div class="col-span-2">
-                                <label class="block text-xs font-medium text-text-muted mb-1">Cantidad</label>
-                                <input wire:model="itemQuantity" type="number" step="0.01" class="input text-sm"
+                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Cantidad</label>
+                                <input wire:model="itemQuantity" type="number" step="0.01" class="input text-body"
                                     placeholder="0">
                             </div>
                             <div class="col-span-2">
-                                <label class="block text-xs font-medium text-text-muted mb-1">Unidad</label>
-                                <select wire:model="itemUnit" class="input text-sm">
+                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Unidad</label>
+                                <select wire:model="itemUnit" class="input text-body">
                                     <option value="pza">Pieza</option>
                                     <option value="kg">Kg</option>
                                     <option value="m">Metro</option>
@@ -374,17 +374,17 @@
                                 </select>
                             </div>
                             <div class="col-span-2">
-                                <label class="block text-xs font-medium text-text-muted mb-1">Precio U.</label>
-                                <input wire:model="itemPrice" type="number" step="0.01" class="input text-sm"
+                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Precio U.</label>
+                                <input wire:model="itemPrice" type="number" step="0.01" class="input text-body"
                                     placeholder="0.00">
                             </div>
                             <div class="col-span-2">
-                                <button type="button" wire:click="addItem" class="btn-secondary w-full text-sm">
+                                <button type="button" wire:click="addItem" class="btn-secondary w-full text-body">
                                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </div>
-                        @error('itemName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('itemName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -415,15 +415,15 @@
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showRejectModal', false)"></div>
                 <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
                     <div class="p-6 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-text-primary">Rechazar Requisición</h2>
-                        <p class="text-sm text-text-muted">Indica el motivo del rechazo (obligatorio)</p>
+                        <h2 class="text-h2 text-text-primary">Rechazar Requisición</h2>
+                        <p class="text-body text-text-muted">Indica el motivo del rechazo (obligatorio)</p>
                     </div>
                     <form wire:submit="confirmReject" class="p-6 space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Motivo del rechazo *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Motivo del rechazo *</label>
                             <textarea wire:model="rejectionComment" class="input" rows="3"
                                 placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
-                            @error('rejectionComment') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('rejectionComment') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                             <button type="button" wire:click="$set('showRejectModal', false)"

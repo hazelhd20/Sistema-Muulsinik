@@ -45,7 +45,7 @@
             {{-- Navigation --}}
             <nav class="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
 
-                <p class="px-3 pt-1 pb-2 text-[10px] font-700 text-text-muted uppercase tracking-[0.08em]">Principal</p>
+                <p class="px-3 pt-1 pb-2 text-xs-fluid font-700 text-text-muted uppercase tracking-[0.08em]">Principal</p>
 
                 <a href="{{ url('/dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
                     <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i>
@@ -67,7 +67,7 @@
                     <span>Requisiciones</span>
                 </a>
 
-                <p class="px-3 pt-5 pb-2 text-[10px] font-700 text-text-muted uppercase tracking-[0.08em]">Administración</p>
+                <p class="px-3 pt-5 pb-2 text-xs-fluid font-700 text-text-muted uppercase tracking-[0.08em]">Administración</p>
 
                 <a href="{{ url('/proveedores') }}" class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
                     <i data-lucide="truck" class="w-[18px] h-[18px] shrink-0"></i>
@@ -84,7 +84,7 @@
                     <span>Reportes</span>
                 </a>
 
-                <p class="px-3 pt-5 pb-2 text-[10px] font-700 text-text-muted uppercase tracking-[0.08em]">Catálogos</p>
+                <p class="px-3 pt-5 pb-2 text-xs-fluid font-700 text-text-muted uppercase tracking-[0.08em]">Catálogos</p>
 
                 <a href="{{ url('/productos') }}" class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
                     <i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i>
@@ -174,10 +174,10 @@
                                 </span>
                             </div>
                             <div class="hidden md:block leading-tight">
-                                <p class="text-[13px] font-600 text-text-primary leading-none mb-0.5">
+                                <p class="text-small font-600 text-text-primary leading-none mb-0.5">
                                     {{ auth()->user()->name ?? 'Usuario' }}
                                 </p>
-                                <p class="text-[11px] text-text-muted leading-none">
+                                <p class="text-xs-fluid text-text-muted leading-none">
                                     {{ auth()->user()->role->name ?? 'Sin rol' }}
                                 </p>
                             </div>

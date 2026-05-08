@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Catálogo de Productos</h1>
-            <p class="text-sm text-text-muted">Catálogo maestro de productos</p>
+            <h1 class="text-h1 text-text-primary">Catálogo de Productos</h1>
+            <p class="text-body text-text-muted">Catálogo maestro de productos</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -55,7 +55,7 @@
                                 <div>
                                     <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
                                     @if($product->description)
-                                        <p class="text-xs text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                                        <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -63,7 +63,7 @@
                         <td>
                             <span class="badge badge-primary">{{ $product->category->name ?? 'Sin categoría' }}</span>
                         </td>
-                        <td class="text-sm text-text-secondary">{{ $measures[$product->measure_id] ?? '' }}</td>
+                        <td class="text-body text-text-secondary">{{ $measures[$product->measure_id] ?? '' }}</td>
                         <td class="text-center">
                             <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary" title="Editar">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
@@ -93,7 +93,7 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">
+                    <h2 class="text-h2 text-text-primary">
                         {{ $editingId ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>

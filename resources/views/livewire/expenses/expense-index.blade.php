@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Control de Gastos</h1>
-            <p class="text-sm text-text-muted">Registra y controla los gastos operativos por proyecto</p>
+            <h1 class="text-h1 text-text-primary">Control de Gastos</h1>
+            <p class="text-body text-text-muted">Registra y controla los gastos operativos por proyecto</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -18,8 +18,8 @@
                 <i data-lucide="trending-up" class="w-5 h-5 text-emerald-600"></i>
             </div>
             <div>
-                <p class="text-xs text-text-muted mb-0.5">Gasto del mes</p>
-                <p class="text-xl font-bold text-text-primary">${{ number_format($totalMonth, 0, '.', ',') }}</p>
+                <p class="text-xs-fluid text-text-muted mb-0.5">Gasto del mes</p>
+                <p class="text-h2 text-text-primary">${{ number_format($totalMonth, 0, '.', ',') }}</p>
             </div>
         </div>
         <div class="stat-card">
@@ -27,8 +27,8 @@
                 <i data-lucide="list" class="w-5 h-5 text-primary-600"></i>
             </div>
             <div>
-                <p class="text-xs text-text-muted mb-0.5">Total registros</p>
-                <p class="text-xl font-bold text-text-primary">{{ $expenses->total() }}</p>
+                <p class="text-xs-fluid text-text-muted mb-0.5">Total registros</p>
+                <p class="text-h2 text-text-primary">{{ $expenses->total() }}</p>
             </div>
         </div>
         <div class="stat-card">
@@ -36,8 +36,8 @@
                 <i data-lucide="calendar" class="w-5 h-5 text-amber-500"></i>
             </div>
             <div>
-                <p class="text-xs text-text-muted mb-0.5">Período</p>
-                <p class="text-sm font-semibold text-text-primary">{{ now()->format('F Y') }}</p>
+                <p class="text-xs-fluid text-text-muted mb-0.5">Período</p>
+                <p class="text-body font-semibold text-text-primary">{{ now()->format('F Y') }}</p>
             </div>
         </div>
     </div>
@@ -89,17 +89,17 @@
                     <tr>
                         <td>
                             <p class="font-medium">{{ $expense->concept }}</p>
-                            <p class="text-xs text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
+                            <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
                         </td>
                         <td>
-                            <span class="text-sm">{{ $expense->project->name ?? '—' }}</span>
+                            <span class="text-body">{{ $expense->project->name ?? '—' }}</span>
                         </td>
                         <td>
                             <span class="badge badge-secondary">
                                 {{ $categories[$expense->category] ?? $expense->category }}
                             </span>
                         </td>
-                        <td class="text-sm text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
+                        <td class="text-body text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
                         <td class="text-right font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-1">
@@ -138,57 +138,57 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">Registrar Gasto</h2>
+                    <h2 class="text-h2 text-text-primary">Registrar Gasto</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
                 <form wire:submit="createExpense" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Concepto *</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Concepto *</label>
                         <input wire:model="concept" type="text" class="input" placeholder="Ej. Compra de cemento">
-                        @error('concept') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('concept') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Monto *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Monto *</label>
                             <input wire:model="amount" type="number" step="0.01" class="input" placeholder="0.00">
-                            @error('amount') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('amount') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha *</label>
                             <input wire:model="date" type="date" class="input">
-                            @error('date') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('date') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Proyecto *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
                             <x-custom-select 
                                 wire:model="projectId" 
                                 :options="$projects->pluck('name', 'id')->toArray()" 
                                 placeholder="Seleccionar..." 
                             />
-                            @error('projectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('projectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Categoría *</label>
                             <x-custom-select 
                                 wire:model="category" 
                                 :options="$categories" 
                                 placeholder="Seleccionar..." 
                             />
-                            @error('category') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('category') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Comprobante (opcional)</label>
-                        <input wire:model="receiptFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="input text-sm">
-                        <p class="mt-1 text-xs text-text-muted">JPG, PNG o PDF. Máximo 20 MB.</p>
-                        @error('receiptFile') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Comprobante (opcional)</label>
+                        <input wire:model="receiptFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="input text-body">
+                        <p class="mt-1 text-xs-fluid text-text-muted">JPG, PNG o PDF. Máximo 20 MB.</p>
+                        @error('receiptFile') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">

@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Proyectos</h1>
-            <p class="text-sm text-text-muted">Gestiona y supervisa todos tus proyectos de construcción</p>
+            <h1 class="text-h1 text-text-primary">Proyectos</h1>
+            <p class="text-body text-text-muted">Gestiona y supervisa todos tus proyectos de construcción</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -47,7 +47,7 @@
                         </div>
                         <div class="min-w-0">
                             <h3 class="font-semibold text-text-primary truncate">{{ $project->name }}</h3>
-                            <p class="text-xs text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
+                            <p class="text-xs-fluid text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
                         </div>
                     </div>
                     @php
@@ -65,7 +65,7 @@
 
                 {{-- Budget progress --}}
                 <div class="mb-4">
-                    <div class="flex items-center justify-between text-xs mb-1.5">
+                    <div class="flex items-center justify-between text-xs-fluid mb-1.5">
                         <span class="text-text-muted">Presupuesto</span>
                         <span class="font-semibold text-text-primary">{{ $project->budget_used_percent }}%</span>
                     </div>
@@ -77,7 +77,7 @@
                         <div class="{{ $barColor }} h-full rounded-full transition-all duration-500"
                             style="width: {{ $percent }}%"></div>
                     </div>
-                    <div class="flex justify-between text-xs text-text-muted mt-1">
+                    <div class="flex justify-between text-xs-fluid text-text-muted mt-1">
                         <span>${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
                         <span>${{ number_format($project->budget, 0, '.', ',') }}</span>
                     </div>
@@ -85,7 +85,7 @@
 
                 {{-- Footer --}}
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div class="flex items-center gap-1 text-xs text-text-muted">
+                    <div class="flex items-center gap-1 text-xs-fluid text-text-muted">
                         <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
                         <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                     </div>
@@ -120,7 +120,7 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">Nuevo Proyecto</h2>
+                    <h2 class="text-h2 text-text-primary">Nuevo Proyecto</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
@@ -128,40 +128,40 @@
 
                 <form wire:submit="createProject" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre del proyecto *</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre del proyecto *</label>
                         <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
-                        @error('name') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Descripción</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Descripción</label>
                         <textarea wire:model="description" class="input" rows="3"
                             placeholder="Descripción breve del proyecto..."></textarea>
-                        @error('description') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('description') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Cliente</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Cliente</label>
                             <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Presupuesto *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Presupuesto *</label>
                             <input wire:model="budget" type="number" step="0.01" class="input" placeholder="0.00">
-                            @error('budget') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('budget') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha de inicio</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de inicio</label>
                             <input wire:model="startDate" type="date" class="input">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Fecha estimada de
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha estimada de
                                 término</label>
                             <input wire:model="endDate" type="date" class="input">
-                            @error('endDate') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('endDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
