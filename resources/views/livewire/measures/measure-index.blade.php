@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Catálogo de Medidas</h1>
+            <h1 class="text-xl font-bold text-text-primary">Catálogo de Medidas</h1>
             <p class="text-sm text-text-muted">Gestiona las unidades de medida usadas en el sistema.</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">

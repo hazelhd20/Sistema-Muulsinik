@@ -23,89 +23,96 @@
     @livewireStyles
 </head>
 
-<body class="antialiased min-h-screen" x-data="{ sidebarOpen: true, mobileSidebarOpen: false }">
+<body class="antialiased min-h-screen" x-data="{ mobileSidebarOpen: false }">
 
     <div class="flex min-h-screen">
-        {{-- ===== SIDEBAR ===== --}}
+
+        {{-- ═══════════════════════════════════════════════
+             SIDEBAR
+        ═══════════════════════════════════════════════ --}}
         <aside
-            class="fixed inset-y-0 left-0 z-40 w-64 bg-surface-card flex flex-col transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen"
-            :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+            class="fixed inset-y-0 left-0 z-40 w-60 bg-surface-card flex flex-col
+                   border-r border-gray-100
+                   transition-transform duration-300 ease-in-out
+                   lg:translate-x-0 lg:static lg:inset-auto"
+            :class="mobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'">
+
             {{-- Brand --}}
-            <div class="flex items-center justify-center px-6 h-24 border-b border-gray-100 shrink-0">
-                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="h-14 object-contain">
+            <div class="flex items-center px-5 h-[4.25rem] border-b border-gray-100 shrink-0">
+                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="h-9 object-contain">
             </div>
 
             {{-- Navigation --}}
-            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                <p class="px-3 mb-2 text-xs font-semibold text-text-muted uppercase tracking-wider">Principal</p>
+            <nav class="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+
+                <p class="px-3 pt-1 pb-2 text-[10px] font-700 text-text-muted uppercase tracking-[0.08em]">Principal</p>
 
                 <a href="{{ url('/dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Dashboard</span>
                 </a>
 
                 <a href="{{ url('/proyectos') }}" class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
-                    <i data-lucide="hard-hat" class="w-5 h-5"></i>
+                    <i data-lucide="hard-hat" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Proyectos</span>
                 </a>
 
                 <a href="{{ url('/gastos') }}" class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
-                    <i data-lucide="wallet" class="w-5 h-5"></i>
+                    <i data-lucide="wallet" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Gastos</span>
                 </a>
 
-                <a href="{{ url('/requisiciones') }}"
-                    class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
-                    <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                <a href="{{ url('/requisiciones') }}" class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
+                    <i data-lucide="clipboard-list" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Requisiciones</span>
                 </a>
 
-                <p class="px-3 mt-6 mb-2 text-xs font-semibold text-text-muted uppercase tracking-wider">Administración
-                </p>
+                <p class="px-3 pt-5 pb-2 text-[10px] font-700 text-text-muted uppercase tracking-[0.08em]">Administración</p>
 
-                <a href="{{ url('/proveedores') }}"
-                    class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
-                    <i data-lucide="truck" class="w-5 h-5"></i>
+                <a href="{{ url('/proveedores') }}" class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
+                    <i data-lucide="truck" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Proveedores</span>
                 </a>
 
                 <a href="{{ url('/documentos') }}" class="nav-link {{ request()->is('documentos*') ? 'active' : '' }}">
-                    <i data-lucide="folder-open" class="w-5 h-5"></i>
+                    <i data-lucide="folder-open" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Documentos</span>
                 </a>
 
                 <a href="{{ url('/reportes') }}" class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    <i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Reportes</span>
                 </a>
 
+                <p class="px-3 pt-5 pb-2 text-[10px] font-700 text-text-muted uppercase tracking-[0.08em]">Catálogos</p>
+
                 <a href="{{ url('/productos') }}" class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
-                    <i data-lucide="package" class="w-5 h-5"></i>
+                    <i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Productos</span>
                 </a>
 
                 <a href="{{ url('/medidas') }}" class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
-                    <i data-lucide="ruler" class="w-5 h-5"></i>
+                    <i data-lucide="ruler" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Medidas</span>
                 </a>
 
                 <a href="{{ url('/categorias') }}" class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
-                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <i data-lucide="layers" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Categorías</span>
                 </a>
             </nav>
 
-            {{-- User Section --}}
-            <div class="px-4 py-4 border-t border-gray-100 shrink-0">
-                <p class="px-3 mb-2 text-xs font-semibold text-text-muted uppercase tracking-wider">Configuración</p>
+            {{-- Bottom: Settings + Logout --}}
+            <div class="px-3 py-4 border-t border-gray-100 space-y-0.5 shrink-0">
                 <a href="{{ url('/configuracion') }}" class="nav-link">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i>
                     <span>Ajustes</span>
                 </a>
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
-                    <button type="submit" class="nav-link w-full text-left text-danger hover:text-danger">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <button type="submit"
+                        class="nav-link w-full text-left hover:bg-red-50 hover:text-red-600 group">
+                        <i data-lucide="log-out" class="w-[18px] h-[18px] shrink-0 text-text-muted group-hover:text-red-500"></i>
                         <span>Cerrar sesión</span>
                     </button>
                 </form>
@@ -113,76 +120,89 @@
         </aside>
 
         {{-- Mobile sidebar overlay --}}
-        <div x-show="mobileSidebarOpen" @click="mobileSidebarOpen = false"
-            class="fixed inset-0 z-30 bg-black/30 lg:hidden" x-transition:enter="transition-opacity duration-300"
-            x-transition:leave="transition-opacity duration-300"></div>
+        <div x-show="mobileSidebarOpen"
+             x-transition:enter="transition-opacity duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="mobileSidebarOpen = false"
+             class="fixed inset-0 z-30 bg-black/25 backdrop-blur-[2px] lg:hidden"
+             style="display: none;"></div>
 
-        {{-- ===== MAIN CONTENT AREA ===== --}}
+        {{-- ═══════════════════════════════════════════════
+             MAIN CONTENT AREA
+        ═══════════════════════════════════════════════ --}}
         <div class="flex-1 flex flex-col min-w-0">
+
             {{-- Top Bar --}}
-            <header class="sticky top-0 z-20 bg-surface-main/80 backdrop-blur-lg">
-                <div class="flex items-center justify-between h-16 px-6">
-                    {{-- Left: Hamburger + Search --}}
-                    <div class="flex items-center gap-4">
+            <header class="sticky top-0 z-20 bg-surface-main/90 backdrop-blur-md border-b border-gray-200/60">
+                <div class="flex items-center justify-between h-[4.25rem] px-5 lg:px-6">
+
+                    {{-- Left: Hamburger (mobile) + Search --}}
+                    <div class="flex items-center gap-3">
                         <button @click="mobileSidebarOpen = !mobileSidebarOpen"
-                            class="lg:hidden p-2 rounded-lg hover:bg-surface-hover">
-                            <i data-lucide="menu" class="w-5 h-5 text-text-secondary"></i>
+                            class="lg:hidden p-2 rounded-lg text-text-secondary hover:bg-white hover:text-text-primary transition">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
                         </button>
 
-                        <div class="relative hidden sm:block">
+                        <div class="relative hidden sm:flex items-center">
                             <i data-lucide="search"
-                                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-                            <input type="search" placeholder="Buscar proyectos, gastos, requisiciones..."
-                                class="input pl-10 w-80" id="global-search">
+                                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none"></i>
+                            <input type="search"
+                                placeholder="Buscar en el sistema..."
+                                class="input pl-10 w-72 bg-white/80 text-sm h-9 py-0"
+                                id="global-search">
                         </div>
                     </div>
 
-                    {{-- Right: Notifications + Profile --}}
-                    <div class="flex items-center gap-3">
-                        <button class="relative p-2 rounded-xl hover:bg-surface-hover transition"
-                            id="btn-notifications">
-                            <i data-lucide="bell" class="w-5 h-5 text-text-secondary"></i>
-                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+                    {{-- Right: Actions + Profile --}}
+                    <div class="flex items-center gap-1.5">
+                        <button class="relative p-2 rounded-lg text-text-secondary hover:bg-white hover:text-text-primary transition"
+                            title="Notificaciones">
+                            <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+                            <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-danger rounded-full"></span>
                         </button>
 
-                        <button class="p-2 rounded-xl hover:bg-surface-hover transition" id="btn-messages">
-                            <i data-lucide="mail" class="w-5 h-5 text-text-secondary"></i>
-                        </button>
+                        <div class="w-px h-6 bg-gray-200 mx-1"></div>
 
-                        <div class="flex items-center gap-3 pl-3 border-l border-gray-200">
-                            <div class="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center">
-                                <span class="text-sm font-bold text-primary-700">
-                                    {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+                        <div class="flex items-center gap-2.5 pl-1">
+                            <div class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center shadow-sm">
+                                <span class="text-xs font-bold text-white leading-none">
+                                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                                 </span>
                             </div>
-                            <div class="hidden md:block">
-                                <p class="text-sm font-semibold text-text-primary">
+                            <div class="hidden md:block leading-tight">
+                                <p class="text-[13px] font-600 text-text-primary leading-none mb-0.5">
                                     {{ auth()->user()->name ?? 'Usuario' }}
                                 </p>
-                                <p class="text-xs text-text-muted">{{ auth()->user()->role->name ?? 'Sin rol' }}</p>
+                                <p class="text-[11px] text-text-muted leading-none">
+                                    {{ auth()->user()->role->name ?? 'Sin rol' }}
+                                </p>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </header>
 
             {{-- Page Content --}}
-            <main class="flex-1 p-6">
+            <main class="flex-1 p-5 lg:p-6">
                 {{ $slot }}
             </main>
+
         </div>
     </div>
 
     @livewireScripts
     <script>
-        // Inicializar Lucide Icons después de cada actualización de Livewire
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
         document.addEventListener('livewire:navigated', () => lucide.createIcons());
         document.addEventListener('livewire:init', () => {
             Livewire.hook('morph.updated', () => lucide.createIcons());
         });
 
-        // Toast handler for Livewire events (Livewire 3)
         window.addEventListener('toast', event => {
             const data = Array.isArray(event.detail) ? event.detail[0] : event.detail;
             Swal.fire({
@@ -196,44 +216,32 @@
             });
         });
 
-        // Intercept session flashes from Livewire responses
-        document.addEventListener('livewire:init', () => {
-            Livewire.hook('morph.updated', (el, component) => {
-                // If a toast element was added, Alpine will handle it. 
-                // But we want to make sure it's removed so it can be re-added.
-            });
-        });
-
-        // Interceptor para wire:confirm con SweetAlert2
         document.addEventListener('click', e => {
             let el = e.target.closest('[wire\\:confirm]');
             if (el && !el.hasAttribute('data-confirmed')) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-
-                let content = el.getAttribute('wire:confirm');
-
                 Swal.fire({
                     title: '¿Estás seguro?',
-                    text: content,
+                    text: el.getAttribute('wire:confirm'),
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#0ea5e9',
+                    confirmButtonColor: '#0230c8',
                     cancelButtonColor: '#ef4444',
-                    confirmButtonText: 'Sí, continuar',
+                    confirmButtonText: 'Confirmar',
                     cancelButtonText: 'Cancelar',
                     customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-lg',
-                        cancelButton: 'rounded-lg'
+                        popup: 'rounded-2xl shadow-xl',
+                        confirmButton: '!rounded-lg !text-sm !font-semibold',
+                        cancelButton: '!rounded-lg !text-sm !font-semibold'
                     }
-                }).then((result) => {
+                }).then(result => {
                     if (result.isConfirmed) {
                         el.setAttribute('data-confirmed', 'true');
-                        let originalConfirm = window.confirm;
+                        const orig = window.confirm;
                         window.confirm = () => true;
                         el.click();
-                        window.confirm = originalConfirm;
+                        window.confirm = orig;
                         el.removeAttribute('data-confirmed');
                     }
                 });

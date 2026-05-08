@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Control de Gastos</h1>
+            <h1 class="text-xl font-bold text-text-primary">Control de Gastos</h1>
             <p class="text-sm text-text-muted">Registra y controla los gastos operativos por proyecto</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
@@ -14,12 +14,30 @@
     {{-- Stats row --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="stat-card">
-            <div class="stat-icon bg-green-100">
-                <i data-lucide="trending-up" class="w-5 h-5 text-green-600"></i>
+            <div class="stat-icon bg-emerald-50">
+                <i data-lucide="trending-up" class="w-5 h-5 text-emerald-600"></i>
             </div>
             <div>
                 <p class="text-xs text-text-muted mb-0.5">Gasto del mes</p>
                 <p class="text-xl font-bold text-text-primary">${{ number_format($totalMonth, 0, '.', ',') }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-primary-50">
+                <i data-lucide="list" class="w-5 h-5 text-primary-600"></i>
+            </div>
+            <div>
+                <p class="text-xs text-text-muted mb-0.5">Total registros</p>
+                <p class="text-xl font-bold text-text-primary">{{ $expenses->total() }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-amber-50">
+                <i data-lucide="calendar" class="w-5 h-5 text-amber-500"></i>
+            </div>
+            <div>
+                <p class="text-xs text-text-muted mb-0.5">Período</p>
+                <p class="text-sm font-semibold text-text-primary">{{ now()->format('F Y') }}</p>
             </div>
         </div>
     </div>
@@ -77,7 +95,7 @@
                             <span class="text-sm">{{ $expense->project->name ?? '—' }}</span>
                         </td>
                         <td>
-                            <span class="badge badge-primary">
+                            <span class="badge badge-secondary">
                                 {{ $categories[$expense->category] ?? $expense->category }}
                             </span>
                         </td>
@@ -86,14 +104,14 @@
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-1">
                                 @if($expense->receipt_file)
-                                    <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition">
+                                    <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" class="btn-icon-primary" title="Ver comprobante">
                                         <i data-lucide="file-text" class="w-4 h-4"></i>
                                     </a>
                                 @endif
                                 <button
                                     wire:click="deleteExpense({{ $expense->id }})"
                                     wire:confirm="¿Deseas eliminar este gasto? Esta acción no se puede deshacer."
-                                    class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition"
+                                    class="btn-icon-danger"
                                 >
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>

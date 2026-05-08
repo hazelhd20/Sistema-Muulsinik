@@ -17,7 +17,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Requisiciones</h1>
+            <h1 class="text-xl font-bold text-text-primary">Requisiciones</h1>
             <p class="text-sm text-text-muted">Crea, aprueba y gestiona requisiciones de materiales</p>
         </div>
         <div class="flex items-center gap-2">
@@ -67,7 +67,7 @@
                     <div class="flex items-start gap-4 flex-1 min-w-0">
                         <div
                             class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                                {{ match ($req->status) { 'borrador' => 'bg-gray-100', 'pendiente' => 'bg-amber-100', 'aprobada' => 'bg-green-100', 'rechazada' => 'bg-red-100', default => 'bg-gray-100'} }}">
+                                {{ match ($req->status) { 'borrador' => 'bg-gray-50', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-green-50', 'rechazada' => 'bg-red-50', default => 'bg-gray-50'} }}">
                             <i data-lucide="{{ match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file'} }}"
                                 class="w-5 h-5 {{ match ($req->status) { 'borrador' => 'text-gray-600', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-600', default => 'text-gray-600'} }}"></i>
                         </div>
@@ -139,7 +139,7 @@
                             @endif
                             @if($req->status === 'pendiente')
                                 <button wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?"
-                                    class="p-1.5 rounded-lg text-text-muted hover:bg-green-50 hover:text-green-600 transition"
+                                    class="btn-icon-primary"
                                     title="Aprobar">
                                     <i data-lucide="check" class="w-4 h-4"></i>
                                 </button>
@@ -300,7 +300,7 @@
                                             <td colspan="3"
                                                 class="px-3 py-2 text-right text-sm font-semibold text-text-primary">Total
                                                 estimado:</td>
-                                            <td class="px-3 py-2 text-right text-sm font-bold text-primary-600">
+                                            <td class="px-3 py-2 text-right text-sm font-bold text-text-primary">
                                                 ${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}
                                             </td>
                                             <td></td>

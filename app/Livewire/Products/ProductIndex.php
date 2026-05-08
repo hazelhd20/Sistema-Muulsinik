@@ -58,6 +58,19 @@ class ProductIndex extends Component
             'categoryId' => 'required|exists:categories,id',
         ]);
 
+        // Verificar duplicado por normalized_name (evita "Cemento Gris" vs "CEMENTO GRIS")
+        $normalizer = app(\App\Services\DataNormalizerService::class);
+        $normalizedName = $normalizer->normalizeText($this->canonicalName);
+
+        $existingByNormalized = Product::where('normalized_name', $normalizedName)
+            ->when($this->editingId, fn($q) => $q->where('id', '!=', $this->editingId))
+            ->first();
+
+        if ($existingByNormalized) {
+            session()->flash('error', 'Ya existe un producto similar: "' . $existingByNormalized->canonical_name . '". Usa el catálogo existente.');
+            return;
+        }
+
         if ($this->editingId) {
             Product::findOrFail($this->editingId)->update([
                 'canonical_name' => $this->canonicalName,

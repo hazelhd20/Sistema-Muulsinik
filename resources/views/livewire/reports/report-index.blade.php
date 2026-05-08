@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Reportes y Analítica</h1>
+            <h1 class="text-xl font-bold text-text-primary">Reportes y Analítica</h1>
             <p class="text-sm text-text-muted">Análisis financiero y operativo del sistema</p>
         </div>
         <div class="flex items-center gap-3">
@@ -24,7 +24,7 @@
     {{-- KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
-            <div class="stat-icon bg-primary-100">
+            <div class="stat-icon bg-primary-50">
                 <i data-lucide="dollar-sign" class="w-5 h-5 text-primary-600"></i>
             </div>
             <div>
@@ -33,8 +33,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-green-100">
-                <i data-lucide="receipt" class="w-5 h-5 text-green-600"></i>
+            <div class="stat-icon bg-emerald-50">
+                <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
             </div>
             <div>
                 <p class="text-xl font-bold text-text-primary">{{ $expenseCount }}</p>
@@ -42,8 +42,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-amber-100">
-                <i data-lucide="check-circle" class="w-5 h-5 text-amber-600"></i>
+            <div class="stat-icon bg-amber-50">
+                <i data-lucide="check-circle" class="w-5 h-5 text-amber-500"></i>
             </div>
             <div>
                 <p class="text-xl font-bold text-text-primary">{{ $requisitionsApproved }}</p>
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-sky-100">
+            <div class="stat-icon bg-sky-50">
                 <i data-lucide="hard-hat" class="w-5 h-5 text-sky-600"></i>
             </div>
             <div>
@@ -160,7 +160,7 @@
                     @forelse($topProjects as $i => $proj)
                         <tr>
                             <td>
-                                <span class="w-6 h-6 rounded-lg bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center">
+                                <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs font-bold flex items-center justify-center">
                                     {{ $i + 1 }}
                                 </span>
                             </td>
@@ -183,21 +183,41 @@
 
     {{-- Summary cards bottom --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="card text-center">
-            <p class="text-3xl font-bold text-primary-600">{{ $totalProjects }}</p>
-            <p class="text-xs text-text-muted mt-1">Proyectos totales</p>
+        <div class="stat-card">
+            <div class="stat-icon bg-primary-50">
+                <i data-lucide="briefcase" class="w-5 h-5 text-primary-600"></i>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-text-primary">{{ $totalProjects }}</p>
+                <p class="text-xs text-text-muted">Proyectos totales</p>
+            </div>
         </div>
-        <div class="card text-center">
-            <p class="text-3xl font-bold text-green-600">{{ $totalSuppliers }}</p>
-            <p class="text-xs text-text-muted mt-1">Proveedores</p>
+        <div class="stat-card">
+            <div class="stat-icon bg-emerald-50">
+                <i data-lucide="truck" class="w-5 h-5 text-emerald-600"></i>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-text-primary">{{ $totalSuppliers }}</p>
+                <p class="text-xs text-text-muted">Proveedores</p>
+            </div>
         </div>
-        <div class="card text-center">
-            <p class="text-3xl font-bold text-amber-600">{{ $requisitionsPending }}</p>
-            <p class="text-xs text-text-muted mt-1">Requisiciones pendientes</p>
+        <div class="stat-card">
+            <div class="stat-icon bg-amber-50">
+                <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-text-primary">{{ $requisitionsPending }}</p>
+                <p class="text-xs text-text-muted">Req. pendientes</p>
+            </div>
         </div>
-        <div class="card text-center">
-            <p class="text-3xl font-bold text-sky-600">${{ number_format($avgExpense, 0, '.', ',') }}</p>
-            <p class="text-xs text-text-muted mt-1">Gasto promedio</p>
+        <div class="stat-card">
+            <div class="stat-icon bg-sky-50">
+                <i data-lucide="trending-up" class="w-5 h-5 text-sky-600"></i>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-text-primary">${{ number_format($avgExpense, 0, '.', ',') }}</p>
+                <p class="text-xs text-text-muted">Gasto promedio</p>
+            </div>
         </div>
     </div>
 </div>

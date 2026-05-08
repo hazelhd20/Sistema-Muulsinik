@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Catálogo de Productos</h1>
+            <h1 class="text-xl font-bold text-text-primary">Catálogo de Productos</h1>
             <p class="text-sm text-text-muted">Catálogo maestro de productos</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
@@ -49,7 +49,7 @@
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
+                                <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
                                     <i data-lucide="package" class="w-4 h-4 text-primary-600"></i>
                                 </div>
                                 <div>
@@ -65,13 +65,10 @@
                         </td>
                         <td class="text-sm text-text-secondary">{{ $measures[$product->measure_id] ?? '' }}</td>
                         <td class="text-center">
-                            <button wire:click="openEditModal({{ $product->id }})"
-                                class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition"
-                                title="Editar">
+                            <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary" title="Editar">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                             </button>
-                            <button wire:click="deleteProduct({{ $product->id }})" wire:confirm="¿Eliminar este producto?"
-                                class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                            <button wire:click="deleteProduct({{ $product->id }})" wire:confirm="¿Eliminar este producto?" class="btn-icon-danger">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </td>

@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Catálogo de Categorías</h1>
+            <h1 class="text-xl font-bold text-text-primary">Catálogo de Categorías</h1>
             <p class="text-sm text-text-muted">Gestiona las categorías de productos del sistema.</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
@@ -48,13 +48,10 @@
                         <td class="font-medium text-text-primary">{{ $category->name }}</td>
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-1">
-                                <button wire:click="openEditModal({{ $category->id }})"
-                                    class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition" title="Editar">
+                                <button wire:click="openEditModal({{ $category->id }})" class="btn-icon-primary" title="Editar">
                                     <i data-lucide="edit-2" class="w-4 h-4"></i>
                                 </button>
-                                <button wire:click="delete({{ $category->id }})"
-                                    wire:confirm="¿Seguro que deseas eliminar esta categoría?"
-                                    class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition" title="Eliminar">
+                                <button wire:click="delete({{ $category->id }})" wire:confirm="¿Seguro que deseas eliminar esta categoría?" class="btn-icon-danger" title="Eliminar">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>

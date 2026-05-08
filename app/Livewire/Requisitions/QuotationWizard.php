@@ -480,62 +480,108 @@ class QuotationWizard extends Component
             'date' => $this->date,
         ]);
 
-        // Guardar ítems con datos fiscales y auto-guardado
+        // ═══════════════════════════════════════════════════════
+        // OPTIMIZACIÓN: Precarga batch de medidas y productos
+        // para evitar N+1 queries en el loop de items
+        // ═══════════════════════════════════════════════════════
+
+        $normalizer = app(DataNormalizerService::class);
+
+        // 1. Precargar TODAS las medidas relevantes en una sola query
+        $unitKeys = [];
         foreach ($this->items as $item) {
-            // Auto-save Measure
+            if (!empty($item['unit'])) {
+                $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
+                $unitKeys[] = $normalizedUnit;
+                $unitKeys[] = mb_strtolower($item['unit']);
+            }
+        }
+
+        $existingMeasures = collect();
+        if (!empty($unitKeys)) {
+            $existingMeasures = Measure::whereIn('abbreviation', array_unique($unitKeys))
+                ->get()
+                ->keyBy(fn($m) => $m->abbreviation);  // indexar por abreviatura
+        }
+
+        // 2. Precargar TODOS los productos candidatos en una sola query
+        $normalizedProductNames = [];
+
+        foreach ($this->items as $index => $item) {
+            if (!empty($item['name'])) {
+                $normalizedName = $normalizer->normalizeText($item['name']);
+                $normalizedProductNames[$index] = $normalizedName;
+            }
+        }
+
+        $existingProducts = collect();
+        if (!empty($normalizedProductNames)) {
+            $existingProducts = Product::whereIn('normalized_name', array_unique($normalizedProductNames))
+                ->get()
+                ->keyBy('normalized_name');  // indexar por nombre normalizado
+        }
+
+        // 3. Procesar items con lookups O(1) desde colecciones precargadas
+        $requisitionItemsData = [];
+
+        foreach ($this->items as $index => $item) {
+            // --- Resolver Medida ---
             $measureId = null;
             if (!empty($item['unit'])) {
-                $normalizer = app(DataNormalizerService::class);
                 $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
-                $existingMeasure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($item['unit'])])
-                    ->orWhere('abbreviation', $normalizedUnit)
-                    ->first();
-                if ($existingMeasure) {
-                    $measureId = $existingMeasure->id;
-                } else {
-                    $newMeasure = Measure::create([
+                $measure = $existingMeasures->get($normalizedUnit);
+
+                if (!$measure) {
+                    // Crear medida nueva
+                    $measure = Measure::create([
                         'name' => $normalizer->getUnitName($normalizedUnit),
                         'abbreviation' => $normalizedUnit,
                     ]);
-                    $measureId = $newMeasure->id;
+                    $existingMeasures->put($normalizedUnit, $measure);
                 }
+                $measureId = $measure->id;
             }
 
-            // Auto-save Product
+            // --- Resolver Producto (O(1) desde cache) ---
             $productId = $item['product_id'] ?? null;
             if (empty($productId) && !empty($item['name'])) {
-                // Auto-resolve or create Category based on name (prioritize name since it's what the user edits)
-                $categoryId = null;
-                if (!empty($item['category_name'])) {
-                    $matchedCategory = $normalizer->findMatchingCategory($item['category_name']);
-                    if ($matchedCategory) {
-                        $categoryId = $matchedCategory->id;
-                    } else {
-                        $newCategory = \App\Models\Category::create([
-                            'name' => mb_convert_case($item['category_name'], MB_CASE_TITLE, "UTF-8")
-                        ]);
-                        $categoryId = $newCategory->id;
-                    }
+                $normalizedName = $normalizedProductNames[$index] ?? $normalizer->normalizeText($item['name']);
+                $product = $existingProducts->get($normalizedName);
+
+                if ($product) {
+                    $productId = $product->id;
                 } else {
+                    // Resolver categoría (prioridad: category_id manual > búsqueda por nombre IA)
                     $categoryId = $item['category_id'] ?? null;
-                }
 
-                $normalizedProductName = app(DataNormalizerService::class)->normalizeText($item['name']);
-                $existingProduct = Product::where('normalized_name', $normalizedProductName)->first();
+                    // Si no seleccionó del catálogo, buscar/crear por el nombre detectado por IA
+                    if (empty($categoryId) && !empty($item['category_name'])) {
+                        $matchedCategory = $normalizer->findMatchingCategory($item['category_name']);
+                        if ($matchedCategory) {
+                            $categoryId = $matchedCategory->id;
+                        } else {
+                            $newCategory = \App\Models\Category::create([
+                                'name' => mb_convert_case($item['category_name'], MB_CASE_TITLE, "UTF-8")
+                            ]);
+                            $categoryId = $newCategory->id;
+                        }
+                    }
 
-                if ($existingProduct) {
-                    $productId = $existingProduct->id;
-                } else {
+                    // Crear producto nuevo
                     $newProduct = Product::create([
                         'canonical_name' => $item['name'],
                         'measure_id' => $measureId,
                         'category_id' => $categoryId,
                     ]);
                     $productId = $newProduct->id;
+
+                    // Agregar a cache para futuros items con mismo nombre
+                    $existingProducts->put($normalizedName, $newProduct);
                 }
             }
 
-            RequisitionItem::create([
+            // Preparar datos del requisition item
+            $requisitionItemsData[] = [
                 'requisition_id' => $requisition->id,
                 'product_id' => $productId,
                 'measure_id' => $measureId,
@@ -547,7 +593,14 @@ class QuotationWizard extends Component
                 'line_subtotal' => $item['line_subtotal'] ?? null,
                 'line_total' => $item['line_total'] ?? null,
                 'supplier_id' => $finalSupplierId ?: null,
-            ]);
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // 4. Insertar todos los requisition items en una sola query (si son muchos)
+        if (count($requisitionItemsData) > 0) {
+            RequisitionItem::insert($requisitionItemsData);
         }
 
         // Vincular la cotización con la requisición

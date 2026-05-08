@@ -78,7 +78,7 @@
                         accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" class="hidden">
 
                     <div class="flex flex-col items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center">
+                        <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center">
                             <i data-lucide="upload-cloud" class="w-8 h-8 text-primary-600" wire:ignore></i>
                         </div>
 
@@ -119,10 +119,10 @@
                     @php
                         $ext = strtolower($file->getClientOriginalExtension());
                         $iconData = match (true) {
-                            in_array($ext, ['jpg', 'jpeg', 'png']) => ['icon' => 'image', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-100'],
-                            in_array($ext, ['xlsx', 'xls']) => ['icon' => 'file-spreadsheet', 'color' => 'text-blue-600', 'bg' => 'bg-blue-100'],
-                            $ext === 'pdf' => ['icon' => 'file-text', 'color' => 'text-red-600', 'bg' => 'bg-red-100'],
-                            default => ['icon' => 'file', 'color' => 'text-primary-600', 'bg' => 'bg-primary-100'],
+                            in_array($ext, ['jpg', 'jpeg', 'png']) => ['icon' => 'image', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50'],
+                            in_array($ext, ['xlsx', 'xls']) => ['icon' => 'file-spreadsheet', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
+                            $ext === 'pdf' => ['icon' => 'file-text', 'color' => 'text-red-600', 'bg' => 'bg-red-50'],
+                            default => ['icon' => 'file', 'color' => 'text-primary-600', 'bg' => 'bg-primary-50'],
                         };
                     @endphp
                     <div wire:key="file-preview-{{ md5($file->getClientOriginalName()) }}" x-data
@@ -199,7 +199,7 @@
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Animación de procesamiento --}}
                     <div class="mb-6">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-primary-100 flex items-center justify-center mb-4">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-primary-50 flex items-center justify-center mb-4">
                             <svg class="animate-spin h-10 w-10 text-primary-600" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
                                     fill="none" />
@@ -227,7 +227,7 @@
                 @elseif($processingStatus === 'failed')
                     {{-- Error state --}}
                     <div class="mb-6">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-red-100 flex items-center justify-center mb-4">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
                             <i data-lucide="alert-triangle" class="w-10 h-10 text-red-500"></i>
                         </div>
                         <h2 class="text-xl font-bold text-text-primary mb-2">Error al procesar</h2>
@@ -392,7 +392,7 @@
                 <div class="card mb-6 border-amber-200 bg-amber-50/50">
                     <div class="p-5">
                         <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
                                 <i data-lucide="receipt" class="w-5 h-5 text-amber-600" wire:ignore></i>
                             </div>
                             <div class="flex-1">
@@ -510,9 +510,21 @@
 
                                             {{-- Categoría --}}
                                             <td class="px-3 py-2">
-                                                <input type="text" wire:model="items.{{ $i }}.category_name"
-                                                    list="categories-list" class="input text-xs py-1"
-                                                    placeholder="Categoría...">
+                                                <select wire:model="items.{{ $i }}.category_id" class="input text-xs py-1">
+                                                    <option value="">Seleccionar...</option>
+                                                    @foreach($categories as $cat)
+                                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @if($item['category_name'] && empty($item['category_id']))
+                                                    <span class="text-xs text-amber-600 block mt-1">
+                                                        IA: {{ $item['category_name'] }}
+                                                    </span>
+                                                @elseif($item['category_id'])
+                                                    <span class="text-xs text-green-600 block mt-1">
+                                                        Seleccionada del catálogo
+                                                    </span>
+                                                @endif
                                             </td>
 
                                             {{-- Cantidad --}}

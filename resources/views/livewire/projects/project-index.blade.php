@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Proyectos</h1>
+            <h1 class="text-xl font-bold text-text-primary">Proyectos</h1>
             <p class="text-sm text-text-muted">Gestiona y supervisa todos tus proyectos de construcción</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
@@ -42,7 +42,7 @@
             <div class="card hover:shadow-md transition-shadow group">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
                             <i data-lucide="hard-hat" class="w-5 h-5 text-primary-600"></i>
                         </div>
                         <div class="min-w-0">

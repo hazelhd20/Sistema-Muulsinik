@@ -67,6 +67,19 @@ class SupplierIndex extends Component
             'notes' => 'nullable|max:1000',
         ]);
 
+        // Verificar duplicado por normalized_name (evita "CEMEX S.A." vs "Cemex SA")
+        $normalizer = app(\App\Services\DataNormalizerService::class);
+        $normalizedName = $normalizer->normalizeSupplierName($this->tradeName);
+
+        $existingByNormalized = Supplier::where('normalized_name', $normalizedName)
+            ->when($this->editingSupplierId, fn($q) => $q->where('id', '!=', $this->editingSupplierId))
+            ->first();
+
+        if ($existingByNormalized) {
+            session()->flash('error', 'Ya existe un proveedor similar: "' . $existingByNormalized->trade_name . '". Verifica el catálogo.');
+            return;
+        }
+
         if ($this->editingSupplierId) {
             Supplier::findOrFail($this->editingSupplierId)->update([
                 'trade_name' => $this->tradeName,

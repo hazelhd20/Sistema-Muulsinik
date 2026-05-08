@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Proveedores</h1>
+            <h1 class="text-xl font-bold text-text-primary">Proveedores</h1>
             <p class="text-sm text-text-muted">Administra proveedores y sus vendedores</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
@@ -37,7 +37,7 @@
             <div class="card hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
                             <i data-lucide="building-2" class="w-5 h-5 text-sky-600"></i>
                         </div>
                         <div class="min-w-0">
@@ -70,13 +70,10 @@
                         {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                     </button>
                     <div class="flex items-center gap-1">
-                        <button wire:click="openEditSupplierModal({{ $supplier->id }})"
-                            class="p-1.5 rounded-lg hover:bg-gray-100 text-text-muted hover:text-primary-600 transition" title="Editar">
+                        <button wire:click="openEditSupplierModal({{ $supplier->id }})" class="btn-icon-primary" title="Editar">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                         </button>
-                        <button wire:click="deleteSupplier({{ $supplier->id }})"
-                            wire:confirm="¿Eliminar este proveedor y todos sus vendedores?"
-                            class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                        <button wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y todos sus vendedores?" class="btn-icon-danger">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -175,7 +172,7 @@
                                         <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                     </button>
                                     <button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
-                                        class="p-1 rounded hover:bg-red-100 text-text-muted hover:text-danger">
+                                        class="p-1 rounded hover:bg-red-50 text-text-muted hover:text-danger">
                                         <i data-lucide="x" class="w-3.5 h-3.5"></i>
                                     </button>
                                 </div>

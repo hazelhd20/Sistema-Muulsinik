@@ -258,9 +258,8 @@ class DataNormalizerService
      * Busca un proveedor existente que coincida con el nombre crudo.
      *
      * Estrategia (en orden de prioridad):
-     * 1. Match exacto por trade_name normalizado
-     * 2. Match exacto por RFC (si lo tenemos en el futuro)
-     * 3. Fuzzy match por similitud de texto
+     * 1. Match exacto por normalized_name (usa índice de BD - O(log n))
+     * 2. Fuzzy match sobre candidatos limitados por prefijo
      *
      * @param  string $rawName  Nombre crudo del proveedor (del OCR/IA)
      * @return array{supplier: Supplier, confidence: float, source: string}|null
@@ -274,42 +273,47 @@ class DataNormalizerService
 
         $normalized = $this->normalizeSupplierName($rawName);
 
-        // 1. Match exacto: trade_name normalizado
-        $suppliers = Supplier::all();
+        // 1. Match exacto usando índice de BD (O(log n) - eficiente)
+        $supplier = Supplier::where('normalized_name', $normalized)->first();
+        if ($supplier) {
+            return [
+                'supplier'   => $supplier,
+                'confidence' => 1.0,
+                'source'     => 'exact_normalized_name',
+            ];
+        }
 
-        foreach ($suppliers as $supplier) {
-            $supplierNormalized = $this->normalizeSupplierName($supplier->trade_name);
+        // 2. Fuzzy match: solo sobre candidatos con prefijo común (máx 50)
+        //    para evitar cargar toda la tabla en memoria
+        $prefix = substr($normalized, 0, 3);
+        if (strlen($prefix) >= 2) {
+            $candidates = Supplier::where('normalized_name', 'like', $prefix . '%')
+                ->limit(50)
+                ->get();
 
-            if ($supplierNormalized === $normalized) {
+            $bestMatch = null;
+            $bestScore = 0;
+
+            foreach ($candidates as $candidate) {
+                $similarity = $this->calculateSimilarity(
+                    $normalized,
+                    $candidate->normalized_name ?? $this->normalizeSupplierName($candidate->trade_name)
+                );
+
+                if ($similarity > $bestScore) {
+                    $bestScore = $similarity;
+                    $bestMatch = $candidate;
+                }
+            }
+
+            // Umbral: solo sugerir si la similitud es > 70%
+            if ($bestMatch !== null && $bestScore >= 0.70) {
                 return [
-                    'supplier'   => $supplier,
-                    'confidence' => 1.0,
-                    'source'     => 'exact_trade_name',
+                    'supplier'   => $bestMatch,
+                    'confidence' => round($bestScore, 2),
+                    'source'     => 'fuzzy_match',
                 ];
             }
-        }
-
-        // 2. Fuzzy match: buscar el mejor candidato por similitud
-        $bestMatch  = null;
-        $bestScore  = 0;
-
-        foreach ($suppliers as $supplier) {
-            $supplierNormalized = $this->normalizeSupplierName($supplier->trade_name);
-            $similarity = $this->calculateSimilarity($normalized, $supplierNormalized);
-
-            if ($similarity > $bestScore) {
-                $bestScore = $similarity;
-                $bestMatch = $supplier;
-            }
-        }
-
-        // Umbral: solo sugerir si la similitud es > 70%
-        if ($bestMatch !== null && $bestScore >= 0.70) {
-            return [
-                'supplier'   => $bestMatch,
-                'confidence' => round($bestScore, 2),
-                'source'     => 'fuzzy_match',
-            ];
         }
 
         return null;
@@ -329,28 +333,44 @@ class DataNormalizerService
 
         $normalized = $this->normalizeText($rawName);
 
-        // Intentar match exacto primero
-        $categories = \App\Models\Category::all();
+        // 1. Match exacto: buscar directamente comparando nombres normalizados
+        //    (evita REGEXP_REPLACE que no está disponible en MySQL < 8.0)
+        $categories = \App\Models\Category::limit(100)->get();  // categorías son pocas
 
-        foreach ($categories as $category) {
-            if ($this->normalizeText($category->name) === $normalized) {
-                return $category;
+        foreach ($categories as $candidate) {
+            if ($this->normalizeText($candidate->name) === $normalized) {
+                return $candidate;
             }
         }
 
-        // Fuzzy match: buscar el mejor candidato por similitud
-        $bestMatch  = null;
-        $bestScore  = 0;
+        // 2. Fuzzy match: solo sobre candidatos con prefijo común (máx 30)
+        $prefix = substr($normalized, 0, 3);
+        if (strlen($prefix) >= 2) {
+            $candidates = \App\Models\Category::where('name', 'like', '%' . $prefix . '%')
+                ->limit(30)
+                ->get();
 
-        foreach ($categories as $category) {
-            $similarity = $this->calculateSimilarity($normalized, $this->normalizeText($category->name));
-            if ($similarity > $bestScore) {
-                $bestScore = $similarity;
-                $bestMatch = $category;
+            $bestMatch = null;
+            $bestScore = 0;
+
+            foreach ($candidates as $candidate) {
+                $candidateNormalized = $this->normalizeText($candidate->name);
+                if ($candidateNormalized === $normalized) {
+                    return $candidate;
+                }
+                $similarity = $this->calculateSimilarity($normalized, $candidateNormalized);
+                if ($similarity > $bestScore) {
+                    $bestScore = $similarity;
+                    $bestMatch = $candidate;
+                }
+            }
+
+            if ($bestMatch !== null && $bestScore >= 0.70) {
+                return $bestMatch;
             }
         }
 
-        return ($bestMatch !== null && $bestScore >= 0.70) ? $bestMatch : null;
+        return null;
     }
 
     /**

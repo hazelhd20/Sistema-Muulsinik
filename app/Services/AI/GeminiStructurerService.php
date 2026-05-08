@@ -5,6 +5,7 @@ namespace App\Services\AI;
 use Gemini\Data\Blob;
 use Gemini\Enums\MimeType;
 use Gemini\Laravel\Facades\Gemini;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -224,11 +225,19 @@ class GeminiStructurerService
      *
      * Centralizar las reglas en un solo lugar evita duplicación y garantiza
      * que cualquier ajuste aplique tanto a Vision como a texto.
+     *
+     * OPTIMIZACIÓN: Usa cache para evitar N queries por cada procesamiento.
      */
     private function buildExtractionRules(): string
     {
-        $categoriesList = \App\Models\Category::pluck('name')->implode(', ');
-        $unitsList      = \App\Models\Measure::pluck('abbreviation')->unique()->implode(', ');
+        // Cache por 1 hora - las categorías y unidades cambian poco frecuentemente
+        $categoriesList = Cache::remember('extraction:categories', 3600, fn() =>
+            \App\Models\Category::pluck('name')->implode(', ')
+        );
+
+        $unitsList = Cache::remember('extraction:units', 3600, fn() =>
+            \App\Models\Measure::pluck('abbreviation')->unique()->implode(', ')
+        );
 
         return <<<RULES
         Tu tarea es extraer la información estructurada del documento. Devuelve SOLO un JSON válido con el siguiente formato, sin texto adicional ni markdown:

@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Gestión Documental</h1>
+            <h1 class="text-xl font-bold text-text-primary">Gestión Documental</h1>
             <p class="text-sm text-text-muted">Repositorio centralizado de documentos por proyecto</p>
         </div>
         <button wire:click="openUploadModal" class="btn-primary">
@@ -44,22 +44,22 @@
             @php
                 $ext = pathinfo($doc->file_path, PATHINFO_EXTENSION);
                 $iconColors = [
-                    'pdf' => ['bg-red-100', 'text-red-600'],
-                    'doc' => ['bg-blue-100', 'text-blue-600'],
-                    'docx' => ['bg-blue-100', 'text-blue-600'],
-                    'xls' => ['bg-green-100', 'text-green-600'],
-                    'xlsx' => ['bg-green-100', 'text-green-600'],
-                    'jpg' => ['bg-amber-100', 'text-amber-600'],
-                    'jpeg' => ['bg-amber-100', 'text-amber-600'],
-                    'png' => ['bg-amber-100', 'text-amber-600'],
+                    'pdf'  => ['bg-red-50',   'text-red-600'],
+                    'doc'  => ['bg-blue-50',  'text-blue-600'],
+                    'docx' => ['bg-blue-50',  'text-blue-600'],
+                    'xls'  => ['bg-green-50', 'text-green-600'],
+                    'xlsx' => ['bg-green-50', 'text-green-600'],
+                    'jpg'  => ['bg-amber-50', 'text-amber-600'],
+                    'jpeg' => ['bg-amber-50', 'text-amber-600'],
+                    'png'  => ['bg-amber-50', 'text-amber-600'],
                 ];
-                $colors = $iconColors[$ext] ?? ['bg-gray-100', 'text-gray-600'];
+                $colors = $iconColors[$ext] ?? ['bg-gray-50', 'text-gray-600'];
                 $catColors = [
                     'contratos' => 'badge-primary',
                     'planos' => 'badge-success',
                     'permisos' => 'badge-warning',
                     'cotizaciones' => 'badge-danger',
-                    'otros' => 'bg-gray-100 text-gray-700',
+                    'otros' => 'bg-gray-50 text-gray-600',
                 ];
             @endphp
             <div class="card hover:shadow-md transition-shadow">
@@ -82,10 +82,10 @@
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100 text-xs text-text-muted">
                     <span>{{ $doc->uploader->name ?? '—' }} · {{ $doc->created_at->format('d/m/Y') }}</span>
                     <div class="flex items-center gap-1">
-                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition">
+                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn-icon-primary" title="Descargar">
                             <i data-lucide="download" class="w-4 h-4"></i>
                         </a>
-                        <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Eliminar este documento?" class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                        <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Eliminar este documento?" class="btn-icon-danger">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
