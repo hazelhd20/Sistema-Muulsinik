@@ -44,7 +44,7 @@
         @if($placeholder)
             <div
                 @click="value = ''; open = false"
-                class="px-4 py-2.5 text-sm cursor-pointer transition-colors"
+                class="px-4 py-2.5 text-small cursor-pointer transition-colors"
                 :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
             >
                 {{ $placeholder }}
@@ -54,7 +54,7 @@
         <template x-for="(label, val) in options" :key="val">
             <div
                 @click="value = val; open = false"
-                class="px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between"
+                class="px-4 py-2.5 text-small cursor-pointer transition-colors flex items-center justify-between"
                 :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
             >
                 <span x-text="label" class="truncate pr-4"></span>

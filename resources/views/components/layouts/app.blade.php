@@ -38,8 +38,8 @@
             :class="mobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'">
 
             {{-- Brand --}}
-            <div class="flex items-center px-5 h-[4.25rem] border-b border-gray-100 shrink-0">
-                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="h-9 object-contain">
+            <div class="flex items-center justify-center h-[4.25rem] border-b border-gray-100 shrink-0 px-4">
+                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain" style="height: var(--logo-size);">
             </div>
 
             {{-- Navigation --}}
@@ -168,7 +168,7 @@
                                 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none"></i>
                             <input type="search"
                                 placeholder="Buscar en el sistema..."
-                                class="input pl-10 w-72 bg-white/80 text-sm h-9 py-0"
+                                class="input pl-10 w-72 bg-white/80 text-small h-9 py-0"
                                 id="global-search">
                         </div>
                     </div>
@@ -185,7 +185,7 @@
 
                         <div class="flex items-center gap-2.5 pl-1">
                             <div class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center shadow-sm">
-                                <span class="text-xs font-bold text-white leading-none">
+                                <span class="text-xs-fluid font-bold text-white leading-none">
                                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                                 </span>
                             </div>

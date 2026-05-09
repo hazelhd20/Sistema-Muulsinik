@@ -19,7 +19,7 @@
 
     <div class="w-full max-w-sm">
         <div class="flex justify-center mb-8">
-            <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="h-10">
+            <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain" style="height: clamp(3rem, 5vw + 1.5rem, 5rem);">
         </div>
 
         {{ $slot }}

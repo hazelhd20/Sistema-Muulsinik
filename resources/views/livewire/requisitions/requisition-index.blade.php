@@ -197,7 +197,7 @@
                 @if($req->items->isNotEmpty())
                     <div x-show="open" x-collapse class="mt-3">
                         <div class="rounded-xl border border-gray-100 overflow-hidden overflow-x-auto">
-                            <table class="w-full text-sm">
+                            <table class="w-full text-body">
                                 <thead>
                                     <tr class="bg-surface-main">
                                         <th class="text-left px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Producto</th>
@@ -268,7 +268,7 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">Nueva Requisición</h2>
+                    <h2 class="text-h2 text-text-primary">Nueva Requisición</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
@@ -399,7 +399,7 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
                             <span wire:loading.class="opacity-0" wire:target="createRequisition"
                                 class="transition-opacity">Crear Requisición</span>
                             <span wire:loading wire:target="createRequisition"
@@ -454,7 +454,7 @@
     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
         x-transition>
         <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-surface-card">
-            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <h3 class="text-h3 font-bold text-gray-800 flex items-center gap-2">
                 <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
             </h3>
             <button @click="showPreviewModal = false"
@@ -473,8 +473,8 @@
             <template x-if="!isImage() && !isPdf()">
                 <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
                     <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
-                    <p class="font-medium text-sm">Vista previa no disponible para este tipo de archivo.</p>
-                    <a :href="previewUrl" target="_blank" class="btn-secondary text-sm mt-2">
+                    <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
+                    <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
                         <i data-lucide="download" class="w-4 h-4"></i> Descargar
                     </a>
                 </div>

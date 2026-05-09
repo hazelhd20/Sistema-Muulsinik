@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Catálogo de Medidas</h1>
-            <p class="text-sm text-text-muted">Gestiona las unidades de medida usadas en el sistema.</p>
+            <h1 class="text-h1 text-text-primary">Catálogo de Medidas</h1>
+            <p class="text-body text-text-muted">Gestiona las unidades de medida usadas en el sistema.</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -89,7 +89,7 @@
                 wire:click="$set('showCreateModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">
+                    <h2 class="text-h2 text-text-primary">
                         {{ $editingId ? 'Editar Medida' : 'Nueva Medida' }}
                     </h2>
                     <button wire:click="$set('showCreateModal', false)"
@@ -99,14 +99,14 @@
                 </div>
                 <form wire:submit="save" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre *</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre *</label>
                         <input type="text" wire:model="name" class="input" placeholder="Ej. Pieza, Metro">
-                        @error('name') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Abreviación</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Abreviación</label>
                         <input type="text" wire:model="abbreviation" class="input" placeholder="Ej. pza, m">
-                        @error('abbreviation') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('abbreviation') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)"

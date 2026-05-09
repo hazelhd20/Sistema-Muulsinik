@@ -103,8 +103,15 @@
                 </div>
 
                 {{-- Loading indicator while uploading --}}
-                <div wire:loading wire:target="file" class="mt-4">
-                    <div class="flex items-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-100">
+                <div
+                    x-data="{ uploading: false }"
+                    x-on:livewire-upload-start.window="uploading = true"
+                    x-on:livewire-upload-finish.window="uploading = false"
+                    x-on:livewire-upload-error.window="uploading = false"
+                    x-show="uploading"
+                    x-cloak
+                    class="mt-4 w-full">
+                    <div class="flex items-center justify-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-100">
                         <svg class="animate-spin h-5 w-5 text-primary-600" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
                                 fill="none" />
@@ -171,7 +178,7 @@
                 {{-- Process Button --}}
                 @if($file && !$errors->has('file'))
                     <button wire:key="process-btn" type="button" wire:click="processUpload" wire:loading.attr="disabled"
-                        wire:target="processUpload" class="btn-primary w-full mt-6 py-3 text-base">
+                        wire:target="processUpload" class="btn-primary w-full mt-6 py-3 text-body">
                         <span wire:loading.class="opacity-0" wire:target="processUpload"
                             class="flex items-center justify-center gap-2 transition-opacity">
                             <i data-lucide="scan-line" class="w-5 h-5" wire:ignore></i>
@@ -296,7 +303,7 @@
             <div class="card mb-6">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-text-primary flex items-center gap-2">
+                        <h2 class="text-h2 text-text-primary flex items-center gap-2">
                             <i data-lucide="info" class="w-5 h-5 text-primary-600"></i>
                             Información General
                         </h2>
@@ -306,7 +313,7 @@
                         @if($quotation)
                             <button type="button"
                                 @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')"
-                                class="btn-secondary text-sm">
+                                class="btn-secondary text-small">
                                 <i data-lucide="eye" class="w-4 h-4"></i>
                                 Ver Documento Original
                             </button>
@@ -401,11 +408,11 @@
                                     si los precios ya incluyen el 16% de IVA.</p>
                                 <div class="flex items-center gap-3">
                                     <button type="button" wire:click="setTaxInclusion(false)"
-                                        class="px-4 py-2 rounded-lg text-body font-medium transition-all bg-white text-text-primary border border-gray-200 hover:border-primary-300 hover:bg-primary-50">
+                                        class="btn-secondary">
                                         Precios antes de IVA
                                     </button>
                                     <button type="button" wire:click="setTaxInclusion(true)"
-                                        class="px-4 py-2 rounded-lg text-body font-medium transition-all bg-white text-text-primary border border-gray-200 hover:border-primary-300 hover:bg-primary-50">
+                                        class="btn-secondary">
                                         Precios con IVA incluido
                                     </button>
                                 </div>
@@ -449,7 +456,7 @@
                             <span class="text-body font-normal text-text-muted">({{ count($items) }}
                                 {{ count($items) === 1 ? 'producto' : 'productos' }})</span>
                         </h2>
-                        <button type="button" wire:click="addItem" class="btn-secondary text-sm">
+                        <button type="button" wire:click="addItem" class="btn-secondary text-small">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             Agregar producto
                         </button>
@@ -500,12 +507,18 @@
                                 </thead>
                                 <tbody>
                                     @foreach($items as $i => $item)
-                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition"
+                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition {{ !empty($item['conflict']) ? 'bg-amber-50/40' : '' }}"
                                             wire:key="item-row-{{ $i }}">
                                             {{-- Nombre --}}
                                             <td class="px-3 py-2">
                                                 <input wire:model="items.{{ $i }}.name" type="text" class="input text-body"
                                                     placeholder="Nombre del producto">
+                                                @if(!empty($item['conflict']))
+                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-amber-700 mt-1">
+                                                        <i data-lucide="alert-triangle" class="w-3 h-3" wire:ignore></i>
+                                                        Producto registrado — datos diferentes
+                                                    </span>
+                                                @endif
                                             </td>
 
                                             {{-- Categoría --}}
@@ -571,6 +584,70 @@
                                                 </button>
                                             </td>
                                         </tr>
+
+                                        {{-- Fila de conflicto: visible solo cuando hay diferencias con el producto registrado --}}
+                                        @if(!empty($item['conflict']))
+                                            <tr class="border-t-0 bg-amber-50/60" wire:key="item-conflict-{{ $i }}">
+                                                <td colspan="8" class="px-4 py-3">
+                                                    <div class="flex items-start gap-3">
+                                                        <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600" wire:ignore></i>
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <p class="text-xs-fluid font-semibold text-amber-900 mb-1.5">
+                                                                Este producto ya existe en el catálogo con datos diferentes. ¿Actualizar el catálogo?
+                                                            </p>
+                                                            <div class="flex flex-wrap gap-4 mb-2">
+                                                                @if(isset($item['conflict']['category']))
+                                                                    <div class="text-xs-fluid text-amber-800">
+                                                                        <span class="font-medium">Categoría:</span>
+                                                                        <span class="line-through text-amber-500 mx-1">{{ $item['conflict']['category']['registered'] }}</span>
+                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600" wire:ignore></i>
+                                                                        <span class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['category']['suggested'] }}</span>
+                                                                    </div>
+                                                                @endif
+                                                                @if(isset($item['conflict']['unit']))
+                                                                    <div class="text-xs-fluid text-amber-800">
+                                                                        <span class="font-medium">Unidad:</span>
+                                                                        <span class="line-through text-amber-500 mx-1">{{ $item['conflict']['unit']['registered'] }}</span>
+                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600" wire:ignore></i>
+                                                                        <span class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['unit']['suggested'] }}</span>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                            <div class="flex flex-wrap gap-2">
+                                                                @if(isset($item['conflict']['category']) && isset($item['conflict']['unit']))
+                                                                    <button type="button"
+                                                                        wire:click="resolveProductConflict({{ $i }}, 'both')"
+                                                                        class="px-3 py-1 rounded-lg bg-amber-600 text-white text-xs-fluid font-medium hover:bg-amber-700 transition">
+                                                                        Actualizar ambos
+                                                                    </button>
+                                                                @endif
+                                                                @if(isset($item['conflict']['category']))
+                                                                    <button type="button"
+                                                                        wire:click="resolveProductConflict({{ $i }}, 'category')"
+                                                                        class="btn-secondary text-xs-fluid border-amber-300 text-amber-800 hover:bg-amber-50">
+                                                                        Solo categoría
+                                                                    </button>
+                                                                @endif
+                                                                @if(isset($item['conflict']['unit']))
+                                                                    <button type="button"
+                                                                        wire:click="resolveProductConflict({{ $i }}, 'unit')"
+                                                                        class="btn-secondary text-xs-fluid border-amber-300 text-amber-800 hover:bg-amber-50">
+                                                                        Solo unidad
+                                                                    </button>
+                                                                @endif
+                                                                <button type="button"
+                                                                    wire:click="dismissProductConflict({{ $i }})"
+                                                                    class="btn-secondary text-xs-fluid">
+                                                                    Conservar datos actuales
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                                 <tfoot>
@@ -676,7 +753,7 @@
                     <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
                         <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
                         <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
-                        <a :href="previewUrl" target="_blank" class="btn-secondary text-sm mt-2">
+                        <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
                             <i data-lucide="download" class="w-4 h-4"></i> Descargar
                         </a>
                     </div>

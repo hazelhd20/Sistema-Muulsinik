@@ -290,7 +290,22 @@ class GeminiStructurerService
            - El Total SIEMPRE debe ser mayor o igual al Subtotal.
 
         Reglas generales:
-        - En "name": incluye SOLO el nombre real del producto. Elimina códigos internos (ej: "M-20384"), viñetas ("1.", "- "), SKUs, y caracteres basura. IMPORTANTE: El nombre debe estar TODO EN MAYÚSCULAS.
+        - En "name": copia el nombre del producto TAL COMO APARECE en la cotización, pero en MAYÚSCULAS. Aplica ÚNICAMENTE estas limpiezas:
+          1. ELIMINA códigos internos alfanuméricos del proveedor que NO sean parte del nombre comercial del producto (ej: "M-20384", "CCA-001", "SKU-4892", "#4521").
+          2. ELIMINA viñetas de lista ("1.", "2.", "-", "•") al inicio.
+          3. ELIMINA caracteres basura sueltos (asteriscos, pipes "|", slashes sueltos "/").
+          4. CONSERVA SIEMPRE números que sean medidas o especificaciones técnicas del producto (diámetros, calibres, dimensiones, pesos, capacidades).
+          5. NO expandas ni completes abreviaturas — si el documento dice "VARILLA CR", escribe "VARILLA CR", NO "VARILLA CORRUGADA".
+          6. NO elimines números que formen parte del nombre comercial o especificación.
+          Ejemplos de cómo extraer correctamente el nombre:
+          | Lo que dice la cotización      | CORRECTO ✓              | INCORRECTO ✗                        |
+          |--------------------------------|-------------------------|-------------------------------------|
+          | M-20384 Block 15x20x40         | BLOCK 15X20X40          | BLOCK (eliminó dimensiones)         |
+          | 1. Varilla CR 3/8"             | VARILLA CR 3/8"         | VARILLA CORRUGADA 3/8" (expandió)   |
+          | Cemento Gris 50kg CCA-001      | CEMENTO GRIS 50KG       | CEMENTO GRIS (eliminó peso)         |
+          | Tubo PVC 100mm #SKU-77         | TUBO PVC 100MM          | TUBO PVC (eliminó diámetro)         |
+          | 3. Grava 3/4" - SKU4892        | GRAVA 3/4"              | GRAVA (eliminó calibre)             |
+          | * Impermeabilizante 19lt       | IMPERMEABILIZANTE 19LT  | IMPERMEABILIZANTE (eliminó volumen) |
         - En "category": intenta asignar una categoría de esta lista: [{$categoriesList}]. Si ninguna encaja razonablemente, sugiere una categoría nueva, corta y descriptiva. IMPORTANTE: Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
         - En "supplier", "store" y "seller": Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
         - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete). Sé consistente.

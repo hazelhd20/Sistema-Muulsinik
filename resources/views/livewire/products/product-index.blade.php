@@ -101,26 +101,26 @@
                 </div>
                 <form wire:submit="saveProduct" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre canónico *</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre canónico *</label>
                         <input wire:model="canonicalName" type="text" class="input"
                             placeholder="Ej. Cemento Portland CPC 30R">
-                        <p class="mt-1 text-xs text-text-muted">Nombre estándar del producto en el catálogo interno</p>
-                        @error('canonicalName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs-fluid text-text-muted">Nombre estándar del producto en el catálogo interno</p>
+                        @error('canonicalName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Unidad *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Unidad *</label>
                             <x-custom-select wire:model="measureId" :options="$measures" placeholder="Seleccionar..." />
-                            @error('measureId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('measureId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Categoría *</label>
                             <x-custom-select wire:model="categoryId" :options="$categories" placeholder="Seleccionar..." />
-                            @error('categoryId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('categoryId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Descripción</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Descripción</label>
                         <textarea wire:model="description" class="input" rows="2"
                             placeholder="Descripción técnica opcional..."></textarea>
                     </div>

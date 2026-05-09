@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-text-primary">Gestión Documental</h1>
-            <p class="text-sm text-text-muted">Repositorio centralizado de documentos por proyecto</p>
+            <h1 class="text-h1 text-text-primary">Gestión Documental</h1>
+            <p class="text-body text-text-muted">Repositorio centralizado de documentos por proyecto</p>
         </div>
         <button wire:click="openUploadModal" class="btn-primary">
             <i data-lucide="upload" class="w-4 h-4"></i>
@@ -69,17 +69,17 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <h3 class="font-semibold text-text-primary truncate">{{ $doc->name }}</h3>
-                        <p class="text-xs text-text-muted">{{ $doc->project->name ?? '—' }}</p>
+                        <p class="text-xs-fluid text-text-muted">{{ $doc->project->name ?? '—' }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2 mb-3">
                     <span class="badge {{ $catColors[$doc->category] ?? '' }} text-[10px]">{{ $categoryLabels[$doc->category] ?? $doc->category }}</span>
-                    <span class="text-xs text-text-muted">v{{ $doc->version }}</span>
-                    <span class="text-xs text-text-muted uppercase font-mono">.{{ $ext }}</span>
+                    <span class="text-xs-fluid text-text-muted">v{{ $doc->version }}</span>
+                    <span class="text-xs-fluid text-text-muted uppercase font-mono">.{{ $ext }}</span>
                 </div>
 
-                <div class="flex items-center justify-between pt-3 border-t border-gray-100 text-xs text-text-muted">
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100 text-xs-fluid text-text-muted">
                     <span>{{ $doc->uploader->name ?? '—' }} · {{ $doc->created_at->format('d/m/Y') }}</span>
                     <div class="flex items-center gap-1">
                         <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn-icon-primary" title="Descargar">
@@ -94,8 +94,8 @@
         @empty
             <div class="col-span-full card text-center py-12">
                 <i data-lucide="folder-open" class="w-12 h-12 mx-auto mb-3 text-text-muted opacity-40"></i>
-                <h3 class="text-lg font-semibold text-text-primary mb-1">No hay documentos</h3>
-                <p class="text-sm text-text-muted mb-4">Sube tu primer documento al repositorio</p>
+                <h3 class="text-h3 text-text-primary mb-1">No hay documentos</h3>
+                <p class="text-body text-text-muted mb-4">Sube tu primer documento al repositorio</p>
                 <button wire:click="openUploadModal" class="btn-primary">
                     <i data-lucide="upload" class="w-4 h-4"></i>Subir Documento
                 </button>
@@ -111,29 +111,29 @@
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showUploadModal', false)"></div>
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-text-primary">Subir Documento</h2>
+                    <h2 class="text-h2 text-text-primary">Subir Documento</h2>
                     <button wire:click="$set('showUploadModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
                 <form wire:submit="uploadDocument" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre del documento *</label>
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre del documento *</label>
                         <input wire:model="docName" type="text" class="input" placeholder="Ej. Contrato principal - Fase 1">
-                        @error('docName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @error('docName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Proyecto *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
                             <x-custom-select 
                                 wire:model="docProjectId" 
                                 :options="$projects->pluck('name', 'id')->toArray()" 
                                 placeholder="Seleccionar..." 
                             />
-                            @error('docProjectId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('docProjectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Categoría *</label>
                             <x-custom-select 
                                 wire:model="docCategory" 
                                 :options="$categoryLabels" 
@@ -142,12 +142,19 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-text-primary mb-1.5">Archivo *</label>
-                        <input wire:model="docFile" type="file" class="input text-sm" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.dwg,.dxf">
-                        <p class="mt-1 text-xs text-text-muted">PDF, DOC, XLS, JPG, PNG, DWG. Máximo 50 MB. Si sube un documento con nombre duplicado, se incrementará la versión automáticamente.</p>
-                        @error('docFile') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        <label class="block text-body font-medium text-text-primary mb-1.5">Archivo *</label>
+                        <input wire:model="docFile" type="file" class="input text-small" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.dwg,.dxf">
+                        <p class="mt-1 text-xs-fluid text-text-muted">PDF, DOC, XLS, JPG, PNG, DWG. Máximo 50 MB. Si sube un documento con nombre duplicado, se incrementará la versión automáticamente.</p>
+                        @error('docFile') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
 
-                        <div wire:loading wire:target="docFile" class="mt-2 flex items-center gap-2 text-xs text-primary-600">
+                        <div
+                            x-data="{ uploading: false }"
+                            x-on:livewire-upload-start.window="uploading = true"
+                            x-on:livewire-upload-finish.window="uploading = false"
+                            x-on:livewire-upload-error.window="uploading = false"
+                            x-show="uploading"
+                            x-cloak
+                            class="mt-2 flex items-center gap-2 text-xs-fluid text-primary-600">
                             <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
                                 <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" class="opacity-75"/>
@@ -157,7 +164,7 @@
                     </div>
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showUploadModal', false)" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
                             <span wire:loading.class="opacity-0" wire:target="uploadDocument" class="transition-opacity">Subir Documento</span>
                             <span wire:loading wire:target="uploadDocument" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                 <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">

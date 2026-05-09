@@ -103,25 +103,25 @@
                 <form wire:submit="saveSupplier" class="p-6 space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Nombre comercial *</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Nombre comercial *</label>
                             <input wire:model="tradeName" type="text" class="input"
                                 placeholder="Ej. Materiales del Sureste">
-                            @error('tradeName') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('tradeName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Razón social</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Razón social</label>
                             <input wire:model="legalName" type="text" class="input">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">RFC</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">RFC</label>
                             <input wire:model="rfc" type="text" class="input" maxlength="13" placeholder="XAXX010101000">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Categoría</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Categoría</label>
                             <input wire:model="category" type="text" class="input" placeholder="Ej. Materiales">
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-text-primary mb-1.5">Notas</label>
+                            <label class="block text-body font-medium text-text-primary mb-1.5">Notas</label>
                             <textarea wire:model="notes" class="input min-h-[80px]"></textarea>
                         </div>
                     </div>
@@ -142,8 +142,8 @@
             <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-text-primary">Vendedores</h2>
-                        <p class="text-xs text-text-muted">{{ $viewingSupplier->trade_name }}</p>
+                        <h2 class="text-h2 text-text-primary">Vendedores</h2>
+                        <p class="text-xs-fluid text-text-muted">{{ $viewingSupplier->trade_name }}</p>
                     </div>
                     <button wire:click="$set('showVendorsModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
@@ -162,8 +162,8 @@
                         @forelse($viewingSupplier->vendors as $vendor)
                             <div class="flex items-center justify-between p-3 rounded-xl bg-surface-main">
                                 <div>
-                                    <p class="text-sm font-medium text-text-primary">{{ $vendor->name }}</p>
-                                    <p class="text-xs text-text-muted">
+                                    <p class="text-body font-medium text-text-primary">{{ $vendor->name }}</p>
+                                    <p class="text-xs-fluid text-text-muted">
                                         {{ $vendor->phone ?? '' }}{{ $vendor->phone && $vendor->email ? ' · ' : '' }}{{ $vendor->email ?? '' }}
                                     </p>
                                 </div>
@@ -178,7 +178,7 @@
                                 </div>
                             </div>
                         @empty
-                            <p class="text-sm text-text-muted text-center py-4">Sin vendedores registrados</p>
+                            <p class="text-body text-text-muted text-center py-4">Sin vendedores registrados</p>
                         @endforelse
                     </div>
 
@@ -186,15 +186,15 @@
                     @if($showAddVendor)
                         <form wire:submit="saveVendor" class="space-y-3 p-4 rounded-xl border border-gray-200 bg-gray-50/50">
                             <input wire:model="vendorName" type="text" class="input" placeholder="Nombre del vendedor *">
-                            @error('vendorName') <p class="text-xs text-danger">{{ $message }}</p> @enderror
+                            @error('vendorName') <p class="text-xs-fluid text-danger">{{ $message }}</p> @enderror
                             <div class="grid grid-cols-2 gap-3">
                                 <input wire:model="vendorPhone" type="tel" class="input" placeholder="Teléfono">
                                 <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
                             </div>
                             <div class="flex gap-2">
-                                <button type="submit" class="btn-primary text-xs">{{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}</button>
+                                <button type="submit" class="btn-primary text-xs-fluid">{{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}</button>
                                 <button type="button" wire:click="$set('showAddVendor', false)"
-                                    class="btn-secondary text-xs">Cancelar</button>
+                                    class="btn-secondary text-xs-fluid">Cancelar</button>
                             </div>
                         </form>
                     @else

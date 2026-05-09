@@ -273,6 +273,49 @@ class QuotationWizard extends Component
                 ? $dataNormalizer->findMatchingCategory($item['category'])
                 : null;
 
+            // Detectar si el producto ya existe y verificar conflictos de categoría/unidad
+            $conflict = null;
+            $existingProductId = null;
+            if (!empty($item['name'])) {
+                $normalizedName = $dataNormalizer->normalizeText($item['name']);
+                $existingProduct = Product::where('normalized_name', $normalizedName)
+                    ->with(['category', 'measure'])
+                    ->first();
+
+                if ($existingProduct) {
+                    $existingProductId = $existingProduct->id;
+                    $conflictFields = [];
+
+                    // Conflicto de categoría: la IA sugirió una diferente a la registrada
+                    if ($matchedCategory && $existingProduct->category_id
+                        && $matchedCategory->id !== $existingProduct->category_id) {
+                        $conflictFields['category'] = [
+                            'registered' => $existingProduct->category?->name,
+                            'registered_id' => $existingProduct->category_id,
+                            'suggested' => $matchedCategory->name,
+                            'suggested_id' => $matchedCategory->id,
+                        ];
+                    }
+
+                    // Conflicto de unidad: la cotización trae una unidad diferente a la registrada
+                    if (!empty($item['unit']) && $existingProduct->measure_id) {
+                        $normalizedSuggestedUnit = $dataNormalizer->normalizeUnit($item['unit']);
+                        $registeredUnit = $existingProduct->measure?->abbreviation;
+                        if ($registeredUnit && $normalizedSuggestedUnit !== $registeredUnit) {
+                            $conflictFields['unit'] = [
+                                'registered' => $registeredUnit,
+                                'registered_measure_id' => $existingProduct->measure_id,
+                                'suggested' => $normalizedSuggestedUnit,
+                            ];
+                        }
+                    }
+
+                    if (!empty($conflictFields)) {
+                        $conflict = $conflictFields;
+                    }
+                }
+            }
+
             $this->items[] = [
                 'name' => $item['name'] ?? '',
                 'quantity' => $item['quantity'] ?? 0,
@@ -285,7 +328,8 @@ class QuotationWizard extends Component
                 'tax_source' => $item['tax_source'] ?? null,
                 'line_subtotal' => $item['line_subtotal'] ?? null,
                 'line_total' => $item['line_total'] ?? null,
-                'product_id' => null,
+                'product_id' => $existingProductId,
+                'conflict' => $conflict,
             ];
         }
 
@@ -332,7 +376,73 @@ class QuotationWizard extends Component
     }
 
     /* ── Acciones del formulario editable ─────────────── */
-    
+
+    /**
+     * Actualiza la categoría y/o unidad del producto maestro con los valores
+     * sugeridos por la IA en esta cotización.
+     *
+     * Solo se actualiza el campo que el usuario confirma; el conflicto se limpia
+     * para que la alerta desaparezca de la fila.
+     *
+     * @param  int    $index  Índice del ítem en $this->items
+     * @param  string $field  'category' | 'unit' | 'both'
+     */
+    public function resolveProductConflict(int $index, string $field): void
+    {
+        $item = $this->items[$index] ?? null;
+        if (!$item || empty($item['product_id']) || empty($item['conflict'])) {
+            return;
+        }
+
+        $product = Product::find($item['product_id']);
+        if (!$product) {
+            return;
+        }
+
+        $conflict = $item['conflict'];
+        $updates = [];
+
+        if (($field === 'category' || $field === 'both') && isset($conflict['category'])) {
+            $updates['category_id'] = $conflict['category']['suggested_id'];
+            unset($this->items[$index]['conflict']['category']);
+        }
+
+        if (($field === 'unit' || $field === 'both') && isset($conflict['unit'])) {
+            $normalizer = app(DataNormalizerService::class);
+            $suggestedUnit = $conflict['unit']['suggested'];
+            $measure = Measure::where('abbreviation', $suggestedUnit)->first();
+            if (!$measure) {
+                $measure = Measure::create([
+                    'name' => $normalizer->getUnitName($suggestedUnit),
+                    'abbreviation' => $suggestedUnit,
+                ]);
+            }
+            $updates['measure_id'] = $measure->id;
+            $this->items[$index]['unit'] = $suggestedUnit;
+            unset($this->items[$index]['conflict']['unit']);
+        }
+
+        if (!empty($updates)) {
+            $product->update($updates);
+        }
+
+        // Limpiar el conflicto si ya no quedan campos en conflicto
+        if (empty($this->items[$index]['conflict'])) {
+            $this->items[$index]['conflict'] = null;
+        }
+    }
+
+    /**
+     * Descarta el conflicto sin actualizar el producto maestro.
+     * La cotización conserva los valores sugeridos por la IA solo para este ítem.
+     */
+    public function dismissProductConflict(int $index): void
+    {
+        if (isset($this->items[$index])) {
+            $this->items[$index]['conflict'] = null;
+        }
+    }
+
     /**
      * Hook para cuando el nombre del proveedor cambia manualmente.
      * Intenta resolver el ID del proveedor para filtrar vendedores.

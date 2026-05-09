@@ -199,7 +199,7 @@
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
                             <span wire:loading.class="opacity-0" wire:target="createExpense" class="transition-opacity">Registrar Gasto</span>
                             <span wire:loading wire:target="createExpense" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                 <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
