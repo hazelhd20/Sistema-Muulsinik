@@ -282,10 +282,11 @@ class QuotationWizard extends Component
         }
 
         // Intentar asociar vendedor existente con fuzzy matching
-        if ($this->vendorName && $this->supplierId) {
+        // Busca con scope de proveedor si existe, o globalmente si no
+        if ($this->vendorName) {
             $vendorMatchResult = $dataNormalizer->findMatchingVendor(
                 $this->vendorName,
-                (int) $this->supplierId
+                $this->supplierId ? (int) $this->supplierId : null
             );
 
             if ($vendorMatchResult !== null) {
@@ -298,8 +299,6 @@ class QuotationWizard extends Component
             } else {
                 $this->vendorMatch = ['status' => 'new'];
             }
-        } elseif ($this->vendorName) {
-            $this->vendorMatch = ['status' => 'new'];
         }
 
         // Cargar ítems extraídos con normalización de unidades

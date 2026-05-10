@@ -156,6 +156,25 @@ class DataNormalizerService
         'srl',
     ];
 
+    /**
+     * Prefijos comerciales genéricos que no aportan identidad.
+     * Se eliminan SOLO durante la normalización para matching,
+     * para que "Grupo Boxito" normalice a "boxito" y matchee con "Boxito".
+     */
+    private const BUSINESS_PREFIXES = [
+        'grupo',
+        'corporativo',
+        'comercializadora',
+        'distribuidora',
+        'materiales',
+        'proveedora',
+        'servicios',
+        'industrias',
+        'constructora',
+        'ferreteria',
+        'empresa',
+    ];
+
     /* ═══════════════════════════════════════════════════
      *  CAPA 1: NORMALIZACIÓN DETERMINISTA
      * ═══════════════════════════════════════════════════ */
@@ -239,7 +258,20 @@ class DataNormalizerService
             $text = rtrim(preg_replace('/' . preg_quote($suffix, '/') . '\s*$/i', '', $text));
         }
 
-        return $this->normalizeText($text);
+        // Quitar prefijos comerciales genéricos que no aportan identidad
+        $normalized = $this->normalizeText($text);
+        foreach (self::BUSINESS_PREFIXES as $prefix) {
+            if (str_starts_with($normalized, $prefix . ' ')) {
+                $stripped = trim(substr($normalized, strlen($prefix) + 1));
+                // Solo quitar si queda algo sustancial (≥ 3 chars)
+                if (mb_strlen($stripped) >= 3) {
+                    $normalized = $stripped;
+                }
+                break;
+            }
+        }
+
+        return $normalized;
     }
 
     /**
@@ -482,6 +514,22 @@ class DataNormalizerService
             ];
         }
 
+        // Fase 1b: Match exacto con versión limpia de códigos
+        $cleanedForComparison = $this->stripProductCodes($normalized);
+        if ($cleanedForComparison !== $normalized) {
+            $products = Product::where('normalized_name', 'LIKE', "%{$cleanedForComparison}%")->limit(20)->get();
+            foreach ($products as $candidate) {
+                $candidateCleaned = $this->stripProductCodes($candidate->normalized_name ?? $this->normalizeText($candidate->canonical_name));
+                if ($candidateCleaned === $cleanedForComparison) {
+                    return [
+                        'match'      => $candidate,
+                        'confidence' => 0.95,
+                        'source'     => 'exact_stripped',
+                    ];
+                }
+            }
+        }
+
         // Fase 2: Match por tokens clave
         $tokens = $this->extractKeyTokens($normalized);
         if (empty($tokens)) {
@@ -494,11 +542,21 @@ class DataNormalizerService
         }
         $candidates = $query->limit(30)->get();
 
+        // Fallback: si no hay candidatos con todos los tokens, buscar con los 2 más largos
+        if ($candidates->isEmpty() && count($tokens) > 1) {
+            $topTokens = collect($tokens)->sortByDesc(fn($t) => mb_strlen($t))->take(2)->values();
+            $query = Product::query();
+            foreach ($topTokens as $token) {
+                $query->where('normalized_name', 'LIKE', "%{$token}%");
+            }
+            $candidates = $query->limit(30)->get();
+        }
+
         // Fase 3: Fuzzy sobre candidatos
         return $this->bestFuzzyMatch(
             $candidates,
             $normalized,
-            0.75,
+            0.70,
             fn($p) => $p->normalized_name ?? $this->normalizeText($p->canonical_name)
         );
     }
@@ -621,8 +679,10 @@ class DataNormalizerService
     /**
      * Calcula la similitud entre dos strings normalizados.
      *
-     * Combina `similar_text()` con bonificación por tokens coincidentes
-     * para mejorar la precisión en nombres del sector construcción.
+     * Estrategia de 3 señales combinadas:
+     * 1. Similitud por caracteres (similar_text)
+     * 2. Coeficiente Jaccard de tokens significativos
+     * 3. Bonus por contención (un nombre dentro de otro)
      *
      * @return float  Valor entre 0.0 y 1.0
      */
@@ -636,23 +696,77 @@ class DataNormalizerService
             return 0.0;
         }
 
-        // Similitud base por caracteres
+        // Señal 1: Similitud base por caracteres
         similar_text($a, $b, $charPercent);
         $charScore = $charPercent / 100;
 
-        // Bonus por tokens coincidentes (palabras en común)
+        // Señal 2: Tokens coincidentes (Jaccard + subset bonus)
         $tokensA = array_filter(explode(' ', $a), fn (string $w) => mb_strlen($w) >= 3);
         $tokensB = array_filter(explode(' ', $b), fn (string $w) => mb_strlen($w) >= 3);
 
+        $tokenFinal = 0.0;
         if (!empty($tokensA) && !empty($tokensB)) {
             $intersection = count(array_intersect($tokensA, $tokensB));
             $union        = count(array_unique(array_merge($tokensA, $tokensB)));
-            $tokenScore   = $union > 0 ? $intersection / $union : 0;
+            $jaccard      = $union > 0 ? $intersection / $union : 0;
 
-            // Promedio ponderado: 60% tokens, 40% caracteres
-            return ($tokenScore * 0.6) + ($charScore * 0.4);
+            // Subset bonus: si TODOS los tokens del más corto están en el más largo,
+            // el score mínimo es alto — indica que uno es versión abreviada del otro.
+            // Ej: "leticia dzul" tiene ["leticia","dzul"], ambos en ["leticia","alejandra","dzul","uh"]
+            $shorter = count($tokensA) <= count($tokensB) ? $tokensA : $tokensB;
+            $longer  = count($tokensA) >  count($tokensB) ? $tokensA : $tokensB;
+            $subsetRatio = count($shorter) > 0
+                ? count(array_intersect($shorter, $longer)) / count($shorter)
+                : 0;
+
+            // Si todos los tokens del corto están en el largo → score mínimo 0.82
+            if ($subsetRatio >= 1.0) {
+                $tokenFinal = max($jaccard, 0.82);
+            } else {
+                $tokenFinal = $jaccard;
+            }
         }
 
-        return $charScore;
+        // Señal 3: Contención directa de subcadenas
+        $containmentBonus = 0.0;
+        $shorter = mb_strlen($a) <= mb_strlen($b) ? $a : $b;
+        $longer  = mb_strlen($a) >  mb_strlen($b) ? $a : $b;
+        if (mb_strlen($shorter) >= 3 && str_contains($longer, $shorter)) {
+            // Un nombre es subcadena completa del otro → match muy probable
+            $containmentBonus = 0.85;
+        }
+
+        // Combinación: tomar el mejor indicador entre las 3 señales
+        // Token analysis y containment son más confiables que character-level
+        if (!empty($tokensA) && !empty($tokensB)) {
+            $combined = ($tokenFinal * 0.55) + ($charScore * 0.45);
+            return max($combined, $containmentBonus);
+        }
+
+        return max($charScore, $containmentBonus);
+    }
+
+    /**
+     * Limpia códigos de producto para comparación fuzzy.
+     *
+     * Elimina tokens que parecen códigos SKU o identificadores
+     * (alfanuméricos cortos al final, contenido entre paréntesis)
+     * sin alterar medidas reales como "1/2pulg" o "100mm".
+     *
+     * @param  string $normalized  Nombre ya normalizado
+     * @return string              Nombre limpio de códigos
+     */
+    private function stripProductCodes(string $normalized): string
+    {
+        // Quitar tokens cortos (1-3 chars) alfanuméricos al final que parecen códigos
+        // Ej: "remate ventila sanit 5q" → "remate ventila sanit"
+        // Pero NO quitar medidas como "4oz", "1/2", "100mm"
+        $cleaned = preg_replace('/\s+[a-z]?\d{0,2}[a-z]{1,2}$/i', '', $normalized);
+
+        // Quitar contenido entre paréntesis — suele ser info suplementaria
+        // Ej: "pegamento pvc (4 oz) transparente" → "pegamento pvc transparente"
+        $cleaned = preg_replace('/\s*\([^)]*\)\s*/', ' ', $cleaned);
+
+        return trim(preg_replace('/\s+/', ' ', $cleaned));
     }
 }
