@@ -488,10 +488,15 @@ class DataNormalizerService
     /**
      * Busca un producto existente que coincida con el nombre crudo.
      *
-     * Estrategia de 3 fases igual que proveedor:
-     * 1. Match exacto por normalized_name
-     * 2. Match por tokens clave
-     * 3. Fuzzy match sobre candidatos
+     * Estrategia de 4 fases (en orden de prioridad):
+     * 1. Match exacto por normalized_name (con y sin códigos SKU)
+     * 2. Match por nombre canónico limpio (sin códigos) para absorber
+     *    inconsistencias de la IA al eliminar/conservar códigos
+     * 3. Match por tokens clave significativos
+     * 4. Fuzzy match ponderado (compara AMBAS versiones: con y sin códigos)
+     *
+     * Principio: la IA es inconsistente limpiando códigos, así que
+     * nuestro matching siempre normaliza ambos lados de la comparación.
      *
      * @param  string $rawName  Nombre del producto (del OCR/IA)
      * @return array{match: Product, confidence: float, source: string}|null
@@ -503,8 +508,9 @@ class DataNormalizerService
         }
 
         $normalized = $this->normalizeText($rawName);
+        $cleanName  = $this->stripProductCodes($normalized);
 
-        // Fase 1: Match exacto por índice
+        // Fase 1a: Match exacto directo (nombre tal cual vs BD)
         $product = Product::where('normalized_name', $normalized)->first();
         if ($product) {
             return [
@@ -514,24 +520,41 @@ class DataNormalizerService
             ];
         }
 
-        // Fase 1b: Match exacto con versión limpia de códigos
-        $cleanedForComparison = $this->stripProductCodes($normalized);
-        if ($cleanedForComparison !== $normalized) {
-            $products = Product::where('normalized_name', 'LIKE', "%{$cleanedForComparison}%")->limit(20)->get();
-            foreach ($products as $candidate) {
-                $candidateCleaned = $this->stripProductCodes($candidate->normalized_name ?? $this->normalizeText($candidate->canonical_name));
-                if ($candidateCleaned === $cleanedForComparison) {
-                    return [
-                        'match'      => $candidate,
-                        'confidence' => 0.95,
-                        'source'     => 'exact_stripped',
-                    ];
-                }
+        // Fase 1b: Match exacto con nombre limpio (sin códigos) vs BD
+        //          Cubre el caso donde la IA limpió el código pero en BD está con código, o viceversa
+        if ($cleanName !== $normalized) {
+            $product = Product::where('normalized_name', $cleanName)->first();
+            if ($product) {
+                return [
+                    'match'      => $product,
+                    'confidence' => 0.98,
+                    'source'     => 'exact_cleaned',
+                ];
             }
         }
 
-        // Fase 2: Match por tokens clave
-        $tokens = $this->extractKeyTokens($normalized);
+        // Fase 2: Match cruzado — limpiar AMBOS lados y comparar
+        //         El nombre de la IA limpio vs cada candidato en BD también limpio
+        $searchTerm = mb_strlen($cleanName) >= 5 ? $cleanName : $normalized;
+        $candidates = Product::where('normalized_name', 'LIKE', "%{$searchTerm}%")
+            ->limit(30)
+            ->get();
+
+        foreach ($candidates as $candidate) {
+            $candidateClean = $this->stripProductCodes(
+                $candidate->normalized_name ?? $this->normalizeText($candidate->canonical_name)
+            );
+            if ($candidateClean === $cleanName) {
+                return [
+                    'match'      => $candidate,
+                    'confidence' => 0.95,
+                    'source'     => 'exact_stripped',
+                ];
+            }
+        }
+
+        // Fase 3: Match por tokens clave (del nombre limpio para mejor precisión)
+        $tokens = $this->extractKeyTokens($cleanName);
         if (empty($tokens)) {
             return null;
         }
@@ -552,12 +575,15 @@ class DataNormalizerService
             $candidates = $query->limit(30)->get();
         }
 
-        // Fase 3: Fuzzy sobre candidatos
+        // Fase 4: Fuzzy ponderado — compara la versión LIMPIA contra la BD LIMPIA
+        //         Esto absorbe variaciones de la IA al conservar/quitar códigos
         return $this->bestFuzzyMatch(
             $candidates,
-            $normalized,
+            $cleanName,
             0.70,
-            fn($p) => $p->normalized_name ?? $this->normalizeText($p->canonical_name)
+            fn($p) => $this->stripProductCodes(
+                $p->normalized_name ?? $this->normalizeText($p->canonical_name)
+            )
         );
     }
 
@@ -582,9 +608,10 @@ class DataNormalizerService
                 $item['unit'] = $this->normalizeUnit($item['unit']);
             }
 
-            // Limpiar nombre: TODO EN MAYÚSCULAS
+            // Limpiar nombre: normalización determinista de producto
+            // Esto absorbe las inconsistencias de la IA al quitar/dejar códigos SKU
             if (!empty($item['name'])) {
-                $item['name'] = mb_strtoupper(trim(preg_replace('/\s+/', ' ', $item['name'])));
+                $item['name'] = $this->normalizeProductName($item['name']);
             }
 
             // Limpiar categoría: Mayúscula al inicio de cada palabra
@@ -747,26 +774,164 @@ class DataNormalizerService
     }
 
     /**
-     * Limpia códigos de producto para comparación fuzzy.
+     * Normaliza un nombre de producto de forma DETERMINISTA.
      *
-     * Elimina tokens que parecen códigos SKU o identificadores
-     * (alfanuméricos cortos al final, contenido entre paréntesis)
-     * sin alterar medidas reales como "1/2pulg" o "100mm".
+     * Estrategia: proteger primero las medidas/especificaciones técnicas,
+     * luego eliminar códigos SKU. Esto garantiza que sin importar
+     * si la IA quitó o dejó los códigos, el resultado siempre es el mismo.
      *
-     * @param  string $normalized  Nombre ya normalizado
-     * @return string              Nombre limpio de códigos
+     * Ejemplos:
+     *   "M-20384 Block 15x20x40"     → "BLOCK 15X20X40"
+     *   "Cemento Gris 50kg CCA-001"  → "CEMENTO GRIS 50KG"
+     *   "Tubo PVC 100mm #SKU-77"     → "TUBO PVC 100MM"
+     *   "Varilla 3/8 x 12m VC-38"    → "VARILLA 3/8 X 12M"
+     *   "BLOCK 15X20X40"             → "BLOCK 15X20X40" (sin cambio)
+     *
+     * @param  string $rawName  Nombre crudo del producto
+     * @return string           Nombre limpio, en MAYÚSCULAS, sin códigos SKU
      */
-    private function stripProductCodes(string $normalized): string
+    public function normalizeProductName(string $rawName): string
     {
-        // Quitar tokens cortos (1-3 chars) alfanuméricos al final que parecen códigos
-        // Ej: "remate ventila sanit 5q" → "remate ventila sanit"
-        // Pero NO quitar medidas como "4oz", "1/2", "100mm"
-        $cleaned = preg_replace('/\s+[a-z]?\d{0,2}[a-z]{1,2}$/i', '', $normalized);
+        $name = mb_strtoupper(trim(preg_replace('/\s+/', ' ', $rawName)));
 
-        // Quitar contenido entre paréntesis — suele ser info suplementaria
-        // Ej: "pegamento pvc (4 oz) transparente" → "pegamento pvc transparente"
-        $cleaned = preg_replace('/\s*\([^)]*\)\s*/', ' ', $cleaned);
+        // Fase 1: Eliminar viñetas/numeración al inicio ("1.", "2.", "-", "•")
+        $name = preg_replace('/^[\d]+\.\s*/', '', $name);
+        $name = preg_replace('/^[\-•\*]\s*/', '', $name);
 
-        return trim(preg_replace('/\s+/', ' ', $cleaned));
+        // Fase 2: Eliminar caracteres basura sueltos (pipes, asteriscos sueltos)
+        $name = str_replace(['|', '*'], '', $name);
+
+        // Fase 3: Eliminar códigos SKU — estrategia de "proteger y eliminar"
+        $name = $this->stripProductCodes($name);
+
+        // Fase 4: Normalización final
+        $name = trim(preg_replace('/\s+/', ' ', $name));
+
+        return $name;
+    }
+
+    /**
+     * Limpia códigos SKU/internos de un nombre de producto.
+     *
+     * Estrategia en 2 fases:
+     * 1. PROTEGER tokens que son medidas/especificaciones técnicas
+     *    (dimensiones, pesos, calibres, diámetros, largos)
+     * 2. ELIMINAR tokens que son códigos internos del proveedor
+     *    (alfanuméricos con formato de SKU como "M-20384", "CCA-001", "#4521")
+     *
+     * Regla de oro: en caso de duda, CONSERVAR el token.
+     * Es mejor dejar un código en el nombre que eliminar una medida real.
+     *
+     * @param  string $name  Nombre del producto (ya en mayúsculas)
+     * @return string        Nombre limpio de códigos
+     */
+    private function stripProductCodes(string $name): string
+    {
+        // ═══════════════════════════════════════════
+        //  PATRONES DE MEDIDAS/ESPECIFICACIONES (PROTEGER)
+        // ═══════════════════════════════════════════
+        //
+        // Estos patrones representan medidas técnicas comunes en materiales de construcción.
+        // Se deben CONSERVAR siempre, nunca eliminar.
+        //
+        // Patrones protegidos:
+        //   Dimensiones:  15X20X40, 4X8, 10X10
+        //   Fracciones:   3/8, 1/2, 3/4, 1/4
+        //   Con unidad:   50KG, 100MM, 19LT, 12M, 4OZ, 6", 1/2"
+        //   Calibres:     CAL 14, CAL. 12, CALIBRE 10
+        //   Diámetros:    DIAM 4, DIAM. 100, 4 PULG, 4"
+        //   Pulgadas:     1/2", 3/8", 6"
+
+        $measurePattern = '/'
+            . '\d+X\d+(?:X\d+)?'           // Dimensiones: 15X20X40, 4X8
+            . '|\d+\/\d+(?:\s*(?:"|PULG))?' // Fracciones con/sin pulgadas: 3/8, 1/2", 3/4 PULG
+            . '|\d+(?:\.\d+)?\s*(?:KG|MM|CM|LT|LTS|M[23]?|OZ|GAL|PULG|PLG|TON|GR|ML|\")'  // Número+unidad: 50KG, 100MM
+            . '|CAL\.?\s*\d+'               // Calibre: CAL 14, CAL. 12
+            . '|CALIBRE\s*\d+'              // CALIBRE 10
+            . '|DIAM\.?\s*\d+'              // Diámetro: DIAM 4, DIAM. 100
+            . '|NO\.?\s*\d+'               // Número: NO. 5, NO 3
+            . '|#\d{1,3}(?!\d)'             // Calibre con #: #4, #10 (máx 3 dígitos)
+            . '/i';
+
+        // Extraer y marcar todas las medidas para protegerlas
+        $protectedTokens = [];
+        $nameWithPlaceholders = preg_replace_callback($measurePattern, function ($match) use (&$protectedTokens) {
+            $index = count($protectedTokens);
+            $protectedTokens[] = $match[0];
+            return "__MEASURE_{$index}__";
+        }, $name);
+
+        // ═══════════════════════════════════════════
+        //  PATRONES DE CÓDIGOS SKU (ELIMINAR)
+        // ═══════════════════════════════════════════
+        //
+        // Formatos típicos de códigos internos de proveedores mexicanos:
+        //   Prefijo-Número:   M-20384, CCA-001, SKU-4892, VC-38
+        //   Hash+Número:      #4521, #SKU-77  (pero #4 se protegió arriba como calibre)
+        //   Código puro:      Alfanumérico con mezcla letra+dígito al inicio/final: AB123, 123AB
+        //   Código entre ():  (COD-123), (REF: ABC)
+
+        $cleaned = $nameWithPlaceholders;
+
+        // Quitar contenido entre paréntesis que parece info suplementaria
+        // Ej: "PEGAMENTO PVC (4 OZ) TRANSPARENTE" → ya protegido por medidas
+        // Solo eliminar paréntesis que contengan códigos, no medidas
+        $cleaned = preg_replace_callback('/\s*\(([^)]*)\)\s*/', function ($match) {
+            $content = trim($match[1]);
+            // Si el contenido del paréntesis tiene un placeholder de medida, conservarlo
+            if (str_contains($content, '__MEASURE_')) {
+                return ' ' . $content . ' ';
+            }
+            // Si parece una medida (tiene número + unidad), conservar
+            if (preg_match('/\d+\s*(?:KG|MM|CM|LT|OZ|M|GAL|PULG)/i', $content)) {
+                return ' ' . $content . ' ';
+            }
+            // Eliminar — probablemente es código o info irrelevante
+            return ' ';
+        }, $cleaned);
+
+        // Quitar códigos con formato PREFIJO-NÚMERO (al inicio o al final)
+        // Ej: M-20384, CCA-001, SKU-4892, VC-38, REF-123
+        // PERO no quitar si parece nombre compuesto (ej: "POLVO-GRIS" tiene letras en ambos lados del guión)
+        $cleaned = preg_replace('/(?:^|\s)[A-Z]{1,5}-\d{2,}(?:\s|$)/i', ' ', $cleaned);
+        $cleaned = preg_replace('/(?:^|\s)\d{2,}-[A-Z]{1,5}(?:\s|$)/i', ' ', $cleaned);
+
+        // Quitar SKU con prefijo hashtag (que tengan letras intermedias o 3+ dígitos: #SKU-77, #4521)
+        // Los calibres cortos (#4, #10) ya están protegidos como __MEASURE_N__
+        $cleaned = preg_replace('/#[A-Z]+-?\d+/i', '', $cleaned);    // #SKU-77, #REF123
+        $cleaned = preg_replace('/#\d{4,}/i', '', $cleaned);          // #45210
+
+        // Quitar prefijos de código explícitos (SKU, COD, REF, ART, CLAVE)
+        $cleaned = preg_replace('/\b(?:SKU|COD|REF|ART|CLAVE)[:\s\-]*[A-Z0-9\-]{2,}\b/i', '', $cleaned);
+
+        // Limpiar hashtags huérfanos que quedaron tras eliminar códigos
+        $cleaned = preg_replace('/\s*#\s*/', ' ', $cleaned);
+
+        // Quitar tokens alfanuméricos sueltos que parecen códigos (mezcla letra+dígito)
+        // Solo al INICIO o FINAL del nombre, no en medio
+        // Ej: "AB1234 CEMENTO GRIS" → "CEMENTO GRIS"
+        // Ej: "CEMENTO GRIS XY789" → "CEMENTO GRIS"
+        // PERO conservar si es solo letras (nombre) o solo números precedidos por unidad protegida
+        $cleaned = preg_replace('/^[A-Z]{1,3}\d{3,}\s+/i', '', $cleaned);  // Inicio: AB1234
+        $cleaned = preg_replace('/\s+[A-Z]{1,3}\d{3,}$/i', '', $cleaned);  // Final: XY789
+        $cleaned = preg_replace('/^\d{3,}[A-Z]{1,3}\s+/i', '', $cleaned);  // Inicio: 1234AB
+        $cleaned = preg_replace('/\s+\d{3,}[A-Z]{1,3}$/i', '', $cleaned);  // Final: 789XY
+
+        // ═══════════════════════════════════════════
+        //  RESTAURAR MEDIDAS PROTEGIDAS
+        // ═══════════════════════════════════════════
+        foreach ($protectedTokens as $index => $original) {
+            $cleaned = str_replace("__MEASURE_{$index}__", $original, $cleaned);
+        }
+
+        $cleaned = trim(preg_replace('/\s+/', ' ', $cleaned));
+
+        // Protección final: si la limpieza dejó el nombre vacío o muy corto,
+        // devolver el original — es mejor un nombre con código que sin nombre
+        if (mb_strlen($cleaned) < 3) {
+            return trim(preg_replace('/\s+/', ' ', $name));
+        }
+
+        return $cleaned;
     }
 }

@@ -14,8 +14,10 @@ class Product extends Model
     {
         static::saving(function ($product) {
             if ($product->isDirty('canonical_name') && !empty($product->canonical_name)) {
-                $product->canonical_name = mb_strtoupper($product->canonical_name);
-                $product->normalized_name = app(\App\Services\DataNormalizerService::class)->normalizeText($product->canonical_name);
+                $normalizer = app(\App\Services\DataNormalizerService::class);
+                // normalizeProductName() aplica: MAYÚSCULAS + limpieza de códigos SKU + protección de medidas
+                $product->canonical_name = $normalizer->normalizeProductName($product->canonical_name);
+                $product->normalized_name = $normalizer->normalizeText($product->canonical_name);
             }
         });
     }
