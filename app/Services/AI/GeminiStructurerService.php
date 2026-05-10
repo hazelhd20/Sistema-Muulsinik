@@ -260,6 +260,7 @@ class GeminiStructurerService
                     "category": "Clasifica el producto usando SOLO UNA de estas opciones: {$categoriesList}. Si no encaja en ninguna, usa 'Otros'. (Mayúsculas al inicio de cada palabra)",
                     "quantity": 10.0,
                     "unit": "pza",
+                    "unit_name": "Pieza",
                     "unit_price": 150.50,
                     "discount": 0.00,
                     "tax_amount": 24.08,
@@ -308,7 +309,8 @@ class GeminiStructurerService
           | * Impermeabilizante 19lt       | IMPERMEABILIZANTE 19LT  | IMPERMEABILIZANTE (eliminó volumen) |
         - En "category": intenta asignar una categoría de esta lista: [{$categoriesList}]. Si ninguna encaja razonablemente, sugiere una categoría nueva, corta y descriptiva. IMPORTANTE: Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
         - En "supplier", "store" y "seller": Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
-        - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete). Sé consistente.
+        - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete, jg). Sé consistente.
+        - En "unit_name": pon el NOMBRE COMPLETO de la unidad de medida en español, con Mayúscula al inicio (ej: "Pieza", "Kilogramo", "Metro lineal", "Juego", "Bolsa", "Par", "Galón", "Cubeta"). SIEMPRE incluye este campo, incluso para unidades conocidas. Si la cotización dice "jg", pon "Juego". Si dice "bls", pon "Bolsa". Si dice "par", pon "Par". Usa el contexto del documento para deducir el nombre completo.
         - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
         - En "discount": pon el valor del descuento si aparece. Si no, pon 0.
         - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
@@ -391,6 +393,7 @@ class GeminiStructurerService
                 'category'           => isset($item['category']) ? trim($item['category']) : null,
                 'quantity'           => $validated['quantity'],
                 'unit'               => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
+                'unit_name'          => isset($item['unit_name']) ? trim($item['unit_name']) : null,
                 'unit_price'         => $validated['unit_price'],
                 'discount'           => $validated['discount'],
                 'tax_amount'         => $validated['tax_amount'],

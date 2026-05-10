@@ -201,12 +201,29 @@ class DataNormalizerService
     /**
      * Obtiene el nombre completo formal para una unidad canónica (abreviada).
      *
-     * @param  string $canonicalUnit  Unidad canónica (e.g., "pza", "m2")
-     * @return string                 Nombre completo (e.g., "Pieza", "Metro cuadrado")
+     * Prioridad de resolución:
+     * 1. Mapa estático UNIT_NAMES (fuente más confiable)
+     * 2. Hint proporcionado por la IA ($aiHint) — útil para unidades nuevas
+     * 3. Fallback: ucfirst de la abreviatura
+     *
+     * @param  string      $canonicalUnit  Unidad canónica (e.g., "pza", "m2", "jg")
+     * @param  string|null $aiHint         Nombre sugerido por la IA (e.g., "Juego")
+     * @return string                      Nombre completo (e.g., "Pieza", "Juego")
      */
-    public function getUnitName(string $canonicalUnit): string
+    public function getUnitName(string $canonicalUnit, ?string $aiHint = null): string
     {
-        return self::UNIT_NAMES[$canonicalUnit] ?? ucfirst($canonicalUnit);
+        // 1. Mapa estático: fuente determinista más confiable
+        if (isset(self::UNIT_NAMES[$canonicalUnit])) {
+            return self::UNIT_NAMES[$canonicalUnit];
+        }
+
+        // 2. Hint de la IA: cubre unidades nuevas no mapeadas (jg → Juego, bls → Bolsa)
+        if (!empty($aiHint)) {
+            return mb_convert_case(trim($aiHint), MB_CASE_TITLE, 'UTF-8');
+        }
+
+        // 3. Fallback: capitalizar la abreviatura
+        return ucfirst($canonicalUnit);
     }
 
     /**
@@ -608,6 +625,12 @@ class DataNormalizerService
                 $item['unit'] = $this->normalizeUnit($item['unit']);
             }
 
+            // Propagar unit_name de la IA para unidades nuevas no mapeadas
+            // Se preserva tal cual para usarse como hint en getUnitName()
+            if (!empty($item['unit_name'])) {
+                $item['unit_name'] = mb_convert_case(trim($item['unit_name']), MB_CASE_TITLE, 'UTF-8');
+            }
+
             // Limpiar nombre: normalización determinista de producto
             // Esto absorbe las inconsistencias de la IA al quitar/dejar códigos SKU
             if (!empty($item['name'])) {
@@ -631,7 +654,24 @@ class DataNormalizerService
      */
     public function normalizeTitleCase(string $text): string
     {
-        return mb_convert_case(trim(preg_replace('/\s+/', ' ', $text)), MB_CASE_TITLE, "UTF-8");
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+        $words = explode(' ', $text);
+
+        $lowercase = ['de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'en', 'con', 'por', 'para', 'a', 'al', 'o', 'u'];
+
+        $result = [];
+        foreach ($words as $i => $word) {
+            $lower = mb_strtolower($word, 'UTF-8');
+            // Primera palabra siempre en mayúscula; partículas en minúscula salvo al inicio
+            if ($i === 0 || !in_array($lower, $lowercase)) {
+                $result[] = mb_strtoupper(mb_substr($word, 0, 1, 'UTF-8'), 'UTF-8')
+                    . mb_strtolower(mb_substr($word, 1, null, 'UTF-8'), 'UTF-8');
+            } else {
+                $result[] = $lower;
+            }
+        }
+
+        return implode(' ', $result);
     }
 
     /* ═══════════════════════════════════════════════════

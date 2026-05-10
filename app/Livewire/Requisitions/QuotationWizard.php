@@ -385,6 +385,7 @@ class QuotationWizard extends Component
                     'measure'  => [
                         'status'    => $measureMatch ? 'matched' : 'new',
                         'canonical' => $measureMatch['canonical'] ?? ($item['unit'] ?? null),
+                        'unit_name' => $item['unit_name'] ?? null,
                     ],
                 ],
             ];
@@ -499,8 +500,10 @@ class QuotationWizard extends Component
             $suggestedUnit = $conflict['unit']['suggested'];
             $measure = Measure::where('abbreviation', $suggestedUnit)->first();
             if (!$measure) {
+                // Usar unit_name del hint de la IA si está disponible
+                $aiUnitName = $item['_match']['measure']['unit_name'] ?? null;
                 $measure = Measure::create([
-                    'name' => $normalizer->getUnitName($suggestedUnit),
+                    'name' => $normalizer->getUnitName($suggestedUnit, $aiUnitName),
                     'abbreviation' => $suggestedUnit,
                 ]);
             }
@@ -735,9 +738,10 @@ class QuotationWizard extends Component
                 $measure = $existingMeasures->get($normalizedUnit);
 
                 if (!$measure) {
-                    // Crear medida nueva
+                    // Usar unit_name de la IA como hint para el nombre completo
+                    $aiUnitName = $item['_match']['measure']['unit_name'] ?? null;
                     $measure = Measure::create([
-                        'name' => $normalizer->getUnitName($normalizedUnit),
+                        'name' => $normalizer->getUnitName($normalizedUnit, $aiUnitName),
                         'abbreviation' => $normalizedUnit,
                     ]);
                     $existingMeasures->put($normalizedUnit, $measure);
