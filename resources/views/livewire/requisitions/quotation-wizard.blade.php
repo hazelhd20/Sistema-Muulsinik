@@ -31,7 +31,8 @@
             </a>
             <div>
                 <h1 class="text-h1 text-text-primary">Subir Cotización</h1>
-                <p class="text-body text-text-muted">Carga un archivo y el sistema extraerá la información automáticamente
+                <p class="text-body text-text-muted">Carga un archivo y el sistema extraerá la información
+                    automáticamente
                 </p>
             </div>
         </div>
@@ -43,7 +44,7 @@
                     <div class="flex items-center gap-2">
                         <div
                             class="w-8 h-8 rounded-full flex items-center justify-center text-small font-bold transition-all duration-300
-                                    {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
+                                        {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
                             @if($step > $num)
                                 <i data-lucide="check" class="w-4 h-4"></i>
                             @else
@@ -68,8 +69,9 @@
         <div class="card max-w-2xl mx-auto">
             <div class="p-8">
                 {{-- Drag & Drop Zone --}}
-                <div wire:key="upload-zone" x-data="{ isDragging: false }" x-on:dragover.prevent="isDragging = true"
-                    x-on:dragleave.prevent="isDragging = false"
+                <div wire:key="upload-zone" x-data="{ isDragging: false }"
+                    x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })"
+                    x-on:dragover.prevent="isDragging = true" x-on:dragleave.prevent="isDragging = false"
                     x-on:drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
                     class="relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer"
                     :class="isDragging ? 'border-primary-500 bg-primary-50/50 scale-[1.02]' : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20'"
@@ -93,9 +95,12 @@
 
                         <div class="flex items-center gap-3 mt-2">
                             <span class="px-3 py-1 rounded-lg bg-red-50 text-red-600 text-xs-fluid font-medium">PDF</span>
-                            <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs-fluid font-medium">XLSX</span>
-                            <span class="px-3 py-1 rounded-lg bg-amber-50 text-amber-600 text-xs-fluid font-medium">JPG</span>
-                            <span class="px-3 py-1 rounded-lg bg-green-50 text-green-600 text-xs-fluid font-medium">PNG</span>
+                            <span
+                                class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs-fluid font-medium">XLSX</span>
+                            <span
+                                class="px-3 py-1 rounded-lg bg-amber-50 text-amber-600 text-xs-fluid font-medium">JPG</span>
+                            <span
+                                class="px-3 py-1 rounded-lg bg-green-50 text-green-600 text-xs-fluid font-medium">PNG</span>
                         </div>
 
                         <p class="text-xs-fluid text-text-muted mt-1">Máximo 20 MB</p>
@@ -103,15 +108,11 @@
                 </div>
 
                 {{-- Loading indicator while uploading --}}
-                <div
-                    x-data="{ uploading: false }"
-                    x-on:livewire-upload-start.window="uploading = true"
+                <div x-data="{ uploading: false }" x-on:livewire-upload-start.window="uploading = true"
                     x-on:livewire-upload-finish.window="uploading = false"
-                    x-on:livewire-upload-error.window="uploading = false"
-                    x-show="uploading"
-                    x-cloak
-                    class="mt-4 w-full">
-                    <div class="flex items-center justify-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-100">
+                    x-on:livewire-upload-error.window="uploading = false" x-show="uploading" x-cloak class="mt-4 w-full">
+                    <div
+                        class="flex items-center justify-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-100">
                         <svg class="animate-spin h-5 w-5 text-primary-600" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
                                 fill="none" />
@@ -177,8 +178,10 @@
 
                 {{-- Process Button --}}
                 @if($file && !$errors->has('file'))
-                    <button wire:key="process-btn" type="button" wire:click="processUpload" wire:loading.attr="disabled"
-                        wire:target="processUpload" class="btn-primary w-full mt-6 py-3 text-body">
+                    <button wire:key="process-btn" x-data
+                        x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })" type="button"
+                        wire:click="processUpload" wire:loading.attr="disabled" wire:target="processUpload"
+                        class="btn-primary relative w-full mt-6 py-3 text-body">
                         <span wire:loading.class="opacity-0" wire:target="processUpload"
                             class="flex items-center justify-center gap-2 transition-opacity">
                             <i data-lucide="scan-line" class="w-5 h-5" wire:ignore></i>
@@ -279,18 +282,56 @@
         <form wire:submit="saveRequisition" x-data
             x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
 
-            {{-- RF-REQ-06: Alertas de campos incompletos --}}
-            @if(count($warnings) > 0)
-                <div class="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+            {{-- RF-REQ-06: Alertas tipificadas (3 niveles) --}}
+            @if(!empty($alerts['errors']))
+                <div class="mb-4 p-4 rounded-xl bg-red-50 border border-red-200">
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="x-circle" class="w-5 h-5 text-red-600 shrink-0 mt-0.5"></i>
+                        <div>
+                            <h3 class="text-small font-semibold text-red-800 mb-1">Campos obligatorios</h3>
+                            <ul class="text-body text-red-700 space-y-0.5">
+                                @foreach($alerts['errors'] as $error)
+                                    <li class="flex items-center gap-1.5">
+                                        <span class="w-1 h-1 bg-red-500 rounded-full shrink-0"></span>
+                                        {{ $error }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if(!empty($alerts['warnings']))
+                <div class="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200">
                     <div class="flex items-start gap-3">
                         <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
                         <div>
-                            <h3 class="text-small font-semibold text-amber-800 mb-1">Campos pendientes de completar</h3>
+                            <h3 class="text-small font-semibold text-amber-800 mb-1">Campos pendientes de revisar</h3>
                             <ul class="text-body text-amber-700 space-y-0.5">
-                                @foreach($warnings as $warning)
+                                @foreach($alerts['warnings'] as $warning)
                                     <li class="flex items-center gap-1.5">
                                         <span class="w-1 h-1 bg-amber-500 rounded-full shrink-0"></span>
                                         {{ $warning }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if(!empty($alerts['info']))
+                <div class="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200">
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"></i>
+                        <div>
+                            <h3 class="text-small font-semibold text-blue-800 mb-1">Resumen de detección</h3>
+                            <ul class="text-body text-blue-700 space-y-0.5">
+                                @foreach($alerts['info'] as $infoMsg)
+                                    <li class="flex items-center gap-1.5">
+                                        <span class="w-1 h-1 bg-blue-500 rounded-full shrink-0"></span>
+                                        {{ $infoMsg }}
                                     </li>
                                 @endforeach
                             </ul>
@@ -344,13 +385,18 @@
                                         <option value="{{ $supplier->trade_name }}"></option>
                                     @endforeach
                                 </datalist>
-                                @if($supplierName && !$supplierId)
+                                @if(($supplierMatch['status'] ?? '') === 'new')
                                     <span class="text-xs-fluid text-amber-600 font-medium">
-                                        <i data-lucide="info" class="w-3 h-3 inline"></i> Se creará como nuevo proveedor.
+                                        <i data-lucide="plus-circle" class="w-3 h-3 inline"></i> Se creará como nuevo proveedor.
                                     </span>
-                                @elseif($supplierId)
+                                @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
+                                    <span class="text-xs-fluid text-blue-600 font-medium">
+                                        <i data-lucide="search" class="w-3 h-3 inline"></i>
+                                        Detectado por similitud ({{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%)
+                                    </span>
+                                @elseif(($supplierMatch['status'] ?? '') === 'exact')
                                     <span class="text-xs-fluid text-green-600 font-medium">
-                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Proveedor seleccionado.
+                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Proveedor existente.
                                     </span>
                                 @endif
                             </div>
@@ -371,14 +417,18 @@
                                         <option value="{{ $vendor->name }}"></option>
                                     @endforeach
                                 </datalist>
-                                @if($vendorName && $supplierId && !collect($vendors)->contains('name', $vendorName))
+                                @if(($vendorMatch['status'] ?? '') === 'new')
                                     <span class="text-xs-fluid text-amber-600 font-medium">
-                                        <i data-lucide="info" class="w-3 h-3 inline"></i> Se creará como nuevo vendedor para
-                                        este proveedor.
+                                        <i data-lucide="plus-circle" class="w-3 h-3 inline"></i> Se creará como nuevo vendedor.
                                     </span>
-                                @elseif($vendorName && $supplierId && collect($vendors)->contains('name', $vendorName))
+                                @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
+                                    <span class="text-xs-fluid text-blue-600 font-medium">
+                                        <i data-lucide="search" class="w-3 h-3 inline"></i>
+                                        Detectado por similitud ({{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%)
+                                    </span>
+                                @elseif(($vendorMatch['status'] ?? '') === 'exact')
                                     <span class="text-xs-fluid text-green-600 font-medium">
-                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Vendedor seleccionado.
+                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Vendedor existente.
                                     </span>
                                 @endif
                             </div>
@@ -404,15 +454,14 @@
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-small font-semibold text-amber-900 mb-1">¿Los precios incluyen IVA?</h3>
-                                <p class="text-xs-fluid text-amber-700 mb-3">No se detectó información de IVA en la cotización. Indica
+                                <p class="text-xs-fluid text-amber-700 mb-3">No se detectó información de IVA en la cotización.
+                                    Indica
                                     si los precios ya incluyen el 16% de IVA.</p>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" wire:click="setTaxInclusion(false)"
-                                        class="btn-secondary">
+                                    <button type="button" wire:click="setTaxInclusion(false)" class="btn-secondary">
                                         Precios antes de IVA
                                     </button>
-                                    <button type="button" wire:click="setTaxInclusion(true)"
-                                        class="btn-secondary">
+                                    <button type="button" wire:click="setTaxInclusion(true)" class="btn-secondary">
                                         Precios con IVA incluido
                                     </button>
                                 </div>
@@ -428,10 +477,12 @@
                             <i data-lucide="receipt" class="w-4 h-4 text-green-600" wire:ignore></i>
                             <span class="text-text-primary font-medium">IVA:</span>
                             @if($quotationIncludesTax)
-                                <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-xs-fluid font-medium">Precios con IVA
+                                <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-xs-fluid font-medium">Precios con
+                                    IVA
                                     incluido — se desglosa automáticamente</span>
                             @else
-                                <span class="px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs-fluid font-medium">Precios sin IVA
+                                <span class="px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs-fluid font-medium">Precios
+                                    sin IVA
                                     — se calcula al 16%</span>
                             @endif
                             @if($taxDetectedByAI)
@@ -518,6 +569,21 @@
                                                         <i data-lucide="alert-triangle" class="w-3 h-3" wire:ignore></i>
                                                         Producto registrado — datos diferentes
                                                     </span>
+                                                @elseif(($item['_match']['product']['status'] ?? '') === 'exact')
+                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-green-600 mt-1">
+                                                        <i data-lucide="check-circle" class="w-3 h-3" wire:ignore></i>
+                                                        Existente
+                                                    </span>
+                                                @elseif(($item['_match']['product']['status'] ?? '') === 'fuzzy')
+                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-blue-600 mt-1">
+                                                        <i data-lucide="search" class="w-3 h-3" wire:ignore></i>
+                                                        Similar ({{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}%)
+                                                    </span>
+                                                @elseif(($item['_match']['product']['status'] ?? '') === 'new')
+                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-text-muted mt-1">
+                                                        <i data-lucide="plus-circle" class="w-3 h-3" wire:ignore></i>
+                                                        Nuevo
+                                                    </span>
                                                 @endif
                                             </td>
 
@@ -550,6 +616,12 @@
                                             <td class="px-3 py-2">
                                                 <input type="text" wire:model="items.{{ $i }}.unit" list="measures-list"
                                                     class="input text-body" placeholder="Unidad...">
+                                                @if(($item['_match']['measure']['status'] ?? '') === 'new')
+                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-amber-600 mt-1">
+                                                        <i data-lucide="plus-circle" class="w-3 h-3" wire:ignore></i>
+                                                        Nueva
+                                                    </span>
+                                                @endif
                                             </td>
 
                                             {{-- Precio Unitario (sin IVA) --}}
@@ -590,28 +662,37 @@
                                             <tr class="border-t-0 bg-amber-50/60" wire:key="item-conflict-{{ $i }}">
                                                 <td colspan="8" class="px-4 py-3">
                                                     <div class="flex items-start gap-3">
-                                                        <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600" wire:ignore></i>
+                                                        <div
+                                                            class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600"
+                                                                wire:ignore></i>
                                                         </div>
                                                         <div class="flex-1 min-w-0">
                                                             <p class="text-xs-fluid font-semibold text-amber-900 mb-1.5">
-                                                                Este producto ya existe en el catálogo con datos diferentes. ¿Actualizar el catálogo?
+                                                                Este producto ya existe en el catálogo con datos diferentes. ¿Actualizar
+                                                                el catálogo?
                                                             </p>
                                                             <div class="flex flex-wrap gap-4 mb-2">
                                                                 @if(isset($item['conflict']['category']))
                                                                     <div class="text-xs-fluid text-amber-800">
                                                                         <span class="font-medium">Categoría:</span>
-                                                                        <span class="line-through text-amber-500 mx-1">{{ $item['conflict']['category']['registered'] }}</span>
-                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600" wire:ignore></i>
-                                                                        <span class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['category']['suggested'] }}</span>
+                                                                        <span
+                                                                            class="line-through text-amber-500 mx-1">{{ $item['conflict']['category']['registered'] }}</span>
+                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600"
+                                                                            wire:ignore></i>
+                                                                        <span
+                                                                            class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['category']['suggested'] }}</span>
                                                                     </div>
                                                                 @endif
                                                                 @if(isset($item['conflict']['unit']))
                                                                     <div class="text-xs-fluid text-amber-800">
                                                                         <span class="font-medium">Unidad:</span>
-                                                                        <span class="line-through text-amber-500 mx-1">{{ $item['conflict']['unit']['registered'] }}</span>
-                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600" wire:ignore></i>
-                                                                        <span class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['unit']['suggested'] }}</span>
+                                                                        <span
+                                                                            class="line-through text-amber-500 mx-1">{{ $item['conflict']['unit']['registered'] }}</span>
+                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600"
+                                                                            wire:ignore></i>
+                                                                        <span
+                                                                            class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['unit']['suggested'] }}</span>
                                                                     </div>
                                                                 @endif
                                                             </div>
@@ -637,8 +718,7 @@
                                                                         Solo unidad
                                                                     </button>
                                                                 @endif
-                                                                <button type="button"
-                                                                    wire:click="dismissProductConflict({{ $i }})"
+                                                                <button type="button" wire:click="dismissProductConflict({{ $i }})"
                                                                     class="btn-secondary text-xs-fluid">
                                                                     Conservar datos actuales
                                                                 </button>
@@ -657,7 +737,8 @@
                                         $totalIva = $totalConIva - $subtotalSinIva;
                                     @endphp
                                     <tr class="border-t border-gray-100 bg-surface-main">
-                                        <td colspan="5" class="px-3 py-2 text-right text-body text-text-muted">Subtotal (sin IVA):
+                                        <td colspan="5" class="px-3 py-2 text-right text-body text-text-muted">Subtotal (sin
+                                            IVA):
                                         </td>
                                         <td class="px-3 py-2 text-right text-body font-medium text-text-primary">
                                             ${{ number_format($subtotalSinIva, 2, '.', ',') }}

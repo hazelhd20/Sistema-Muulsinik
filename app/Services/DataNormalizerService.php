@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Measure;
+use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\Vendor;
 use Illuminate\Support\Str;
 
 /**
@@ -257,12 +260,13 @@ class DataNormalizerService
     /**
      * Busca un proveedor existente que coincida con el nombre crudo.
      *
-     * Estrategia (en orden de prioridad):
-     * 1. Match exacto por normalized_name (usa índice de BD - O(log n))
-     * 2. Fuzzy match sobre candidatos limitados por prefijo
+     * Estrategia de 3 fases (en orden de prioridad):
+     * 1. Match exacto por normalized_name (usa índice de BD — O(log n))
+     * 2. Match por tokens clave significativos
+     * 3. Fuzzy match sobre candidatos filtrados
      *
      * @param  string $rawName  Nombre crudo del proveedor (del OCR/IA)
-     * @return array{supplier: Supplier, confidence: float, source: string}|null
+     * @return array{match: Supplier, confidence: float, source: string}|null
      *         null si no se encuentra ningún candidato razonable.
      */
     public function findMatchingSupplier(string $rawName): ?array
@@ -273,50 +277,38 @@ class DataNormalizerService
 
         $normalized = $this->normalizeSupplierName($rawName);
 
-        // 1. Match exacto usando índice de BD (O(log n) - eficiente)
+        // Fase 1: Match exacto usando índice de BD (O(log n))
         $supplier = Supplier::where('normalized_name', $normalized)->first();
         if ($supplier) {
             return [
-                'supplier'   => $supplier,
+                'match'      => $supplier,
                 'confidence' => 1.0,
-                'source'     => 'exact_normalized_name',
+                'source'     => 'exact',
             ];
         }
 
-        // 2. Fuzzy match: solo sobre candidatos con prefijo común (máx 50)
-        //    para evitar cargar toda la tabla en memoria
-        $prefix = substr($normalized, 0, 3);
-        if (strlen($prefix) >= 2) {
-            $candidates = Supplier::where('normalized_name', 'like', $prefix . '%')
-                ->limit(50)
-                ->get();
-
-            $bestMatch = null;
-            $bestScore = 0;
-
-            foreach ($candidates as $candidate) {
-                $similarity = $this->calculateSimilarity(
-                    $normalized,
-                    $candidate->normalized_name ?? $this->normalizeSupplierName($candidate->trade_name)
-                );
-
-                if ($similarity > $bestScore) {
-                    $bestScore = $similarity;
-                    $bestMatch = $candidate;
-                }
-            }
-
-            // Umbral: solo sugerir si la similitud es > 70%
-            if ($bestMatch !== null && $bestScore >= 0.70) {
-                return [
-                    'supplier'   => $bestMatch,
-                    'confidence' => round($bestScore, 2),
-                    'source'     => 'fuzzy_match',
-                ];
-            }
+        // Fase 2: Match por tokens clave — más robusto que prefijo
+        $tokens = $this->extractKeyTokens($normalized);
+        if (empty($tokens)) {
+            return null;
         }
 
-        return null;
+        $query = Supplier::query();
+        foreach ($tokens as $token) {
+            $query->where('normalized_name', 'LIKE', "%{$token}%");
+        }
+        $candidates = $query->limit(30)->get();
+
+        // Fallback: si no hay candidatos con todos los tokens, buscar con el más largo
+        if ($candidates->isEmpty() && count($tokens) > 1) {
+            $longestToken = collect($tokens)->sortByDesc(fn($t) => mb_strlen($t))->first();
+            $candidates = Supplier::where('normalized_name', 'LIKE', "%{$longestToken}%")
+                ->limit(30)
+                ->get();
+        }
+
+        // Fase 3: Fuzzy match sobre candidatos filtrados
+        return $this->bestFuzzyMatch($candidates, $normalized, 0.70);
     }
 
     /**
@@ -374,6 +366,144 @@ class DataNormalizerService
     }
 
     /**
+     * Busca un vendedor existente que coincida con el nombre crudo.
+     *
+     * Busca dentro del scope del proveedor indicado.
+     * Usa la misma estrategia de 3 fases que findMatchingSupplier.
+     *
+     * @param  string $rawName    Nombre crudo del vendedor (del OCR/IA)
+     * @param  int|null $supplierId  ID del proveedor para filtrar
+     * @return array{match: Vendor, confidence: float, source: string}|null
+     */
+    public function findMatchingVendor(string $rawName, ?int $supplierId = null): ?array
+    {
+        if (empty(trim($rawName))) {
+            return null;
+        }
+
+        $normalized = $this->normalizeVendorName($rawName);
+
+        // Fase 1: Match exacto por nombre normalizado
+        $query = Vendor::query();
+        if ($supplierId) {
+            $query->where('supplier_id', $supplierId);
+        }
+
+        $allVendors = $query->limit(100)->get();
+
+        foreach ($allVendors as $vendor) {
+            if ($this->normalizeVendorName($vendor->name) === $normalized) {
+                return [
+                    'match'      => $vendor,
+                    'confidence' => 1.0,
+                    'source'     => 'exact',
+                ];
+            }
+        }
+
+        // Fase 2+3: Fuzzy match sobre los vendedores del proveedor
+        return $this->bestFuzzyMatch(
+            $allVendors,
+            $normalized,
+            0.70,
+            fn($v) => $this->normalizeVendorName($v->name)
+        );
+    }
+
+    /**
+     * Busca una medida existente que coincida con la unidad cruda.
+     *
+     * Aplica primero el UNIT_MAP determinista, luego busca en BD.
+     *
+     * @param  string $rawUnit  Unidad tal como vino del OCR/IA
+     * @return array{match: Measure, confidence: float, source: string, canonical: string}|null
+     */
+    public function findMatchingMeasure(string $rawUnit): ?array
+    {
+        if (empty(trim($rawUnit))) {
+            return null;
+        }
+
+        $canonical = $this->normalizeUnit($rawUnit);
+
+        // Buscar por abreviatura canónica
+        $measure = Measure::where('abbreviation', $canonical)->first();
+        if ($measure) {
+            return [
+                'match'      => $measure,
+                'confidence' => 1.0,
+                'source'     => 'exact',
+                'canonical'  => $canonical,
+            ];
+        }
+
+        // Buscar por nombre completo (fuzzy)
+        $canonicalName = $this->getUnitName($canonical);
+        $measure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($canonicalName)])->first();
+        if ($measure) {
+            return [
+                'match'      => $measure,
+                'confidence' => 0.95,
+                'source'     => 'name_match',
+                'canonical'  => $canonical,
+            ];
+        }
+
+        // No existe — devolver null con la forma canónica para crear
+        return null;
+    }
+
+    /**
+     * Busca un producto existente que coincida con el nombre crudo.
+     *
+     * Estrategia de 3 fases igual que proveedor:
+     * 1. Match exacto por normalized_name
+     * 2. Match por tokens clave
+     * 3. Fuzzy match sobre candidatos
+     *
+     * @param  string $rawName  Nombre del producto (del OCR/IA)
+     * @return array{match: Product, confidence: float, source: string}|null
+     */
+    public function findMatchingProduct(string $rawName): ?array
+    {
+        if (empty(trim($rawName))) {
+            return null;
+        }
+
+        $normalized = $this->normalizeText($rawName);
+
+        // Fase 1: Match exacto por índice
+        $product = Product::where('normalized_name', $normalized)->first();
+        if ($product) {
+            return [
+                'match'      => $product,
+                'confidence' => 1.0,
+                'source'     => 'exact',
+            ];
+        }
+
+        // Fase 2: Match por tokens clave
+        $tokens = $this->extractKeyTokens($normalized);
+        if (empty($tokens)) {
+            return null;
+        }
+
+        $query = Product::query();
+        foreach ($tokens as $token) {
+            $query->where('normalized_name', 'LIKE', "%{$token}%");
+        }
+        $candidates = $query->limit(30)->get();
+
+        // Fase 3: Fuzzy sobre candidatos
+        return $this->bestFuzzyMatch(
+            $candidates,
+            $normalized,
+            0.75,
+            fn($p) => $p->normalized_name ?? $this->normalizeText($p->canonical_name)
+        );
+    }
+
+    /**
      * Normaliza todos los ítems de una cotización parseada.
      *
      * Aplica normalización de Capa 1 a cada ítem:
@@ -422,6 +552,71 @@ class DataNormalizerService
     /* ═══════════════════════════════════════════════════
      *  UTILIDADES INTERNAS
      * ═══════════════════════════════════════════════════ */
+
+    /**
+     * Extrae tokens significativos de un texto normalizado.
+     *
+     * Filtra stopwords y palabras cortas para quedarse con
+     * los tokens que realmente identifican la entidad.
+     *
+     * @param  string $normalized  Texto ya normalizado
+     * @return array<string>       Tokens significativos (mín 3 chars)
+     */
+    private function extractKeyTokens(string $normalized): array
+    {
+        $stopwords = ['de', 'la', 'el', 'los', 'las', 'del', 'y', 'en', 'para', 'con', 'sin', 'por'];
+        $tokens = explode(' ', $normalized);
+
+        return array_values(array_filter(
+            $tokens,
+            fn(string $t) => mb_strlen($t) >= 3 && !in_array($t, $stopwords)
+        ));
+    }
+
+    /**
+     * Encuentra el mejor match fuzzy en una colección de candidatos.
+     *
+     * Método reutilizable por todos los findMatching* para evitar
+     * duplicar la lógica de selección del mejor candidato.
+     *
+     * @param  iterable  $candidates   Colección de modelos candidatos
+     * @param  string    $normalized   Texto normalizado a comparar
+     * @param  float     $threshold    Umbral mínimo de similitud (0.0 - 1.0)
+     * @param  callable|null $extractor Función para extraer el nombre normalizado del modelo
+     * @return array{match: mixed, confidence: float, source: string}|null
+     */
+    private function bestFuzzyMatch(
+        iterable $candidates,
+        string $normalized,
+        float $threshold = 0.70,
+        ?callable $extractor = null,
+    ): ?array {
+        $bestMatch = null;
+        $bestScore = 0;
+
+        foreach ($candidates as $candidate) {
+            $candidateNormalized = $extractor
+                ? $extractor($candidate)
+                : ($candidate->normalized_name ?? '');
+
+            $similarity = $this->calculateSimilarity($normalized, $candidateNormalized);
+
+            if ($similarity > $bestScore) {
+                $bestScore = $similarity;
+                $bestMatch = $candidate;
+            }
+        }
+
+        if ($bestMatch !== null && $bestScore >= $threshold) {
+            return [
+                'match'      => $bestMatch,
+                'confidence' => round($bestScore, 2),
+                'source'     => 'fuzzy_match',
+            ];
+        }
+
+        return null;
+    }
 
     /**
      * Calcula la similitud entre dos strings normalizados.

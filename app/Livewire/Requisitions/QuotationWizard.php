@@ -52,8 +52,16 @@ class QuotationWizard extends Component
     public array $items = [];
     public string $rawText = '';
 
-    /* ── Alertas de campos incompletos ────────────────── */
-    public array $warnings = [];
+    /* ── Alertas tipificadas ──────────────────────────── */
+    public array $alerts = [
+        'errors'   => [],
+        'warnings' => [],
+        'info'     => [],
+    ];
+
+    /* ── Metadata de resolución (proveedor/vendedor) ──── */
+    public array $supplierMatch = [];
+    public array $vendorMatch = [];
 
     /* ── Contexto fiscal (IVA) ───────────────────────── */
 
@@ -240,7 +248,9 @@ class QuotationWizard extends Component
         $this->vendorName = !empty($data['seller']) ? $dataNormalizer->normalizeTitleCase($data['seller']) : '';
         $this->rawText = $data['raw_text'] ?? '';
         $this->items = [];
-        $this->warnings = [];
+        $this->alerts = ['errors' => [], 'warnings' => [], 'info' => []];
+        $this->supplierMatch = [];
+        $this->vendorMatch = [];
 
         // Extraer contexto fiscal global
         $taxInfo = $data['tax_info'] ?? [];
@@ -249,7 +259,6 @@ class QuotationWizard extends Component
         if (isset($taxInfo['prices_include_tax'])) {
             $this->quotationIncludesTax = $taxInfo['prices_include_tax'];
         } else {
-            // Si algún ítem ya tiene tax_source resuelto, no necesitamos toggle
             $hasResolvedTax = collect($data['items'] ?? [])
                 ->contains(fn($item) => !empty($item['tax_source']));
             $this->quotationIncludesTax = $hasResolvedTax ? false : null;
@@ -257,12 +266,40 @@ class QuotationWizard extends Component
 
         // Intentar asociar proveedor existente con fuzzy matching
         if ($this->supplierName) {
-            $supplierMatch = $dataNormalizer->findMatchingSupplier($this->supplierName);
+            $match = $dataNormalizer->findMatchingSupplier($this->supplierName);
 
-            if ($supplierMatch !== null) {
-                $this->supplierId = $supplierMatch['supplier']->id;
-                $this->supplierName = $supplierMatch['supplier']->trade_name;
+            if ($match !== null) {
+                $this->supplierId = $match['match']->id;
+                $this->supplierName = $match['match']->trade_name;
+                $this->supplierMatch = [
+                    'status'     => $match['source'] === 'exact' ? 'exact' : 'fuzzy',
+                    'confidence' => $match['confidence'],
+                    'id'         => $match['match']->id,
+                ];
+            } else {
+                $this->supplierMatch = ['status' => 'new'];
             }
+        }
+
+        // Intentar asociar vendedor existente con fuzzy matching
+        if ($this->vendorName && $this->supplierId) {
+            $vendorMatchResult = $dataNormalizer->findMatchingVendor(
+                $this->vendorName,
+                (int) $this->supplierId
+            );
+
+            if ($vendorMatchResult !== null) {
+                $this->vendorName = $vendorMatchResult['match']->name;
+                $this->vendorMatch = [
+                    'status'     => $vendorMatchResult['source'] === 'exact' ? 'exact' : 'fuzzy',
+                    'confidence' => $vendorMatchResult['confidence'],
+                    'id'         => $vendorMatchResult['match']->id,
+                ];
+            } else {
+                $this->vendorMatch = ['status' => 'new'];
+            }
+        } elseif ($this->vendorName) {
+            $this->vendorMatch = ['status' => 'new'];
         }
 
         // Cargar ítems extraídos con normalización de unidades
@@ -273,46 +310,53 @@ class QuotationWizard extends Component
                 ? $dataNormalizer->findMatchingCategory($item['category'])
                 : null;
 
+            // Resolver medida con fuzzy matching
+            $measureMatch = !empty($item['unit'])
+                ? $dataNormalizer->findMatchingMeasure($item['unit'])
+                : null;
+
+            // Resolver producto con fuzzy matching (reemplaza match exacto)
+            $productMatch = !empty($item['name'])
+                ? $dataNormalizer->findMatchingProduct($item['name'])
+                : null;
+
             // Detectar si el producto ya existe y verificar conflictos de categoría/unidad
             $conflict = null;
             $existingProductId = null;
-            if (!empty($item['name'])) {
-                $normalizedName = $dataNormalizer->normalizeText($item['name']);
-                $existingProduct = Product::where('normalized_name', $normalizedName)
-                    ->with(['category', 'measure'])
-                    ->first();
+            $productMatchStatus = 'new';
 
-                if ($existingProduct) {
-                    $existingProductId = $existingProduct->id;
-                    $conflictFields = [];
+            if ($productMatch !== null) {
+                $existingProduct = $productMatch['match']->load(['category', 'measure']);
+                $existingProductId = $existingProduct->id;
+                $productMatchStatus = $productMatch['source'] === 'exact' ? 'exact' : 'fuzzy';
+                $conflictFields = [];
 
-                    // Conflicto de categoría: la IA sugirió una diferente a la registrada
-                    if ($matchedCategory && $existingProduct->category_id
-                        && $matchedCategory->id !== $existingProduct->category_id) {
-                        $conflictFields['category'] = [
-                            'registered' => $existingProduct->category?->name,
-                            'registered_id' => $existingProduct->category_id,
-                            'suggested' => $matchedCategory->name,
-                            'suggested_id' => $matchedCategory->id,
+                // Conflicto de categoría: la IA sugirió una diferente a la registrada
+                if ($matchedCategory && $existingProduct->category_id
+                    && $matchedCategory->id !== $existingProduct->category_id) {
+                    $conflictFields['category'] = [
+                        'registered' => $existingProduct->category?->name,
+                        'registered_id' => $existingProduct->category_id,
+                        'suggested' => $matchedCategory->name,
+                        'suggested_id' => $matchedCategory->id,
+                    ];
+                }
+
+                // Conflicto de unidad
+                if (!empty($item['unit']) && $existingProduct->measure_id) {
+                    $normalizedSuggestedUnit = $dataNormalizer->normalizeUnit($item['unit']);
+                    $registeredUnit = $existingProduct->measure?->abbreviation;
+                    if ($registeredUnit && $normalizedSuggestedUnit !== $registeredUnit) {
+                        $conflictFields['unit'] = [
+                            'registered' => $registeredUnit,
+                            'registered_measure_id' => $existingProduct->measure_id,
+                            'suggested' => $normalizedSuggestedUnit,
                         ];
                     }
+                }
 
-                    // Conflicto de unidad: la cotización trae una unidad diferente a la registrada
-                    if (!empty($item['unit']) && $existingProduct->measure_id) {
-                        $normalizedSuggestedUnit = $dataNormalizer->normalizeUnit($item['unit']);
-                        $registeredUnit = $existingProduct->measure?->abbreviation;
-                        if ($registeredUnit && $normalizedSuggestedUnit !== $registeredUnit) {
-                            $conflictFields['unit'] = [
-                                'registered' => $registeredUnit,
-                                'registered_measure_id' => $existingProduct->measure_id,
-                                'suggested' => $normalizedSuggestedUnit,
-                            ];
-                        }
-                    }
-
-                    if (!empty($conflictFields)) {
-                        $conflict = $conflictFields;
-                    }
+                if (!empty($conflictFields)) {
+                    $conflict = $conflictFields;
                 }
             }
 
@@ -330,49 +374,93 @@ class QuotationWizard extends Component
                 'line_total' => $item['line_total'] ?? null,
                 'product_id' => $existingProductId,
                 'conflict' => $conflict,
+                '_match' => [
+                    'product'  => [
+                        'status'     => $productMatchStatus,
+                        'confidence' => $productMatch['confidence'] ?? null,
+                    ],
+                    'category' => [
+                        'status'         => $matchedCategory ? 'matched' : 'unmatched',
+                        'suggested_name' => $item['category'] ?? null,
+                    ],
+                    'measure'  => [
+                        'status'    => $measureMatch ? 'matched' : 'new',
+                        'canonical' => $measureMatch['canonical'] ?? ($item['unit'] ?? null),
+                    ],
+                ],
             ];
         }
 
-        // RF-REQ-06: Detectar campos incompletos
-        $this->detectWarnings();
+        // RF-REQ-06: Detectar campos incompletos (sistema tipificado)
+        $this->detectAlerts();
     }
 
     /**
-     * RF-REQ-06 — Detecta campos vacíos y genera alertas visibles.
+     * RF-REQ-06 — Detecta campos incompletos y genera alertas tipificadas.
+     *
+     * Tres niveles:
+     * - errors:   Bloquean o comprometen el guardado (rojo)
+     * - warnings: Requieren atención del usuario (ámbar)
+     * - info:     Informativos sobre el estado de la detección (azul)
      */
-    private function detectWarnings(): void
+    private function detectAlerts(): void
     {
-        $this->warnings = [];
+        $errors = [];
+        $warnings = [];
+        $info = [];
 
-        if (empty($this->supplierName) && empty($this->supplierId)) {
-            $this->warnings[] = 'Proveedor no identificado — asígnalo manualmente.';
-        }
-
+        // ── Errores (bloquean guardado) ──
         if (empty($this->projectId)) {
-            $this->warnings[] = 'Proyecto no asignado — selecciona un proyecto.';
+            $errors[] = 'Proyecto no asignado — selecciona un proyecto.';
         }
 
         if (empty($this->items)) {
-            $this->warnings[] = 'No se detectaron productos — agrégalos manualmente.';
-        }
-
-        // Alerta de IVA no detectado
-        if ($this->quotationIncludesTax === null && !empty($this->items)) {
-            $this->warnings[] = 'No se detectó si los precios incluyen IVA — indica si los precios ya incluyen el impuesto.';
+            $errors[] = 'No se detectaron productos — agrégalos manualmente.';
         }
 
         foreach ($this->items as $i => $item) {
             $row = $i + 1;
             if (empty($item['name'])) {
-                $this->warnings[] = "Producto en fila {$row}: nombre vacío.";
-            }
-            if (empty($item['unit_price']) || $item['unit_price'] <= 0) {
-                $this->warnings[] = "Producto \"{$item['name']}\" (fila {$row}): precio no identificado.";
-            }
-            if (empty($item['quantity']) || $item['quantity'] <= 0) {
-                $this->warnings[] = "Producto \"{$item['name']}\" (fila {$row}): cantidad no identificada.";
+                $errors[] = "Producto en fila {$row}: nombre vacío.";
             }
         }
+
+        // ── Warnings (requieren atención) ──
+        if (empty($this->supplierName) && empty($this->supplierId)) {
+            $warnings[] = 'Proveedor no identificado — asígnalo manualmente.';
+        }
+
+        if ($this->quotationIncludesTax === null && !empty($this->items)) {
+            $warnings[] = 'No se detectó si los precios incluyen IVA — indica si los precios ya incluyen el impuesto.';
+        }
+
+        foreach ($this->items as $i => $item) {
+            $row = $i + 1;
+            if (empty($item['unit_price']) || $item['unit_price'] <= 0) {
+                $warnings[] = "Producto \"{$item['name']}\" (fila {$row}): precio no identificado.";
+            }
+            if (empty($item['quantity']) || $item['quantity'] <= 0) {
+                $warnings[] = "Producto \"{$item['name']}\" (fila {$row}): cantidad no identificada.";
+            }
+        }
+
+        // ── Info (contexto sobre detecciones) ──
+        $existingCount = collect($this->items)->filter(fn($item) => ($item['_match']['product']['status'] ?? '') !== 'new')->count();
+        $newCount = count($this->items) - $existingCount;
+
+        if ($existingCount > 0) {
+            $info[] = "{$existingCount} producto(s) ya existente(s) en el catálogo.";
+        }
+        if ($newCount > 0) {
+            $info[] = "{$newCount} producto(s) nuevo(s) — se crearán al guardar.";
+        }
+
+        if (!empty($this->supplierMatch) && ($this->supplierMatch['status'] ?? '') === 'fuzzy') {
+            $conf = ($this->supplierMatch['confidence'] ?? 0) * 100;
+            $info[] = "Proveedor detectado por similitud ({$conf}% de confianza).";
+        }
+
+        $this->alerts = compact('errors', 'warnings', 'info');
     }
 
     /* ── Acciones del formulario editable ─────────────── */
@@ -451,14 +539,24 @@ class QuotationWizard extends Component
     {
         if (empty($value)) {
             $this->supplierId = '';
+            $this->supplierMatch = [];
+            $this->vendorMatch = [];
             return;
         }
 
-        $supplier = Supplier::where('trade_name', $value)->first();
-        if ($supplier) {
-            $this->supplierId = $supplier->id;
+        $normalizer = app(DataNormalizerService::class);
+        $match = $normalizer->findMatchingSupplier($value);
+
+        if ($match !== null) {
+            $this->supplierId = $match['match']->id;
+            $this->supplierMatch = [
+                'status'     => $match['source'] === 'exact' ? 'exact' : 'fuzzy',
+                'confidence' => $match['confidence'],
+                'id'         => $match['match']->id,
+            ];
         } else {
             $this->supplierId = '';
+            $this->supplierMatch = ['status' => 'new'];
         }
     }
 
@@ -520,7 +618,7 @@ class QuotationWizard extends Component
         }
 
         // Limpiar la advertencia de IVA
-        $this->detectWarnings();
+        $this->detectAlerts();
     }
 
     /* ═══════════════════════════════════════════════════
@@ -563,14 +661,10 @@ class QuotationWizard extends Component
         $finalVendorId = null;
         if (!empty($this->vendorName) && $finalSupplierId) {
             $normalizer = app(DataNormalizerService::class);
-            $normalizedVendorName = $normalizer->normalizeVendorName($this->vendorName);
+            $vendorMatch = $normalizer->findMatchingVendor($this->vendorName, (int) $finalSupplierId);
 
-            $existingVendor = \App\Models\Vendor::where('supplier_id', $finalSupplierId)
-                ->whereRaw('LOWER(name) = ?', [mb_strtolower($this->vendorName)])
-                ->first();
-
-            if ($existingVendor) {
-                $finalVendorId = $existingVendor->id;
+            if ($vendorMatch !== null) {
+                $finalVendorId = $vendorMatch['match']->id;
             } else {
                 $newVendor = \App\Models\Vendor::create([
                     'supplier_id' => $finalSupplierId,
@@ -755,7 +849,9 @@ class QuotationWizard extends Component
         $this->vendorName = '';
         $this->annotations = '';
         $this->items = [];
-        $this->warnings = [];
+        $this->alerts = ['errors' => [], 'warnings' => [], 'info' => []];
+        $this->supplierMatch = [];
+        $this->vendorMatch = [];
         $this->rawText = '';
         $this->quotationIncludesTax = null;
         $this->taxDetectedByAI = false;
