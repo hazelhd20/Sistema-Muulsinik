@@ -266,78 +266,104 @@
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div class="p-6 border-b border-gray-100 flex items-center justify-between">
                     <h2 class="text-h2 text-text-primary">Nueva Requisición</h2>
                     <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
-                <form wire:submit="createRequisition" class="p-6 space-y-5">
-                    {{-- General info --}}
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
-                            <select wire:model="reqProjectId" class="input">
-                                <option value="">Seleccionar...</option>
-                                @foreach($projects as $proj)
-                                    <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('reqProjectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Vendedor (Opcional)</label>
-                            <select wire:model="reqVendorId" class="input">
-                                <option value="">Seleccionar...</option>
-                                @foreach($vendors as $vendor)
-                                    <option value="{{ $vendor->id }}">{{ $vendor->name }} ({{ $vendor->supplier->trade_name ?? 'Sin Proveedor' }})</option>
-                                @endforeach
-                            </select>
-                            @error('reqVendorId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de creación *</label>
-                            <input wire:model="reqDate" type="date" class="input">
-                            @error('reqDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                <form wire:submit="createRequisition" class="p-6 space-y-6">
+                    {{-- 1. Datos Generales (Bento Card) --}}
+                    <div class="bg-surface-main/50 border border-gray-100 p-5 rounded-2xl space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
+                                <x-custom-select wire:model="reqProjectId" :options="$projects->pluck('name', 'id')->toArray()" placeholder="Seleccionar proyecto..." />
+                                @error('reqProjectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="md:col-span-1">
+                                <label class="block text-body font-medium text-text-primary mb-1.5">Vendedor (Opcional)</label>
+                                @php
+                                    $vendorOptions = [];
+                                    foreach($vendors as $vendor) {
+                                        $vendorOptions[$vendor->id] = $vendor->name . ' (' . ($vendor->supplier->trade_name ?? 'Sin Proveedor') . ')';
+                                    }
+                                @endphp
+                                <x-custom-select wire:model="reqVendorId" :options="$vendorOptions" placeholder="Vendedor..." />
+                                @error('reqVendorId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="md:col-span-1">
+                                <label class="block text-body font-medium text-text-primary mb-1.5">Fecha *</label>
+                                <input wire:model="reqDate" type="date" class="input">
+                                @error('reqDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="md:col-span-4">
+                                <label class="block text-body font-medium text-text-primary mb-1.5">Anotaciones</label>
+                                <textarea wire:model="reqAnnotations" class="input" rows="2"
+                                    placeholder="Anotaciones de la requisición (opcional)..."></textarea>
+                                @error('reqAnnotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
                         </div>
                     </div>
+
+                    {{-- 2. Captura de Productos --}}
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Anotaciones</label>
-                        <textarea wire:model="reqAnnotations" class="input" rows="2"
-                            placeholder="Anotaciones de la requisición (opcional)..."></textarea>
-                        @error('reqAnnotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                        <h3 class="text-h3 font-semibold text-text-primary mb-3">Productos Solicitados</h3>
 
-                    {{-- Add items --}}
-                    <div class="border-t border-gray-100 pt-5">
-                        <h3 class="text-small font-semibold text-text-primary mb-3">Productos</h3>
+                        {{-- Formulario para añadir (Caja de Herramientas) --}}
+                        <div class="bg-primary-50/50 border border-primary-100 p-4 rounded-xl mb-5">
+                            <div class="flex flex-col sm:flex-row gap-3 items-end">
+                                <div class="flex-1 min-w-[200px]">
+                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Producto *</label>
+                                    <input wire:model="itemName" type="text" class="input text-body" placeholder="Ej. Cemento Cruz Azul">
+                                </div>
+                                <div class="w-full sm:w-24">
+                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Cant. *</label>
+                                    <input wire:model="itemQuantity" type="number" step="0.01" class="input text-body" placeholder="0.00">
+                                </div>
+                                <div class="w-full sm:w-32">
+                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Unidad *</label>
+                                    <x-custom-select wire:model="itemUnit" :options="['pza' => 'Pieza', 'kg' => 'Kg', 'm' => 'Metro', 'm2' => 'm²', 'm3' => 'm³', 'lt' => 'Litro', 'bulto' => 'Bulto', 'rollo' => 'Rollo']" placeholder="Unidad" />
+                                </div>
+                                <div class="w-full sm:w-28">
+                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Precio U.</label>
+                                    <input wire:model="itemPrice" type="number" step="0.01" class="input text-body" placeholder="$ 0.00">
+                                </div>
+                                <div class="w-full sm:w-auto">
+                                    <button type="button" wire:click="addItem" class="btn-primary w-full sm:w-auto h-[42px] px-4 flex items-center justify-center">
+                                        <i data-lucide="plus" class="w-4 h-4 sm:mr-1"></i> <span class="hidden sm:inline">Añadir</span>
+                                    </button>
+                                </div>
+                            </div>
+                            @error('itemName') <p class="mt-1.5 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                        </div>
 
-                        {{-- Existing items --}}
+                        {{-- Tabla de Productos Agregados --}}
                         @if(count($items) > 0)
-                            <div class="rounded-xl border border-gray-100 overflow-hidden mb-4">
+                            <div class="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <table class="w-full text-body">
                                     <thead>
                                         <tr class="bg-surface-main">
-                                            <th class="text-left px-3 py-2 text-xs-fluid font-semibold text-text-muted">Producto</th>
-                                            <th class="text-center px-3 py-2 text-xs-fluid font-semibold text-text-muted">Cant.</th>
-                                            <th class="text-right px-3 py-2 text-xs-fluid font-semibold text-text-muted">Precio</th>
-                                            <th class="text-right px-3 py-2 text-xs-fluid font-semibold text-text-muted">Subtotal</th>
-                                            <th class="px-3 py-2"></th>
+                                            <th class="text-left px-4 py-3 text-xs-fluid font-semibold text-text-muted">Producto</th>
+                                            <th class="text-center px-4 py-3 text-xs-fluid font-semibold text-text-muted">Cant.</th>
+                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted">Precio</th>
+                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted">Subtotal</th>
+                                            <th class="px-4 py-3 w-10"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($items as $i => $item)
-                                            <tr class="border-t border-gray-50">
-                                                <td class="px-3 py-2">{{ $item['name'] }}</td>
-                                                <td class="px-3 py-2 text-center">{{ $item['quantity'] }} {{ $item['unit'] }}</td>
-                                                <td class="px-3 py-2 text-right">${{ number_format($item['unit_price'], 2) }}</td>
-                                                <td class="px-3 py-2 text-right font-medium">
+                                            <tr class="border-t border-gray-100 hover:bg-surface-main/50 transition-colors">
+                                                <td class="px-4 py-3 font-medium text-text-primary">{{ $item['name'] }}</td>
+                                                <td class="px-4 py-3 text-center text-text-secondary">{{ $item['quantity'] }} <span class="text-xs-fluid text-text-muted">{{ $item['unit'] }}</span></td>
+                                                <td class="px-4 py-3 text-right text-text-secondary">${{ number_format($item['unit_price'], 2) }}</td>
+                                                <td class="px-4 py-3 text-right font-medium text-text-primary">
                                                     ${{ number_format($item['quantity'] * $item['unit_price'], 2) }}</td>
-                                                <td class="px-3 py-2">
+                                                <td class="px-4 py-3 text-center">
                                                     <button type="button" wire:click="removeItem({{ $i }})"
-                                                        class="text-text-muted hover:text-danger">
-                                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                        class="text-text-muted hover:text-danger p-1 rounded hover:bg-red-50 transition-colors">
+                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -346,9 +372,9 @@
                                     <tfoot>
                                         <tr class="border-t border-gray-200 bg-surface-main">
                                             <td colspan="3"
-                                                class="px-3 py-2 text-right text-body font-semibold text-text-primary">Total
+                                                class="px-4 py-3 text-right text-body font-medium text-text-secondary">Total
                                                 estimado:</td>
-                                            <td class="px-3 py-2 text-right text-body font-bold text-text-primary">
+                                            <td class="px-4 py-3 text-right text-body font-bold text-text-primary">
                                                 ${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}
                                             </td>
                                             <td></td>
@@ -356,44 +382,15 @@
                                     </tfoot>
                                 </table>
                             </div>
+                        @else
+                            <div class="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl bg-surface-main/30">
+                                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                                    <i data-lucide="package-search" class="w-6 h-6 text-text-muted"></i>
+                                </div>
+                                <p class="text-body font-medium text-text-primary mb-1">No hay productos</p>
+                                <p class="text-xs-fluid text-text-muted">Utiliza el formulario superior para añadir artículos.</p>
+                            </div>
                         @endif
-
-                        {{-- Add item form --}}
-                        <div class="grid grid-cols-12 gap-2 items-end">
-                            <div class="col-span-4">
-                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Producto</label>
-                                <input wire:model="itemName" type="text" class="input text-body" placeholder="Nombre">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Cantidad</label>
-                                <input wire:model="itemQuantity" type="number" step="0.01" class="input text-body"
-                                    placeholder="0">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Unidad</label>
-                                <select wire:model="itemUnit" class="input text-body">
-                                    <option value="pza">Pieza</option>
-                                    <option value="kg">Kg</option>
-                                    <option value="m">Metro</option>
-                                    <option value="m2">m²</option>
-                                    <option value="m3">m³</option>
-                                    <option value="lt">Litro</option>
-                                    <option value="bulto">Bulto</option>
-                                    <option value="rollo">Rollo</option>
-                                </select>
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-xs-fluid font-medium text-text-muted mb-1">Precio U.</label>
-                                <input wire:model="itemPrice" type="number" step="0.01" class="input text-body"
-                                    placeholder="0.00">
-                            </div>
-                            <div class="col-span-2">
-                                <button type="button" wire:click="addItem" class="btn-secondary w-full text-body">
-                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-                        @error('itemName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">

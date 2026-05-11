@@ -165,12 +165,7 @@
 
                     <div>
                         <label class="block text-body font-medium text-text-primary mb-1.5">Estado</label>
-                        <select wire:model="status" class="input">
-                            <option value="activo">Activo</option>
-                            <option value="en_pausa">En Pausa</option>
-                            <option value="completado">Completado</option>
-                            <option value="cancelado">Cancelado</option>
-                        </select>
+                        <x-custom-select wire:model="status" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Seleccionar estado..." />
                         @error('status') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
