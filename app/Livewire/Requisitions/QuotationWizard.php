@@ -819,16 +819,7 @@ class QuotationWizard extends Component
                     'supplier_id' => $finalSupplierId ?: null,
                 ]);
 
-                // RF-DOC-02: vincular archivo al repositorio documental automáticamente
-                Document::create([
-                    'project_id' => $this->projectId,
-                    'requisition_id' => $requisition->id,
-                    'name' => $quotation->original_filename ?? 'Cotización',
-                    'category' => 'cotizaciones',
-                    'file_path' => $quotation->file_path,
-                    'version' => 1,
-                    'uploaded_by' => auth()->id(),
-                ]);
+
             }
         }
 

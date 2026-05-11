@@ -3,7 +3,7 @@
 use App\Http\Controllers\RequisitionPdfController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
-use App\Livewire\Documents\DocumentIndex;
+
 use App\Livewire\Expenses\ExpenseIndex;
 use App\Livewire\Products\ProductIndex;
 use App\Livewire\Projects\ProjectIndex;
@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/proveedores', SupplierIndex::class)->name('proveedores.index');
 
     // Documentos (RF-DOC)
-    Route::get('/documentos', DocumentIndex::class)->name('documentos.index');
+
 
     // Reportes
     Route::get('/reportes', ReportIndex::class)->name('reportes.index');

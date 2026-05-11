@@ -82,13 +82,6 @@
                 </a>
                 @endif
 
-                @if(auth()->user()->hasPermission('documentos.ver'))
-                <a href="{{ url('/documentos') }}" class="nav-link {{ request()->is('documentos*') ? 'active' : '' }}">
-                    <i data-lucide="folder-open" class="w-[18px] h-[18px] shrink-0"></i>
-                    <span>Documentos</span>
-                </a>
-                @endif
-
                 @if(auth()->user()->hasPermission('reportes.ver'))
                 <a href="{{ url('/reportes') }}" class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
                     <i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i>

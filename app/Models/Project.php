@@ -23,11 +23,6 @@ class Project extends Model
         return $this->hasMany(Expense::class);
     }
 
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class);
-    }
-
     public function requisitions(): HasMany
     {
         return $this->hasMany(Requisition::class);

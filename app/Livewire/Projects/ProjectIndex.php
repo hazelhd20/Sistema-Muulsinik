@@ -118,10 +118,10 @@ class ProjectIndex extends Component
 
         $hasDependencies = \App\Models\Requisition::where('project_id', $projectId)->exists() ||
                            \App\Models\Expense::where('project_id', $projectId)->exists() ||
-                           \App\Models\Document::where('project_id', $projectId)->exists();
+                           \App\Models\Quotation::where('project_id', $projectId)->exists();
 
         if ($hasDependencies) {
-            session()->flash('error', 'No se puede eliminar: el proyecto tiene requisiciones, gastos o documentos asociados.');
+            session()->flash('error', 'No se puede eliminar: el proyecto tiene requisiciones, cotizaciones o gastos asociados.');
             return;
         }
 

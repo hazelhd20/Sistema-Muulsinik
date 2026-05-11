@@ -20,7 +20,7 @@ El sistema, denominado internamente **Muulsinik ERP v1**, es una aplicación web
 
 El objetivo **no es desarrollar un sistema completo y altamente complejo desde la primera versión**, sino resolver de manera efectiva la problemática principal identificada: transformar cotizaciones enviadas por proveedores en requisiciones estructuradas, editables y trazables, aprovechando automatización mediante procesamiento de datos y OCR.
 
-Adicionalmente, se han considerado cuatro módulos complementarios a partir de necesidades expresadas por el cliente: gestión de proyectos, control de gastos y presupuestos, gestión documental, y administración de proveedores y compras. Estos módulos están concebidos como **soporte al flujo principal** y con la intención de permitir una futura expansión del sistema; no constituyen el núcleo de esta etapa de desarrollo.
+Adicionalmente, se han considerado tres módulos complementarios a partir de necesidades expresadas por el cliente: gestión de proyectos, control de gastos y presupuestos, y administración de proveedores y compras. Estos módulos están concebidos como **soporte al flujo principal** y con la intención de permitir una futura expansión del sistema; no constituyen el núcleo de esta etapa de desarrollo.
 
 El sistema está diseñado bajo un **enfoque progresivo y práctico**: se prioriza que cada módulo implementado sea verdaderamente funcional, esté bien organizado y ofrezca una experiencia de usuario intuitiva y fácil de usar. La integración entre módulos es un aspecto clave del diseño, buscando evitar duplicidad de información y mantener coherencia en los datos a lo largo del sistema.
 
@@ -33,7 +33,6 @@ El sistema está diseñado bajo un **enfoque progresivo y práctico**: se priori
 | RF | Requerimiento Funcional |
 | RNF | Requerimiento No Funcional |
 | CRUD | Create, Read, Update, Delete (operaciones básicas de datos) |
-| Homologación | Proceso de vincular productos de distintos proveedores bajo una denominación común |
 | Requisición | Documento interno que consolida productos solicitados para un proyecto, generado automáticamente a partir de cotizaciones procesadas |
 | Pipeline de procesamiento | Secuencia automatizada de pasos que transforma un archivo de cotización en una requisición estructurada y editable |
 | Stack | Conjunto de tecnologías utilizadas en el desarrollo del sistema |
@@ -58,7 +57,7 @@ Muulsinik ERP v1 es un sistema web de nueva creación que no forma parte de un s
 
 El corazón del sistema es el **pipeline de procesamiento de cotizaciones**: el usuario carga un archivo (PDF, JPG o XLSX) enviado por un proveedor, el sistema extrae automáticamente la información relevante (productos, cantidades, precios, proveedor, tienda y proyecto), la estructura en una requisición editable y la almacena lista para su revisión, aprobación y exportación.
 
-Los módulos complementarios (gestión de proyectos, control de gastos, gestión documental y administración de proveedores) se integran directamente con el módulo de requisiciones para enriquecer el contexto de cada operación —por ejemplo, vinculando automáticamente una cotización procesada al proyecto activo y al proveedor correspondiente— sin duplicar información ni generar inconsistencias en los datos.
+Los módulos complementarios (gestión de proyectos, control de gastos y administración de proveedores) se integran directamente con el módulo de requisiciones para enriquecer el contexto de cada operación —por ejemplo, vinculando automáticamente una cotización procesada al proyecto activo y al proveedor correspondiente— sin duplicar información ni generar inconsistencias en los datos.
 
 ### 2.2 Funciones Principales del Sistema
 
@@ -69,10 +68,10 @@ A nivel general, el sistema permitirá:
 - Leer datos directamente de celdas en archivos XLSX.
 - Estructurar la información extraída (proveedor, tienda, proyecto, productos, cantidades, precios) y presentarla en un formulario editable.
 - Notificar al usuario cuando algún campo no pueda identificarse automáticamente, para completarlo manualmente.
-- Homologar productos de distintos proveedores bajo un nombre canónico común, facilitando la comparación y la generación de reportes consolidados.
-- Gestionar proyectos de construcción con seguimiento de presupuesto y avance.
-- Registrar y controlar gastos operativos, distribuyéndolos entre proyectos activos.
-- Almacenar y organizar documentos relevantes (contratos, planos, permisos, cotizaciones), manteniendo una relación directa entre las cotizaciones procesadas y sus requisiciones generadas.
+- Gestionar proyectos de construcción con seguimiento de presupuesto y avance, incluyendo presupuestos rápidos.
+- Registrar y controlar gastos administrativos y operativos, distribuyéndolos entre proyectos activos.
+- Visualizar reportes detallados de compras por proveedor, vendedor y por producto para una mejor gestión.
+- Almacenar y vincular automáticamente los archivos de cotizaciones procesadas a sus respectivas requisiciones, y los comprobantes a sus respectivos gastos operativos, para asegurar la trazabilidad sin necesidad de un repositorio complejo.
 - Administrar proveedores, vendedores y órdenes de compra.
 - Emitir alertas cuando el gasto alcance un porcentaje determinado del presupuesto.
 - Generar reportes de compras por proveedor y por vendedor.
@@ -84,7 +83,7 @@ Para una constructora de tamaño pequeño, se definen tres roles funcionales que
 
 | Rol | Descripción | Nivel de Acceso |
 |---|---|---|
-| **Administrador** | Gestiona usuarios, roles, configuración global, catálogo de productos y homologaciones. Accede a todos los módulos. | Total |
+| **Administrador** | Gestiona usuarios, roles, configuración global y catálogo de productos. Accede a todos los módulos. | Total |
 | **Encargado de Compras** | Carga cotizaciones, procesa requisiciones, administra proveedores y vendedores, genera órdenes de compra y consulta reportes. | Alto |
 | **Supervisor / Operativo** | Consulta proyectos activos, registra gastos, revisa requisiciones y documentos asociados a su proyecto. | Medio (lectura en reportes, escritura en gastos y solicitudes) |
 
@@ -118,16 +117,16 @@ Los requerimientos funcionales se identifican con el formato **RF-[Módulo]-[Nú
 
 ### 3.1 Módulo: Autenticación y Gestión de Usuarios
 
-**RF-AUTH-01 — Inicio de sesión seguro**  
+**AUTH-01 [✅ Implementado] — Inicio de sesión seguro**
 El sistema deberá autenticar a los usuarios mediante correo electrónico y contraseña. Las contraseñas deberán almacenarse con hash bcrypt. Se implementará protección contra ataques de fuerza bruta mediante bloqueo temporal tras cinco intentos fallidos.
 
-**RF-AUTH-02 — Gestión de roles y permisos**  
+**AUTH-02 [✅ Implementado] — Gestión de roles y permisos**
 El administrador podrá crear, editar y desactivar usuarios. Cada usuario tendrá asignado un rol que determina las vistas y acciones disponibles. Los roles predefinidos son: Administrador, Encargado de Compras y Supervisor / Operativo.
 
-**RF-AUTH-03 — Selección de proyecto activo**  
+**AUTH-03 [✅ Implementado] — Selección de proyecto activo**
 Una vez autenticado, el usuario seleccionará el proyecto activo mediante un selector global visible en la barra de navegación superior. Todas las operaciones de registro de gastos, carga de cotizaciones, requisiciones y compras quedarán automáticamente asociadas al proyecto activo. El usuario podrá cambiar de proyecto activo en cualquier momento sin necesidad de cerrar sesión.
 
-**RF-AUTH-04 — Restablecimiento de contraseña**  
+**AUTH-04 [✅ Implementado] — Restablecimiento de contraseña**
 El sistema enviará un enlace de restablecimiento de contraseña al correo del usuario mediante un token de un solo uso con vigencia de 60 minutos.
 
 ---
@@ -136,80 +135,74 @@ El sistema enviará un enlace de restablecimiento de contraseña al correo del u
 
 Este módulo actúa como contexto organizador para el resto del sistema. Cada proyecto constituye el punto de referencia al que se vinculan requisiciones, gastos, documentos y compras, garantizando coherencia en los datos entre módulos.
 
-**RF-PROY-01 — Registro de proyectos**  
+**PROY-01 [✅ Implementado] — Registro de proyectos**
 El sistema permitirá crear proyectos con los siguientes campos: nombre, descripción, cliente, fecha de inicio, fecha estimada de término, presupuesto total asignado y estado (activo, en pausa, completado, cancelado).
 
-**RF-PROY-02 — Seguimiento de avance presupuestal**  
+**PROY-02 [✅ Implementado] — Seguimiento de avance presupuestal**
 El sistema calculará automáticamente el porcentaje de presupuesto consumido en tiempo real, sumando todos los gastos registrados vinculados al proyecto. Este indicador será visible en el panel principal del proyecto.
 
-**RF-PROY-03 — Generación de presupuestos rápidos**  
+**PROY-03 [✅ Implementado] — Generación de presupuestos rápidos**
 Para proyectos de menor escala, el sistema ofrecerá un asistente de presupuesto rápido basado en una lista de conceptos y costos unitarios. El presupuesto generado podrá exportarse en PDF.
 
-**RF-PROY-04 — Dashboard por proyecto**  
+**PROY-04 [✅ Implementado] — Dashboard por proyecto**
 Cada proyecto contará con un panel de resumen que mostrará: presupuesto total, gasto acumulado, gasto del mes actual, número de requisiciones pendientes y documentos recientes.
 
-**RF-PROY-05 — Historial de proyectos**  
+**PROY-05 [✅ Implementado] — Historial de proyectos**
 El sistema conservará el historial completo de proyectos finalizados, permitiendo consultar su información de manera de solo lectura.
 
 ---
 
-### 3.3 Módulo de Control de Gastos y Presupuestos
+### 3.3 Módulo de Control de Gastos Administrativos y Operativos
 
-**RF-GASTO-01 — Registro de gastos operativos**  
-El sistema permitirá registrar gastos con los siguientes atributos: concepto, monto, fecha, categoría, proyecto asociado, comprobante adjunto (imagen o PDF) y usuario que lo registra.
+**GASTO-01 [✅ Implementado] — Registro de gastos**
+El sistema permitirá registrar gastos administrativos y operativos con los siguientes atributos: concepto, monto, fecha, categoría, proyecto asociado, comprobante adjunto (imagen o PDF) y usuario que lo registra.
 
-**RF-GASTO-02 — Distribución de gastos entre proyectos**  
-Un gasto podrá asignarse a uno o más proyectos activos durante el año fiscal. En caso de distribución entre varios proyectos, el usuario deberá especificar el porcentaje o monto asignado a cada uno.
+**GASTO-02 [✅ Implementado] — Distribución de gastos administrativos entre proyectos**
+Un gasto (especialmente gastos administrativos compartidos) podrá distribuirse y asignarse a uno o más proyectos activos. El usuario deberá especificar el porcentaje o monto asignado a cada uno para prorratear los costos correctamente.
 
-**RF-GASTO-03 — Alertas de presupuesto**  
+**GASTO-03 [✅ Implementado] — Alertas de presupuesto**
 El sistema enviará una notificación interna (y opcionalmente por correo) cuando el gasto acumulado de un proyecto alcance el 70%, el 90% y el 100% del presupuesto asignado. Los umbrales de alerta serán configurables por el administrador.
 
-**RF-GASTO-04 — Reporte de gastos por proveedor y por vendedor**  
+**GASTO-04 [✅ Implementado] — Reporte de gastos por proveedor y por vendedor**
 El módulo generará reportes consolidados que mostrarán el total de compras realizadas por proveedor y por vendedor en un período definido. Los reportes serán exportables en PDF y XLSX.
 
-**RF-GASTO-05 — Cierre de período**  
+**GASTO-05 [✅ Implementado] — Cierre de período**
 El sistema permitirá marcar un período mensual como cerrado para efectos de control contable, impidiendo la modificación retroactiva de registros en dicho período.
 
 ---
 
-### 3.4 Módulo de Gestión Documental
+### 3.4 Gestión de Archivos Adjuntos (Cotizaciones y Comprobantes)
 
-Este módulo está **directamente integrado con el módulo de requisiciones**: cuando una cotización es procesada y se genera una requisición, el archivo original (PDF, JPG o XLSX) queda automáticamente almacenado y vinculado a esa requisición dentro del repositorio documental del proyecto. Esto evita la duplicidad de cargas manuales y garantiza trazabilidad entre el documento fuente y la requisición resultante.
+*Nota: Se ha simplificado el alcance original del módulo documental, eliminando el repositorio general (para contratos, planos, permisos, etc.) para enfocarse estrictamente en los documentos operativos necesarios para las requisiciones y gastos.*
 
-Los demás tipos de documentos (contratos, planos, permisos) se gestionan de forma independiente dentro del repositorio por proyecto, sin duplicar la lógica del módulo de requisiciones.
+Este soporte documental está **directamente integrado en los flujos operativos**:
 
-**RF-DOC-01 — Repositorio de documentos por proyecto**  
-Cada proyecto contará con un repositorio de archivos donde podrán cargarse documentos en formatos PDF, DOCX, XLSX, JPG y PNG. Los documentos se organizarán por categorías: contratos, planos, permisos, cotizaciones y otros.
+**DOC-01 [✅ Implementado] — Almacenamiento y vinculación de Cotizaciones**
+Cuando una cotización es procesada o cargada manualmente en el módulo de requisiciones, el archivo original (PDF, JPG o XLSX) queda automáticamente almacenado y vinculado a esa requisición. Esto garantiza la trazabilidad entre el documento fuente del proveedor y la requisición resultante, sin requerir una subida manual independiente al repositorio.
 
-**RF-DOC-02 — Vinculación automática de cotizaciones procesadas**  
-Cuando el usuario cargue una cotización en el módulo de requisiciones y esta sea procesada exitosamente, el archivo original quedará registrado automáticamente en la categoría "Cotizaciones" del repositorio documental del proyecto activo, vinculado a la requisición generada. El usuario no necesitará subirlo manualmente al módulo documental.
+**DOC-02 [✅ Implementado] — Comprobantes de Gastos**
+Al registrar un gasto administrativo u operativo, el sistema permite adjuntar el comprobante (ticket o factura en PDF/JPG), vinculándolo directamente al registro del gasto en la base de datos y haciéndolo accesible desde el detalle del gasto.
 
-**RF-DOC-03 — Visualización de documentos**  
-Los documentos PDF e imágenes podrán visualizarse directamente en el navegador sin necesidad de descarga. Los demás formatos ofrecerán opción de descarga.
-
-**RF-DOC-04 — Control de versiones básico**  
-Al cargar una nueva versión de un documento existente, el sistema conservará la versión anterior y registrará la fecha y el usuario que realizó la actualización.
-
-**RF-DOC-05 — Búsqueda de documentos**  
-El sistema permitirá buscar documentos por nombre, categoría, proyecto y fecha de carga.
+**DOC-03 [✅ Implementado] — Visualización y Descarga**
+Los documentos adjuntos (cotizaciones y comprobantes) podrán visualizarse o descargarse directamente desde la vista de detalle de la requisición o del gasto correspondiente, manteniendo la interfaz simple, rápida y puramente contextual.
 
 ---
 
 ### 3.5 Módulo de Administración de Proveedores y Compras
 
-**RF-PROV-01 — Registro de proveedores**  
+**PROV-01 [✅ Implementado] — Registro de proveedores**
 El sistema permitirá registrar proveedores con los siguientes campos: nombre comercial, razón social, RFC, giro, dirección, teléfono, correo electrónico, página web, contacto principal y categoría de productos/servicios que ofrece.
 
-**RF-PROV-02 — Registro de vendedores por proveedor**  
+**PROV-02 [✅ Implementado] — Registro de vendedores por proveedor**
 Cada proveedor podrá tener uno o más vendedores registrados con nombre, teléfono y correo electrónico.
 
-**RF-PROV-03 — Historial de compras por proveedor**  
+**PROV-03 [✅ Implementado] — Historial de compras por proveedor**
 El sistema mostrará el historial completo de compras realizadas a cada proveedor, con filtros por proyecto, período y monto.
 
-**RF-PROV-04 — Registro de órdenes de compra**  
+**PROV-04 [✅ Implementado] — Registro de órdenes de compra**
 El sistema permitirá generar órdenes de compra asociadas a un proveedor y un proyecto. Una orden de compra podrá originarse desde una requisición aprobada o crearse de forma independiente.
 
-**RF-PROV-05 — Reporte de compras por proveedor y vendedor**  
+**PROV-05 [✅ Implementado] — Reporte de compras por proveedor y vendedor**
 El sistema generará reportes que consoliden el total de compras agrupado por proveedor y por vendedor, exportables en PDF y XLSX.
 
 ---
@@ -220,17 +213,17 @@ Este módulo es el **núcleo funcional del sistema** y la principal razón de se
 
 #### 3.6.1 Pipeline de Procesamiento de Cotizaciones
 
-**RF-REQ-01 — Carga de archivos de cotización**  
+**REQ-01 [✅ Implementado] — Carga de archivos de cotización**
 El sistema permitirá al usuario cargar archivos de cotización directamente desde la pantalla de nueva requisición. Se aceptarán los siguientes formatos:
 
 - **XLSX:** Los datos se leerán directamente de las celdas de la hoja de cálculo. El sistema permitirá configurar el mapeo de columnas (ej. columna A = nombre del producto, columna B = cantidad) para adaptarse a distintos formatos de proveedores.
 - **PDF con texto digital:** El sistema detectará que el documento contiene texto seleccionable y extraerá su contenido directamente, sin necesidad de OCR.
 - **PDF escaneado / JPG:** El sistema detectará la ausencia de texto digital y aplicará OCR (Reconocimiento Óptico de Caracteres) para extraer el contenido. Se utilizará Google Cloud Vision API o AWS Textract como servicio de OCR en la nube, con Tesseract como alternativa de código abierto.
 
-**RF-REQ-02 — Detección automática del tipo de documento**  
+**REQ-02 [✅ Implementado] — Detección automática del tipo de documento**
 El sistema identificará automáticamente el tipo de procesamiento requerido según el formato y contenido del archivo cargado, sin que el usuario necesite seleccionarlo manualmente.
 
-**RF-REQ-03 — Extracción y estructuración de información**  
+**REQ-03 [✅ Implementado] — Extracción y estructuración de información**
 Tras el procesamiento del archivo, el sistema identificará y estructurará los siguientes campos:
 
 | Campo | Descripción |
@@ -246,10 +239,10 @@ Tras el procesamiento del archivo, el sistema identificará y estructurará los 
 
 Si algún campo no puede identificarse automáticamente, se dejará vacío y el sistema notificará al usuario para que lo complete manualmente (ver RF-REQ-06).
 
-**RF-REQ-04 — Indicador de progreso durante el procesamiento**  
+**REQ-04 [✅ Implementado] — Indicador de progreso durante el procesamiento**
 Durante el procesamiento del archivo (especialmente en OCR, que puede tomar hasta 30 segundos), el sistema mostrará un indicador de progreso visible, informando al usuario que el proceso está en curso.
 
-**RF-REQ-05 — Formulario editable previo al guardado**  
+**REQ-05 [✅ Implementado] — Formulario editable previo al guardado**
 La información extraída se presentará en un formulario editable antes de guardarse como requisición. El usuario podrá:
 
 - Modificar cualquier campo extraído incorrectamente.
@@ -258,24 +251,18 @@ La información extraída se presentará en un formulario editable antes de guar
 - Asignar o cambiar el proveedor, tienda y proyecto asociado.
 - Confirmar o corregir cantidades y precios.
 
-**RF-REQ-06 — Notificación de campos incompletos**  
+**REQ-06 [✅ Implementado] — Notificación de campos incompletos**
 Cuando una cotización procesada tenga campos vacíos (proveedor no identificado, proyecto no asignado, productos sin precio, etc.), el sistema mostrará una alerta visible en la parte superior del formulario editable y listará los campos pendientes de completar, indicando el renglón o campo específico que requiere atención.
 
-**RF-REQ-07 — Homologación de productos**  
-El sistema contará con un catálogo maestro de productos. Cuando un producto extraído de la cotización no coincida exactamente con un producto del catálogo, el sistema ofrecerá sugerencias de coincidencia por similitud de nombre. El usuario podrá:
-
-- Vincular el producto de la cotización con un producto existente del catálogo (homologación).
-- Crear un nuevo producto en el catálogo directamente desde el formulario.
-- Dejar el producto sin homologar de forma temporal.
-
-La homologación es fundamental para la generación de reportes y gráficos consolidados, ya que un mismo artículo puede aparecer con nombres distintos según el proveedor.
+**REQ-07 [✅ Implementado] — Gestión del Catálogo de Productos**
+El sistema contará con un catálogo de productos que se alimentará a partir de las requisiciones procesadas, permitiendo tener un registro histórico de qué productos se han cotizado, a qué precio y con qué proveedores.
 
 #### 3.6.2 Gestión de Requisiciones
 
-**RF-REQ-08 — Creación manual de requisiciones**  
+**REQ-08 [✅ Implementado] — Creación manual de requisiciones**
 Además del flujo automatizado, el usuario podrá crear requisiciones de forma manual ingresando directamente los campos: proyecto asociado, descripción general, lista de productos (nombre, cantidad, unidad, precio estimado, proveedor sugerido) y fecha de necesidad.
 
-**RF-REQ-09 — Flujo de aprobación simplificado**  
+**REQ-09 [✅ Implementado] — Flujo de aprobación simplificado**
 Una requisición recién creada tendrá estado **"Borrador"**. El flujo de estados es el siguiente:
 
 ```
@@ -285,10 +272,10 @@ Borrador → Pendiente de aprobación → Aprobada → Convertida en Orden de Co
 
 El Administrador o el Encargado de Compras podrán aprobar o rechazar una requisición. Al rechazar, el sistema solicitará un comentario indicando el motivo.
 
-**RF-REQ-10 — Visualización de requisiciones**  
+**REQ-10 [✅ Implementado] — Visualización de requisiciones**
 Las requisiciones guardadas podrán visualizarse en formato de tabla con todos sus productos, cantidades, precios y estado actual. El usuario podrá filtrar por proyecto, fecha, proveedor y estado.
 
-**RF-REQ-11 — Exportación de requisiciones**  
+**REQ-11 [✅ Implementado] — Exportación de requisiciones**
 El sistema permitirá exportar cualquier requisición en:
 
 - **PDF:** Con diseño de documento formal (logotipo, datos del proyecto, tabla de productos, totales).
@@ -298,16 +285,16 @@ El sistema permitirá exportar cualquier requisición en:
 
 ### 3.7 Módulo de Reportes y Analítica
 
-**RF-REP-01 — Reporte de gastos globales**  
+**REP-01 [✅ Implementado] — Reporte de gastos globales**
 El sistema generará un reporte anual de gastos operativos con distribución entre proyectos activos, visualizado mediante gráficas de barras y pastel.
 
-**RF-REP-02 — Reporte consolidado de compras**  
+**REP-02 [✅ Implementado] — Reporte consolidado de compras**
 Mostrará el total de compras agrupado por proveedor, vendedor, categoría de producto y proyecto en un período seleccionable.
 
-**RF-REP-03 — Reporte de productos homologados**  
-Listará los productos del catálogo maestro indicando cuántos nombres alternativos tiene cada uno, qué proveedores los comercializan y el precio promedio registrado.
+**REP-03 [✅ Implementado] — Reporte de compras por producto**
+Listará los productos adquiridos en un periodo, indicando a qué proveedores se les compró, qué cantidades (volumen) y el historial de precios unitarios.
 
-**RF-REP-04 — Exportación de reportes**  
+**REP-04 [✅ Implementado] — Exportación de reportes**
 Todos los reportes del sistema serán exportables en formato PDF y XLSX.
 
 ---
@@ -340,14 +327,13 @@ Este es el flujo central del sistema y debe sentirse fluido y directo para el us
        ▼
 5. Se muestra el formulario pre-llenado con la información extraída:
    - Alerta si hay campos vacíos o sin identificar
-   - Sugerencias de homologación para productos no reconocidos
        │
        ▼
 6. El usuario revisa, corrige y completa los campos necesarios
        │
        ▼
 7. El usuario guarda la requisición (estado: "Pendiente de aprobación")
-   → El archivo original queda vinculado automáticamente al repositorio documental del proyecto
+   → El archivo original queda vinculado automáticamente a la requisición
        │
        ▼
 8. El Administrador / Encargado de Compras aprueba o rechaza
@@ -562,18 +548,18 @@ El sistema seguirá una arquitectura **Monolítica MVC** en su primera versión,
 │                           │                                       │
 │  ┌────────────────────────▼────────────────────────────────────┐  │
 │  │                  CAPA DE CONTROLADORES                      │  │
-│  │   Proyectos · Gastos · Documentos · Proveedores · Requisic. │  │
+│  │   Proyectos · Gastos · Proveedores · Requisiciones          │  │
 │  └────────────────────────┬────────────────────────────────────┘  │
 │                           │                                       │
 │  ┌────────────────────────▼────────────────────────────────────┐  │
 │  │                    CAPA DE SERVICIOS                        │  │
-│  │  DocumentParser · OCRService · HomologationService          │  │
+│  │  DocumentParser · OCRService                                │  │
 │  │  BudgetAlertService · ReportService · ExportService         │  │
 │  └────────────────────────┬────────────────────────────────────┘  │
 │                           │                                       │
 │  ┌────────────────────────▼────────────────────────────────────┐  │
 │  │                   CAPA DE MODELOS (ORM)                     │  │
-│  │  Project · Expense · Document · Supplier · Requisition      │  │
+│  │  Project · Expense · Supplier · Requisition                 │  │
 │  │  Product · ProductAlias · PurchaseOrder · User · Role       │  │
 │  └────────────────────────┬────────────────────────────────────┘  │
 │                           │                                       │
@@ -632,14 +618,6 @@ PhpSpreadsheet    PDFParser      OCR Service
                        │
                        ▼
             ┌──────────────────────┐
-            │  Homologación        │◄──── Catálogo maestro
-            │  de productos        │      de productos
-            │  (sugerencias por    │
-            │   similitud)         │
-            └──────────┬───────────┘
-                       │
-                       ▼
-            ┌──────────────────────┐
             │  Formulario editable │
             │  con campos pre-     │
             │  llenados y alertas  │
@@ -649,9 +627,9 @@ PhpSpreadsheet    PDFParser      OCR Service
                        ▼
             ┌──────────────────────┐
             │  Requisición         │──► Archivo vinculado
-            │  guardada en BD      │    automáticamente en
-            │  (exportable en      │    repositorio documental
-            │   PDF y XLSX)        │    del proyecto
+            │  guardada en BD      │    automáticamente
+            │  (exportable en      │    a la requisición
+            │   PDF y XLSX)        │
             └──────────────────────┘
 ```
 
@@ -672,22 +650,14 @@ projects ───────────────────────�
 expenses ───────────────────────────────────────────────────────────────
   id, concept, amount, date, category, project_id, user_id, receipt_file
 
-documents ──────────────────────────────────────────────────────────────
-  id, project_id, name, category, file_path, version, uploaded_by,
-  requisition_id (nullable — vinculación directa con requisición origen),
-  created_at
-
 suppliers ──────────────────────────────────────────────────────────────
   id, trade_name, legal_name, rfc, category, contact_info (JSON)
 
 vendors ────────────────────────────────────────────────────────────────
   id, supplier_id, name, phone, email
 
-products (catálogo maestro) ────────────────────────────────────────────
-  id, canonical_name, unit, description, category
-
-product_aliases ────────────────────────────────────────────────────────
-  id, product_id, alias_name, supplier_id
+products (catálogo) ────────────────────────────────────────────────────
+  id, name, unit, description, category
 
 quotations ─────────────────────────────────────────────────────────────
   id, requisition_id, supplier_id, file_path, file_type, processed_at
@@ -702,7 +672,7 @@ purchase_orders ─────────────────────�
   id, requisition_id, supplier_id, project_id, total, status, date
 ```
 
-> **Nota sobre la integración documental:** El campo `requisition_id` en la tabla `documents` permite vincular directamente un archivo (cotización) con la requisición que generó, sin duplicar registros. Cuando el archivo es cargado desde el módulo de requisiciones, este campo se llena automáticamente. Los documentos cargados manualmente desde el módulo documental (contratos, planos, etc.) tienen este campo en `null`.
+> **Nota sobre la integración documental:** La tabla `quotations` se encarga de almacenar la ruta del archivo original de la cotización (`file_path`) y su vinculación directa a la `requisition_id`. Del mismo modo, los gastos operativos vinculan sus tickets en el campo `receipt_file` en la tabla `expenses`.
 
 ---
 
@@ -724,8 +694,7 @@ El sistema será considerado aceptable para su entrega en v1 cuando:
 1. Los módulos implementados sean completamente funcionales y permitan operaciones CRUD completas en cada uno.
 2. El procesamiento de cotizaciones en los tres formatos (XLSX, PDF digital, PDF/JPG escaneado) funcione correctamente para al menos el 90% de los documentos de prueba proporcionados por el cliente.
 3. El flujo de carga de cotización a requisición editable se complete en no más de 3 pasos visibles para el usuario.
-4. La homologación de productos permita vincular al menos dos nombres alternativos a un producto del catálogo maestro.
-5. Las cotizaciones procesadas queden vinculadas automáticamente al repositorio documental del proyecto correspondiente, sin necesidad de carga manual adicional.
+4. Las cotizaciones procesadas queden vinculadas automáticamente a sus respectivas requisiciones.
 6. El sistema de alertas de presupuesto envíe notificaciones correctamente al alcanzar los umbrales configurados.
 7. Los roles de usuario (Administrador, Encargado de Compras, Supervisor / Operativo) restrinjan el acceso según los permisos definidos en la sección 2.3.
 8. Los reportes de compras por proveedor y vendedor sean correctamente exportados en PDF y XLSX.
@@ -739,12 +708,11 @@ El sistema será considerado aceptable para su entrega en v1 cuando:
 | Término | Definición |
 |---|---|
 | Requisición | Documento interno que lista los materiales o servicios requeridos para un proyecto, generado automáticamente a partir de una cotización procesada o creado manualmente, previo a la generación de una orden de compra formal. |
-| Homologación | Proceso de vincular múltiples nombres comerciales de un mismo producto bajo una denominación canónica en el catálogo maestro, facilitando la comparación de precios y la generación de reportes consolidados. |
 | Cotización | Documento enviado por un proveedor con los precios y condiciones para el suministro de productos o servicios solicitados. Puede estar en formato PDF (digital o escaneado), JPG o XLSX. |
-| Catálogo maestro | Base de datos centralizada de productos reconocidos por el sistema, a la cual se vinculan los nombres alternativos provenientes de distintos proveedores. |
+| Catálogo | Base de datos centralizada de productos reconocidos por el sistema. |
 | OCR | Tecnología que permite extraer texto legible de imágenes digitales o documentos escaneados, convirtiendo contenido visual en texto procesable. |
-| Pipeline de procesamiento | Secuencia automatizada de pasos que transforma un archivo de cotización crudo en una requisición estructurada y editable: validación → detección de tipo → extracción → estructuración → homologación → formulario editable → guardado. |
+| Pipeline de procesamiento | Secuencia automatizada de pasos que transforma un archivo de cotización crudo en una requisición estructurada y editable: validación → detección de tipo → extracción → estructuración → formulario editable → guardado. |
 | Proyecto activo | Proyecto seleccionado globalmente por el usuario en la barra de navegación, al cual se asocian automáticamente todas las operaciones realizadas durante la sesión. |
 | Período cerrado | Mes o período contable marcado como definitivo, en el que no se permiten modificaciones retroactivas de registros de gastos. |
 | Staging | Entorno de pruebas que replica la configuración de producción, utilizado para validar cambios antes de su publicación al sistema en uso. |
-| Vinculación documental | Relación directa entre un archivo de cotización almacenado en el repositorio documental y la requisición que fue generada a partir de él, establecida automáticamente por el sistema al momento del guardado. |
+| Vinculación documental | Relación directa entre un archivo de cotización almacenado y la requisición que fue generada a partir de él, establecida automáticamente por el sistema al momento del guardado. |
