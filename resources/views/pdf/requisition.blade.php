@@ -227,9 +227,9 @@
     <div class="header">
         <div class="header-left">
             @if($logoData)
-                <img src="{{ $logoData }}" alt="Muulsinik" style="height:36px; width:auto;">
+                <img src="{{ $logoData }}" alt="{{ $company['name'] ?? 'Muulsinik' }}" style="height:36px; width:auto;">
             @else
-                <div class="company-name">MUULSINIK</div>
+                <div class="company-name">{{ strtoupper($company['name'] ?? 'MUULSINIK') }}</div>
             @endif
         </div>
         <div class="header-right">
@@ -323,16 +323,16 @@
                 </td>
                 <td class="text-center">{{ rtrim(rtrim(number_format((float)$item->quantity, 4, '.', ''), '0'), '.') }}</td>
                 <td class="text-center text-muted">{{ $item->measure?->abbreviation ?? '—' }}</td>
-                <td class="text-right">${{ number_format((float)$item->unit_price, 2, '.', ',') }}</td>
-                <td class="text-right">${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
+                <td class="text-right">{{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format((float)$item->unit_price, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}</td>
+                <td class="text-right">{{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format($item->line_subtotal_computed, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}</td>
                 <td class="text-right">
                     @if($item->tax_amount !== null)
-                        ${{ number_format((float)$item->tax_amount, 2, '.', ',') }}
+                        {{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format((float)$item->tax_amount, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}
                     @else
                         <span style="color:#9ca3af">—</span>
                     @endif
                 </td>
-                <td class="text-right" style="font-weight:bold">${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
+                <td class="text-right" style="font-weight:bold">{{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format($item->line_total_computed, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -350,13 +350,13 @@
             <table class="totals-table">
                 <tr>
                     <td class="label">Subtotal</td>
-                    <td class="value">${{ number_format($subtotal, 2, '.', ',') }}</td>
+                    <td class="value">{{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format($subtotal, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}</td>
                 </tr>
                 <tr>
                     <td class="label">IVA</td>
                     <td class="value">
                         @if($tax > 0)
-                            ${{ number_format($tax, 2, '.', ',') }}
+                            {{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format($tax, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}
                         @else
                             <span style="color:#9ca3af">—</span>
                         @endif
@@ -364,7 +364,7 @@
                 </tr>
                 <tr class="total-row">
                     <td class="label">TOTAL</td>
-                    <td class="value">${{ number_format($total, 2, '.', ',') }}</td>
+                    <td class="value">{{ $currency['position'] === 'before' ? $currency['symbol'] : '' }}{{ number_format($total, $currency['decimals'], '.', ',') }}{{ $currency['position'] === 'after' ? $currency['symbol'] : '' }}</td>
                 </tr>
             </table>
         </div>
@@ -389,7 +389,7 @@
     {{-- ── FOOTER ── --}}
     <div class="footer">
         <div class="footer-left">
-            Muulsinik ERP v1 &nbsp;·&nbsp; Generado el {{ now()->format('d/m/Y H:i') }}
+            {{ $company['name'] ?? 'Muulsinik ERP' }} &nbsp;·&nbsp; {{ $company['rfc'] ? 'RFC: '.$company['rfc'].' · ' : '' }}Generado el {{ now()->format('d/m/Y H:i') }}
         </div>
         <div class="footer-right">
             {{ $requisition->number ?? '' }} &nbsp;·&nbsp; {{ $statusLabel }}

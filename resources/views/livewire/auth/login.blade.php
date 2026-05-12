@@ -74,8 +74,4 @@
 
     </form>
 
-    <p class="text-center text-xs-fluid text-text-muted">
-        Muulsinik ERP v1.0 &copy; {{ date('Y') }}
-    </p>
-
 </div>

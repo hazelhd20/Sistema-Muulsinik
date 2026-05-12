@@ -195,7 +195,7 @@
 
                 {{-- ── Tabla colapsable de productos ── --}}
                 @if($req->items->isNotEmpty())
-                    <div x-show="open" x-collapse class="mt-3">
+                    <div x-show="open" x-collapse x-cloak class="mt-3" style="display: none;">
                         <div class="rounded-lg border border-border overflow-hidden overflow-x-auto">
                             <table class="w-full text-body">
                                 <thead>

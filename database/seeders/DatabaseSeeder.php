@@ -64,5 +64,8 @@ class DatabaseSeeder extends Seeder
                 'active' => true,
             ]
         );
+
+        // Configuraciones por defecto
+        $this->call(SettingsSeeder::class);
     }
 }

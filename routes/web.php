@@ -11,6 +11,7 @@ use App\Livewire\Reports\ReportIndex;
 use App\Livewire\Requisitions\QuotationWizard;
 use App\Livewire\Requisitions\RequisitionIndex;
 use App\Livewire\Suppliers\SupplierIndex;
+use App\Livewire\Settings\SettingsIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -65,6 +66,9 @@ Route::middleware('auth')->group(function () {
 
     // Catálogo de Categorías
     Route::get('/categorias', \App\Livewire\Products\CategoryIndex::class)->name('categorias.index');
+
+    // Configuración
+    Route::get('/configuracion', SettingsIndex::class)->name('settings.index');
 
     // Previsualización de archivos
     Route::get('/preview-file', function (\Illuminate\Http\Request $request) {

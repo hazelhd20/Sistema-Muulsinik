@@ -38,7 +38,7 @@
             :class="mobileSidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full lg:translate-x-0'">
 
             {{-- Brand ──────────────────────────────── --}}
-            <div class="flex items-center h-14 border-b border-border shrink-0 px-5">
+            <div class="flex items-center justify-center h-14 border-b border-border shrink-0 px-5">
                 <img src="{{ asset('images/logo_muulsinik.svg') }}"
                      alt="Muulsinik ERP"
                      class="object-contain"
