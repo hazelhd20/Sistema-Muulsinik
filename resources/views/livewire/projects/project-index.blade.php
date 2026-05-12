@@ -1,12 +1,12 @@
 <div>
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
+            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Gestión</p>
             <h1 class="text-h1 text-text-primary">Proyectos</h1>
-            <p class="text-body text-text-muted">Gestiona y supervisa todos tus proyectos de construcción</p>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             Nuevo Proyecto
         </button>
     </div>
@@ -37,16 +37,16 @@
     </div>
 
     {{-- Projects Grid --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
         @forelse($projects as $project)
-            <div class="card hover:shadow-md transition-shadow group">
+            <div class="card group">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+                        <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
                             <i data-lucide="hard-hat" class="w-5 h-5 text-primary-600"></i>
                         </div>
                         <div class="min-w-0">
-                            <h3 class="font-semibold text-text-primary truncate">{{ $project->name }}</h3>
+                            <h3 class="text-small font-semibold text-text-primary truncate">{{ $project->name }}</h3>
                             <p class="text-xs-fluid text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
                         </div>
                     </div>
@@ -64,27 +64,27 @@
                 </div>
 
                 {{-- Budget progress --}}
-                <div class="mb-4">
+                <div class="mb-3.5">
                     <div class="flex items-center justify-between text-xs-fluid mb-1.5">
-                        <span class="text-text-muted">Presupuesto</span>
-                        <span class="font-semibold text-text-primary">{{ $project->budget_used_percent }}%</span>
+                        <span class="text-text-muted">Ejecución presupuestal</span>
+                        <span class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                     </div>
-                    <div class="w-full h-2 bg-surface-main rounded-full overflow-hidden">
+                    <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
                         @php
                             $percent = min($project->budget_used_percent, 100);
-                            $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-500');
+                            $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
                         @endphp
                         <div class="{{ $barColor }} h-full rounded-full transition-all duration-500"
                             style="width: {{ $percent }}%"></div>
                     </div>
-                    <div class="flex justify-between text-xs-fluid text-text-muted mt-1">
-                        <span>${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
+                    <div class="flex justify-between text-xs-fluid text-text-muted mt-1.5 tabular-nums">
+                        <span>${{ number_format($project->total_expenses, 0, '.', ',') }} ejecutado</span>
                         <span>${{ number_format($project->budget, 0, '.', ',') }}</span>
                     </div>
                 </div>
 
                 {{-- Footer --}}
-                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div class="flex items-center justify-between pt-3 border-t border-border">
                     <div class="flex items-center gap-1 text-xs-fluid text-text-muted">
                         <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
                         <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
@@ -103,8 +103,8 @@
             </div>
         @empty
             <div class="col-span-full card text-center py-12">
-                <i data-lucide="folder-open" class="w-10 h-10 mx-auto mb-2 text-text-muted opacity-40"></i>
-                <p class="text-text-muted">No hay proyectos registrados</p>
+                <i data-lucide="folder-open" class="w-9 h-9 mx-auto mb-2 text-text-muted opacity-25"></i>
+                <p class="text-small text-text-muted">No hay proyectos registrados</p>
             </div>
         @endforelse
     </div>
@@ -117,23 +117,23 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data
             x-init="$el.querySelector('input')?.focus()">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showEditModal', false)"></div>
-            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-h2 text-text-primary">Editar Proyecto</h2>
-                    <button wire:click="$set('showEditModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
+            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="text-h2 font-semibold text-text-primary">Editar Proyecto</h2>
+                    <button wire:click="$set('showEditModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
 
-                <form wire:submit="updateProject" class="p-6 space-y-4">
+                <form wire:submit="updateProject" class="p-5 space-y-4">
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre del proyecto *</label>
+                        <label class="label">Nombre del proyecto *</label>
                         <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
                         @error('name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Descripción</label>
+                        <label class="label">Descripción</label>
                         <textarea wire:model="description" class="input" rows="3"
                             placeholder="Descripción breve del proyecto..."></textarea>
                         @error('description') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
@@ -141,11 +141,11 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Cliente</label>
+                            <label class="label">Cliente</label>
                             <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
                         </div>
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Presupuesto *</label>
+                            <label class="label">Presupuesto *</label>
                             <input wire:model="budget" type="number" step="0.01" class="input" placeholder="0.00">
                             @error('budget') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
@@ -153,23 +153,23 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de inicio</label>
+                            <label class="label">Fecha de inicio</label>
                             <input wire:model="startDate" type="date" class="input">
                         </div>
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha estimada de término</label>
+                            <label class="label">Fecha estimada de término</label>
                             <input wire:model="endDate" type="date" class="input">
                             @error('endDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Estado</label>
+                        <label class="label">Estado</label>
                         <x-custom-select wire:model="status" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Seleccionar estado..." />
                         @error('status') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showEditModal', false)"
                             class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
@@ -196,23 +196,23 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data
             x-init="$el.querySelector('input')?.focus()">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-h2 text-text-primary">Nuevo Proyecto</h2>
-                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
+            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="text-h2 font-semibold text-text-primary">Nuevo Proyecto</h2>
+                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
 
-                <form wire:submit="createProject" class="p-6 space-y-4">
+                <form wire:submit="createProject" class="p-5 space-y-4">
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre del proyecto *</label>
+                        <label class="label">Nombre del proyecto *</label>
                         <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
                         @error('name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Descripción</label>
+                        <label class="label">Descripción</label>
                         <textarea wire:model="description" class="input" rows="3"
                             placeholder="Descripción breve del proyecto..."></textarea>
                         @error('description') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
@@ -220,11 +220,11 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Cliente</label>
+                            <label class="label">Cliente</label>
                             <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
                         </div>
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Presupuesto *</label>
+                            <label class="label">Presupuesto *</label>
                             <input wire:model="budget" type="number" step="0.01" class="input" placeholder="0.00">
                             @error('budget') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
@@ -232,18 +232,18 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de inicio</label>
+                            <label class="label">Fecha de inicio</label>
                             <input wire:model="startDate" type="date" class="input">
                         </div>
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha estimada de
+                            <label class="label">Fecha estimada de
                                 término</label>
                             <input wire:model="endDate" type="date" class="input">
                             @error('endDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">

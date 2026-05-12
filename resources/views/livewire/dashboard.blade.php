@@ -1,181 +1,161 @@
 <div>
-    {{-- ── Page header ─────────────────────────────────── --}}
+
+    {{-- ── Page Header ──────────────────────────────────── --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-            <h1 class="text-h1 text-text-primary leading-tight">
-                Bienvenido, {{ explode(' ', auth()->user()->name ?? 'Usuario')[0] }}
+            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Panel de Control</p>
+            <h1 class="text-h1 text-text-primary">
+                {{ explode(' ', auth()->user()->name ?? 'Usuario')[0] }},
+                <span class="text-text-secondary font-normal">aquí está el resumen de hoy.</span>
             </h1>
-            <p class="text-body text-text-muted mt-0.5">Aquí tienes un resumen de hoy</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ url('/requisiciones') }}" class="btn-secondary">
-                <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
                 Requisiciones
             </a>
             <a href="{{ url('/gastos') }}" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 Nuevo gasto
             </a>
         </div>
     </div>
 
-    {{-- ── Hero banner ──────────────────────────────────── --}}
-    <div class="rounded-2xl bg-primary-600 p-7 text-white mb-6 relative overflow-hidden">
-        {{-- subtle geometric decoration --}}
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5"></div>
-            <div class="absolute -right-4 -bottom-20 w-48 h-48 rounded-full bg-white/5"></div>
-            <div class="absolute right-40 top-4 w-24 h-24 rounded-full bg-white/5"></div>
-        </div>
-        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <p class="text-primary-200 text-xs-fluid font-semibold tracking-widest uppercase mb-1.5">Panel de Control</p>
-                <h2 class="text-display mb-1 leading-tight">Muulsinik ERP</h2>
-                <p class="text-primary-200 text-body max-w-md leading-relaxed">
-                    Gestiona proyectos de construcción, controla gastos y procesa requisiciones en un solo lugar.
-                </p>
-            </div>
-            <div class="flex items-center gap-3 shrink-0">
-                <div class="bg-white/10 rounded-xl px-4 py-3 text-center min-w-[80px]">
-                    <p class="text-h1 leading-none">{{ $activeProjects }}</p>
-                    <p class="text-primary-200 text-xs-fluid mt-1">Activos</p>
-                </div>
-                <div class="bg-white/10 rounded-xl px-4 py-3 text-center min-w-[80px]">
-                    <p class="text-h1 leading-none">{{ $pendingRequisitions }}</p>
-                    <p class="text-primary-200 text-xs-fluid mt-1">Pendientes</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- ── KPI Strip ─────────────────────────────────────── --}}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
 
-    {{-- ── Stats cards ──────────────────────────────────── --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
             <div class="stat-icon bg-primary-50">
-                <i data-lucide="hard-hat" class="w-5 h-5 text-primary-600"></i>
+                <i data-lucide="hard-hat" class="w-[18px] h-[18px] text-primary-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-h2 text-text-primary leading-none">{{ $activeProjects }}</p>
-                <p class="text-xs-fluid text-text-muted mt-1">Proyectos activos</p>
+                <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $activeProjects }}</p>
+                <p class="text-xs-fluid text-text-muted mt-0.5">Proyectos activos</p>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon bg-emerald-50">
-                <i data-lucide="wallet" class="w-5 h-5 text-emerald-600"></i>
+                <i data-lucide="trending-up" class="w-[18px] h-[18px] text-emerald-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-h2 text-text-primary leading-none truncate">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
-                <p class="text-xs-fluid text-text-muted mt-1">Gasto del mes</p>
+                <p class="text-h2 font-bold text-text-primary leading-none truncate tabular-nums">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
+                <p class="text-xs-fluid text-text-muted mt-0.5">Gasto del mes</p>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon bg-amber-50">
-                <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+                <i data-lucide="clock" class="w-[18px] h-[18px] text-amber-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-h2 text-text-primary leading-none">{{ $pendingRequisitions }}</p>
-                <p class="text-xs-fluid text-text-muted mt-1">Req. pendientes</p>
+                <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $pendingRequisitions }}</p>
+                <p class="text-xs-fluid text-text-muted mt-0.5">Req. pendientes</p>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon bg-sky-50">
-                <i data-lucide="truck" class="w-5 h-5 text-sky-600"></i>
+                <i data-lucide="truck" class="w-[18px] h-[18px] text-sky-600"></i>
             </div>
             <div class="min-w-0">
-                <p class="text-h2 text-text-primary leading-none">{{ $totalSuppliers }}</p>
-                <p class="text-xs-fluid text-text-muted mt-1">Proveedores</p>
+                <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $totalSuppliers }}</p>
+                <p class="text-xs-fluid text-text-muted mt-0.5">Proveedores</p>
             </div>
         </div>
+
     </div>
 
-    {{-- ── Main grid: Chart + Summary ──────────────────── --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+    {{-- ── Main grid: Chart + Metrics ───────────────────── --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
-        {{-- Chart --}}
+        {{-- Gráfica de gastos --}}
         <div class="lg:col-span-2 card">
-            <div class="flex items-start justify-between mb-5">
+            <div class="flex items-start justify-between mb-4">
                 <div>
                     <h2 class="text-small font-semibold text-text-primary">Gastos Mensuales</h2>
                     <p class="text-xs-fluid text-text-muted mt-0.5">Últimos 6 meses</p>
                 </div>
-                <span class="text-xs-fluid font-semibold text-text-muted bg-surface-main px-2.5 py-1 rounded-lg">
-                    ${{ number_format($totalExpenses, 0, '.', ',') }} acumulado
+                <span class="inline-flex items-center gap-1 text-xs-fluid font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
+                    ${{ number_format($totalExpenses, 0, '.', ',') }}
+                    <span class="font-normal text-text-muted">acumulado</span>
                 </span>
             </div>
-            <div class="h-48" x-data="chartComponent()" x-init="initChart()">
+            <div class="h-44" x-data="chartComponent()" x-init="initChart()">
                 <canvas id="monthly-expenses-chart"></canvas>
             </div>
         </div>
 
-        {{-- Quick stats --}}
+        {{-- Métricas operativas --}}
         <div class="card flex flex-col">
-            <h2 class="text-small font-semibold text-text-primary mb-4">Resumen</h2>
-            <div class="space-y-2.5 flex-1">
-                <div class="flex items-center justify-between py-2.5 border-b border-gray-50">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center">
-                            <i data-lucide="briefcase" class="w-3.5 h-3.5 text-primary-600"></i>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-small font-semibold text-text-primary">Métricas</h2>
+                <a href="{{ url('/reportes') }}"
+                    class="link-more">
+                    Ver reportes
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </a>
+            </div>
+            <div class="flex-1 space-y-0">
+
+                <div class="metric-row">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
+                            <i data-lucide="briefcase" class="w-3 h-3 text-primary-600"></i>
                         </div>
-                        <span class="text-body text-text-secondary">Total proyectos</span>
+                        <span class="text-small text-text-secondary">Total proyectos</span>
                     </div>
-                    <span class="text-body font-bold text-text-primary">{{ $totalProjects }}</span>
+                    <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
                 </div>
 
-                <div class="flex items-center justify-between py-2.5 border-b border-gray-50">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <div class="metric-row">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded bg-emerald-50 flex items-center justify-center">
+                            <i data-lucide="wallet" class="w-3 h-3 text-emerald-600"></i>
                         </div>
-                        <span class="text-body text-text-secondary">Gasto total</span>
+                        <span class="text-small text-text-secondary">Gasto total</span>
                     </div>
-                    <span class="text-body font-bold text-text-primary">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
+                    <span class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
                 </div>
 
-                <div class="flex items-center justify-between py-2.5 border-b border-gray-50">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center">
-                            <i data-lucide="users" class="w-3.5 h-3.5 text-sky-600"></i>
+                <div class="metric-row">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded bg-sky-50 flex items-center justify-center">
+                            <i data-lucide="users" class="w-3 h-3 text-sky-600"></i>
                         </div>
-                        <span class="text-body text-text-secondary">Proveedores</span>
+                        <span class="text-small text-text-secondary">Proveedores</span>
                     </div>
-                    <span class="text-body font-bold text-text-primary">{{ $totalSuppliers }}</span>
+                    <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
                 </div>
 
-                <div class="flex items-center justify-between py-2.5">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
-                            <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-amber-600"></i>
+                <div class="metric-row">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded bg-green-50 flex items-center justify-center">
+                            <i data-lucide="check-circle" class="w-3 h-3 text-green-600"></i>
                         </div>
-                        <span class="text-body text-text-secondary">Req. aprobadas</span>
+                        <span class="text-small text-text-secondary">Req. aprobadas</span>
                     </div>
-                    <span class="text-body font-bold text-text-primary">
+                    <span class="text-small font-semibold text-text-primary tabular-nums">
                         {{ \App\Models\Requisition::where('status', 'aprobada')->count() }}
                     </span>
                 </div>
-            </div>
 
-            <div class="mt-4 pt-4 border-t border-gray-100">
-                <a href="{{ url('/reportes') }}"
-                    class="flex items-center justify-center gap-1.5 text-xs-fluid font-semibold text-primary-600 hover:text-primary-700 transition">
-                    Ver reportes completos
-                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                </a>
             </div>
         </div>
     </div>
 
-    {{-- ── Recent tables ────────────────────────────────── --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    {{-- ── Recent tables ─────────────────────────────────── --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {{-- Proyectos recientes --}}
         <div class="table-container">
-            <div class="px-5 py-3.5 flex items-center justify-between border-b border-gray-100">
+            <div class="px-4 py-3 flex items-center justify-between border-b border-border">
                 <h2 class="text-small font-semibold text-text-primary">Proyectos Recientes</h2>
                 <a href="{{ url('/proyectos') }}"
-                    class="text-xs-fluid font-semibold text-primary-600 hover:text-primary-700 transition">Ver todos →</a>
+                    class="link-more">
+                    Ver todos
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </a>
             </div>
             <table>
                 <thead>
@@ -205,15 +185,15 @@
                                     {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                 </span>
                             </td>
-                            <td class="text-right text-small font-semibold text-text-primary">
+                            <td class="text-right text-small font-semibold text-text-primary tabular-nums">
                                 ${{ number_format($project->budget, 0, '.', ',') }}
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="3" class="text-center py-10">
-                                <i data-lucide="folder-open" class="w-8 h-8 mx-auto mb-2 text-text-muted opacity-30"></i>
-                                <p class="text-body text-text-muted">Sin proyectos registrados</p>
+                                <i data-lucide="folder-open" class="w-7 h-7 mx-auto mb-2 text-text-muted opacity-25"></i>
+                                <p class="text-small text-text-muted">Sin proyectos registrados</p>
                             </td>
                         </tr>
                     @endforelse
@@ -223,15 +203,18 @@
 
         {{-- Requisiciones recientes --}}
         <div class="table-container">
-            <div class="px-5 py-3.5 flex items-center justify-between border-b border-gray-100">
+            <div class="px-4 py-3 flex items-center justify-between border-b border-border">
                 <h2 class="text-small font-semibold text-text-primary">Requisiciones Recientes</h2>
                 <a href="{{ url('/requisiciones') }}"
-                    class="text-xs-fluid font-semibold text-primary-600 hover:text-primary-700 transition">Ver todas →</a>
+                    class="link-more">
+                    Ver todas
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </a>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th>Descripción</th>
+                        <th>Número</th>
                         <th>Estado</th>
                         <th>Proyecto</th>
                     </tr>
@@ -263,8 +246,8 @@
                     @empty
                         <tr>
                             <td colspan="3" class="text-center py-10">
-                                <i data-lucide="clipboard" class="w-8 h-8 mx-auto mb-2 text-text-muted opacity-30"></i>
-                                <p class="text-body text-text-muted">Sin requisiciones</p>
+                                <i data-lucide="clipboard" class="w-7 h-7 mx-auto mb-2 text-text-muted opacity-25"></i>
+                                <p class="text-small text-text-muted">Sin requisiciones</p>
                             </td>
                         </tr>
                     @endforelse

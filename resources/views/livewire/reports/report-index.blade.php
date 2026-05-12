@@ -1,9 +1,9 @@
  <div>
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-            <h1 class="text-h1 text-text-primary">Reportes y Analítica</h1>
-            <p class="text-body text-text-muted">Análisis financiero y operativo del sistema</p>
+            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Analítica</p>
+            <h1 class="text-h1 text-text-primary">Reportes</h1>
         </div>
         <div class="flex items-center gap-3">
             <x-custom-select 
@@ -22,13 +22,13 @@
     </div>
 
     {{-- KPI Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <div class="stat-card">
             <div class="stat-icon bg-primary-50">
                 <i data-lucide="dollar-sign" class="w-5 h-5 text-primary-600"></i>
             </div>
             <div>
-                <p class="text-h2 text-text-primary">${{ number_format($totalExpenses, 0, '.', ',') }}</p>
+                <p class="text-h2 font-bold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</p>
                 <p class="text-xs-fluid text-text-muted">Gasto total del período</p>
             </div>
         </div>
@@ -62,7 +62,7 @@
     </div>
 
     {{-- Charts row --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {{-- Tendencia mensual --}}
         <div class="lg:col-span-2 card">
             <div class="flex items-center justify-between mb-4">
@@ -106,7 +106,7 @@
     </div>
 
     {{-- Budget comparison + Top projects --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {{-- Presupuesto vs Gasto --}}
         <div class="card">
             <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
@@ -117,7 +117,7 @@
                     @foreach($budgetComparison as $comp)
                         @php
                             $p = min($comp['percent'], 100);
-                            $barColor = $comp['percent'] >= 90 ? 'bg-danger' : ($comp['percent'] >= 70 ? 'bg-warning' : 'bg-primary-500');
+                            $barColor = $comp['percent'] >= 90 ? 'bg-danger' : ($comp['percent'] >= 70 ? 'bg-warning' : 'bg-primary-600');
                         @endphp
                         <div>
                             <div class="flex items-center justify-between text-body mb-1">
@@ -143,7 +143,7 @@
 
         {{-- Top 5 proyectos por gasto --}}
         <div class="table-container">
-            <div class="px-5 py-4 border-b border-gray-100">
+            <div class="px-4 py-3 border-b border-border">
                 <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
                 <p class="text-xs-fluid text-text-muted">Período seleccionado</p>
             </div>
@@ -182,7 +182,7 @@
     </div>
 
     {{-- Summary cards bottom --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="stat-card">
             <div class="stat-icon bg-primary-50">
                 <i data-lucide="briefcase" class="w-5 h-5 text-primary-600"></i>

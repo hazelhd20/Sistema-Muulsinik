@@ -1,4 +1,4 @@
-<div class="card space-y-6">
+<div class="bg-surface-card border border-border rounded-xl p-7 space-y-5 shadow-sm">
 
     {{-- Heading --}}
     <div>
@@ -8,7 +8,7 @@
 
     {{-- Global error --}}
     @if($errorMessage)
-        <div class="p-3.5 rounded-xl bg-red-50 border border-red-100 text-red-700 text-body flex items-center gap-2.5">
+        <div class="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-small flex items-center gap-2">
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
             </svg>
@@ -20,9 +20,7 @@
 
         {{-- Email --}}
         <div>
-            <label for="login-email" class="block text-body font-medium text-text-primary mb-1.5">
-                Correo electrónico
-            </label>
+            <label for="login-email" class="label">Correo electrónico</label>
             <input
                 wire:model="email"
                 type="email"
@@ -39,9 +37,7 @@
 
         {{-- Password --}}
         <div>
-            <label for="login-password" class="block text-body font-medium text-text-primary mb-1.5">
-                Contraseña
-            </label>
+            <label for="login-password" class="label">Contraseña</label>
             <input
                 wire:model="password"
                 type="password"
@@ -63,7 +59,7 @@
         </div>
 
         {{-- Submit --}}
-        <button type="submit" class="btn-primary w-full h-10 relative" wire:loading.attr="disabled">
+        <button type="submit" class="btn-primary w-full h-9 relative" wire:loading.attr="disabled">
             <span wire:loading.class="opacity-0" wire:target="authenticate" class="transition-opacity">
                 Iniciar Sesión
             </span>

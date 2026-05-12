@@ -17,12 +17,24 @@
 
 <body class="antialiased min-h-screen bg-surface-main flex items-center justify-center p-6">
 
-    <div class="w-full max-w-sm">
-        <div class="flex justify-center mb-8">
-            <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain" style="height: clamp(3rem, 5vw + 1.5rem, 5rem);">
+    <div class="w-full max-w-[22rem]">
+
+        {{-- Brand --}}
+        <div class="flex flex-col items-center mb-7">
+            <img src="{{ asset('images/logo_muulsinik.svg') }}"
+                 alt="Muulsinik ERP"
+                 class="object-contain mb-1"
+                 style="height: clamp(2.5rem, 4vw + 1rem, 3.5rem);">
+            <p class="text-xs-fluid text-text-muted font-medium tracking-wider uppercase mt-2">
+                Sistema de Gestión Operativa
+            </p>
         </div>
 
         {{ $slot }}
+
+        <p class="text-center mt-5" style="font-size: 0.625rem; color: var(--color-text-muted); letter-spacing: 0.04em;">
+            MUULSINIK ERP &nbsp;·&nbsp; {{ date('Y') }} &nbsp;·&nbsp; v1.0
+        </p>
     </div>
 
     @livewireScripts

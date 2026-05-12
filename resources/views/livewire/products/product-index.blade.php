@@ -1,12 +1,12 @@
 <div>
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-            <h1 class="text-h1 text-text-primary">Catálogo de Productos</h1>
-            <p class="text-body text-text-muted">Catálogo maestro de productos</p>
+            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Catálogos</p>
+            <h1 class="text-h1 text-text-primary">Productos</h1>
         </div>
         <button wire:click="openCreateModal" class="btn-primary">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             Nuevo Producto
         </button>
     </div>
@@ -48,16 +48,11 @@
                 @forelse($products as $product)
                     <tr>
                         <td>
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                                    <i data-lucide="package" class="w-4 h-4 text-primary-600"></i>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
-                                    @if($product->description)
-                                        <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
-                                    @endif
-                                </div>
+                            <div>
+                                <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
+                                @if($product->description)
+                                    <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                                @endif
                             </div>
                         </td>
                         <td>
@@ -91,17 +86,17 @@
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
-                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-md">
+                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                     <h2 class="text-h2 text-text-primary">
                         {{ $editingId ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
-                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
+                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
-                <form wire:submit="saveProduct" class="p-6 space-y-4">
+                <form wire:submit="saveProduct" class="p-5 space-y-4">
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Nombre canónico *</label>
+                        <label class="label">Nombre canónico *</label>
                         <input wire:model="canonicalName" type="text" class="input"
                             placeholder="Ej. Cemento Portland CPC 30R">
                         <p class="mt-1 text-xs-fluid text-text-muted">Nombre estándar del producto en el catálogo interno</p>
@@ -109,22 +104,22 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Unidad *</label>
+                            <label class="label">Unidad *</label>
                             <x-custom-select wire:model="measureId" :options="$measures" placeholder="Seleccionar..." />
                             @error('measureId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Categoría *</label>
+                            <label class="label">Categoría *</label>
                             <x-custom-select wire:model="categoryId" :options="$categories" placeholder="Seleccionar..." />
                             @error('categoryId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Descripción</label>
+                        <label class="label">Descripción</label>
                         <textarea wire:model="description" class="input" rows="2"
                             placeholder="Descripción técnica opcional..."></textarea>
                     </div>
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">

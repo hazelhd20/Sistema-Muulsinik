@@ -15,10 +15,10 @@
     }
 }">
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
+            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Compras</p>
             <h1 class="text-h1 text-text-primary">Requisiciones</h1>
-            <p class="text-body text-text-muted">Crea, aprueba y gestiona requisiciones de materiales</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
@@ -70,7 +70,7 @@
                 $iconBg = match ($req->status) { 'borrador' => 'bg-gray-50', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-green-50', 'rechazada' => 'bg-red-50', default => 'bg-gray-50' };
                 $iconColor = match ($req->status) { 'borrador' => 'text-gray-500', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-500', default => 'text-gray-500' };
             @endphp
-            <div x-data="{ open: false }" class="card hover:shadow-md transition-shadow">
+            <div x-data="{ open: false }" class="card">
 
                 {{-- ── Cuerpo principal ── --}}
                 <div class="flex items-start gap-4">
@@ -129,7 +129,7 @@
                 </div>
 
                 {{-- ── Footer: trigger collapsible + acciones ── --}}
-                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                <div class="mt-3 pt-3 border-t border-border flex items-center justify-between">
 
                     {{-- Trigger de productos --}}
                     @if($req->items->isNotEmpty())
@@ -196,7 +196,7 @@
                 {{-- ── Tabla colapsable de productos ── --}}
                 @if($req->items->isNotEmpty())
                     <div x-show="open" x-collapse class="mt-3">
-                        <div class="rounded-xl border border-gray-100 overflow-hidden overflow-x-auto">
+                        <div class="rounded-lg border border-border overflow-hidden overflow-x-auto">
                             <table class="w-full text-body">
                                 <thead>
                                     <tr class="bg-surface-main">
@@ -211,7 +211,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($req->items as $item)
-                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition-colors">
+                                        <tr class="border-t border-border/50 hover:bg-surface-main/60 transition-colors">
                                             <td class="px-4 py-2 font-medium text-text-primary">{{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
                                             <td class="px-4 py-2 text-center text-text-secondary">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
                                             <td class="px-4 py-2 text-center text-text-muted">{{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
@@ -234,7 +234,7 @@
                                         $reqTax      = $req->items->sum(fn($i) => (float)($i->tax_amount ?? 0));
                                         $reqTotal    = $req->total;
                                     @endphp
-                                    <tr class="border-t border-gray-200 bg-surface-main">
+                                    <tr class="border-t border-border bg-surface-main">
                                         <td colspan="4" class="px-4 py-2 text-right text-xs-fluid text-text-muted">Totales:</td>
                                         <td class="px-4 py-2 text-right text-xs-fluid font-medium text-text-secondary">${{ number_format($reqSubtotal, 2, '.', ',') }}</td>
                                         <td class="px-4 py-2 text-right text-xs-fluid font-medium text-text-muted">
@@ -266,24 +266,24 @@
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-h2 text-text-primary">Nueva Requisición</h2>
-                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-lg hover:bg-surface-hover">
+            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="text-h2 font-semibold text-text-primary">Nueva Requisición</h2>
+                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
                         <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
                     </button>
                 </div>
-                <form wire:submit="createRequisition" class="p-6 space-y-6">
-                    {{-- 1. Datos Generales (Bento Card) --}}
-                    <div class="bg-surface-main/50 border border-gray-100 p-5 rounded-2xl space-y-4">
+                <form wire:submit="createRequisition" class="p-5 space-y-5">
+                    {{-- 1. Datos Generales --}}
+                    <div class="bg-surface-main border border-border p-4 rounded-lg space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-2">
-                                <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
+                                <label class="label">Proyecto *</label>
                                 <x-custom-select wire:model="reqProjectId" :options="$projects->pluck('name', 'id')->toArray()" placeholder="Seleccionar proyecto..." />
                                 @error('reqProjectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                             </div>
                             <div class="md:col-span-1">
-                                <label class="block text-body font-medium text-text-primary mb-1.5">Vendedor (Opcional)</label>
+                                <label class="label">Vendedor (Opcional)</label>
                                 @php
                                     $vendorOptions = [];
                                     foreach($vendors as $vendor) {
@@ -294,12 +294,12 @@
                                 @error('reqVendorId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                             </div>
                             <div class="md:col-span-1">
-                                <label class="block text-body font-medium text-text-primary mb-1.5">Fecha *</label>
+                                <label class="label">Fecha *</label>
                                 <input wire:model="reqDate" type="date" class="input">
                                 @error('reqDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                             </div>
                             <div class="md:col-span-4">
-                                <label class="block text-body font-medium text-text-primary mb-1.5">Anotaciones</label>
+                                <label class="label">Anotaciones</label>
                                 <textarea wire:model="reqAnnotations" class="input" rows="2"
                                     placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                                 @error('reqAnnotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
@@ -309,10 +309,10 @@
 
                     {{-- 2. Captura de Productos --}}
                     <div>
-                        <h3 class="text-h3 font-semibold text-text-primary mb-3">Productos Solicitados</h3>
+                        <h3 class="text-small font-semibold text-text-primary mb-3">Productos solicitados</h3>
 
-                        {{-- Formulario para añadir (Caja de Herramientas) --}}
-                        <div class="bg-primary-50/50 border border-primary-100 p-4 rounded-xl mb-5">
+                        {{-- Formulario para añadir --}}
+                        <div class="bg-primary-50 border border-primary-100 p-4 rounded-lg mb-4">
                             <div class="flex flex-col sm:flex-row gap-3 items-end">
                                 <div class="flex-1 min-w-[200px]">
                                     <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Producto *</label>
@@ -341,20 +341,20 @@
 
                         {{-- Tabla de Productos Agregados --}}
                         @if(count($items) > 0)
-                            <div class="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                            <div class="rounded-lg border border-border overflow-hidden">
                                 <table class="w-full text-body">
                                     <thead>
                                         <tr class="bg-surface-main">
-                                            <th class="text-left px-4 py-3 text-xs-fluid font-semibold text-text-muted">Producto</th>
-                                            <th class="text-center px-4 py-3 text-xs-fluid font-semibold text-text-muted">Cant.</th>
-                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted">Precio</th>
-                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted">Subtotal</th>
+                                            <th class="text-left px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Producto</th>
+                                            <th class="text-center px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Cant.</th>
+                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Precio</th>
+                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Subtotal</th>
                                             <th class="px-4 py-3 w-10"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($items as $i => $item)
-                                            <tr class="border-t border-gray-100 hover:bg-surface-main/50 transition-colors">
+                                            <tr class="border-t border-border/60 hover:bg-surface-main/50 transition-colors">
                                                 <td class="px-4 py-3 font-medium text-text-primary">{{ $item['name'] }}</td>
                                                 <td class="px-4 py-3 text-center text-text-secondary">{{ $item['quantity'] }} <span class="text-xs-fluid text-text-muted">{{ $item['unit'] }}</span></td>
                                                 <td class="px-4 py-3 text-right text-text-secondary">${{ number_format($item['unit_price'], 2) }}</td>
@@ -370,10 +370,9 @@
                                         @endforeach
                                     </tbody>
                                     <tfoot>
-                                        <tr class="border-t border-gray-200 bg-surface-main">
+                                        <tr class="border-t border-border bg-surface-main">
                                             <td colspan="3"
-                                                class="px-4 py-3 text-right text-body font-medium text-text-secondary">Total
-                                                estimado:</td>
+                                                class="px-4 py-3 text-right text-small font-medium text-text-secondary">Total estimado:</td>
                                             <td class="px-4 py-3 text-right text-body font-bold text-text-primary">
                                                 ${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}
                                             </td>
@@ -383,7 +382,7 @@
                                 </table>
                             </div>
                         @else
-                            <div class="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl bg-surface-main/30">
+                            <div class="text-center py-8 border-2 border-dashed border-border rounded-lg bg-surface-main/50">
                                 <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
                                     <i data-lucide="package-search" class="w-6 h-6 text-text-muted"></i>
                                 </div>
@@ -393,7 +392,7 @@
                         @endif
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
@@ -419,19 +418,19 @@
     @if($showRejectModal)
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showRejectModal', false)"></div>
-                <div class="relative bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
-                    <div class="p-6 border-b border-gray-100">
-                        <h2 class="text-h2 text-text-primary">Rechazar Requisición</h2>
+                <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-md">
+                    <div class="px-5 py-4 border-b border-border">
+                        <h2 class="text-h2 font-semibold text-text-primary">Rechazar Requisición</h2>
                         <p class="text-body text-text-muted">Indica el motivo del rechazo (obligatorio)</p>
                     </div>
-                    <form wire:submit="confirmReject" class="p-6 space-y-4">
+                    <form wire:submit="confirmReject" class="p-5 space-y-4">
                         <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Motivo del rechazo *</label>
+                            <label class="label">Motivo del rechazo *</label>
                             <textarea wire:model="rejectionComment" class="input" rows="3"
                                 placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
                             @error('rejectionComment') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
-                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <div class="flex justify-end gap-3 pt-4 border-t border-border">
                             <button type="button" wire:click="$set('showRejectModal', false)"
                                 class="btn-secondary">Cancelar</button>
                             <button type="submit" class="btn-danger">
@@ -450,8 +449,8 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
         x-transition>
-        <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-surface-card">
-            <h3 class="text-h3 font-bold text-gray-800 flex items-center gap-2">
+        <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
+            <h3 class="text-h3 font-semibold text-text-primary flex items-center gap-2">
                 <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
             </h3>
             <button @click="showPreviewModal = false"
