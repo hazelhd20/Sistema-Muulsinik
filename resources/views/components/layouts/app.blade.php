@@ -133,7 +133,7 @@
                         </span>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs-fluid font-600 text-text-primary truncate leading-tight">
+                        <p class="text-xs-fluid font-semibold text-text-primary truncate leading-tight">
                             {{ auth()->user()->name ?? 'Usuario' }}
                         </p>
                         <p class="text-xs-fluid text-text-muted truncate leading-tight" style="font-size: 0.625rem;">
@@ -210,6 +210,17 @@
 
             {{-- Page Content --}}
             <main class="flex-1 p-5 lg:p-6 max-w-screen-2xl mx-auto w-full">
+                {{-- Global flash toast handler --}}
+                @if(session('success'))
+                    <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()" wire:key="global-toast-success-{{ microtime(true) }}"></div>
+                @endif
+                @if(session('error'))
+                    <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()" wire:key="global-toast-error-{{ microtime(true) }}"></div>
+                @endif
+                @if(session('budget_alert'))
+                    <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' }); $el.remove()" wire:key="global-toast-warning-{{ microtime(true) }}"></div>
+                @endif
+
                 {{ $slot }}
             </main>
 

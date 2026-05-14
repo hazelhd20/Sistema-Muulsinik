@@ -15,41 +15,24 @@
     }
 }">
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Compras</p>
-            <h1 class="text-h1 text-text-primary">Requisiciones</h1>
-        </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
-                <i data-lucide="scan-line" class="w-4 h-4"></i>
-                Subir Cotización
-            </a>
+    <x-page-header subtitle="Compras" title="Requisiciones">
+        <x-slot:actions>
             <button wire:click="openCreateModal" class="btn-secondary">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 Nueva Manual
             </button>
-        </div>
-    </div>
-
-    @if(session('success'))
-        <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
-            wire:key="toast-success-{{ microtime(true) }}">
-        </div>
-    @endif
-    @if(session('error'))
-        <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
-            wire:key="toast-error-{{ microtime(true) }}">
-        </div>
-    @endif
+            <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
+                <i data-lucide="scan-line" class="w-4 h-4"></i>
+                Subir Cotización
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filters --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <div class="relative flex-1">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar requisición..."
+            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar requisición..."
                 class="input pl-10">
         </div>
         <x-custom-select wire:model.live="statusFilter" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" placeholder="Todos los estados"
@@ -65,7 +48,6 @@
     <div class="space-y-3">
         @forelse($requisitions as $req)
             @php
-                $sColors = ['borrador' => 'badge-secondary', 'pendiente' => 'badge-warning', 'aprobada' => 'badge-success', 'rechazada' => 'badge-danger'];
                 $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file' };
                 $iconBg = match ($req->status) { 'borrador' => 'bg-gray-50', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-green-50', 'rechazada' => 'bg-red-50', default => 'bg-gray-50' };
                 $iconColor = match ($req->status) { 'borrador' => 'text-gray-500', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-500', default => 'text-gray-500' };
@@ -85,7 +67,7 @@
                         {{-- Fila 1: número + badge --}}
                         <div class="flex items-center gap-2 mb-1.5">
                             <h3 class="text-small font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}</h3>
-                            <span class="badge {{ $sColors[$req->status] ?? '' }} shrink-0">{{ ucfirst($req->status) }}</span>
+                            <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" class="shrink-0" />
                         </div>
 
                         {{-- Fila 2: metadatos primarios --}}
@@ -253,9 +235,8 @@
                 @endif
             </div>
         @empty
-            <div class="card text-center py-12">
-                <i data-lucide="clipboard-list" class="w-10 h-10 mx-auto mb-2 text-text-muted opacity-40"></i>
-                <p class="text-text-muted">No hay requisiciones registradas</p>
+            <div class="card">
+                <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas" message="Crea una requisición o sube una cotización para comenzar." />
             </div>
         @endforelse
     </div>
@@ -264,15 +245,7 @@
 
     {{-- Create Requisition Modal --}}
     @if($showCreateModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <h2 class="text-h2 font-semibold text-text-primary">Nueva Requisición</h2>
-                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
-                        <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
-                    </button>
-                </div>
+        <x-modal show="showCreateModal" title="Nueva Requisición" maxWidth="4xl">
                 <form wire:submit="createRequisition" class="p-5 space-y-5">
                     {{-- 1. Datos Generales --}}
                     <div class="bg-surface-main border border-border p-4 rounded-lg space-y-4">
@@ -395,34 +368,21 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
-                            <span wire:loading.class="opacity-0" wire:target="createRequisition"
-                                class="transition-opacity">Crear Requisición</span>
-                            <span wire:loading wire:target="createRequisition"
-                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                        fill="none" />
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
+                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="createRequisicion" class="inline-flex items-center gap-1.5">Crear Requisición</span>
+                            <span wire:loading wire:target="createRequisicion" class="inline-flex items-center gap-2">
+                                <span class="spinner spinner-sm opacity-80"></span>
+                                Creando…
                             </span>
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </x-modal>
     @endif
 
     {{-- Reject Modal (RF-REQ-09: comentario obligatorio) --}}
     @if($showRejectModal)
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showRejectModal', false)"></div>
-                <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-md">
-                    <div class="px-5 py-4 border-b border-border">
-                        <h2 class="text-h2 font-semibold text-text-primary">Rechazar Requisición</h2>
-                        <p class="text-body text-text-muted">Indica el motivo del rechazo (obligatorio)</p>
-                    </div>
+        <x-modal show="showRejectModal" title="Rechazar Requisición" subtitle="Indica el motivo del rechazo (obligatorio)" maxWidth="md">
                     <form wire:submit="confirmReject" class="p-5 space-y-4">
                         <div>
                             <label class="label">Motivo del rechazo *</label>
@@ -438,9 +398,7 @@
                             </button>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
+        </x-modal>
     @endif
 
 {{-- ═══════ PREVIEW MODAL ═══════ --}}

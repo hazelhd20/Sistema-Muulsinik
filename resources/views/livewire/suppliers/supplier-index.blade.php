@@ -1,34 +1,21 @@
 <div>
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Red de suministro</p>
-            <h1 class="text-h1 text-text-primary">Proveedores</h1>
-        </div>
-        <button wire:click="openCreateModal" class="btn-primary">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            Nuevo Proveedor
-        </button>
-    </div>
+    <x-page-header subtitle="Red de suministro" title="Proveedores">
+        <x-slot:actions>
+            <button wire:click="openCreateModal" class="btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Nuevo Proveedor
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
-    @if(session('success'))
-        <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
-            wire:key="toast-success-{{ microtime(true) }}">
+    {{-- Filters --}}
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+        <div class="relative flex-1">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar por nombre o RFC..."
+                class="input pl-10">
         </div>
-    @endif
-    @if(session('error'))
-        <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
-            wire:key="toast-error-{{ microtime(true) }}">
-        </div>
-    @endif
-
-    {{-- Search --}}
-    <div class="relative mb-6">
-        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-        <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar por nombre o RFC..."
-            class="input pl-10 max-w-md">
     </div>
 
     {{-- Suppliers Grid --}}
@@ -64,25 +51,26 @@
 
                 {{-- Footer --}}
                 <div class="flex items-center justify-between pt-3 border-t border-border">
-                    <button wire:click="viewVendors({{ $supplier->id }})"
-                        class="text-xs-fluid font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
+                    <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-muted">
                         <i data-lucide="users" class="w-3.5 h-3.5"></i>
                         {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
-                    </button>
+                    </span>
                     <div class="flex items-center gap-1">
-                        <button wire:click="openEditSupplierModal({{ $supplier->id }})" class="btn-icon-primary" title="Editar">
-                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        <button wire:click="openVendorsModal({{ $supplier->id }})" class="btn-icon" title="Ver vendedores">
+                            <i data-lucide="users" class="w-4 h-4"></i>
                         </button>
-                        <button wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y todos sus vendedores?" class="btn-icon-danger">
+                        <button wire:click="openEditSupplierModal({{ $supplier->id }})" class="btn-icon-primary" title="Editar proveedor">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                        <button wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y todos sus vendedores?" class="btn-icon-danger" title="Eliminar proveedor">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="col-span-full card text-center py-12">
-                <i data-lucide="truck" class="w-9 h-9 mx-auto mb-2 text-text-muted opacity-25"></i>
-                <p class="text-small text-text-muted">No hay proveedores registrados</p>
+            <div class="col-span-full card">
+                <x-empty-state icon="truck" title="No hay proveedores registrados" message="Agrega un proveedor para comenzar." />
             </div>
         @endforelse
     </div>
@@ -91,15 +79,7 @@
 
     {{-- Create/Edit Supplier Modal --}}
     @if($showCreateModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <h2 class="text-h2 font-semibold text-text-primary">{{ $editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
-                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
-                        <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
-                    </button>
-                </div>
+        <x-modal show="showCreateModal" :title="$editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor'">
                 <form wire:submit="saveSupplier" class="p-5 space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2">
@@ -128,37 +108,23 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
-                            <span wire:loading.class="opacity-0" wire:target="saveSupplier" class="transition-opacity">
+                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="saveSupplier" class="inline-flex items-center gap-1.5">
                                 {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
                             </span>
-                            <span wire:loading wire:target="saveSupplier" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
+                            <span wire:loading wire:target="saveSupplier" class="inline-flex items-center gap-2">
+                                <span class="spinner spinner-sm opacity-80"></span>
+                                Guardando…
                             </span>
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </x-modal>
     @endif
 
     {{-- Vendors Modal --}}
     @if($showVendorsModal && $viewingSupplier)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showVendorsModal', false)"></div>
-            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
-                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <div>
-                        <h2 class="text-h2 font-semibold text-text-primary">Vendedores</h2>
-                        <p class="text-xs-fluid text-text-muted">{{ $viewingSupplier->trade_name }}</p>
-                    </div>
-                    <button wire:click="$set('showVendorsModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
-                        <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
-                    </button>
-                </div>
+        <x-modal show="showVendorsModal" title="Vendedores" :subtitle="$viewingSupplier->trade_name" maxWidth="md">
                 <div class="p-6">
                     @if(session('vendor_success'))
                         <div x-data
@@ -223,7 +189,6 @@
                         </button>
                     @endif
                 </div>
-            </div>
-        </div>
+        </x-modal>
     @endif
 </div>

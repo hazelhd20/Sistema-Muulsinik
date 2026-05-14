@@ -6,12 +6,9 @@ use App\Jobs\ProcessQuotationJob;
 use App\Models\Document;
 use App\Models\Quotation;
 use App\Models\Requisition;
-use App\Models\RequisitionItem;
-use App\Models\Measure;
-use App\Models\Product;
-use App\Models\Supplier;
 use App\Services\DataNormalizerService;
 use App\Services\DocumentParsers\DocumentParserFactory;
+use App\Services\RequisitionItemResolverService;
 use App\Services\TaxNormalizerService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -627,7 +624,7 @@ class QuotationWizard extends Component
      *  GUARDAR REQUISICIÓN
      * ═══════════════════════════════════════════════════ */
 
-    public function saveRequisition(): void
+    public function saveRequisition(RequisitionItemResolverService $resolver): void
     {
         $this->validate([
             'projectId' => 'required|exists:projects,id',
@@ -641,174 +638,20 @@ class QuotationWizard extends Component
             'items.min' => 'Agrega al menos un producto.',
         ]);
 
-        // Auto-save Supplier if doesn't exist
-        $finalSupplierId = $this->supplierId;
-        if (empty($finalSupplierId) && !empty($this->supplierName)) {
-            $normalizer = app(DataNormalizerService::class);
-            $normalizedName = $normalizer->normalizeSupplierName($this->supplierName);
-
-            // Try to find it by normalized name
-            $existingSupplier = Supplier::where('normalized_name', $normalizedName)->first();
-            if ($existingSupplier) {
-                $finalSupplierId = $existingSupplier->id;
-            } else {
-                $newSupplier = Supplier::create([
-                    'trade_name' => $this->supplierName,
-                ]);
-                $finalSupplierId = $newSupplier->id;
-            }
-        }
-
-        // Auto-save Vendor (person) if name is provided
-        $finalVendorId = null;
-        if (!empty($this->vendorName) && $finalSupplierId) {
-            $normalizer = app(DataNormalizerService::class);
-            $vendorMatch = $normalizer->findMatchingVendor($this->vendorName, (int) $finalSupplierId);
-
-            if ($vendorMatch !== null) {
-                $finalVendorId = $vendorMatch['match']->id;
-            } else {
-                $newVendor = \App\Models\Vendor::create([
-                    'supplier_id' => $finalSupplierId,
-                    'name' => $this->vendorName,
-                ]);
-                $finalVendorId = $newVendor->id;
-            }
-        }
-
-        // RF-REQ-09: la requisición inicia como borrador
-        $requisition = Requisition::create([
-            'project_id' => $this->projectId,
-            'vendor_id' => $finalVendorId,
-            'annotations' => $this->annotations,
-            'status' => 'borrador',
-            'created_by' => auth()->id(),
-            'date' => $this->date,
-        ]);
-
-        // ═══════════════════════════════════════════════════════
-        // OPTIMIZACIÓN: Precarga batch de medidas y productos
-        // para evitar N+1 queries en el loop de items
-        // ═══════════════════════════════════════════════════════
-
-        $normalizer = app(DataNormalizerService::class);
-
-        // 1. Precargar TODAS las medidas relevantes en una sola query
-        $unitKeys = [];
-        foreach ($this->items as $item) {
-            if (!empty($item['unit'])) {
-                $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
-                $unitKeys[] = $normalizedUnit;
-                $unitKeys[] = mb_strtolower($item['unit']);
-            }
-        }
-
-        $existingMeasures = collect();
-        if (!empty($unitKeys)) {
-            $existingMeasures = Measure::whereIn('abbreviation', array_unique($unitKeys))
-                ->get()
-                ->keyBy(fn($m) => $m->abbreviation);  // indexar por abreviatura
-        }
-
-        // 2. Precargar TODOS los productos candidatos en una sola query
-        $normalizedProductNames = [];
-
-        foreach ($this->items as $index => $item) {
-            if (!empty($item['name'])) {
-                $normalizedName = $normalizer->normalizeText($item['name']);
-                $normalizedProductNames[$index] = $normalizedName;
-            }
-        }
-
-        $existingProducts = collect();
-        if (!empty($normalizedProductNames)) {
-            $existingProducts = Product::whereIn('normalized_name', array_unique($normalizedProductNames))
-                ->get()
-                ->keyBy('normalized_name');  // indexar por nombre normalizado
-        }
-
-        // 3. Procesar items con lookups O(1) desde colecciones precargadas
-        $requisitionItemsData = [];
-
-        foreach ($this->items as $index => $item) {
-            // --- Resolver Medida ---
-            $measureId = null;
-            if (!empty($item['unit'])) {
-                $normalizedUnit = $normalizer->normalizeUnit($item['unit']);
-                $measure = $existingMeasures->get($normalizedUnit);
-
-                if (!$measure) {
-                    // Usar unit_name de la IA como hint para el nombre completo
-                    $aiUnitName = $item['_match']['measure']['unit_name'] ?? null;
-                    $measure = Measure::create([
-                        'name' => $normalizer->getUnitName($normalizedUnit, $aiUnitName),
-                        'abbreviation' => $normalizedUnit,
-                    ]);
-                    $existingMeasures->put($normalizedUnit, $measure);
-                }
-                $measureId = $measure->id;
-            }
-
-            // --- Resolver Producto (O(1) desde cache) ---
-            $productId = $item['product_id'] ?? null;
-            if (empty($productId) && !empty($item['name'])) {
-                $normalizedName = $normalizedProductNames[$index] ?? $normalizer->normalizeText($item['name']);
-                $product = $existingProducts->get($normalizedName);
-
-                if ($product) {
-                    $productId = $product->id;
-                } else {
-                    // Resolver categoría (prioridad: category_id manual > búsqueda por nombre IA)
-                    $categoryId = $item['category_id'] ?? null;
-
-                    // Si no seleccionó del catálogo, buscar/crear por el nombre detectado por IA
-                    if (empty($categoryId) && !empty($item['category_name'])) {
-                        $matchedCategory = $normalizer->findMatchingCategory($item['category_name']);
-                        if ($matchedCategory) {
-                            $categoryId = $matchedCategory->id;
-                        } else {
-                            $newCategory = \App\Models\Category::create([
-                                'name' => mb_convert_case($item['category_name'], MB_CASE_TITLE, "UTF-8")
-                            ]);
-                            $categoryId = $newCategory->id;
-                        }
-                    }
-
-                    // Crear producto nuevo
-                    $newProduct = Product::create([
-                        'canonical_name' => $item['name'],
-                        'measure_id' => $measureId,
-                        'category_id' => $categoryId,
-                    ]);
-                    $productId = $newProduct->id;
-
-                    // Agregar a cache para futuros items con mismo nombre
-                    $existingProducts->put($normalizedName, $newProduct);
-                }
-            }
-
-            // Preparar datos del requisition item
-            $requisitionItemsData[] = [
-                'requisition_id' => $requisition->id,
-                'product_id' => $productId,
-                'measure_id' => $measureId,
-                'quantity' => $item['quantity'] ?? 0,
-                'unit_price' => $item['unit_price'] ?? 0,
-                'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
-                'tax_amount' => $item['tax_amount'] ?? null,
-                'tax_source' => $item['tax_source'] ?? null,
-                'line_subtotal' => $item['line_subtotal'] ?? null,
-                'line_total' => $item['line_total'] ?? null,
-                'supplier_id' => $finalSupplierId ?: null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        // 4. Insertar todos los requisition items en una sola query (si son muchos)
-        if (count($requisitionItemsData) > 0) {
-            RequisitionItem::insert($requisitionItemsData);
-        }
+        // Crear requisición con todos sus items usando el servicio
+        $requisition = $resolver->createRequisitionWithItems(
+            [
+                'project_id' => $this->projectId,
+                'annotations' => $this->annotations,
+                'status' => 'borrador',
+                'created_by' => auth()->id(),
+                'date' => $this->date,
+            ],
+            $this->items,
+            $this->supplierName,
+            $this->supplierId,
+            $this->vendorName
+        );
 
         // Vincular la cotización con la requisición
         if ($this->quotationId) {
@@ -816,10 +659,8 @@ class QuotationWizard extends Component
             if ($quotation) {
                 $quotation->update([
                     'requisition_id' => $requisition->id,
-                    'supplier_id' => $finalSupplierId ?: null,
+                    'supplier_id' => $requisition->vendor?->supplier_id,
                 ]);
-
-
             }
         }
 

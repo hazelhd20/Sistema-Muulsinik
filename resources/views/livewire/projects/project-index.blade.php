@@ -1,35 +1,20 @@
 <div>
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Gestión</p>
-            <h1 class="text-h1 text-text-primary">Proyectos</h1>
-        </div>
-        <button wire:click="openCreateModal" class="btn-primary">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            Nuevo Proyecto
-        </button>
-    </div>
+    <x-page-header subtitle="Gestión" title="Proyectos">
+        <x-slot:actions>
+            <button wire:click="openCreateModal" class="btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Nuevo Proyecto
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
-    {{-- Flash messages --}}
-    @if (session()->has('success'))
-        <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
-            wire:key="toast-success-{{ microtime(true) }}">
-        </div>
-    @endif
-    @if (session()->has('error'))
-        <div x-data
-            x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
-            wire:key="toast-error-{{ microtime(true) }}">
-        </div>
-    @endif
 
     {{-- Filters --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <div class="relative flex-1">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar proyecto o cliente..."
+            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar proyecto o cliente..."
                 class="input pl-10">
         </div>
         <x-custom-select wire:model.live="statusFilter" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados"
@@ -50,17 +35,7 @@
                             <p class="text-xs-fluid text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
                         </div>
                     </div>
-                    @php
-                        $statusColors = [
-                            'activo' => 'badge-success',
-                            'en_pausa' => 'badge-warning',
-                            'completado' => 'badge-primary',
-                            'cancelado' => 'badge-danger',
-                        ];
-                    @endphp
-                    <span class="badge {{ $statusColors[$project->status] ?? '' }} shrink-0">
-                        {{ ucfirst(str_replace('_', ' ', $project->status)) }}
-                    </span>
+                    <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" class="shrink-0" />
                 </div>
 
                 {{-- Budget progress --}}
@@ -90,21 +65,23 @@
                         <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                        <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary" title="Editar">
-                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        <a href="{{ url('/proyectos/' . $project->id) }}" class="btn-icon" title="Ver detalle">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </a>
+                        <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary" title="Editar proyecto">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
                         </button>
                         <button wire:click="deleteProject({{ $project->id }})"
                             wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
-                            class="btn-icon-danger" title="Eliminar">
+                            class="btn-icon-danger" title="Eliminar proyecto">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="col-span-full card text-center py-12">
-                <i data-lucide="folder-open" class="w-9 h-9 mx-auto mb-2 text-text-muted opacity-25"></i>
-                <p class="text-small text-text-muted">No hay proyectos registrados</p>
+            <div class="col-span-full card">
+                <x-empty-state icon="folder-open" title="No hay proyectos registrados" message="Crea tu primer proyecto para comenzar." />
             </div>
         @endforelse
     </div>
@@ -114,17 +91,7 @@
 
     {{-- Edit Project Modal --}}
     @if($showEditModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data
-            x-init="$el.querySelector('input')?.focus()">
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showEditModal', false)"></div>
-            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <h2 class="text-h2 font-semibold text-text-primary">Editar Proyecto</h2>
-                    <button wire:click="$set('showEditModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
-                        <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
-                    </button>
-                </div>
-
+        <x-modal show="showEditModal" title="Editar Proyecto">
                 <form wire:submit="updateProject" class="p-5 space-y-4">
                     <div>
                         <label class="label">Nombre del proyecto *</label>
@@ -172,38 +139,21 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showEditModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled">
-                            <span wire:loading.class="opacity-0" wire:target="updateProject"
-                                class="transition-opacity">Guardar Cambios</span>
-                            <span wire:loading wire:target="updateProject"
-                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                        fill="none" />
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
+                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="updateProject" class="inline-flex items-center gap-1.5">Guardar Cambios</span>
+                            <span wire:loading wire:target="updateProject" class="inline-flex items-center gap-2">
+                                <span class="spinner spinner-sm opacity-80"></span>
+                                Guardando…
                             </span>
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </x-modal>
     @endif
 
     {{-- Create Project Modal --}}
     @if($showCreateModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data
-            x-init="$el.querySelector('input')?.focus()">
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('showCreateModal', false)"></div>
-            <div class="relative bg-surface-card rounded-xl shadow-xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <h2 class="text-h2 font-semibold text-text-primary">Nuevo Proyecto</h2>
-                    <button wire:click="$set('showCreateModal', false)" class="p-1 rounded-md hover:bg-surface-hover">
-                        <i data-lucide="x" class="w-5 h-5 text-text-muted"></i>
-                    </button>
-                </div>
-
+        <x-modal show="showCreateModal" title="Nuevo Proyecto">
                 <form wire:submit="createProject" class="p-5 space-y-4">
                     <div>
                         <label class="label">Nombre del proyecto *</label>
@@ -247,21 +197,14 @@
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.class="opacity-0" wire:target="createProject"
-                                class="transition-opacity">Crear Proyecto</span>
-                            <span wire:loading wire:target="createProject"
-                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                        fill="none" />
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
+                            <span wire:loading.remove wire:target="createProject" class="inline-flex items-center gap-1.5">Crear Proyecto</span>
+                            <span wire:loading wire:target="createProject" class="inline-flex items-center gap-2">
+                                <span class="spinner spinner-sm opacity-80"></span>
+                                Creando…
                             </span>
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </x-modal>
     @endif
 </div>

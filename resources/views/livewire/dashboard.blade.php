@@ -1,15 +1,12 @@
 <div>
 
     {{-- ── Page Header ──────────────────────────────────── --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Panel de Control</p>
-            <h1 class="text-h1 text-text-primary">
-                {{ explode(' ', auth()->user()->name ?? 'Usuario')[0] }},
-                <span class="text-text-secondary font-normal">aquí está el resumen de hoy.</span>
-            </h1>
-        </div>
-        <div class="flex items-center gap-2">
+    <x-page-header subtitle="Panel de Control">
+        <x-slot:heading>
+            {{ explode(' ', auth()->user()->name ?? 'Usuario')[0] }},
+            <span class="text-text-secondary font-normal">aquí está el resumen de hoy.</span>
+        </x-slot:heading>
+        <x-slot:actions>
             <a href="{{ url('/requisiciones') }}" class="btn-secondary">
                 <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
                 Requisiciones
@@ -18,8 +15,8 @@
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 Nuevo gasto
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- ── KPI Strip ─────────────────────────────────────── --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
@@ -167,23 +164,13 @@
                 </thead>
                 <tbody>
                     @forelse($recentProjects as $project)
-                        @php
-                            $statusColors = [
-                                'activo'     => 'badge-success',
-                                'en_pausa'   => 'badge-warning',
-                                'completado' => 'badge-primary',
-                                'cancelado'  => 'badge-danger',
-                            ];
-                        @endphp
                         <tr>
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
                                 <p class="text-xs-fluid text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
                             </td>
                             <td>
-                                <span class="badge {{ $statusColors[$project->status] ?? 'badge-secondary' }}">
-                                    {{ ucfirst(str_replace('_', ' ', $project->status)) }}
-                                </span>
+                                <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
                             </td>
                             <td class="text-right text-small font-semibold text-text-primary tabular-nums">
                                 ${{ number_format($project->budget, 0, '.', ',') }}
@@ -191,9 +178,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center py-10">
-                                <i data-lucide="folder-open" class="w-7 h-7 mx-auto mb-2 text-text-muted opacity-25"></i>
-                                <p class="text-small text-text-muted">Sin proyectos registrados</p>
+                            <td colspan="3">
+                                <x-empty-state icon="folder-open" title="Sin proyectos registrados" />
                             </td>
                         </tr>
                     @endforelse
@@ -221,14 +207,6 @@
                 </thead>
                 <tbody>
                     @forelse($recentRequisitions as $req)
-                        @php
-                            $reqStatusColors = [
-                                'borrador'  => 'badge-secondary',
-                                'pendiente' => 'badge-warning',
-                                'aprobada'  => 'badge-success',
-                                'rechazada' => 'badge-danger',
-                            ];
-                        @endphp
                         <tr>
                             <td>
                                 <p class="font-medium text-text-primary text-small">
@@ -237,17 +215,14 @@
                                 <p class="text-xs-fluid text-text-muted">{{ $req->creator->name ?? '' }}</p>
                             </td>
                             <td>
-                                <span class="badge {{ $reqStatusColors[$req->status] ?? 'badge-secondary' }}">
-                                    {{ ucfirst($req->status) }}
-                                </span>
+                                <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                             </td>
                             <td class="text-small text-text-secondary">{{ $req->project->name ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center py-10">
-                                <i data-lucide="clipboard" class="w-7 h-7 mx-auto mb-2 text-text-muted opacity-25"></i>
-                                <p class="text-small text-text-muted">Sin requisiciones</p>
+                            <td colspan="3">
+                                <x-empty-state icon="clipboard" title="Sin requisiciones" />
                             </td>
                         </tr>
                     @endforelse

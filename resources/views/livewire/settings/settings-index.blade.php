@@ -1,199 +1,281 @@
-<div x-data="{ tab: @entangle('activeTab') }" class="space-y-6">
+<div x-data="{ tab: @entangle('activeTab') }">
 
     {{-- Header --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-xl font-bold text-text-primary">Configuración</h1>
-            <p class="text-sm text-text-secondary">Administra la configuración general del sistema</p>
-        </div>
-    </div>
+    <x-page-header subtitle="Sistema" title="Configuración" />
 
     {{-- Tabs --}}
-    <div class="border-b border-border">
-        <nav class="flex gap-1">
-            <button @click="tab = 'empresa'"
-                    :class="tab === 'empresa' ? 'border-primary-600 text-primary-600' : 'border-transparent text-text-secondary hover:text-text-primary'"
-                    class="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors">
-                <i data-lucide="building-2" class="w-4 h-4"></i>
-                <span>Empresa</span>
-            </button>
-            <button @click="tab = 'documentos'"
-                    :class="tab === 'documentos' ? 'border-primary-600 text-primary-600' : 'border-transparent text-text-secondary hover:text-text-primary'"
-                    class="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors">
-                <i data-lucide="file-text" class="w-4 h-4"></i>
-                <span>Documentos</span>
-            </button>
-        </nav>
-    </div>
+    <nav class="tab-nav">
+        <button @click="tab = 'empresa'" :class="tab === 'empresa' ? 'active' : ''" class="tab-btn">
+            <i data-lucide="building-2"></i>
+            Empresa
+        </button>
+        <button @click="tab = 'documentos'" :class="tab === 'documentos' ? 'active' : ''" class="tab-btn">
+            <i data-lucide="file-text"></i>
+            Documentos
+        </button>
+    </nav>
 
-    {{-- Tab: Empresa --}}
-    <div x-show="tab === 'empresa'" x-transition class="space-y-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title flex items-center gap-2">
-                    <i data-lucide="building-2" class="w-5 h-5 text-primary-600"></i>
-                    Datos de la Empresa
-                </h2>
-                <p class="card-subtitle">Esta información aparecerá en los documentos generados (PDFs, cotizaciones)</p>
-            </div>
+    {{-- ══ Tab: Empresa ══ --}}
+    <div x-show="tab === 'empresa'" x-transition:enter="transition ease-out duration-150"
+         x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
 
-            <form wire:submit="saveEmpresa" class="card-body space-y-5">
+        <form wire:submit="saveEmpresa">
+
+            {{-- Card: Identidad --}}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">
+                            <i data-lucide="building-2" class="w-4 h-4"></i>
+                            Identidad de la empresa
+                        </h2>
+                        <p class="card-subtitle">Aparece en PDFs, cotizaciones y documentos generados.</p>
+                    </div>
+                </div>
+
                 {{-- Logo --}}
-                <div>
-                    <label class="input-label">Logo de la empresa</label>
-                    <div class="flex items-center gap-4 mt-2">
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Logo</p>
+                        <p class="section-row-desc">Formatos JPG, PNG, SVG. Máximo 1 MB.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
                         @if($company_logo)
-                            <div class="relative">
-                                <img src="{{ Storage::url($company_logo) }}" alt="Logo" class="h-20 w-auto object-contain border rounded-lg p-2">
-                                <button type="button" wire:click="deleteLogo" class="absolute -top-2 -right-2 p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200">
-                                    <i data-lucide="x" class="w-4 h-4"></i>
+                            <div class="relative shrink-0">
+                                <img src="{{ Storage::url($company_logo) }}" alt="Logo"
+                                     class="h-16 w-auto object-contain border border-border rounded-lg p-2 bg-surface-main">
+                                <button type="button" wire:click="deleteLogo"
+                                        class="absolute -top-2 -right-2 icon-wrap-sm bg-white border border-border shadow-sm text-danger hover:bg-red-50 transition-colors">
+                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         @else
-                            <div class="h-20 w-32 bg-surface-card border-2 border-dashed border-border rounded-lg flex items-center justify-center text-text-muted">
-                                <span class="text-sm">Sin logo</span>
+                            <div class="shrink-0 h-16 w-28 bg-surface-main border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1 text-text-muted">
+                                <i data-lucide="image" class="w-5 h-5 opacity-30"></i>
+                                <span class="text-xs-fluid">Sin logo</span>
                             </div>
                         @endif
-
-                        <div class="flex-1">
-                            <input type="file" wire:model="newLogo" accept="image/*" class="input-file">
-                            <p class="text-xs text-text-muted mt-1">Formatos: JPG, PNG, SVG. Máx: 1MB</p>
-                            @error('newLogo') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        <div class="flex-1 min-w-0">
+                            <input type="file" wire:model="newLogo" accept="image/*" class="input text-small">
+                            @error('newLogo') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {{-- Nombre --}}
+                {{-- Nombre --}}
+                <div class="section-row">
                     <div>
-                        <label class="input-label">Nombre de la empresa *</label>
+                        <p class="section-row-label">Nombre de la empresa <span class="text-danger">*</span></p>
+                        <p class="section-row-desc">Razón social completa.</p>
+                    </div>
+                    <div>
                         <input type="text" wire:model="company_name" class="input" placeholder="Constructora Muulsinik S.A. de C.V.">
-                        @error('company_name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- RFC --}}
-                    <div>
-                        <label class="input-label">RFC</label>
-                        <input type="text" wire:model="company_rfc" class="input" placeholder="ABC123456ABC1">
-                        @error('company_rfc') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Dirección --}}
-                    <div class="md:col-span-2">
-                        <label class="input-label">Dirección fiscal</label>
-                        <textarea wire:model="company_address" rows="2" class="input" placeholder="Calle, número, colonia, ciudad, código postal"></textarea>
-                        @error('company_address') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Teléfono --}}
-                    <div>
-                        <label class="input-label">Teléfono</label>
-                        <input type="text" wire:model="company_phone" class="input" placeholder="+52 999 123 4567">
-                        @error('company_phone') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Email --}}
-                    <div>
-                        <label class="input-label">Correo electrónico</label>
-                        <input type="email" wire:model="company_email" class="input" placeholder="contacto@muulsinik.com">
-                        @error('company_email') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        @error('company_name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                <div class="flex justify-end pt-2">
-                    <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                        <i data-lucide="save" class="w-4 h-4" wire:loading.remove wire:target="saveEmpresa"></i>
-                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin" wire:loading wire:target="saveEmpresa"></i>
-                        <span wire:loading.remove wire:target="saveEmpresa">Guardar cambios</span>
-                        <span wire:loading wire:target="saveEmpresa">Guardando...</span>
-                    </button>
+                {{-- RFC --}}
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">RFC</p>
+                        <p class="section-row-desc">Registro Federal de Contribuyentes.</p>
+                    </div>
+                    <div>
+                        <input type="text" wire:model="company_rfc" class="input" placeholder="ABC123456ABC1" style="font-family: ui-monospace, monospace; letter-spacing: 0.05em;">
+                        @error('company_rfc') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
                 </div>
-            </form>
-        </div>
-    </div>
 
-    {{-- Tab: Documentos --}}
-    <div x-show="tab === 'documentos'" x-transition class="space-y-6" style="display: none;">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title flex items-center gap-2">
-                    <i data-lucide="file-text" class="w-5 h-5 text-primary-600"></i>
-                    Configuración de Documentos
-                </h2>
-                <p class="card-subtitle">Personaliza la numeración y formato de documentos</p>
+                {{-- Dirección --}}
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Dirección fiscal</p>
+                        <p class="section-row-desc">Calle, número, colonia, municipio, código postal.</p>
+                    </div>
+                    <div>
+                        <textarea wire:model="company_address" rows="2" class="input" placeholder="Calle 60 Norte #123, Col. Centro, Mérida, Yuc. C.P. 97000"></textarea>
+                        @error('company_address') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                {{-- Contacto --}}
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Contacto</p>
+                        <p class="section-row-desc">Teléfono y correo para documentos.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Teléfono</label>
+                            <input type="text" wire:model="company_phone" class="input" placeholder="+52 999 123 4567">
+                            @error('company_phone') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="label">Correo electrónico</label>
+                            <input type="email" wire:model="company_email" class="input" placeholder="contacto@empresa.com">
+                            @error('company_email') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <form wire:submit="saveDocumentos" class="card-body space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {{-- Prefijo Requisiciones --}}
-                    <div>
-                        <label class="input-label">Prefijo de requisiciones</label>
-                        <input type="text" wire:model="req_prefix" class="input" placeholder="REQ-">
-                        <p class="text-xs text-text-muted mt-1">Ejemplo: {{ $req_prefix }}{{ $req_next_number }}</p>
-                        @error('req_prefix') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
+            {{-- Footer action --}}
+            <div class="flex justify-end">
+                <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="saveEmpresa" class="inline-flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        Guardar cambios
+                    </span>
+                    <span wire:loading wire:target="saveEmpresa" class="inline-flex items-center gap-2">
+                        <span class="spinner spinner-sm opacity-80"></span>
+                        Guardando…
+                    </span>
+                </button>
+            </div>
 
-                    {{-- Siguiente número --}}
+        </form>
+    </div>
+
+    {{-- ══ Tab: Documentos ══ --}}
+    <div x-show="tab === 'documentos'" x-transition:enter="transition ease-out duration-150"
+         x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+         style="display:none;">
+
+        <form wire:submit="saveDocumentos">
+
+            {{-- Card: Numeración --}}
+            <div class="card mb-4">
+                <div class="card-header">
                     <div>
-                        <label class="input-label">Siguiente número de requisición</label>
+                        <h2 class="card-title">
+                            <i data-lucide="hash" class="w-4 h-4"></i>
+                            Numeración de documentos
+                        </h2>
+                        <p class="card-subtitle">Controla el prefijo y secuencia de requisiciones.</p>
+                    </div>
+                </div>
+
+                {{-- Prefijo --}}
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Prefijo de requisiciones</p>
+                        <p class="section-row-desc">Texto fijo que precede al número. Ej: <span class="font-mono text-text-primary">REQ-</span></p>
+                    </div>
+                    <div>
+                        <input type="text" wire:model="req_prefix" class="input" placeholder="REQ-"
+                               style="font-family: ui-monospace, monospace; letter-spacing: 0.05em;">
+                        @if($req_prefix && $req_next_number)
+                            <p class="mt-1.5 text-xs-fluid text-text-muted">
+                                Próximo número:
+                                <span class="font-mono font-medium text-text-primary">{{ $req_prefix }}{{ str_pad($req_next_number, 4, '0', STR_PAD_LEFT) }}</span>
+                            </p>
+                        @endif
+                        @error('req_prefix') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                {{-- Siguiente número --}}
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Siguiente número</p>
+                        <p class="section-row-desc">Se incrementa automáticamente con cada requisición creada.</p>
+                    </div>
+                    <div>
                         <input type="number" wire:model="req_next_number" class="input" min="1">
-                        <p class="text-xs text-text-muted mt-1">Se incrementa automáticamente</p>
-                        @error('req_next_number') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        @error('req_next_number') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- Card: Moneda --}}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">
+                            <i data-lucide="coins" class="w-4 h-4"></i>
+                            Formato de moneda
+                        </h2>
+                        <p class="card-subtitle">Símbolo y formato numérico para importes.</p>
                     </div>
                 </div>
 
-                <div class="border-t border-border pt-5">
-                    <h3 class="text-sm font-semibold text-text-primary mb-4">Formato de moneda</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        {{-- Símbolo --}}
-                        <div>
-                            <label class="input-label">Símbolo monetario</label>
-                            <input type="text" wire:model="currency_symbol" class="input" placeholder="$">
-                            @error('currency_symbol') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                {{-- Símbolo + posición + decimales --}}
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Símbolo y posición</p>
+                        <p class="section-row-desc">Define cómo se muestran los montos en documentos.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="label">Símbolo</label>
+                                <input type="text" wire:model.live="currency_symbol" class="input" placeholder="$">
+                                @error('currency_symbol') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="label">Posición</label>
+                                <select wire:model.live="currency_position" class="input">
+                                    <option value="before">Antes ($100)</option>
+                                    <option value="after">Después (100$)</option>
+                                </select>
+                                @error('currency_position') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="label">Decimales</label>
+                                <input type="number" wire:model.live="decimal_places" class="input" min="0" max="4">
+                                @error('decimal_places') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            </div>
                         </div>
-
-                        {{-- Posición --}}
-                        <div>
-                            <label class="input-label">Posición del símbolo</label>
-                            <select wire:model="currency_position" class="input">
-                                <option value="before">Antes ($100)</option>
-                                <option value="after">Después (100$)</option>
-                            </select>
-                            @error('currency_position') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                        </div>
-
-                        {{-- Decimales --}}
-                        <div>
-                            <label class="input-label">Decimales</label>
-                            <input type="number" wire:model="decimal_places" class="input" min="0" max="4">
-                            @error('decimal_places') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        <div class="flex items-center gap-2 text-xs-fluid text-text-muted">
+                            <span>Vista previa:</span>
+                            <span class="font-mono bg-surface-main px-2.5 py-1 rounded-md border border-border text-text-primary font-medium">
+                                {{ $currency_position === 'before' ? $currency_symbol : '' }}1,234.{{ str_repeat('0', max(0, (int)$decimal_places)) }}{{ $currency_position === 'after' ? $currency_symbol : '' }}
+                            </span>
                         </div>
                     </div>
-                    <p class="text-sm text-text-secondary mt-3">
-                        Vista previa:
-                        <span class="font-mono bg-surface-card px-2 py-1 rounded">
-                            {{ $currency_position === 'before' ? $currency_symbol : '' }}1,234.{{ str_repeat('0', $decimal_places) }}{{ $currency_position === 'after' ? $currency_symbol : '' }}
-                        </span>
-                    </p>
+                </div>
+            </div>
+
+            {{-- Card: Términos --}}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">
+                            <i data-lucide="scroll-text" class="w-4 h-4"></i>
+                            Términos y condiciones
+                        </h2>
+                        <p class="card-subtitle">Texto que aparece al pie de las cotizaciones generadas.</p>
+                    </div>
                 </div>
 
-                <div class="border-t border-border pt-5">
-                    <label class="input-label">Términos y condiciones (para cotizaciones)</label>
-                    <textarea wire:model="terms_conditions" rows="4" class="input" placeholder="Precios sujetos a cambio sin previo aviso. Vigencia de cotización: 15 días..."></textarea>
-                    <p class="text-xs text-text-muted mt-1">Aparecerá al final de las cotizaciones generadas</p>
-                    @error('terms_conditions') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                <div class="section-row">
+                    <div>
+                        <p class="section-row-label">Contenido</p>
+                        <p class="section-row-desc">Puede incluir vigencia, condiciones de pago, garantías, etc.</p>
+                    </div>
+                    <div>
+                        <textarea wire:model="terms_conditions" rows="5" class="input"
+                                  placeholder="Precios sujetos a cambio sin previo aviso. Vigencia de cotización: 15 días naturales…"></textarea>
+                        @error('terms_conditions') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
                 </div>
+            </div>
 
-                <div class="flex justify-end pt-2">
-                    <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                        <i data-lucide="save" class="w-4 h-4" wire:loading.remove wire:target="saveDocumentos"></i>
-                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin" wire:loading wire:target="saveDocumentos"></i>
-                        <span wire:loading.remove wire:target="saveDocumentos">Guardar cambios</span>
-                        <span wire:loading wire:target="saveDocumentos">Guardando...</span>
-                    </button>
-                </div>
-            </form>
-        </div>
+            {{-- Footer action --}}
+            <div class="flex justify-end">
+                <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="saveDocumentos" class="inline-flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        Guardar cambios
+                    </span>
+                    <span wire:loading wire:target="saveDocumentos" class="inline-flex items-center gap-2">
+                        <span class="spinner spinner-sm opacity-80"></span>
+                        Guardando…
+                    </span>
+                </button>
+            </div>
+
+        </form>
     </div>
 
 </div>

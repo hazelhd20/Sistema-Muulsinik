@@ -1,11 +1,7 @@
  <div>
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-widest mb-0.5">Analítica</p>
-            <h1 class="text-h1 text-text-primary">Reportes</h1>
-        </div>
-        <div class="flex items-center gap-3">
+    <x-page-header subtitle="Analítica" title="Reportes">
+        <x-slot:actions>
             <x-custom-select 
                 wire:model.live="projectFilter" 
                 :options="$projects->pluck('name', 'id')->toArray()" 
@@ -18,8 +14,8 @@
                 class="w-auto min-w-[140px]"
                 placeholder=""
             />
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">

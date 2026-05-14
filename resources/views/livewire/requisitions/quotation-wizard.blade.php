@@ -259,22 +259,6 @@
                 @endif
             </div>
         </div>
-
-        <style>
-            @keyframes progress-indeterminate {
-                0% {
-                    transform: translateX(-100%);
-                }
-
-                50% {
-                    transform: translateX(0);
-                }
-
-                100% {
-                    transform: translateX(100%);
-                }
-            }
-        </style>
     @endif
 
     {{-- ═══════ PASO 3: FORMULARIO EDITABLE ═══════ --}}
