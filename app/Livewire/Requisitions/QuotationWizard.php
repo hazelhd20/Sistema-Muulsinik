@@ -532,6 +532,16 @@ class QuotationWizard extends Component
         }
     }
 
+    public function updatedProjectId(): void
+    {
+        $this->detectAlerts();
+    }
+
+    public function updatedDate(): void
+    {
+        $this->detectAlerts();
+    }
+
     /**
      * Hook para cuando el nombre del proveedor cambia manualmente.
      * Intenta resolver el ID del proveedor para filtrar vendedores.

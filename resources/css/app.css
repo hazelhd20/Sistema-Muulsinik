@@ -580,6 +580,59 @@ input[type="search"]::-webkit-search-results-decoration {
         text-align: right;
     }
 
+    /* ── Table Embedded (sub-tables inside cards/modals) ── */
+    .table-embedded {
+        border: 1px solid var(--color-border);
+        border-radius: 0.625rem;
+        overflow-x: auto;
+    }
+    .table-embedded table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table-embedded th {
+        text-align: left;
+        padding: 0.5rem 0.875rem;
+        font-size: var(--font-size-xs);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background-color: #F8F9FB;
+        border-bottom: 1px solid var(--color-border);
+        white-space: nowrap;
+    }
+    .table-embedded td {
+        padding: 0.5625rem 0.875rem;
+        font-size: var(--font-size-body);
+        color: var(--color-text-primary);
+        border-bottom: 1px solid #F4F5F7;
+        vertical-align: middle;
+    }
+    .table-embedded tbody tr:last-child td { border-bottom: none; }
+    .table-embedded tbody tr { transition: background-color 80ms; }
+    .table-embedded tbody tr:hover td { background-color: #FAFBFF; }
+    /* Inputs inside table cells */
+    .table-embedded td .input {
+        height: 2rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        min-width: 0;
+    }
+    /* Tfoot totals row */
+    .table-embedded tfoot tr td {
+        padding: 0.5rem 0.875rem;
+        font-size: var(--font-size-small);
+        border-top: 1px solid var(--color-border);
+        background-color: #F8F9FB;
+        border-bottom: none;
+    }
+    .table-embedded tfoot tr:last-child td {
+        border-top: 2px solid var(--color-border);
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+
     /* ── Focus-visible ── */
     .btn-primary:focus-visible,
     .btn-danger:focus-visible,

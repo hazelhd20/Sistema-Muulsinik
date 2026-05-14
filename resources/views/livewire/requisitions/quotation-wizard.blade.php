@@ -223,14 +223,8 @@
                         </p>
                     </div>
 
-                    {{-- Animated progress bar --}}
-                    <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary-500 rounded-full animate-pulse"
-                            style="width: 70%; animation: progress-indeterminate 2s ease-in-out infinite"></div>
-                    </div>
-
-                    <p class="text-xs-fluid text-text-muted mt-4">
-                        <i data-lucide="info" class="w-3 h-3 inline"></i>
+                    <p class="text-xs-fluid text-text-muted mt-4 flex items-center justify-center gap-1.5">
+                        <i data-lucide="info" class="w-3 h-3 shrink-0"></i>
                         No cierres esta página, el resultado aparecerá automáticamente.
                     </p>
 
@@ -326,317 +320,242 @@
 
             {{-- General Info --}}
             <div class="card mb-6">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-h2 text-text-primary flex items-center gap-2">
-                            <i data-lucide="info" class="w-5 h-5 text-primary-600"></i>
-                            Información General
-                        </h2>
-                        @php
-                            $quotation = $quotationId ? \App\Models\Quotation::find($quotationId) : null;
-                        @endphp
-                        @if($quotation)
-                            <button type="button"
-                                @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')"
-                                class="btn-secondary text-small">
-                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                Ver Documento Original
-                            </button>
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-h2 text-text-primary">Información General</h2>
+                    @php
+                        $quotation = $quotationId ? \App\Models\Quotation::find($quotationId) : null;
+                    @endphp
+                    @if($quotation)
+                        <button type="button"
+                            @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')"
+                            class="btn-secondary">
+                            <i data-lucide="file-search" class="w-4 h-4"></i>
+                            Ver documento
+                        </button>
+                    @endif
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="label">Proyecto *</label>
+                        <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
+                            placeholder="Seleccionar proyecto..." />
+                        @error('projectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="label">Proveedor</label>
+                        <input type="text" wire:model.live="supplierName" list="suppliers-list" class="input"
+                            placeholder="Nombre del proveedor...">
+                        <datalist id="suppliers-list">
+                            @foreach($suppliers as $supplier)
+                                <option value="{{ $supplier->trade_name }}"></option>
+                            @endforeach
+                        </datalist>
+                        @if(($supplierMatch['status'] ?? '') === 'new')
+                            <p class="mt-1 text-xs-fluid text-amber-600">Se creará como nuevo proveedor</p>
+                        @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
+                            <p class="mt-1 text-xs-fluid text-primary-600">Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%</p>
+                        @elseif(($supplierMatch['status'] ?? '') === 'exact')
+                            <p class="mt-1 text-xs-fluid text-emerald-600">Proveedor existente</p>
                         @endif
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Proyecto *</label>
-                            <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
-                                placeholder="Seleccionar proyecto..." />
-                            @error('projectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Fecha de creación *</label>
-                            <input wire:model="date" type="date" class="input">
-                            @error('date') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Proveedor</label>
-                            <div class="flex flex-col gap-1">
-                                <input type="text" wire:model.live="supplierName" list="suppliers-list" class="input"
-                                    placeholder="Seleccionar o escribir nuevo proveedor...">
-                                <datalist id="suppliers-list">
-                                    @foreach($suppliers as $supplier)
-                                        <option value="{{ $supplier->trade_name }}"></option>
-                                    @endforeach
-                                </datalist>
-                                @if(($supplierMatch['status'] ?? '') === 'new')
-                                    <span class="text-xs-fluid text-amber-600 font-medium">
-                                        <i data-lucide="plus-circle" class="w-3 h-3 inline"></i> Se creará como nuevo proveedor.
-                                    </span>
-                                @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
-                                    <span class="text-xs-fluid text-blue-600 font-medium">
-                                        <i data-lucide="search" class="w-3 h-3 inline"></i>
-                                        Detectado por similitud ({{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%)
-                                    </span>
-                                @elseif(($supplierMatch['status'] ?? '') === 'exact')
-                                    <span class="text-xs-fluid text-green-600 font-medium">
-                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Proveedor existente.
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Tienda / Sucursal</label>
-                            <input wire:model="storeName" type="text" class="input" placeholder="Sucursal (opcional)">
-                        </div>
-
-                        <div>
-                            <label class="block text-body font-medium text-text-primary mb-1.5">Vendedor (Atiende)</label>
-                            <div class="flex flex-col gap-1">
-                                <input wire:model.live="vendorName" type="text" list="vendors-list" class="input"
-                                    placeholder="Seleccionar o escribir nombre del vendedor...">
-                                <datalist id="vendors-list">
-                                    @foreach($vendors as $vendor)
-                                        <option value="{{ $vendor->name }}"></option>
-                                    @endforeach
-                                </datalist>
-                                @if(($vendorMatch['status'] ?? '') === 'new')
-                                    <span class="text-xs-fluid text-amber-600 font-medium">
-                                        <i data-lucide="plus-circle" class="w-3 h-3 inline"></i> Se creará como nuevo vendedor.
-                                    </span>
-                                @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
-                                    <span class="text-xs-fluid text-blue-600 font-medium">
-                                        <i data-lucide="search" class="w-3 h-3 inline"></i>
-                                        Detectado por similitud ({{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%)
-                                    </span>
-                                @elseif(($vendorMatch['status'] ?? '') === 'exact')
-                                    <span class="text-xs-fluid text-green-600 font-medium">
-                                        <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Vendedor existente.
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
+                    <div>
+                        <label class="label">Tienda / Sucursal</label>
+                        <input wire:model="storeName" type="text" class="input" placeholder="Sucursal (opcional)">
                     </div>
 
-                    <div class="mt-4">
-                        <label class="block text-body font-medium text-text-primary mb-1.5">Anotaciones</label>
-                        <textarea wire:model="annotations" class="input" rows="2"
-                            placeholder="Anotaciones de la requisición (opcional)..."></textarea>
-                        @error('annotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                    <div>
+                        <label class="label">Fecha *</label>
+                        <input wire:model="date" type="date" class="input">
+                        @error('date') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
+
+                    <div>
+                        <label class="label">Vendedor</label>
+                        <input wire:model.live="vendorName" type="text" list="vendors-list" class="input"
+                            placeholder="Nombre del vendedor...">
+                        <datalist id="vendors-list">
+                            @foreach($vendors as $vendor)
+                                <option value="{{ $vendor->name }}"></option>
+                            @endforeach
+                        </datalist>
+                        @if(($vendorMatch['status'] ?? '') === 'new')
+                            <p class="mt-1 text-xs-fluid text-amber-600">Se creará como nuevo vendedor</p>
+                        @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
+                            <p class="mt-1 text-xs-fluid text-primary-600">Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%</p>
+                        @elseif(($vendorMatch['status'] ?? '') === 'exact')
+                            <p class="mt-1 text-xs-fluid text-emerald-600">Vendedor existente</p>
+                        @endif
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label">Anotaciones</label>
+                    <textarea wire:model="annotations" class="input" rows="2"
+                        placeholder="Anotaciones de la requisición (opcional)..."></textarea>
+                    @error('annotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             {{-- IVA Toggle — visible cuando la IA no pudo detectar --}}
             @if($quotationIncludesTax === null && count($items) > 0)
-                <div class="card mb-6 border-amber-200 bg-amber-50/50">
-                    <div class="p-5">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="receipt" class="w-5 h-5 text-amber-600" wire:ignore></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="text-small font-semibold text-amber-900 mb-1">¿Los precios incluyen IVA?</h3>
-                                <p class="text-xs-fluid text-amber-700 mb-3">No se detectó información de IVA en la cotización.
-                                    Indica
-                                    si los precios ya incluyen el 16% de IVA.</p>
-                                <div class="flex items-center gap-3">
-                                    <button type="button" wire:click="setTaxInclusion(false)" class="btn-secondary">
-                                        Precios antes de IVA
-                                    </button>
-                                    <button type="button" wire:click="setTaxInclusion(true)" class="btn-secondary">
-                                        Precios con IVA incluido
-                                    </button>
-                                </div>
-                            </div>
+                <div class="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <i data-lucide="receipt" class="w-4 h-4 text-amber-700" wire:ignore></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-small font-semibold text-amber-900 mb-0.5">¿Los precios incluyen IVA?</p>
+                        <p class="text-xs-fluid text-amber-700 mb-3">No se detectó información de IVA. Indica si los precios ya incluyen el 16%.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" wire:click="setTaxInclusion(false)" class="btn-secondary">
+                                Sin IVA incluido
+                            </button>
+                            <button type="button" wire:click="setTaxInclusion(true)" class="btn-secondary">
+                                IVA ya incluido
+                            </button>
                         </div>
                     </div>
                 </div>
             @elseif($quotationIncludesTax !== null && count($items) > 0)
-                {{-- Estado resuelto: badge informativo compacto --}}
-                <div class="card mb-6">
-                    <div class="px-5 py-3 flex items-center justify-between">
-                        <div class="flex items-center gap-2 text-body">
-                            <i data-lucide="receipt" class="w-4 h-4 text-green-600" wire:ignore></i>
-                            <span class="text-text-primary font-medium">IVA:</span>
-                            @if($quotationIncludesTax)
-                                <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-xs-fluid font-medium">Precios con
-                                    IVA
-                                    incluido — se desglosa automáticamente</span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs-fluid font-medium">Precios
-                                    sin IVA
-                                    — se calcula al 16%</span>
-                            @endif
-                            @if($taxDetectedByAI)
-                                <span class="text-xs-fluid text-text-muted">(detectado por IA)</span>
-                            @endif
-                        </div>
-                        <button type="button" wire:click="$set('quotationIncludesTax', null)"
-                            class="text-xs-fluid text-text-muted hover:text-primary-600 transition">
-                            Cambiar
-                        </button>
+                <div class="mb-6 px-4 py-3 rounded-xl border border-border bg-surface-card flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="receipt" class="w-4 h-4 text-emerald-600" wire:ignore></i>
+                        <span class="text-small font-medium text-text-primary">IVA:</span>
+                        @if($quotationIncludesTax)
+                            <span class="badge badge-primary">Con IVA incluido — se desglosa automáticamente</span>
+                        @else
+                            <span class="badge badge-success">Sin IVA — se calcula al 16%</span>
+                        @endif
+                        @if($taxDetectedByAI)
+                            <span class="text-xs-fluid text-text-muted">· detectado por IA</span>
+                        @endif
                     </div>
+                    <button type="button" wire:click="$set('quotationIncludesTax', null)"
+                        class="text-xs-fluid text-text-muted hover:text-primary-600 transition">
+                        Cambiar
+                    </button>
                 </div>
             @endif
 
             {{-- Products Table --}}
             <div class="card mb-6">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-h2 text-text-primary flex items-center gap-2">
-                            <i data-lucide="package" class="w-5 h-5 text-primary-600"></i>
-                            Productos Extraídos
-                            <span class="text-body font-normal text-text-muted">({{ count($items) }}
-                                {{ count($items) === 1 ? 'producto' : 'productos' }})</span>
-                        </h2>
-                        <button type="button" wire:click="addItem" class="btn-secondary text-small">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            Agregar producto
-                        </button>
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-h2 text-text-primary">Productos</h2>
+                        <span class="badge badge-secondary">{{ count($items) }} {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
                     </div>
+                    <button type="button" wire:click="addItem" class="btn-secondary">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Agregar
+                    </button>
+                </div>
 
-                    @error('items') <p class="mb-3 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                @error('items') <p class="mb-3 text-xs-fluid text-danger">{{ $message }}</p> @enderror
 
-                    @if(count($items) > 0)
-                        <div class="overflow-x-auto rounded-xl border border-gray-100">
-                            <datalist id="measures-list">
-                                @foreach($measures as $measure)
-                                    <option value="{{ $measure->name }}">
-                                        {{ $measure->abbreviation ? '(' . $measure->abbreviation . ')' : '' }}
-                                    </option>
-                                @endforeach
-                            </datalist>
-                            <datalist id="categories-list">
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->name }}"></option>
-                                @endforeach
-                            </datalist>
-                            <table class="w-full text-body">
+                <datalist id="measures-list">
+                    @foreach($measures as $measure)
+                        <option value="{{ $measure->name }}">{{ $measure->abbreviation ? '(' . $measure->abbreviation . ')' : '' }}</option>
+                    @endforeach
+                </datalist>
+                <datalist id="categories-list">
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->name }}"></option>
+                    @endforeach
+                </datalist>
+
+                @if(count($items) > 0)
+                        <div class="table-embedded">
+                            <table>
                                 <thead>
-                                    <tr class="bg-surface-main">
-                                        <th
-                                            class="text-left px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[25%]">
-                                            Producto</th>
-                                        <th
-                                            class="text-left px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[12%]">
-                                            Categoría</th>
-                                        <th
-                                            class="text-center px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[8%]">
-                                            Cant.</th>
-                                        <th
-                                            class="text-center px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[10%]">
-                                            Unidad</th>
-                                        <th
-                                            class="text-right px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[14%]">
-                                            P.U. s/IVA</th>
-                                        <th
-                                            class="text-right px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[14%]">
-                                            Subtotal</th>
-                                        <th
-                                            class="text-right px-3 py-2.5 text-xs-fluid font-semibold text-text-muted uppercase w-[11%]">
-                                            Total</th>
-                                        <th class="px-3 py-2.5 w-[6%]"></th>
+                                    <tr>
+                                        <th class="w-[26%]">Producto</th>
+                                        <th class="w-[13%]">Categoría</th>
+                                        <th class="text-center w-[8%]">Cant.</th>
+                                        <th class="text-center w-[9%]">Unidad</th>
+                                        <th class="text-right w-[13%]">P.U. s/IVA</th>
+                                        <th class="text-right w-[13%]">Subtotal</th>
+                                        <th class="text-right w-[12%]">Total c/IVA</th>
+                                        <th class="w-[6%]"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($items as $i => $item)
-                                        <tr class="border-t border-gray-50 hover:bg-surface-main/50 transition {{ !empty($item['conflict']) ? 'bg-amber-50/40' : '' }}"
+                                        @php
+                                            $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
+                                            $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
+                                            $productStatus = $item['_match']['product']['status'] ?? '';
+                                        @endphp
+                                        <tr class="{{ !empty($item['conflict']) ? 'bg-amber-50/40' : '' }}"
                                             wire:key="item-row-{{ $i }}">
                                             {{-- Nombre --}}
-                                            <td class="px-3 py-2">
-                                                <input wire:model="items.{{ $i }}.name" type="text" class="input text-body"
+                                            <td>
+                                                <input wire:model="items.{{ $i }}.name" type="text" class="input"
                                                     placeholder="Nombre del producto">
                                                 @if(!empty($item['conflict']))
-                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-amber-700 mt-1">
-                                                        <i data-lucide="alert-triangle" class="w-3 h-3" wire:ignore></i>
-                                                        Producto registrado — datos diferentes
-                                                    </span>
-                                                @elseif(($item['_match']['product']['status'] ?? '') === 'exact')
-                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-green-600 mt-1">
-                                                        <i data-lucide="check-circle" class="w-3 h-3" wire:ignore></i>
-                                                        Existente
-                                                    </span>
-                                                @elseif(($item['_match']['product']['status'] ?? '') === 'fuzzy')
-                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-blue-600 mt-1">
-                                                        <i data-lucide="search" class="w-3 h-3" wire:ignore></i>
-                                                        Similar ({{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}%)
-                                                    </span>
-                                                @elseif(($item['_match']['product']['status'] ?? '') === 'new')
-                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-text-muted mt-1">
-                                                        <i data-lucide="plus-circle" class="w-3 h-3" wire:ignore></i>
-                                                        Nuevo
-                                                    </span>
+                                                    <p class="text-xs-fluid text-amber-700 mt-1">Datos diferentes al catálogo</p>
+                                                @elseif($productStatus === 'exact')
+                                                    <p class="text-xs-fluid text-emerald-600 mt-1">Existente en catálogo</p>
+                                                @elseif($productStatus === 'fuzzy')
+                                                    <p class="text-xs-fluid text-primary-600 mt-1">Similitud {{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}%</p>
+                                                @elseif($productStatus === 'new')
+                                                    <p class="text-xs-fluid text-text-muted mt-1">Nuevo producto</p>
                                                 @endif
                                             </td>
 
                                             {{-- Categoría --}}
-                                            <td class="px-3 py-2">
-                                                <select wire:model="items.{{ $i }}.category_id" class="input text-xs-fluid py-1">
-                                                    <option value="">Seleccionar...</option>
-                                                    @foreach($categories as $cat)
-                                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                                    @endforeach
-                                                </select>
+                                            <td>
+                                                <div class="relative">
+                                                    <select wire:model="items.{{ $i }}.category_id" class="input pr-6">
+                                                        <option value="">Sin categoría</option>
+                                                        @foreach($categories as $cat)
+                                                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
                                                 @if($item['category_name'] && empty($item['category_id']))
-                                                    <span class="text-xs-fluid text-amber-600 block mt-1">
-                                                        IA: {{ $item['category_name'] }}
-                                                    </span>
+                                                    <p class="text-xs-fluid text-amber-600 mt-1" title="Sugerido por IA: {{ $item['category_name'] }}">IA: {{ Str::limit($item['category_name'], 14) }}</p>
                                                 @elseif($item['category_id'])
-                                                    <span class="text-xs-fluid text-green-600 block mt-1">
-                                                        Seleccionada del catálogo
-                                                    </span>
+                                                    <p class="text-xs-fluid text-emerald-600 mt-1">&#10003; Asignada</p>
                                                 @endif
                                             </td>
 
                                             {{-- Cantidad --}}
-                                            <td class="px-3 py-2">
+                                            <td>
                                                 <input wire:model="items.{{ $i }}.quantity" type="number" step="0.01"
-                                                    class="input text-body text-center" placeholder="0">
+                                                    class="input text-center tabular-nums" placeholder="0">
                                             </td>
 
                                             {{-- Unidad --}}
-                                            <td class="px-3 py-2">
+                                            <td>
                                                 <input type="text" wire:model="items.{{ $i }}.unit" list="measures-list"
-                                                    class="input text-body" placeholder="Unidad...">
+                                                    class="input" placeholder="Unidad">
                                                 @if(($item['_match']['measure']['status'] ?? '') === 'new')
-                                                    <span class="inline-flex items-center gap-1 text-xs-fluid text-amber-600 mt-1">
-                                                        <i data-lucide="plus-circle" class="w-3 h-3" wire:ignore></i>
-                                                        Nueva
-                                                    </span>
+                                                    <p class="text-xs-fluid text-amber-600 mt-1">Nueva unidad</p>
                                                 @endif
                                             </td>
 
-                                            {{-- Precio Unitario (sin IVA) --}}
-                                            <td class="px-3 py-2">
+                                            {{-- Precio Unitario --}}
+                                            <td>
                                                 <input wire:model="items.{{ $i }}.unit_price" type="number" step="0.01"
-                                                    class="input text-body text-right" placeholder="0.00">
+                                                    class="input text-right tabular-nums" placeholder="0.00">
                                             </td>
 
-
-
-                                            {{-- Subtotal sin IVA (proveedor o calculado) --}}
-                                            <td class="px-3 py-2 text-right font-medium text-text-primary">
-                                                @php
-                                                    $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
-                                                @endphp
+                                            {{-- Subtotal --}}
+                                            <td class="text-right font-medium text-text-primary tabular-nums">
                                                 ${{ number_format($itemSubtotal, 2, '.', ',') }}
                                             </td>
 
-                                            {{-- Total con IVA (proveedor o calculado) --}}
-                                            <td class="px-3 py-2 text-right font-bold text-primary-600">
-                                                @php
-                                                    $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
-                                                @endphp
+                                            {{-- Total con IVA --}}
+                                            <td class="text-right font-semibold text-text-primary tabular-nums">
                                                 ${{ number_format($itemTotal, 2, '.', ',') }}
                                             </td>
 
                                             {{-- Delete --}}
-                                            <td class="px-3 py-2">
-                                                <button type="button" wire:click="removeItem({{ $i }})"
-                                                    class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            <td class="text-center">
+                                                <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger">
+                                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -720,48 +639,41 @@
                                         $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
                                         $totalIva = $totalConIva - $subtotalSinIva;
                                     @endphp
-                                    <tr class="border-t border-gray-100 bg-surface-main">
-                                        <td colspan="5" class="px-3 py-2 text-right text-body text-text-muted">Subtotal (sin
-                                            IVA):
-                                        </td>
-                                        <td class="px-3 py-2 text-right text-body font-medium text-text-primary">
-                                            ${{ number_format($subtotalSinIva, 2, '.', ',') }}
-                                        </td>
-                                        <td></td>
+                                    <tr>
+                                        <td colspan="5" class="text-right text-text-muted">Subtotal s/IVA</td>
+                                        <td class="text-right font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</td>
+                                        <td colspan="2"></td>
                                     </tr>
-                                    <tr class="bg-surface-main">
-                                        <td colspan="5" class="px-3 py-2 text-right text-body text-text-muted">IVA (16%):</td>
-                                        <td class="px-3 py-2 text-right text-body font-medium text-text-muted">
-                                            @if($totalIva > 0)
-                                                ${{ number_format($totalIva, 2, '.', ',') }}
-                                            @else
-                                                <span class="text-xs-fluid text-amber-500">Pendiente</span>
+                                    <tr>
+                                        <td colspan="5" class="text-right text-text-muted">IVA (16%)</td>
+                                        <td class="text-right font-medium text-text-muted tabular-nums">
+                                            @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
+                                            @else <span class="text-amber-500">Pendiente</span>
                                             @endif
                                         </td>
-                                        <td></td>
+                                        <td colspan="2"></td>
                                     </tr>
-                                    <tr class="border-t-2 border-gray-200 bg-surface-main">
-                                        <td colspan="5" class="px-3 py-3 text-right text-body font-semibold text-text-primary">
-                                            Total con IVA:</td>
-                                        <td class="px-3 py-3 text-right text-h3 text-primary-600">
-                                            ${{ number_format($totalConIva, 2, '.', ',') }}
-                                        </td>
-                                        <td></td>
+                                    <tr>
+                                        <td colspan="5" class="text-right font-semibold text-text-primary">Total c/IVA</td>
+                                        <td class="text-right font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</td>
+                                        <td colspan="2"></td>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
                     @else
-                        <div class="text-center py-8 text-text-muted">
-                            <i data-lucide="package-open" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
-                            <p class="text-body">No se detectaron productos. Agrégalos manualmente.</p>
+                        <div class="text-center py-10 border-2 border-dashed border-border rounded-xl">
+                            <div class="w-10 h-10 rounded-xl bg-surface-hover flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="package-open" class="w-5 h-5 text-text-muted"></i>
+                            </div>
+                            <p class="text-small font-medium text-text-primary mb-0.5">Sin productos detectados</p>
+                            <p class="text-xs-fluid text-text-muted">Agrégalos manualmente con el botón Agregar.</p>
                         </div>
                     @endif
-                </div>
             </div>
 
             {{-- Actions --}}
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between pt-2">
                 <button type="button" wire:click="resetWizard" class="btn-secondary">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     Subir otro archivo
@@ -769,21 +681,20 @@
 
                 <div class="flex items-center gap-3">
                     <a href="{{ route('requisiciones.index') }}" class="btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn-primary py-2.5 px-6" wire:loading.attr="disabled"
+                    <button type="submit" class="btn-primary relative" wire:loading.attr="disabled"
                         wire:target="saveRequisition">
-                        <span wire:loading.class="opacity-0" wire:target="saveRequisition"
-                            class="flex items-center gap-2 transition-opacity">
-                            <i data-lucide="save" class="w-4 h-4"></i>
+                        <span wire:loading.remove wire:target="saveRequisition"
+                            class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-4 h-4"></i>
                             Guardar Requisición
                         </span>
                         <span wire:loading wire:target="saveRequisition"
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                    fill="none" />
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
+                            Guardando…
                         </span>
                     </button>
                 </div>

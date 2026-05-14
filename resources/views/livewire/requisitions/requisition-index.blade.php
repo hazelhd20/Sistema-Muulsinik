@@ -60,8 +60,8 @@
         @forelse($requisitions as $req)
             @php
                 $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file' };
-                $iconBg = match ($req->status) { 'borrador' => 'bg-gray-50', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-green-50', 'rechazada' => 'bg-red-50', default => 'bg-gray-50' };
-                $iconColor = match ($req->status) { 'borrador' => 'text-gray-500', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-green-600', 'rechazada' => 'text-red-500', default => 'text-gray-500' };
+                $iconBg = match ($req->status) { 'borrador' => 'bg-surface-hover', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-emerald-50', 'rechazada' => 'bg-red-50', default => 'bg-surface-hover' };
+                $iconColor = match ($req->status) { 'borrador' => 'text-text-muted', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-emerald-600', 'rechazada' => 'text-danger', default => 'text-text-muted' };
             @endphp
             <div x-data="{ open: false }" class="card">
 
@@ -189,55 +189,48 @@
                 {{-- ── Tabla colapsable de productos ── --}}
                 @if($req->items->isNotEmpty())
                     <div x-show="open" x-collapse x-cloak class="mt-3" style="display: none;">
-                        <div class="rounded-lg border border-border overflow-hidden overflow-x-auto">
-                            <table class="w-full text-body">
+                        <div class="table-embedded">
+                            <table>
                                 <thead>
-                                    <tr class="bg-surface-main">
-                                        <th class="text-left px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Producto</th>
-                                        <th class="text-center px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Cant.</th>
-                                        <th class="text-center px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Unidad</th>
-                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">P. Unit.</th>
-                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Subtotal</th>
-                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">IVA</th>
-                                        <th class="text-right px-4 py-2 text-xs-fluid font-semibold text-text-muted uppercase">Total</th>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center">Cant.</th>
+                                        <th class="text-center">Unidad</th>
+                                        <th class="text-right">P. Unit.</th>
+                                        <th class="text-right">Subtotal</th>
+                                        <th class="text-right">IVA</th>
+                                        <th class="text-right">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($req->items as $item)
-                                        <tr class="border-t border-border/50 hover:bg-surface-main/60 transition-colors">
-                                            <td class="px-4 py-2 font-medium text-text-primary">{{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
-                                            <td class="px-4 py-2 text-center text-text-secondary">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
-                                            <td class="px-4 py-2 text-center text-text-muted">{{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
-                                            <td class="px-4 py-2 text-right text-text-secondary">${{ number_format($item->unit_price, 2, '.', ',') }}</td>
-                                            <td class="px-4 py-2 text-right text-text-secondary">${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
-                                            <td class="px-4 py-2 text-right">
+                                        <tr>
+                                            <td class="font-medium text-text-primary">{{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
+                                            <td class="text-center text-text-secondary tabular-nums">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
+                                            <td class="text-center text-text-muted">{{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
+                                            <td class="text-right text-text-secondary tabular-nums">${{ number_format($item->unit_price, 2, '.', ',') }}</td>
+                                            <td class="text-right text-text-secondary tabular-nums">${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
+                                            <td class="text-right tabular-nums">
                                                 @if($item->tax_amount !== null)
                                                     <span class="text-text-muted">${{ number_format($item->tax_amount, 2, '.', ',') }}</span>
                                                 @else
-                                                    <span class="text-xs-fluid text-amber-500">—</span>
+                                                    <span class="text-amber-500">—</span>
                                                 @endif
                                             </td>
-                                            <td class="px-4 py-2 text-right font-semibold text-text-primary">${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
+                                            <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot>
-                                    @php
-                                        $reqSubtotal = $req->items->sum(fn($i) => $i->line_subtotal_computed);
-                                        $reqTax      = $req->items->sum(fn($i) => (float)($i->tax_amount ?? 0));
-                                        $reqTotal    = $req->total;
-                                    @endphp
-                                    <tr class="border-t border-border bg-surface-main">
-                                        <td colspan="4" class="px-4 py-2 text-right text-xs-fluid text-text-muted">Totales:</td>
-                                        <td class="px-4 py-2 text-right text-xs-fluid font-medium text-text-secondary">${{ number_format($reqSubtotal, 2, '.', ',') }}</td>
-                                        <td class="px-4 py-2 text-right text-xs-fluid font-medium text-text-muted">
-                                            @if($reqTax > 0)
-                                                ${{ number_format($reqTax, 2, '.', ',') }}
-                                            @else
-                                                <span class="text-amber-500">—</span>
+                                    <tr>
+                                        <td colspan="4" class="text-right text-text-muted">Subtotal</td>
+                                        <td class="text-right font-medium text-text-secondary tabular-nums">${{ number_format($req->items->sum(fn($i) => $i->line_subtotal_computed), 2, '.', ',') }}</td>
+                                        <td class="text-right text-text-muted tabular-nums">
+                                            @if($req->items->sum(fn($i) => (float)($i->tax_amount ?? 0)) > 0) ${{ number_format($req->items->sum(fn($i) => (float)($i->tax_amount ?? 0)), 2, '.', ',') }}
+                                            @else <span class="text-amber-500">—</span>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-2 text-right text-small font-bold text-text-primary">${{ number_format($reqTotal, 2, '.', ',') }}</td>
+                                        <td class="text-right font-bold text-text-primary tabular-nums">${{ number_format($req->total, 2, '.', ',') }}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -296,27 +289,28 @@
                         <h3 class="text-small font-semibold text-text-primary mb-3">Productos solicitados</h3>
 
                         {{-- Formulario para añadir --}}
-                        <div class="bg-primary-50 border border-primary-100 p-4 rounded-lg mb-4">
+                        <div class="border border-border rounded-xl p-4 mb-4 bg-surface-main/40">
                             <div class="flex flex-col sm:flex-row gap-3 items-end">
                                 <div class="flex-1 min-w-[200px]">
-                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Producto *</label>
-                                    <input wire:model="itemName" type="text" class="input text-body" placeholder="Ej. Cemento Cruz Azul">
+                                    <label class="label">Producto *</label>
+                                    <input wire:model="itemName" type="text" class="input" placeholder="Ej. Cemento Cruz Azul">
                                 </div>
                                 <div class="w-full sm:w-24">
-                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Cant. *</label>
-                                    <input wire:model="itemQuantity" type="number" step="0.01" class="input text-body" placeholder="0.00">
+                                    <label class="label">Cant. *</label>
+                                    <input wire:model="itemQuantity" type="number" step="0.01" class="input" placeholder="0">
                                 </div>
                                 <div class="w-full sm:w-32">
-                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Unidad *</label>
+                                    <label class="label">Unidad *</label>
                                     <x-custom-select wire:model="itemUnit" :options="['pza' => 'Pieza', 'kg' => 'Kg', 'm' => 'Metro', 'm2' => 'm²', 'm3' => 'm³', 'lt' => 'Litro', 'bulto' => 'Bulto', 'rollo' => 'Rollo']" placeholder="Unidad" />
                                 </div>
                                 <div class="w-full sm:w-28">
-                                    <label class="block text-xs-fluid font-medium text-text-primary mb-1.5">Precio U.</label>
-                                    <input wire:model="itemPrice" type="number" step="0.01" class="input text-body" placeholder="$ 0.00">
+                                    <label class="label">Precio U.</label>
+                                    <input wire:model="itemPrice" type="number" step="0.01" class="input" placeholder="0.00">
                                 </div>
-                                <div class="w-full sm:w-auto">
-                                    <button type="button" wire:click="addItem" class="btn-primary w-full sm:w-auto h-[42px] px-4 flex items-center justify-center">
-                                        <i data-lucide="plus" class="w-4 h-4 sm:mr-1"></i> <span class="hidden sm:inline">Añadir</span>
+                                <div class="w-full sm:w-auto shrink-0">
+                                    <button type="button" wire:click="addItem" class="btn-primary w-full sm:w-auto gap-1.5">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                        <span>Añadir</span>
                                     </button>
                                 </div>
                             </div>
@@ -325,53 +319,50 @@
 
                         {{-- Tabla de Productos Agregados --}}
                         @if(count($items) > 0)
-                            <div class="rounded-lg border border-border overflow-hidden">
-                                <table class="w-full text-body">
+                            <div class="table-embedded">
+                                <table>
                                     <thead>
-                                        <tr class="bg-surface-main">
-                                            <th class="text-left px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Producto</th>
-                                            <th class="text-center px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Cant.</th>
-                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Precio</th>
-                                            <th class="text-right px-4 py-3 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Subtotal</th>
-                                            <th class="px-4 py-3 w-10"></th>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th class="text-center">Cant.</th>
+                                            <th class="text-center">Unidad</th>
+                                            <th class="text-right">Precio U.</th>
+                                            <th class="text-right">Subtotal</th>
+                                            <th class="w-10"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($items as $i => $item)
-                                            <tr class="border-t border-border/60 hover:bg-surface-main/50 transition-colors">
-                                                <td class="px-4 py-3 font-medium text-text-primary">{{ $item['name'] }}</td>
-                                                <td class="px-4 py-3 text-center text-text-secondary">{{ $item['quantity'] }} <span class="text-xs-fluid text-text-muted">{{ $item['unit'] }}</span></td>
-                                                <td class="px-4 py-3 text-right text-text-secondary">${{ number_format($item['unit_price'], 2) }}</td>
-                                                <td class="px-4 py-3 text-right font-medium text-text-primary">
-                                                    ${{ number_format($item['quantity'] * $item['unit_price'], 2) }}</td>
-                                                <td class="px-4 py-3 text-center">
-                                                    <button type="button" wire:click="removeItem({{ $i }})"
-                                                        class="text-text-muted hover:text-danger p-1 rounded hover:bg-red-50 transition-colors">
-                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            <tr>
+                                                <td class="font-medium text-text-primary">{{ $item['name'] }}</td>
+                                                <td class="text-center text-text-secondary tabular-nums">{{ $item['quantity'] }}</td>
+                                                <td class="text-center text-text-muted">{{ $item['unit'] }}</td>
+                                                <td class="text-right text-text-secondary tabular-nums">${{ number_format($item['unit_price'], 2) }}</td>
+                                                <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($item['quantity'] * $item['unit_price'], 2) }}</td>
+                                                <td class="text-center">
+                                                    <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger">
+                                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                     </button>
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                     <tfoot>
-                                        <tr class="border-t border-border bg-surface-main">
-                                            <td colspan="3"
-                                                class="px-4 py-3 text-right text-small font-medium text-text-secondary">Total estimado:</td>
-                                            <td class="px-4 py-3 text-right text-body font-bold text-text-primary">
-                                                ${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}
-                                            </td>
+                                        <tr>
+                                            <td colspan="4" class="text-right font-medium text-text-muted">Total estimado</td>
+                                            <td class="text-right font-bold text-text-primary tabular-nums">${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}</td>
                                             <td></td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
                         @else
-                            <div class="text-center py-8 border-2 border-dashed border-border rounded-lg bg-surface-main/50">
-                                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                                    <i data-lucide="package-search" class="w-6 h-6 text-text-muted"></i>
+                            <div class="text-center py-8 border-2 border-dashed border-border rounded-xl">
+                                <div class="w-10 h-10 rounded-xl bg-surface-hover flex items-center justify-center mx-auto mb-3">
+                                    <i data-lucide="package" class="w-5 h-5 text-text-muted"></i>
                                 </div>
-                                <p class="text-body font-medium text-text-primary mb-1">No hay productos</p>
-                                <p class="text-xs-fluid text-text-muted">Utiliza el formulario superior para añadir artículos.</p>
+                                <p class="text-small font-medium text-text-primary mb-0.5">Sin productos</p>
+                                <p class="text-xs-fluid text-text-muted">Usa el formulario para añadir artículos.</p>
                             </div>
                         @endif
                     </div>
