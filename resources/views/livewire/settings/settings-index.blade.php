@@ -6,11 +6,11 @@
     {{-- Tabs --}}
     <nav class="tab-nav">
         <button @click="tab = 'empresa'" :class="tab === 'empresa' ? 'active' : ''" class="tab-btn">
-            <i data-lucide="building-2"></i>
+            <i data-lucide="building-2" class="w-4 h-4"></i>
             Empresa
         </button>
         <button @click="tab = 'documentos'" :class="tab === 'documentos' ? 'active' : ''" class="tab-btn">
-            <i data-lucide="file-text"></i>
+            <i data-lucide="file-text" class="w-4 h-4"></i>
             Documentos
         </button>
     </nav>
@@ -25,10 +25,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">
-                            <i data-lucide="building-2" class="w-4 h-4"></i>
-                            Identidad de la empresa
-                        </h2>
+                        <h2 class="card-title">Identidad de la empresa</h2>
                         <p class="card-subtitle">Aparece en PDFs, cotizaciones y documentos generados.</p>
                     </div>
                 </div>
@@ -147,10 +144,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">
-                            <i data-lucide="hash" class="w-4 h-4"></i>
-                            Numeración de documentos
-                        </h2>
+                        <h2 class="card-title">Numeración de documentos</h2>
                         <p class="card-subtitle">Controla el prefijo y secuencia de requisiciones.</p>
                     </div>
                 </div>
@@ -191,10 +185,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">
-                            <i data-lucide="coins" class="w-4 h-4"></i>
-                            Formato de moneda
-                        </h2>
+                        <h2 class="card-title">Formato de moneda</h2>
                         <p class="card-subtitle">Símbolo y formato numérico para importes.</p>
                     </div>
                 </div>
@@ -240,10 +231,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">
-                            <i data-lucide="scroll-text" class="w-4 h-4"></i>
-                            Términos y condiciones
-                        </h2>
+                        <h2 class="card-title">Términos y condiciones</h2>
                         <p class="card-subtitle">Texto que aparece al pie de las cotizaciones generadas.</p>
                     </div>
                 </div>

@@ -144,7 +144,7 @@
 
                 <a href="{{ url('/configuracion') }}" class="nav-link">
                     <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
-                    <span>Ajustes</span>
+                    <span>Configuración</span>
                 </a>
 
                 <form method="POST" action="{{ url('/logout') }}">
@@ -177,32 +177,21 @@
 
             {{-- Top Bar ──────────────────────────── --}}
             <header class="sticky top-0 z-20 bg-surface-main border-b border-border">
-                <div class="flex items-center justify-between h-14 px-5 lg:px-6">
+                <div class="flex items-center justify-between h-14 px-5 lg:px-6 max-w-screen-2xl mx-auto w-full">
 
-                    {{-- Left: Hamburger (mobile) + breadcrumb context --}}
+                    {{-- Left: Hamburger (mobile) + Global Search --}}
                     <div class="flex items-center gap-3">
                         <button @click="mobileSidebarOpen = !mobileSidebarOpen"
                             class="lg:hidden p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition">
                             <i data-lucide="menu" class="w-5 h-5"></i>
                         </button>
 
-                        <div class="relative hidden sm:flex items-center">
-                            <i data-lucide="search"
-                                class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none"></i>
-                            <input type="search"
-                                placeholder="Buscar…"
-                                class="input pl-8 w-60 h-8 py-0 text-small bg-surface-card"
-                                id="global-search">
-                        </div>
+                        <livewire:global-search />
                     </div>
 
                     {{-- Right: notifications --}}
                     <div class="flex items-center gap-1">
-                        <button class="relative p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition"
-                            title="Notificaciones">
-                            <i data-lucide="bell" class="w-[17px] h-[17px]"></i>
-                            <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-danger rounded-full"></span>
-                        </button>
+                        <livewire:notification-dropdown />
                     </div>
 
                 </div>

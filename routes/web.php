@@ -12,6 +12,7 @@ use App\Livewire\Requisitions\QuotationWizard;
 use App\Livewire\Requisitions\RequisitionIndex;
 use App\Livewire\Suppliers\SupplierIndex;
 use App\Livewire\Settings\SettingsIndex;
+use App\Livewire\Notifications\NotificationIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -69,6 +70,9 @@ Route::middleware('auth')->group(function () {
 
     // Configuración
     Route::get('/configuracion', SettingsIndex::class)->name('settings.index');
+
+    // Notificaciones
+    Route::get('/notificaciones', NotificationIndex::class)->name('notifications.index');
 
     // Previsualización de archivos
     Route::get('/preview-file', function (\Illuminate\Http\Request $request) {
