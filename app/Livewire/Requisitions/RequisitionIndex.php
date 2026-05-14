@@ -118,15 +118,28 @@ class RequisitionIndex extends Component
         session()->flash('success', 'Requisición creada como borrador.');
     }
 
-    /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente). */
+    /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente).
+     *  Si el usuario es Administrador (permiso *), la requisición se aprueba automáticamente. */
     public function submitForApproval(int $requisitionId): void
     {
         $req = Requisition::findOrFail($requisitionId);
         if ($req->status !== 'borrador') {
             return;
         }
-        $req->update(['status' => 'pendiente']);
-        session()->flash('success', 'Requisición enviada a aprobación.');
+
+        $user = auth()->user();
+        $isAdmin = in_array('*', $user->role?->permissions ?? [], true);
+
+        if ($isAdmin) {
+            $req->update([
+                'status' => 'aprobada',
+                'approved_by' => $user->id,
+            ]);
+            session()->flash('success', 'Requisición aprobada automáticamente.');
+        } else {
+            $req->update(['status' => 'pendiente']);
+            session()->flash('success', 'Requisición enviada a aprobación.');
+        }
     }
 
     /** RF-REQ-09: Aprobar requisición (Pendiente → Aprobada). */

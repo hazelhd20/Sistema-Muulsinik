@@ -12,8 +12,6 @@
             <span class="absolute top-1 right-1 min-w-[1rem] h-4 px-1 bg-danger rounded-full text-[10px] font-semibold text-white flex items-center justify-center">
                 {{ $unreadCount > 99 ? '99+' : $unreadCount }}
             </span>
-        @else
-            <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-text-muted/50 rounded-full"></span>
         @endif
     </button>
 

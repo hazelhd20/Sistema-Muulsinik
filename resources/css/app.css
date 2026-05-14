@@ -85,6 +85,15 @@ body {
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
+/* ── Search Input ─────────────────────────────────────────── */
+/* Ocultar X nativa del navegador en inputs type="search" */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    display: none;
+}
+
 /* ── Fluid Typography Utilities ─────────────────────────── */
 .text-display { font-size: var(--font-size-display); font-weight: 700; line-height: 1.2;  letter-spacing: -0.025em; }
 .text-h1      { font-size: var(--font-size-h1);      font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; }

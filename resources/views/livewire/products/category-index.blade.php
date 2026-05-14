@@ -11,10 +11,21 @@
 
     {{-- Filters --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
-        <div class="relative flex-1">
+        <div class="relative flex-1" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input type="search" wire:model.live.debounce.50ms="search" class="input pl-10"
-                placeholder="Buscar categoría...">
+            <input type="search" wire:model.live.debounce.50ms="search" class="input pl-10 pr-10"
+                placeholder="Buscar categoría..."
+                @focus="focused = true"
+                @blur="focused = false">
+            <button
+                x-show="$wire.search"
+                x-transition
+                @click="$wire.search = ''"
+                type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted"
+            >
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
         </div>
     </div>
 

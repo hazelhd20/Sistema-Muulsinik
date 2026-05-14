@@ -24,6 +24,20 @@
 </head>
 
 <body class="antialiased min-h-screen" x-data="{ mobileSidebarOpen: false }">
+    <script>
+        // Capturar Ctrl+K antes de que Chrome lo intercepte
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                e.stopPropagation();
+                var el = document.getElementById('global-search-input');
+                if (el) {
+                    el.focus();
+                    el.dispatchEvent(new Event('focus'));
+                }
+            }
+        }, true);
+    </script>
 
     <div class="flex min-h-screen">
 

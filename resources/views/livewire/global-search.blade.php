@@ -1,4 +1,4 @@
-<div class="relative" x-data="{ open: @entangle('isOpen') }" @click.away="open = false">
+<div class="relative" x-data="{ open: @entangle('isOpen'), focused: false }" @click.away="open = false">
     {{-- Input de búsqueda --}}
     <div class="relative hidden sm:flex items-center">
         <i data-lucide="search"
@@ -6,17 +6,26 @@
         <input
             type="search"
             wire:model.live.debounce.300ms="query"
-            placeholder="Buscar requisiciones, proveedores, proyectos..."
-            class="input pl-8 w-72 h-8 py-0 text-small bg-surface-card"
+            placeholder="Buscar"
+            id="global-search-input"
+            class="input pl-8 pr-10 w-72 h-8 py-0 text-small bg-surface-card"
             x-ref="searchInput"
             @keydown.esc="open = false; $wire.clear()"
-            @keydown.ctrl.k.prevent="$refs.searchInput.focus(); open = true"
-            @keydown.meta.k.prevent="$refs.searchInput.focus(); open = true"
-            @focus="if ($wire.query.length >= 2) open = true"
+            @focus="focused = true; open = true"
+            @blur="focused = false"
         >
-        <kbd class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-text-muted bg-surface-hover rounded border border-border hidden lg:inline-block">
+        <kbd x-show="!focused && !$wire.query" x-transition class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-text-muted bg-surface-hover rounded border border-border hidden lg:inline-block">
             Ctrl+K
         </kbd>
+        <button
+            x-show="$wire.query"
+            x-transition
+            @click="$wire.clear()"
+            type="button"
+            class="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted"
+        >
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
     </div>
 
     {{-- Dropdown de resultados --}}
