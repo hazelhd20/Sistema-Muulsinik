@@ -4,8 +4,9 @@
     x-data="{
         open: false,
         search: '',
-        value: @entangle($attributes->wire('model')),
+        value: @entangle($attributes->wire('model')).live,
         options: {{ json_encode($options) }},
+        dropStyle: {},
         get selectedLabel() {
             if (this.value === '' || this.value === null) return '{{ $placeholder }}';
             return this.options[this.value] || '{{ $placeholder }}';
@@ -22,15 +23,51 @@
                 }
             }
             return filtered;
+        },
+        reposition() {
+            const rect = this.$refs.trigger.getBoundingClientRect();
+            const maxH = 256;
+            const spaceBelow = window.innerHeight - rect.bottom - 8;
+            const openUp = spaceBelow < maxH && rect.top > spaceBelow;
+            this.dropStyle = {
+                position: 'fixed',
+                left: rect.left + 'px',
+                width: rect.width + 'px',
+                maxHeight: Math.min(maxH, openUp ? rect.top - 8 : spaceBelow) + 'px',
+                ...(openUp
+                    ? { bottom: (window.innerHeight - rect.top + 4) + 'px', top: 'auto' }
+                    : { top: (rect.bottom + 4) + 'px', bottom: 'auto' }),
+            };
+        },
+        toggle() {
+            this.open = !this.open;
+            if (this.open) {
+                this.reposition();
+                this.$nextTick(() => this.$refs.searchInput.focus());
+            }
+        },
+        close() {
+            this.open = false;
+            this.search = '';
+        },
+        _scrollHandler: null,
+        init() {
+            this._scrollHandler = () => { if (this.open) this.reposition(); };
+            document.addEventListener('scroll', this._scrollHandler, true);
+        },
+        destroy() {
+            if (this._scrollHandler) document.removeEventListener('scroll', this._scrollHandler, true);
         }
     }"
     class="relative {{ $attributes->get('class') }}"
-    @click.outside="open = false; search = ''"
+    @click.outside="close()"
+    @resize.window="if(open) reposition()"
 >
     <!-- Trigger -->
     <button
+        x-ref="trigger"
         type="button"
-        @click="open = !open; if(open) { $nextTick(() => $refs.searchInput.focus()) }"
+        @click="toggle()"
         class="input flex items-center justify-between text-left w-full h-full"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
@@ -43,16 +80,17 @@
         </svg>
     </button>
 
-    <!-- Dropdown -->
+    <!-- Dropdown (fixed position — escapes overflow containers / modals) -->
     <div
         x-show="open"
         x-transition:enter="transition ease-out duration-100"
-        x-transition:enter-start="transform opacity-0 scale-95"
-        x-transition:enter-end="transform opacity-100 scale-100"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-75"
-        x-transition:leave-start="transform opacity-100 scale-100"
-        x-transition:leave-end="transform opacity-0 scale-95"
-        class="absolute z-50 w-full mt-1 bg-surface-card border border-gray-100 rounded-xl shadow-lg max-h-64 overflow-hidden flex flex-col"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        :style="dropStyle"
+        class="z-[200] bg-surface-card border border-gray-100 rounded-xl shadow-lg overflow-hidden flex flex-col"
         style="display: none;"
     >
         <!-- Search Input -->
@@ -65,7 +103,7 @@
                     x-model="search" 
                     placeholder="Buscar..." 
                     class="w-full pl-9 pr-3 py-1.5 text-xs-fluid border border-border rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-50"
-                    @keydown.escape="open = false; search = ''"
+                    @keydown.escape="close()"
                 >
             </div>
         </div>
@@ -74,7 +112,7 @@
         <div class="overflow-y-auto py-1 flex-1">
             @if($placeholder)
                 <div
-                    @click="value = ''; open = false; search = ''"
+                    @click="value = ''; close()"
                     x-show="search === ''"
                     class="px-4 py-2.5 text-small cursor-pointer transition-colors"
                     :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
@@ -85,7 +123,7 @@
 
             <template x-for="(label, val) in filteredOptions" :key="val">
                 <div
-                    @click="value = val; open = false; search = ''"
+                    @click="value = val; close()"
                     class="px-4 py-2.5 text-small cursor-pointer transition-colors flex items-center justify-between"
                     :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >

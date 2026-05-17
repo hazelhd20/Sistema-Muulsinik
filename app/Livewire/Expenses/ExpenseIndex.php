@@ -89,7 +89,7 @@ class ExpenseIndex extends Component
 
         $this->showCreateModal = false;
         $this->resetForm();
-        session()->flash('success', 'Gasto registrado correctamente.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto registrado correctamente.']);
     }
 
     public function deleteExpense(int $expenseId): void
@@ -97,7 +97,7 @@ class ExpenseIndex extends Component
         if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) return;
 
         Expense::findOrFail($expenseId)->delete();
-        session()->flash('success', 'Gasto eliminado.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto eliminado.']);
     }
 
     /** Verificar umbrales de presupuesto del proyecto (RF-GASTO-03). */
@@ -106,11 +106,11 @@ class ExpenseIndex extends Component
         $percent = $project->budget_used_percent;
 
         if ($percent >= 100) {
-            session()->flash('budget_alert', "⚠️ ALERTA: El proyecto \"{$project->name}\" ha superado el 100% del presupuesto asignado.");
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => "⚠️ ALERTA: El proyecto \"{$project->name}\" ha superado el 100% del presupuesto asignado."]);
         } elseif ($percent >= 90) {
-            session()->flash('budget_alert', "⚠️ PRECAUCIÓN: El proyecto \"{$project->name}\" ha alcanzado el 90% del presupuesto.");
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => "⚠️ PRECAUCIÓN: El proyecto \"{$project->name}\" ha alcanzado el 90% del presupuesto."]);
         } elseif ($percent >= 70) {
-            session()->flash('budget_alert', "📊 AVISO: El proyecto \"{$project->name}\" ha alcanzado el 70% del presupuesto.");
+            $this->dispatch('toast', ['icon' => 'info', 'message' => "📊 AVISO: El proyecto \"{$project->name}\" ha alcanzado el 70% del presupuesto."]);
         }
     }
 

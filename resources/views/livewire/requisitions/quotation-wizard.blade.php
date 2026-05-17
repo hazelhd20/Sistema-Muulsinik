@@ -188,7 +188,7 @@
                             Procesar Cotización
                         </span>
                         <span wire:loading wire:target="processUpload"
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                             <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
                                     fill="none" />
@@ -466,6 +466,19 @@
                 </datalist>
 
                 @if(count($items) > 0)
+                    {{-- Leyenda de indicadores --}}
+                    <div class="flex items-center gap-4 mb-3">
+                        <span class="text-xs-fluid text-text-muted">Indicadores:</span>
+                        <span class="flex items-center gap-1.5 text-xs-fluid text-text-muted">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>Existente
+                        </span>
+                        <span class="flex items-center gap-1.5 text-xs-fluid text-text-muted">
+                            <span class="w-2 h-2 rounded-full bg-primary-400 shrink-0"></span>Similitud
+                        </span>
+                        <span class="flex items-center gap-1.5 text-xs-fluid text-text-muted">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>Pendiente / Nuevo
+                        </span>
+                    </div>
                         <div class="table-embedded">
                             <table>
                                 <thead>
@@ -486,59 +499,78 @@
                                             $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
                                             $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                             $productStatus = $item['_match']['product']['status'] ?? '';
+                                            $productBorder = match(true) {
+                                                !empty($item['conflict'])                => 'border-amber-400',
+                                                $productStatus === 'exact'              => 'border-emerald-400',
+                                                $productStatus === 'fuzzy'              => 'border-primary-400',
+                                                default                                 => '',
+                                            };
+                                            $productTitle = match(true) {
+                                                !empty($item['conflict'])               => 'Datos diferentes al catálogo registrado',
+                                                $productStatus === 'exact'              => 'Producto existente en catálogo',
+                                                $productStatus === 'fuzzy'              => 'Similitud ' . round(($item['_match']['product']['confidence'] ?? 0) * 100) . '% con producto existente',
+                                                $productStatus === 'new'                => 'Se registrará como nuevo producto',
+                                                default                                 => '',
+                                            };
+                                            $catBorder = ($item['category_id']) ? 'border-emerald-400' : (($item['category_name'] && empty($item['category_id'])) ? 'border-amber-400' : '');
+                                            $catTitle  = ($item['category_id']) ? 'Categoría asignada' : (($item['category_name'] && empty($item['category_id'])) ? 'Sugerido por IA: ' . $item['category_name'] : '');
+                                            $unitBorder = (($item['_match']['measure']['status'] ?? '') === 'new') ? 'border-amber-400' : '';
+                                            $unitTitle  = (($item['_match']['measure']['status'] ?? '') === 'new') ? 'Se registrará como nueva unidad de medida' : '';
                                         @endphp
                                         <tr class="{{ !empty($item['conflict']) ? 'bg-amber-50/40' : '' }}"
                                             wire:key="item-row-{{ $i }}">
                                             {{-- Nombre --}}
                                             <td>
-                                                <input wire:model="items.{{ $i }}.name" type="text" class="input"
-                                                    placeholder="Nombre del producto">
-                                                @if(!empty($item['conflict']))
-                                                    <p class="text-xs-fluid text-amber-700 mt-1">Datos diferentes al catálogo</p>
-                                                @elseif($productStatus === 'exact')
-                                                    <p class="text-xs-fluid text-emerald-600 mt-1">Existente en catálogo</p>
-                                                @elseif($productStatus === 'fuzzy')
-                                                    <p class="text-xs-fluid text-primary-600 mt-1">Similitud {{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}%</p>
-                                                @elseif($productStatus === 'new')
-                                                    <p class="text-xs-fluid text-text-muted mt-1">Nuevo producto</p>
-                                                @endif
+                                                <div class="relative">
+                                                    @if($productBorder)
+                                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full z-10
+                                                            @if($productBorder === 'border-emerald-400') bg-emerald-400
+                                                            @elseif($productBorder === 'border-primary-400') bg-primary-400
+                                                            @elseif($productBorder === 'border-amber-400') bg-amber-400
+                                                            @endif"
+                                                            title="{{ $productTitle }}"></span>
+                                                    @endif
+                                                    <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
+                                                        class="input"
+                                                        placeholder="Nombre del producto">
+                                                </div>
                                             </td>
 
                                             {{-- Categoría --}}
                                             <td>
                                                 <div class="relative">
-                                                    <select wire:model="items.{{ $i }}.category_id" class="input pr-6">
-                                                        <option value="">Sin categoría</option>
-                                                        @foreach($categories as $cat)
-                                                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                                        @endforeach
-                                                    </select>
+                                                    @if($catBorder)
+                                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full z-[60]
+                                                            @if($catBorder === 'border-emerald-400') bg-emerald-400
+                                                            @elseif($catBorder === 'border-amber-400') bg-amber-400
+                                                            @endif"
+                                                            title="{{ $catTitle }}"></span>
+                                                    @endif
+                                                    <x-custom-select wire:model.live="items.{{ $i }}.category_id" :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría" />
                                                 </div>
-                                                @if($item['category_name'] && empty($item['category_id']))
-                                                    <p class="text-xs-fluid text-amber-600 mt-1" title="Sugerido por IA: {{ $item['category_name'] }}">IA: {{ Str::limit($item['category_name'], 14) }}</p>
-                                                @elseif($item['category_id'])
-                                                    <p class="text-xs-fluid text-emerald-600 mt-1">&#10003; Asignada</p>
-                                                @endif
                                             </td>
 
                                             {{-- Cantidad --}}
                                             <td>
-                                                <input wire:model="items.{{ $i }}.quantity" type="number" step="0.01"
+                                                <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
                                                     class="input text-center tabular-nums" placeholder="0">
                                             </td>
 
                                             {{-- Unidad --}}
                                             <td>
-                                                <input type="text" wire:model="items.{{ $i }}.unit" list="measures-list"
-                                                    class="input" placeholder="Unidad">
-                                                @if(($item['_match']['measure']['status'] ?? '') === 'new')
-                                                    <p class="text-xs-fluid text-amber-600 mt-1">Nueva unidad</p>
-                                                @endif
+                                                <div class="relative">
+                                                    @if($unitBorder)
+                                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 z-10"
+                                                            title="{{ $unitTitle }}"></span>
+                                                    @endif
+                                                    <input type="text" wire:model.live.debounce.400ms="items.{{ $i }}.unit" list="measures-list"
+                                                        class="input" placeholder="Unidad">
+                                                </div>
                                             </td>
 
                                             {{-- Precio Unitario --}}
                                             <td>
-                                                <input wire:model="items.{{ $i }}.unit_price" type="number" step="0.01"
+                                                <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
                                                     class="input text-right tabular-nums" placeholder="0.00">
                                             </td>
 
@@ -563,69 +595,40 @@
                                         {{-- Fila de conflicto: visible solo cuando hay diferencias con el producto registrado --}}
                                         @if(!empty($item['conflict']))
                                             <tr class="border-t-0 bg-amber-50/60" wire:key="item-conflict-{{ $i }}">
-                                                <td colspan="8" class="px-4 py-3">
-                                                    <div class="flex items-start gap-3">
-                                                        <div
-                                                            class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600"
-                                                                wire:ignore></i>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p class="text-xs-fluid font-semibold text-amber-900 mb-1.5">
-                                                                Este producto ya existe en el catálogo con datos diferentes. ¿Actualizar
-                                                                el catálogo?
-                                                            </p>
-                                                            <div class="flex flex-wrap gap-4 mb-2">
-                                                                @if(isset($item['conflict']['category']))
-                                                                    <div class="text-xs-fluid text-amber-800">
-                                                                        <span class="font-medium">Categoría:</span>
-                                                                        <span
-                                                                            class="line-through text-amber-500 mx-1">{{ $item['conflict']['category']['registered'] }}</span>
-                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600"
-                                                                            wire:ignore></i>
-                                                                        <span
-                                                                            class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['category']['suggested'] }}</span>
-                                                                    </div>
-                                                                @endif
-                                                                @if(isset($item['conflict']['unit']))
-                                                                    <div class="text-xs-fluid text-amber-800">
-                                                                        <span class="font-medium">Unidad:</span>
-                                                                        <span
-                                                                            class="line-through text-amber-500 mx-1">{{ $item['conflict']['unit']['registered'] }}</span>
-                                                                        <i data-lucide="arrow-right" class="w-3 h-3 inline text-amber-600"
-                                                                            wire:ignore></i>
-                                                                        <span
-                                                                            class="font-semibold text-amber-900 ml-1">{{ $item['conflict']['unit']['suggested'] }}</span>
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                            <div class="flex flex-wrap gap-2">
-                                                                @if(isset($item['conflict']['category']) && isset($item['conflict']['unit']))
-                                                                    <button type="button"
-                                                                        wire:click="resolveProductConflict({{ $i }}, 'both')"
-                                                                        class="px-3 py-1 rounded-lg bg-amber-600 text-white text-xs-fluid font-medium hover:bg-amber-700 transition">
-                                                                        Actualizar ambos
-                                                                    </button>
-                                                                @endif
-                                                                @if(isset($item['conflict']['category']))
-                                                                    <button type="button"
-                                                                        wire:click="resolveProductConflict({{ $i }}, 'category')"
-                                                                        class="btn-secondary text-xs-fluid border-amber-300 text-amber-800 hover:bg-amber-50">
-                                                                        Solo categoría
-                                                                    </button>
-                                                                @endif
-                                                                @if(isset($item['conflict']['unit']))
-                                                                    <button type="button"
-                                                                        wire:click="resolveProductConflict({{ $i }}, 'unit')"
-                                                                        class="btn-secondary text-xs-fluid border-amber-300 text-amber-800 hover:bg-amber-50">
-                                                                        Solo unidad
-                                                                    </button>
-                                                                @endif
-                                                                <button type="button" wire:click="dismissProductConflict({{ $i }})"
-                                                                    class="btn-secondary text-xs-fluid">
-                                                                    Conservar datos actuales
+                                                <td colspan="8">
+                                                    <div class="flex items-center gap-3 flex-wrap">
+                                                        <p class="text-xs-fluid font-semibold text-amber-900 shrink-0">
+                                                            Datos diferentes al catálogo:
+                                                        </p>
+                                                        @if(isset($item['conflict']['category']))
+                                                            <span class="text-xs-fluid text-amber-800">
+                                                                Categoría <span class="line-through text-amber-500">{{ $item['conflict']['category']['registered'] }}</span>
+                                                                → <span class="font-semibold">{{ $item['conflict']['category']['suggested'] }}</span>
+                                                            </span>
+                                                        @endif
+                                                        @if(isset($item['conflict']['unit']))
+                                                            <span class="text-xs-fluid text-amber-800">
+                                                                Unidad <span class="line-through text-amber-500">{{ $item['conflict']['unit']['registered'] }}</span>
+                                                                → <span class="font-semibold">{{ $item['conflict']['unit']['suggested'] }}</span>
+                                                            </span>
+                                                        @endif
+                                                        <div class="flex flex-wrap gap-1.5 ml-auto">
+                                                            @if(isset($item['conflict']['category']) && isset($item['conflict']['unit']))
+                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'both')"
+                                                                    class="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs-fluid font-medium hover:bg-amber-700 transition">
+                                                                    Actualizar ambos
                                                                 </button>
-                                                            </div>
+                                                            @endif
+                                                            @if(isset($item['conflict']['category']))
+                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'category')"
+                                                                    class="btn-secondary text-xs-fluid">Solo categoría</button>
+                                                            @endif
+                                                            @if(isset($item['conflict']['unit']))
+                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'unit')"
+                                                                    class="btn-secondary text-xs-fluid">Solo unidad</button>
+                                                            @endif
+                                                            <button type="button" wire:click="dismissProductConflict({{ $i }})"
+                                                                class="btn-secondary text-xs-fluid">Ignorar</button>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -633,33 +636,34 @@
                                         @endif
                                     @endforeach
                                 </tbody>
-                                <tfoot>
-                                    @php
-                                        $subtotalSinIva = collect($items)->sum(fn($item) => $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)));
-                                        $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
-                                        $totalIva = $totalConIva - $subtotalSinIva;
-                                    @endphp
-                                    <tr>
-                                        <td colspan="5" class="text-right text-text-muted">Subtotal s/IVA</td>
-                                        <td class="text-right font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</td>
-                                        <td colspan="2"></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5" class="text-right text-text-muted">IVA (16%)</td>
-                                        <td class="text-right font-medium text-text-muted tabular-nums">
-                                            @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
-                                            @else <span class="text-amber-500">Pendiente</span>
-                                            @endif
-                                        </td>
-                                        <td colspan="2"></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5" class="text-right font-semibold text-text-primary">Total c/IVA</td>
-                                        <td class="text-right font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</td>
-                                        <td colspan="2"></td>
-                                    </tr>
-                                </tfoot>
                             </table>
+                        </div>
+
+                        {{-- Totales externos alineados a la derecha --}}
+                        @php
+                            $subtotalSinIva = collect($items)->sum(fn($item) => $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)));
+                            $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
+                            $totalIva = $totalConIva - $subtotalSinIva;
+                        @endphp
+                        <div class="flex justify-end mt-3">
+                            <div class="min-w-[260px] space-y-1.5">
+                                <div class="flex items-center justify-between gap-6">
+                                    <span class="text-small text-text-muted">Subtotal s/IVA</span>
+                                    <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-6">
+                                    <span class="text-small text-text-muted">IVA (16%)</span>
+                                    <span class="text-small font-medium text-text-muted tabular-nums">
+                                        @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
+                                        @else <span class="text-amber-500">Pendiente</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
+                                    <span class="text-small font-semibold text-text-primary">Total c/IVA</span>
+                                    <span class="text-body font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                </div>
+                            </div>
                         </div>
                     @else
                         <div class="text-center py-10 border-2 border-dashed border-border rounded-xl">
@@ -683,18 +687,17 @@
                     <a href="{{ route('requisiciones.index') }}" class="btn-secondary">Cancelar</a>
                     <button type="submit" class="btn-primary relative" wire:loading.attr="disabled"
                         wire:target="saveRequisition">
-                        <span wire:loading.remove wire:target="saveRequisition"
-                            class="flex items-center gap-2">
+                        <span wire:loading.class="opacity-0" wire:target="saveRequisition"
+                            class="flex items-center gap-2 transition-opacity">
                             <i data-lucide="check" class="w-4 h-4"></i>
                             Guardar Requisición
                         </span>
                         <span wire:loading wire:target="saveRequisition"
-                            class="flex items-center gap-2">
+                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                             <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
-                            Guardando…
                         </span>
                     </button>
                 </div>

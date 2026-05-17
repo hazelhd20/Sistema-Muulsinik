@@ -78,7 +78,7 @@ class ProjectIndex extends Component
 
         $this->showCreateModal = false;
         $this->resetForm();
-        session()->flash('success', 'Proyecto creado exitosamente.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proyecto creado exitosamente.']);
     }
 
     public function updateProject(): void
@@ -107,7 +107,7 @@ class ProjectIndex extends Component
 
         $this->showEditModal = false;
         $this->resetForm();
-        session()->flash('success', 'Proyecto actualizado correctamente.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proyecto actualizado correctamente.']);
     }
 
     public function deleteProject(int $projectId): void
@@ -121,12 +121,12 @@ class ProjectIndex extends Component
                            \App\Models\Quotation::where('project_id', $projectId)->exists();
 
         if ($hasDependencies) {
-            session()->flash('error', 'No se puede eliminar: el proyecto tiene requisiciones, cotizaciones o gastos asociados.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proyecto tiene requisiciones, cotizaciones o gastos asociados.']);
             return;
         }
 
         $project->delete();
-        session()->flash('success', 'Proyecto eliminado.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proyecto eliminado.']);
     }
 
     private function resetForm(): void

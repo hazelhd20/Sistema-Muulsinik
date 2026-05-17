@@ -118,14 +118,18 @@
 
             {{-- Footer action --}}
             <div class="flex justify-end">
-                <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="saveEmpresa" class="inline-flex items-center gap-1.5">
+                <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="saveEmpresa">
+                    <span wire:loading.class="opacity-0" wire:target="saveEmpresa"
+                        class="inline-flex items-center gap-1.5 transition-opacity">
                         <i data-lucide="check" class="w-4 h-4"></i>
                         Guardar cambios
                     </span>
-                    <span wire:loading wire:target="saveEmpresa" class="inline-flex items-center gap-2">
-                        <span class="spinner spinner-sm opacity-80"></span>
-                        Guardando…
+                    <span wire:loading wire:target="saveEmpresa"
+                        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
                     </span>
                 </button>
             </div>
@@ -205,10 +209,7 @@
                             </div>
                             <div>
                                 <label class="label">Posición</label>
-                                <select wire:model.live="currency_position" class="input">
-                                    <option value="before">Antes ($100)</option>
-                                    <option value="after">Después (100$)</option>
-                                </select>
+                                <x-custom-select wire:model.live="currency_position" :options="['before' => 'Antes ($100)', 'after' => 'Después (100$)']" placeholder="" />
                                 @error('currency_position') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                             </div>
                             <div>
@@ -251,14 +252,18 @@
 
             {{-- Footer action --}}
             <div class="flex justify-end">
-                <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="saveDocumentos" class="inline-flex items-center gap-1.5">
+                <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="saveDocumentos">
+                    <span wire:loading.class="opacity-0" wire:target="saveDocumentos"
+                        class="inline-flex items-center gap-1.5 transition-opacity">
                         <i data-lucide="check" class="w-4 h-4"></i>
                         Guardar cambios
                     </span>
-                    <span wire:loading wire:target="saveDocumentos" class="inline-flex items-center gap-2">
-                        <span class="spinner spinner-sm opacity-80"></span>
-                        Guardando…
+                    <span wire:loading wire:target="saveDocumentos"
+                        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
                     </span>
                 </button>
             </div>

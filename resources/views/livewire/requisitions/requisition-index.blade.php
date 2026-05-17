@@ -221,19 +221,34 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4" class="text-right text-text-muted">Subtotal</td>
-                                        <td class="text-right font-medium text-text-secondary tabular-nums">${{ number_format($req->items->sum(fn($i) => $i->line_subtotal_computed), 2, '.', ',') }}</td>
-                                        <td class="text-right text-text-muted tabular-nums">
-                                            @if($req->items->sum(fn($i) => (float)($i->tax_amount ?? 0)) > 0) ${{ number_format($req->items->sum(fn($i) => (float)($i->tax_amount ?? 0)), 2, '.', ',') }}
-                                            @else <span class="text-amber-500">—</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-right font-bold text-text-primary tabular-nums">${{ number_format($req->total, 2, '.', ',') }}</td>
-                                    </tr>
-                                </tfoot>
                             </table>
+                        </div>
+
+                        {{-- Totales --}}
+                        @php
+                            $reqSubtotal = $req->items->sum(fn($i) => $i->line_subtotal_computed);
+                            $reqTax      = $req->items->sum(fn($i) => (float)($i->tax_amount ?? 0));
+                            $reqTotal    = $req->total;
+                        @endphp
+                        <div class="flex justify-end mt-3">
+                            <div class="min-w-[260px] space-y-1.5">
+                                <div class="flex items-center justify-between gap-6">
+                                    <span class="text-small text-text-muted">Subtotal s/IVA</span>
+                                    <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($reqSubtotal, 2, '.', ',') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-6">
+                                    <span class="text-small text-text-muted">IVA (16%)</span>
+                                    <span class="text-small font-medium text-text-muted tabular-nums">
+                                        @if($reqTax > 0) ${{ number_format($reqTax, 2, '.', ',') }}
+                                        @else <span class="text-amber-500">—</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
+                                    <span class="text-small font-semibold text-text-primary">Total</span>
+                                    <span class="text-body font-bold text-text-primary tabular-nums">${{ number_format($reqTotal, 2, '.', ',') }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif
@@ -288,12 +303,23 @@
                     <div>
                         <h3 class="text-small font-semibold text-text-primary mb-3">Productos solicitados</h3>
 
+                        {{-- Datalist de productos existentes --}}
+                        <datalist id="products-list">
+                            @foreach($products as $prod)
+                                <option value="{{ $prod->canonical_name }}"></option>
+                            @endforeach
+                        </datalist>
+
                         {{-- Formulario para añadir --}}
-                        <div class="border border-border rounded-xl p-4 mb-4 bg-surface-main/40">
+                        <div class="border border-border rounded-xl p-4 mb-4 bg-surface-main/40 space-y-3">
                             <div class="flex flex-col sm:flex-row gap-3 items-end">
                                 <div class="flex-1 min-w-[200px]">
                                     <label class="label">Producto *</label>
-                                    <input wire:model="itemName" type="text" class="input" placeholder="Ej. Cemento Cruz Azul">
+                                    <input wire:model="itemName" type="text" list="products-list" class="input" placeholder="Ej. Cemento Cruz Azul">
+                                </div>
+                                <div class="w-full sm:w-36">
+                                    <label class="label">Categoría</label>
+                                    <x-custom-select wire:model="itemCategoryId" :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría" />
                                 </div>
                                 <div class="w-full sm:w-24">
                                     <label class="label">Cant. *</label>
@@ -301,7 +327,12 @@
                                 </div>
                                 <div class="w-full sm:w-32">
                                     <label class="label">Unidad *</label>
-                                    <x-custom-select wire:model="itemUnit" :options="['pza' => 'Pieza', 'kg' => 'Kg', 'm' => 'Metro', 'm2' => 'm²', 'm3' => 'm³', 'lt' => 'Litro', 'bulto' => 'Bulto', 'rollo' => 'Rollo']" placeholder="Unidad" />
+                                    @php
+                                        $measureOptions = $measures->mapWithKeys(fn($m) => [
+                                            ($m->abbreviation ?? $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')
+                                        ])->toArray();
+                                    @endphp
+                                    <x-custom-select wire:model="itemUnit" :options="$measureOptions" placeholder="Seleccionar..." />
                                 </div>
                                 <div class="w-full sm:w-28">
                                     <label class="label">Precio U.</label>
@@ -324,21 +355,36 @@
                                     <thead>
                                         <tr>
                                             <th>Producto</th>
+                                            <th>Categoría</th>
                                             <th class="text-center">Cant.</th>
                                             <th class="text-center">Unidad</th>
                                             <th class="text-right">Precio U.</th>
                                             <th class="text-right">Subtotal</th>
+                                            <th class="text-right">IVA</th>
+                                            <th class="text-right">Total</th>
                                             <th class="w-10"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($items as $i => $item)
+                                            @php
+                                                $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
+                                                $iva = round($subtotal * 0.16, 2);
+                                                $total = $subtotal + $iva;
+                                                $catName = '';
+                                                if (!empty($item['category_id'])) {
+                                                    $catName = $categories->firstWhere('id', $item['category_id'])?->name ?? '';
+                                                }
+                                            @endphp
                                             <tr>
                                                 <td class="font-medium text-text-primary">{{ $item['name'] }}</td>
+                                                <td class="text-text-muted">{{ $catName ?: '—' }}</td>
                                                 <td class="text-center text-text-secondary tabular-nums">{{ $item['quantity'] }}</td>
                                                 <td class="text-center text-text-muted">{{ $item['unit'] }}</td>
                                                 <td class="text-right text-text-secondary tabular-nums">${{ number_format($item['unit_price'], 2) }}</td>
-                                                <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($item['quantity'] * $item['unit_price'], 2) }}</td>
+                                                <td class="text-right text-text-secondary tabular-nums">${{ number_format($subtotal, 2) }}</td>
+                                                <td class="text-right text-text-muted tabular-nums">${{ number_format($iva, 2) }}</td>
+                                                <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($total, 2) }}</td>
                                                 <td class="text-center">
                                                     <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger">
                                                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -347,14 +393,30 @@
                                             </tr>
                                         @endforeach
                                     </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="4" class="text-right font-medium text-text-muted">Total estimado</td>
-                                            <td class="text-right font-bold text-text-primary tabular-nums">${{ number_format(collect($items)->sum(fn($i) => $i['quantity'] * $i['unit_price']), 2) }}</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
                                 </table>
+                            </div>
+
+                            {{-- Totales --}}
+                            @php
+                                $subtotalTotal = collect($items)->sum(fn($i) => ($i['quantity'] ?? 0) * ($i['unit_price'] ?? 0));
+                                $ivaTotal = round($subtotalTotal * 0.16, 2);
+                                $grandTotal = $subtotalTotal + $ivaTotal;
+                            @endphp
+                            <div class="flex justify-end mt-3">
+                                <div class="min-w-[260px] space-y-1.5">
+                                    <div class="flex items-center justify-between gap-6">
+                                        <span class="text-small text-text-muted">Subtotal s/IVA</span>
+                                        <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalTotal, 2, '.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-6">
+                                        <span class="text-small text-text-muted">IVA (16%)</span>
+                                        <span class="text-small font-medium text-text-muted tabular-nums">${{ number_format($ivaTotal, 2, '.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
+                                        <span class="text-small font-semibold text-text-primary">Total c/IVA</span>
+                                        <span class="text-body font-bold text-text-primary tabular-nums">${{ number_format($grandTotal, 2, '.', ',') }}</span>
+                                    </div>
+                                </div>
                             </div>
                         @else
                             <div class="text-center py-8 border-2 border-dashed border-border rounded-xl">
@@ -370,11 +432,15 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="createRequisicion" class="inline-flex items-center gap-1.5">Crear Requisición</span>
-                            <span wire:loading wire:target="createRequisicion" class="inline-flex items-center gap-2">
-                                <span class="spinner spinner-sm opacity-80"></span>
-                                Creando…
+                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="createRequisition">
+                            <span wire:loading.class="opacity-0" wire:target="createRequisition"
+                                class="inline-flex items-center gap-1.5 transition-opacity">Crear Requisición</span>
+                            <span wire:loading wire:target="createRequisition"
+                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
                             </span>
                         </button>
                     </div>

@@ -70,7 +70,7 @@ class ProductIndex extends Component
             ->first();
 
         if ($existingByNormalized) {
-            session()->flash('error', 'Ya existe un producto similar: "' . $existingByNormalized->canonical_name . '". Usa el catálogo existente.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un producto similar: "' . $existingByNormalized->canonical_name . '". Usa el catálogo existente.']);
             return;
         }
 
@@ -81,7 +81,7 @@ class ProductIndex extends Component
                 'description' => $this->description ?: null,
                 'category_id' => $this->categoryId,
             ]);
-            session()->flash('success', 'Producto actualizado correctamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto actualizado correctamente.']);
         } else {
             Product::create([
                 'canonical_name' => $this->canonicalName,
@@ -89,7 +89,7 @@ class ProductIndex extends Component
                 'description' => $this->description ?: null,
                 'category_id' => $this->categoryId,
             ]);
-            session()->flash('success', 'Producto registrado en el catálogo maestro.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto registrado en el catálogo maestro.']);
         }
 
         $this->showCreateModal = false;
@@ -103,12 +103,12 @@ class ProductIndex extends Component
         $product = Product::findOrFail($productId);
 
         if (\App\Models\RequisitionItem::where('product_id', $productId)->exists()) {
-            session()->flash('error', 'No se puede eliminar: el producto está siendo utilizado en una requisición.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el producto está siendo utilizado en una requisición.']);
             return;
         }
 
         $product->delete();
-        session()->flash('success', 'Producto eliminado del catálogo.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto eliminado del catálogo.']);
     }
 
     private function resetForm(): void

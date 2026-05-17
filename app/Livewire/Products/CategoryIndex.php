@@ -54,12 +54,12 @@ class CategoryIndex extends Component
             Category::findOrFail($this->editingId)->update([
                 'name' => $this->name,
             ]);
-            session()->flash('success', 'Categoría actualizada exitosamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría actualizada exitosamente.']);
         } else {
             Category::create([
                 'name' => $this->name,
             ]);
-            session()->flash('success', 'Categoría creada exitosamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría creada exitosamente.']);
         }
 
         $this->reset(['name', 'editingId', 'showCreateModal']);
@@ -74,12 +74,12 @@ class CategoryIndex extends Component
         $isUsed = \App\Models\Product::where('category_id', $category->id)->exists();
 
         if ($isUsed) {
-            session()->flash('error', 'No se puede eliminar: la categoría está en uso por productos.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: la categoría está en uso por productos.']);
             return;
         }
 
         $category->delete();
-        session()->flash('success', 'Categoría eliminada exitosamente.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría eliminada exitosamente.']);
     }
 
     #[Layout('components.layouts.app')]

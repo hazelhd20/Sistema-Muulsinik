@@ -542,6 +542,11 @@ class QuotationWizard extends Component
         $this->detectAlerts();
     }
 
+    public function updatedItems(): void
+    {
+        $this->detectAlerts();
+    }
+
     /**
      * Hook para cuando el nombre del proveedor cambia manualmente.
      * Intenta resolver el ID del proveedor para filtrar vendedores.
@@ -569,6 +574,8 @@ class QuotationWizard extends Component
             $this->supplierId = '';
             $this->supplierMatch = ['status' => 'new'];
         }
+
+        $this->detectAlerts();
     }
 
     public function addItem(): void
@@ -587,12 +594,15 @@ class QuotationWizard extends Component
             'line_total' => null,
             'product_id' => null,
         ];
+
+        $this->detectAlerts();
     }
 
     public function removeItem(int $index): void
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+        $this->detectAlerts();
     }
 
     /* ── Acciones fiscales (IVA) ─────────────────────── */

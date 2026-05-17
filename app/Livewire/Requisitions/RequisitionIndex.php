@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\Models\Category;
+use App\Models\Measure;
+use App\Models\Product;
 use App\Models\Project;
 use App\Models\Requisition;
 use App\Models\Supplier;
@@ -33,6 +36,7 @@ class RequisitionIndex extends Component
     public string $itemUnit = 'pza';
     public string $itemPrice = '';
     public $itemSupplierId = '';
+    public $itemCategoryId = '';
 
     // Rechazo con comentario obligatorio (RF-REQ-09)
     public bool $showRejectModal = false;
@@ -71,12 +75,14 @@ class RequisitionIndex extends Component
             'unit' => $this->itemUnit,
             'unit_price' => (float) $this->itemPrice,
             'supplier_id' => $this->itemSupplierId ?: null,
+            'category_id' => $this->itemCategoryId ?: null,
         ];
 
         $this->itemName = '';
         $this->itemQuantity = '';
         $this->itemPrice = '';
         $this->itemSupplierId = '';
+        $this->itemCategoryId = '';
     }
 
     public function removeItem(int $index): void
@@ -95,7 +101,7 @@ class RequisitionIndex extends Component
         ]);
 
         if (empty($this->items)) {
-            session()->flash('error', 'Agrega al menos un producto a la requisición.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Agrega al menos un producto a la requisición.']);
             return;
         }
 
@@ -115,7 +121,7 @@ class RequisitionIndex extends Component
 
         $this->showCreateModal = false;
         $this->resetForm();
-        session()->flash('success', 'Requisición creada como borrador.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición creada como borrador.']);
     }
 
     /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente).
@@ -135,10 +141,10 @@ class RequisitionIndex extends Component
                 'status' => 'aprobada',
                 'approved_by' => $user->id,
             ]);
-            session()->flash('success', 'Requisición aprobada automáticamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada automáticamente.']);
         } else {
             $req->update(['status' => 'pendiente']);
-            session()->flash('success', 'Requisición enviada a aprobación.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición enviada a aprobación.']);
         }
     }
 
@@ -146,7 +152,7 @@ class RequisitionIndex extends Component
     public function approve(int $requisitionId): void
     {
         if (!auth()->user()->hasPermission('requisiciones.aprobar')) {
-            session()->flash('error', 'No tienes permiso para aprobar requisiciones.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
             return;
         }
 
@@ -159,7 +165,7 @@ class RequisitionIndex extends Component
             'status' => 'aprobada',
             'approved_by' => auth()->id(),
         ]);
-        session()->flash('success', 'Requisición aprobada.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada.']);
     }
 
     /** RF-REQ-09: Abrir modal de rechazo (Pendiente → Rechazada). */
@@ -174,7 +180,7 @@ class RequisitionIndex extends Component
     public function confirmReject(): void
     {
         if (!auth()->user()->hasPermission('requisiciones.aprobar')) {
-            session()->flash('error', 'No tienes permiso para rechazar requisiciones.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
             $this->showRejectModal = false;
             return;
         }
@@ -193,13 +199,13 @@ class RequisitionIndex extends Component
         $this->showRejectModal = false;
         $this->rejectingId = null;
         $this->rejectionComment = '';
-        session()->flash('success', 'Requisición rechazada.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición rechazada.']);
     }
 
     public function deleteRequisition(int $id): void
     {
         Requisition::findOrFail($id)->delete();
-        session()->flash('success', 'Requisición eliminada.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición eliminada.']);
     }
 
     private function resetForm(): void
@@ -213,6 +219,7 @@ class RequisitionIndex extends Component
         $this->itemQuantity = '';
         $this->itemPrice = '';
         $this->itemSupplierId = '';
+        $this->itemCategoryId = '';
     }
 
     #[Layout('components.layouts.app')]
@@ -238,12 +245,18 @@ class RequisitionIndex extends Component
         $projects = Project::where('status', 'activo')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('trade_name')->get();
         $vendors = \App\Models\Vendor::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
+        $measures = Measure::orderBy('name')->get();
+        $products = Product::orderBy('canonical_name')->get();
 
         return view('livewire.requisitions.requisition-index', compact(
             'requisitions',
             'projects',
             'suppliers',
-            'vendors'
+            'vendors',
+            'categories',
+            'measures',
+            'products'
         ));
     }
 }

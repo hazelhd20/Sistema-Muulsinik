@@ -6,6 +6,7 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source inline('border-amber-400 border-emerald-400 border-primary-400 opacity-0');
 
 /*
  * Design System — Muulsinik ERP  ·  Industrial Premium Minimal
@@ -127,6 +128,7 @@ input[type="search"]::-webkit-search-results-decoration {
         justify-content: center;
         gap: 0.4375rem;
         padding: 0.4375rem 1rem;
+        min-height: 2.25rem;
         background-color: var(--color-primary-600);
         color: #fff;
         font-weight: 600;

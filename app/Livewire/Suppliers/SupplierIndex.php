@@ -79,7 +79,7 @@ class SupplierIndex extends Component
             ->first();
 
         if ($existingByNormalized) {
-            session()->flash('error', 'Ya existe un proveedor similar: "' . $existingByNormalized->trade_name . '". Verifica el catálogo.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un proveedor similar: "' . $existingByNormalized->trade_name . '". Verifica el catálogo.']);
             return;
         }
 
@@ -91,7 +91,7 @@ class SupplierIndex extends Component
                 'category' => $this->category ?: null,
                 'notes' => $this->notes ?: null,
             ]);
-            session()->flash('success', 'Proveedor actualizado correctamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor actualizado correctamente.']);
         } else {
             Supplier::create([
                 'trade_name' => $this->tradeName,
@@ -100,7 +100,7 @@ class SupplierIndex extends Component
                 'category' => $this->category ?: null,
                 'notes' => $this->notes ?: null,
             ]);
-            session()->flash('success', 'Proveedor registrado correctamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor registrado correctamente.']);
         }
 
         $this->showCreateModal = false;
@@ -146,7 +146,7 @@ class SupplierIndex extends Component
                 'phone' => $this->vendorPhone ?: null,
                 'email' => $this->vendorEmail ?: null,
             ]);
-            session()->flash('vendor_success', 'Vendedor actualizado.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Vendedor actualizado.']);
         } else {
             Vendor::create([
                 'supplier_id' => $this->viewingSupplierId,
@@ -154,7 +154,7 @@ class SupplierIndex extends Component
                 'phone' => $this->vendorPhone ?: null,
                 'email' => $this->vendorEmail ?: null,
             ]);
-            session()->flash('vendor_success', 'Vendedor agregado.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Vendedor agregado.']);
         }
 
         $this->vendorName = '';
@@ -181,12 +181,12 @@ class SupplierIndex extends Component
                   \App\Models\Quotation::where('supplier_id', $supplierId)->exists();
 
         if ($isUsed) {
-            session()->flash('error', 'No se puede eliminar: el proveedor está siendo utilizado en requisiciones o cotizaciones.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proveedor está siendo utilizado en requisiciones o cotizaciones.']);
             return;
         }
 
         $supplier->delete();
-        session()->flash('success', 'Proveedor eliminado.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor eliminado.']);
     }
 
     private function resetForm(): void

@@ -119,13 +119,17 @@
                     <div class="flex justify-end gap-3 pt-4 border-t border-border">
                         <button type="button" wire:click="$set('showCreateModal', false)"
                             class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="saveSupplier" class="inline-flex items-center gap-1.5">
+                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="saveSupplier">
+                            <span wire:loading.class="opacity-0" wire:target="saveSupplier"
+                                class="inline-flex items-center gap-1.5 transition-opacity">
                                 {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
                             </span>
-                            <span wire:loading wire:target="saveSupplier" class="inline-flex items-center gap-2">
-                                <span class="spinner spinner-sm opacity-80"></span>
-                                Guardando…
+                            <span wire:loading wire:target="saveSupplier"
+                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
                             </span>
                         </button>
                     </div>
@@ -183,7 +187,7 @@
                                     <span wire:loading.class="opacity-0" wire:target="saveVendor" class="transition-opacity">
                                         {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
                                     </span>
-                                    <span wire:loading wire:target="saveVendor" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                    <span wire:loading wire:target="saveVendor" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                                         <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
                                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />

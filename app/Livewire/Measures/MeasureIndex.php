@@ -56,13 +56,13 @@ class MeasureIndex extends Component
                 'name' => $this->name,
                 'abbreviation' => $this->abbreviation ?: null,
             ]);
-            session()->flash('success', 'Medida actualizada exitosamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida actualizada exitosamente.']);
         } else {
             Measure::create([
                 'name' => $this->name,
                 'abbreviation' => $this->abbreviation ?: null,
             ]);
-            session()->flash('success', 'Medida creada exitosamente.');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida creada exitosamente.']);
         }
 
         $this->reset(['name', 'abbreviation', 'editingId', 'showCreateModal']);
@@ -78,12 +78,12 @@ class MeasureIndex extends Component
                   \App\Models\Product::where('measure_id', $measure->id)->exists();
 
         if ($isUsed) {
-            session()->flash('error', 'No se puede eliminar: la medida está en uso por productos o requisiciones.');
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: la medida está en uso por productos o requisiciones.']);
             return;
         }
 
         $measure->delete();
-        session()->flash('success', 'Medida eliminada exitosamente.');
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida eliminada exitosamente.']);
     }
 
     #[Layout('components.layouts.app')]
