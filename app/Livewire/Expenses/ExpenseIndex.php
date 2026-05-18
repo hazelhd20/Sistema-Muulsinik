@@ -56,6 +56,8 @@ class ExpenseIndex extends Component
         $this->showCreateModal = true;
     }
 
+    public bool $isDistributed = false;
+
     public function createExpense(): void
     {
         if ($this->denyUnless('gastos.crear', 'No tienes permiso para registrar gastos.')) return;
@@ -65,7 +67,7 @@ class ExpenseIndex extends Component
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'category' => 'required',
-            'projectId' => 'required|exists:projects,id',
+            'projectId' => $this->isDistributed ? 'nullable' : 'required|exists:projects,id',
             'receiptFile' => 'nullable|file|max:20480|mimes:jpg,jpeg,png,pdf',
         ]);
 
@@ -79,13 +81,32 @@ class ExpenseIndex extends Component
             'amount' => $this->amount,
             'date' => $this->date,
             'category' => $this->category,
-            'project_id' => $this->projectId,
+            'project_id' => $this->isDistributed ? null : $this->projectId,
+            'is_distributed' => $this->isDistributed,
             'user_id' => auth()->id(),
             'receipt_file' => $receiptPath,
         ]);
 
-        // Verificar alertas de presupuesto (RF-GASTO-03)
-        $this->checkBudgetAlerts($expense->project);
+        if ($this->isDistributed) {
+            $activeProjects = Project::where('status', 'activo')->get();
+            $count = $activeProjects->count();
+            if ($count > 0) {
+                $amountPerProject = round($this->amount / $count, 2);
+                $percentage = round(100 / $count, 2);
+                foreach ($activeProjects as $project) {
+                    \App\Models\ExpenseAllocation::create([
+                        'expense_id' => $expense->id,
+                        'project_id' => $project->id,
+                        'amount' => $amountPerProject,
+                        'percentage' => $percentage,
+                    ]);
+                    // Verificar alertas de presupuesto para cada proyecto
+                    $this->checkBudgetAlerts($project);
+                }
+            }
+        } else {
+            $this->checkBudgetAlerts($expense->project);
+        }
 
         $this->showCreateModal = false;
         $this->resetForm();
@@ -122,6 +143,7 @@ class ExpenseIndex extends Component
         $this->category = '';
         $this->projectId = '';
         $this->receiptFile = null;
+        $this->isDistributed = false;
     }
 
     #[Layout('components.layouts.app')]

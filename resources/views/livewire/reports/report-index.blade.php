@@ -17,6 +17,27 @@
         </x-slot:actions>
     </x-page-header>
 
+    {{-- Tabs --}}
+    <div class="flex items-center gap-1 mb-5 border-b border-border" x-data="{ tab: @entangle('activeTab') }">
+        <button @click="tab = 'overview'; $wire.set('activeTab', 'overview')" :class="tab === 'overview' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Resumen
+        </button>
+        <button @click="tab = 'suppliers'; $wire.set('activeTab', 'suppliers')" :class="tab === 'suppliers' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+            <i data-lucide="building-2" class="w-3.5 h-3.5"></i> Proveedores
+        </button>
+        <button @click="tab = 'vendors'; $wire.set('activeTab', 'vendors')" :class="tab === 'vendors' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+            <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Vendedores
+        </button>
+        <button @click="tab = 'products'; $wire.set('activeTab', 'products')" :class="tab === 'products' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+            <i data-lucide="package" class="w-3.5 h-3.5"></i> Productos
+        </button>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- TAB: RESUMEN GENERAL                               --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'overview')
+
     {{-- KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <div class="stat-card">
@@ -67,7 +88,7 @@
                     <p class="text-xs-fluid text-text-muted">Últimos 12 meses</p>
                 </div>
             </div>
-            <div class="h-64" x-data="trendChart()" x-init="init()">
+            <div class="h-64" wire:ignore x-data="trendChart()" x-init="init()">
                 <canvas id="trend-chart"></canvas>
             </div>
         </div>
@@ -80,7 +101,7 @@
                     Sin datos para el período
                 </div>
             @else
-                <div class="h-52" x-data="categoryChart()" x-init="init()">
+                <div class="h-52" wire:ignore x-data="categoryChart()" x-init="init()">
                     <canvas id="category-chart"></canvas>
                 </div>
                 <div class="mt-4 space-y-2">
@@ -102,7 +123,7 @@
     </div>
 
     {{-- Budget comparison + Top projects --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {{-- Presupuesto vs Gasto --}}
         <div class="card">
             <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
@@ -176,46 +197,196 @@
             </table>
         </div>
     </div>
+    @endif
 
-    {{-- Summary cards bottom --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="stat-card">
-            <div class="stat-icon bg-primary-50">
-                <i data-lucide="briefcase" class="w-5 h-5 text-primary-600"></i>
-            </div>
+    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- TAB: PROVEEDORES                                    --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'suppliers')
+    <div class="table-container">
+        <div class="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
-                <p class="text-h2 text-text-primary">{{ $totalProjects }}</p>
-                <p class="text-xs-fluid text-text-muted">Proyectos totales</p>
+                <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
+                <p class="text-xs-fluid text-text-muted">Monto total de requisiciones aprobadas en el período</p>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-emerald-50">
-                <i data-lucide="truck" class="w-5 h-5 text-emerald-600"></i>
-            </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Proveedor</th>
+                    <th>Categoría</th>
+                    <th class="text-center">Requisiciones</th>
+                    <th class="text-center">Productos</th>
+                    <th class="text-right">Monto Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($topSuppliers as $i => $supplier)
+                    <tr>
+                        <td>
+                            <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                                {{ $i + 1 }}
+                            </span>
+                        </td>
+                        <td class="font-medium text-text-primary">{{ $supplier->trade_name }}</td>
+                        <td>
+                            @if($supplier->category)
+                                <x-dynamic-badge :value="$supplier->category" />
+                            @else
+                                <span class="text-text-muted">—</span>
+                            @endif
+                        </td>
+                        <td class="text-center text-body tabular-nums">{{ $supplier->total_requisitions }}</td>
+                        <td class="text-center text-body tabular-nums">{{ $supplier->total_items }}</td>
+                        <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($supplier->total_amount, 2, '.', ',') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6">
+                            <x-empty-state icon="building-2" title="Sin datos de proveedores" message="No hay requisiciones aprobadas en este período." />
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @endif
+
+    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- TAB: VENDEDORES                                     --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'vendors')
+    <div class="table-container">
+        <div class="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
-                <p class="text-h2 text-text-primary">{{ $totalSuppliers }}</p>
-                <p class="text-xs-fluid text-text-muted">Proveedores</p>
+                <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
+                <p class="text-xs-fluid text-text-muted">Montos por vendedor/contacto de proveedor en el período</p>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-amber-50">
-                <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Vendedor</th>
+                    <th>Proveedor</th>
+                    <th class="text-center">Requisiciones</th>
+                    <th class="text-right">Monto Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($topVendors as $i => $vendor)
+                    <tr>
+                        <td>
+                            <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                                {{ $i + 1 }}
+                            </span>
+                        </td>
+                        <td class="font-medium text-text-primary">{{ $vendor->vendor_name }}</td>
+                        <td class="text-body text-text-secondary">{{ $vendor->supplier_name }}</td>
+                        <td class="text-center text-body tabular-nums">{{ $vendor->total_requisitions }}</td>
+                        <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($vendor->total_amount, 2, '.', ',') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5">
+                            <x-empty-state icon="user-check" title="Sin datos de vendedores" message="No hay requisiciones aprobadas en este período." />
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @endif
+
+    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- TAB: PRODUCTOS MÁS COMPRADOS                       --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'products')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        {{-- Tabla de productos --}}
+        <div class="lg:col-span-2 table-container">
+            <div class="px-4 py-3 border-b border-border">
+                <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
+                <p class="text-xs-fluid text-text-muted">Top 15 por monto en requisiciones aprobadas</p>
             </div>
-            <div>
-                <p class="text-h2 text-text-primary">{{ $requisitionsPending }}</p>
-                <p class="text-xs-fluid text-text-muted">Req. pendientes</p>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th class="text-center">Veces</th>
+                        <th class="text-right">Cant. Total</th>
+                        <th class="text-right">Precio Prom.</th>
+                        <th class="text-right">Monto Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($topProducts as $i => $product)
+                        <tr>
+                            <td>
+                                <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                                    {{ $i + 1 }}
+                                </span>
+                            </td>
+                            <td>
+                                <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
+                                @if($product->measure_abbr)
+                                    <span class="badge badge-secondary text-[10px]">{{ $product->measure_abbr }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($product->category_name)
+                                    <x-dynamic-badge :value="$product->category_name" />
+                                @else
+                                    <span class="text-text-muted">—</span>
+                                @endif
+                            </td>
+                            <td class="text-center text-body tabular-nums">{{ $product->times_purchased }}</td>
+                            <td class="text-right text-body tabular-nums">{{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}</td>
+                            <td class="text-right text-body text-text-secondary tabular-nums">${{ number_format($product->avg_price, 2, '.', ',') }}</td>
+                            <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($product->total_amount, 2, '.', ',') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7">
+                                <x-empty-state icon="package" title="Sin datos de productos" message="No hay requisiciones aprobadas en este período." />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-sky-50">
-                <i data-lucide="trending-up" class="w-5 h-5 text-sky-600"></i>
-            </div>
-            <div>
-                <p class="text-h2 text-text-primary">${{ number_format($avgExpense, 0, '.', ',') }}</p>
-                <p class="text-xs-fluid text-text-muted">Gasto promedio</p>
-            </div>
+
+        {{-- Donut por categoría de producto --}}
+        <div class="card">
+            <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
+            @if($productsByCategory->isEmpty())
+                <div class="flex items-center justify-center h-52 text-text-muted text-body">Sin datos</div>
+            @else
+                <div class="h-52" wire:ignore x-data="productCategoryChart()" x-init="init()">
+                    <canvas id="product-category-chart"></canvas>
+                </div>
+                <div class="mt-4 space-y-2">
+                    @php
+                        $pcColors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+                    @endphp
+                    @foreach($productsByCategory->take(6) as $i => $pc)
+                        <div class="flex items-center justify-between text-body">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background: {{ $pcColors[$i] ?? '#9ca3af' }}"></div>
+                                <span class="text-text-secondary">{{ $pc->category_name ?? 'Sin categoría' }}</span>
+                            </div>
+                            <span class="font-medium text-text-primary">${{ number_format($pc->total_amount, 0, '.', ',') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
+    @endif
+
 </div>
 
 @script
@@ -288,6 +459,43 @@
                     labels: data.map(d => labels[d.category] || d.category),
                     datasets: [{
                         data: data.map(d => d.total),
+                        backgroundColor: colors.slice(0, data.length),
+                        borderWidth: 0,
+                        hoverOffset: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1E1B2E',
+                            padding: 10,
+                            cornerRadius: 8,
+                            titleFont: { family: 'Plus Jakarta Sans' },
+                            bodyFont: { family: 'Plus Jakarta Sans' },
+                            callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
+                        }
+                    }
+                }
+            });
+        }
+    }));
+
+    Alpine.data('productCategoryChart', () => ({
+        init() {
+            const ctx = document.getElementById('product-category-chart');
+            if (!ctx) return;
+            const data = @json($productsByCategory);
+            const colors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.category_name || 'Sin categoría'),
+                    datasets: [{
+                        data: data.map(d => d.total_amount),
                         backgroundColor: colors.slice(0, data.length),
                         borderWidth: 0,
                         hoverOffset: 6,

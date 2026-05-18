@@ -125,7 +125,7 @@ class ProductIndex extends Component
     public function render()
     {
         $products = Product::query()
-            ->with('category')
+            ->with(['category', 'measure'])
             ->when($this->search, fn($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
             ->when($this->categoryFilter, fn($q) => $q->where('category_id', $this->categoryFilter))
             ->orderBy('canonical_name')

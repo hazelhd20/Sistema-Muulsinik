@@ -26,7 +26,7 @@
 <body class="antialiased min-h-screen" x-data="{ mobileSidebarOpen: false }">
     <script>
         // Capturar Ctrl+K antes de que Chrome lo intercepte
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -42,10 +42,9 @@
     <div class="flex min-h-screen">
 
         {{-- ══════════════════════════════════════
-             SIDEBAR — Industrial Premium Minimal
+        SIDEBAR — Industrial Premium Minimal
         ══════════════════════════════════════ --}}
-        <aside
-            class="fixed inset-y-0 left-0 z-40 w-[15rem] bg-surface-sidebar flex flex-col
+        <aside class="fixed inset-y-0 left-0 z-40 w-[15rem] bg-surface-sidebar flex flex-col
                    border-r border-border
                    transition-transform duration-200 ease-out
                    lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shrink-0"
@@ -53,10 +52,8 @@
 
             {{-- Brand ──────────────────────────────── --}}
             <div class="flex items-center justify-center h-14 border-b border-border shrink-0 px-5">
-                <img src="{{ asset('images/logo_muulsinik.svg') }}"
-                     alt="Muulsinik ERP"
-                     class="object-contain"
-                     style="height: var(--logo-size);">
+                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain"
+                    style="height: var(--logo-size);">
             </div>
 
             {{-- Navigation ──────────────────────────── --}}
@@ -64,75 +61,84 @@
 
                 <p class="nav-section-label">Principal</p>
 
-                <a href="{{ url('/dashboard') }}"
-                   class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
+                <a href="{{ url('/dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
                     <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
                     <span>Dashboard</span>
                 </a>
 
                 @if(auth()->user()->hasPermission('proyectos.ver'))
-                <a href="{{ url('/proyectos') }}"
-                   class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
-                    <i data-lucide="hard-hat" class="w-4 h-4 shrink-0"></i>
-                    <span>Proyectos</span>
-                </a>
+                    <a href="{{ url('/proyectos') }}" class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
+                        <i data-lucide="hard-hat" class="w-4 h-4 shrink-0"></i>
+                        <span>Proyectos</span>
+                    </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('gastos.ver'))
-                <a href="{{ url('/gastos') }}"
-                   class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
-                    <i data-lucide="wallet" class="w-4 h-4 shrink-0"></i>
-                    <span>Gastos</span>
-                </a>
+                    <a href="{{ url('/gastos') }}" class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
+                        <i data-lucide="wallet" class="w-4 h-4 shrink-0"></i>
+                        <span>Gastos</span>
+                    </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('requisiciones.ver'))
-                <a href="{{ url('/requisiciones') }}"
-                   class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0"></i>
-                    <span>Requisiciones</span>
-                </a>
+                    <a href="{{ url('/requisiciones') }}"
+                        class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
+                        <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0"></i>
+                        <span>Requisiciones</span>
+                    </a>
+                @endif
+
+                @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
+                    <a href="{{ route('cotizador.index') }}"
+                        class="nav-link {{ request()->routeIs('cotizador.*') ? 'active' : '' }}">
+                        <i data-lucide="calculator" class="w-4 h-4 shrink-0"></i>
+                        <span>Cotizador</span>
+                    </a>
                 @endif
 
                 <p class="nav-section-label mt-4">Administración</p>
 
+                @if(auth()->user()->hasPermission('usuarios.ver'))
+                    <a href="{{ url('/usuarios') }}"
+                        class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
+                        <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
+                        <span>Usuarios</span>
+                    </a>
+                @endif
+
                 @if(auth()->user()->hasPermission('proveedores.ver'))
-                <a href="{{ url('/proveedores') }}"
-                   class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
-                    <i data-lucide="truck" class="w-4 h-4 shrink-0"></i>
-                    <span>Proveedores</span>
-                </a>
+                    <a href="{{ url('/proveedores') }}"
+                        class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
+                        <i data-lucide="truck" class="w-4 h-4 shrink-0"></i>
+                        <span>Proveedores</span>
+                    </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('reportes.ver'))
-                <a href="{{ url('/reportes') }}"
-                   class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i>
-                    <span>Reportes</span>
-                </a>
+                    <a href="{{ url('/reportes') }}" class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i>
+                        <span>Reportes</span>
+                    </a>
                 @endif
 
                 <p class="nav-section-label mt-4">Catálogos</p>
 
                 @if(auth()->user()->hasPermission('productos.ver'))
-                <a href="{{ url('/productos') }}"
-                   class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
-                    <i data-lucide="package" class="w-4 h-4 shrink-0"></i>
-                    <span>Productos</span>
-                </a>
+                    <a href="{{ url('/productos') }}" class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
+                        <i data-lucide="package" class="w-4 h-4 shrink-0"></i>
+                        <span>Productos</span>
+                    </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('catalogos.ver'))
-                <a href="{{ url('/medidas') }}"
-                   class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
-                    <i data-lucide="ruler" class="w-4 h-4 shrink-0"></i>
-                    <span>Medidas</span>
-                </a>
-                <a href="{{ url('/categorias') }}"
-                   class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
-                    <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
-                    <span>Categorías</span>
-                </a>
+                    <a href="{{ url('/medidas') }}" class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
+                        <i data-lucide="ruler" class="w-4 h-4 shrink-0"></i>
+                        <span>Medidas</span>
+                    </a>
+                    <a href="{{ url('/categorias') }}" class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
+                        <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+                        <span>Categorías</span>
+                    </a>
                 @endif
             </nav>
 
@@ -163,8 +169,7 @@
 
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
-                    <button type="submit"
-                        class="nav-link w-full text-left group hover:bg-red-50 hover:!text-red-600">
+                    <button type="submit" class="nav-link w-full text-left group hover:bg-red-50 hover:!text-red-600">
                         <i data-lucide="log-out" class="w-4 h-4 shrink-0 group-hover:text-red-500"></i>
                         <span>Cerrar sesión</span>
                     </button>
@@ -173,19 +178,14 @@
         </aside>
 
         {{-- Mobile overlay --}}
-        <div x-show="mobileSidebarOpen"
-             x-transition:enter="transition-opacity duration-150"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity duration-150"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             @click="mobileSidebarOpen = false"
-             class="fixed inset-0 z-30 bg-black/20 backdrop-blur-[2px] lg:hidden"
-             style="display: none;"></div>
+        <div x-show="mobileSidebarOpen" x-transition:enter="transition-opacity duration-150"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity duration-150" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" @click="mobileSidebarOpen = false"
+            class="fixed inset-0 z-30 bg-black/20 backdrop-blur-[2px] lg:hidden" style="display: none;"></div>
 
         {{-- ══════════════════════════════════════
-             MAIN CONTENT AREA
+        MAIN CONTENT AREA
         ══════════════════════════════════════ --}}
         <div class="flex-1 flex flex-col min-w-0">
 
@@ -215,13 +215,19 @@
             <main class="flex-1 p-5 lg:p-6 max-w-screen-2xl mx-auto w-full">
                 {{-- Global flash toast handler --}}
                 @if(session('success'))
-                    <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()" wire:key="global-toast-success-{{ microtime(true) }}"></div>
+                    <div x-data
+                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
+                        wire:key="global-toast-success-{{ microtime(true) }}"></div>
                 @endif
                 @if(session('error'))
-                    <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()" wire:key="global-toast-error-{{ microtime(true) }}"></div>
+                    <div x-data
+                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
+                        wire:key="global-toast-error-{{ microtime(true) }}"></div>
                 @endif
                 @if(session('budget_alert'))
-                    <div x-data x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' }); $el.remove()" wire:key="global-toast-warning-{{ microtime(true) }}"></div>
+                    <div x-data
+                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' }); $el.remove()"
+                        wire:key="global-toast-warning-{{ microtime(true) }}"></div>
                 @endif
 
                 {{ $slot }}

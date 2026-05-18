@@ -2,6 +2,7 @@
     showPreviewModal: false,
     previewUrl: null,
     previewType: null,
+    showFilters: false,
     isPdf() {
         return this.previewType === 'application/pdf' || (this.previewUrl && this.previewUrl.toLowerCase().includes('.pdf'));
     },
@@ -28,12 +29,13 @@
         </x-slot:actions>
     </x-page-header>
 
-    {{-- Filters --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-        <div class="relative flex-1" x-data="{ focused: false }">
+    {{-- Filters Bar --}}
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
+        {{-- Search: compact width --}}
+        <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar requisición..."
-                class="input pl-10 pr-10"
+                class="input pl-10 pr-10 w-full"
                 @focus="focused = true"
                 @blur="focused = false">
             <button
@@ -46,13 +48,51 @@
                 <i data-lucide="x" class="w-3.5 h-3.5"></i>
             </button>
         </div>
-        <x-custom-select wire:model.live="statusFilter" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" placeholder="Todos los estados"
-            class="w-auto min-w-[160px]" />
-        <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
-            placeholder="Todos los proyectos" class="w-auto min-w-[180px]" />
-        <x-custom-select wire:model.live="periodFilter"
-            :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
-            placeholder="Todos los períodos" class="w-auto min-w-[170px]" />
+
+        {{-- Filters Toggle Button with counter badge --}}
+        <button @click="showFilters = !showFilters" type="button"
+            class="btn-secondary shrink-0"
+            :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter || $wire.projectFilter || $wire.periodFilter }">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            Filtros
+            @php
+                $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
+            @endphp
+            @if($activeCount > 0)
+                <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
+            @endif
+        </button>
+
+        <div class="flex-1"></div>
+
+        {{-- Clear button: only when filters active --}}
+        @if($search || $statusFilter || $projectFilter || $periodFilter)
+            <button wire:click="$set('search', ''); $set('statusFilter', ''); $set('projectFilter', ''); $set('periodFilter', '');" 
+                type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                Limpiar
+            </button>
+        @endif
+    </div>
+
+    {{-- Expandable Filters Panel --}}
+    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
+        <div class="card !bg-surface-hover/50 !p-4">
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
+                <div class="flex items-center gap-2 shrink-0">
+                    <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
+                    <span class="text-small font-medium text-text-secondary">Filtrar por:</span>
+                </div>
+                <x-custom-select wire:model.live="statusFilter" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" placeholder="Todos los estados"
+                    class="w-full sm:w-40" />
+                <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
+                    placeholder="Todos los proyectos" class="w-full sm:w-48" />
+                <x-custom-select wire:model.live="periodFilter"
+                    :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+                    placeholder="Todos los períodos" class="w-full sm:w-44" />
+            </div>
+        </div>
     </div>
 
     {{-- Requisitions list --}}

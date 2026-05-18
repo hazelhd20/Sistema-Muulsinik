@@ -28,10 +28,17 @@ class Project extends Model
         return $this->hasMany(Requisition::class);
     }
 
-    /** Gasto total acumulado del proyecto. */
+    public function expenseAllocations(): HasMany
+    {
+        return $this->hasMany(ExpenseAllocation::class);
+    }
+
+    /** Gasto total acumulado del proyecto (Directo + Distribuido). */
     public function getTotalExpensesAttribute(): float
     {
-        return (float) $this->expenses()->sum('amount');
+        $direct = (float) $this->expenses()->sum('amount');
+        $distributed = (float) $this->expenseAllocations()->sum('amount');
+        return $direct + $distributed;
     }
 
     /** Porcentaje del presupuesto consumido. */

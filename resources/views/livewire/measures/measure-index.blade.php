@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ showFilters: false }">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Medidas">
         <x-slot:actions>
@@ -9,11 +9,12 @@
         </x-slot:actions>
     </x-page-header>
 
-    {{-- Filters --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-        <div class="relative flex-1" x-data="{ focused: false }">
+    {{-- Filters Bar --}}
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
+        {{-- Search: compact width --}}
+        <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input type="search" wire:model.live.debounce.50ms="search" class="input pl-10 pr-10"
+            <input type="search" wire:model.live.debounce.50ms="search" class="input pl-10 pr-10 w-full"
                 placeholder="Buscar medida..."
                 @focus="focused = true"
                 @blur="focused = false">
@@ -27,6 +28,18 @@
                 <i data-lucide="x" class="w-3.5 h-3.5"></i>
             </button>
         </div>
+
+        <div class="flex-1"></div>
+
+        {{-- Clear button: only when search active --}}
+        @if($search)
+            <button wire:click="$set('search', '');" 
+                type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                Limpiar
+            </button>
+        @endif
     </div>
 
     {{-- Table --}}

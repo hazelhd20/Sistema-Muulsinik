@@ -88,6 +88,10 @@ class QuotationWizard extends Component
 
     public function updatedFile(): void
     {
+        if (!$this->file) {
+            return;
+        }
+
         $this->validate([
             'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
         ], [

@@ -37,24 +37,18 @@
                         <p class="section-row-desc">Formatos JPG, PNG, SVG. Máximo 1 MB.</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        @if($company_logo)
-                            <div class="relative shrink-0">
-                                <img src="{{ Storage::url($company_logo) }}" alt="Logo"
-                                     class="h-16 w-auto object-contain border border-border rounded-lg p-2 bg-surface-main">
+                        @if($company_logo && !$newLogo)
+                            <div class="relative shrink-0" wire:loading.class="hidden" wire:target="newLogo">
+                                <img src="{{ asset('storage/' . $company_logo) }}" alt="Logo"
+                                     class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-main">
                                 <button type="button" wire:click="deleteLogo"
-                                        class="absolute -top-2 -right-2 icon-wrap-sm bg-white border border-border shadow-sm text-danger hover:bg-red-50 transition-colors">
+                                        class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-danger hover:bg-red-50 transition">
                                     <i data-lucide="x" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
-                        @else
-                            <div class="shrink-0 h-16 w-28 bg-surface-main border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1 text-text-muted">
-                                <i data-lucide="image" class="w-5 h-5 opacity-30"></i>
-                                <span class="text-xs-fluid">Sin logo</span>
-                            </div>
                         @endif
                         <div class="flex-1 min-w-0">
-                            <input type="file" wire:model="newLogo" accept="image/*" class="input text-small">
-                            @error('newLogo') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                            <x-file-input wire:key="company-logo" inputId="company-logo-upload" wire:model="newLogo" variant="compact-inline" accept=".jpg,.jpeg,.png,.svg" maxSize="1 MB" />
                         </div>
                     </div>
                 </div>

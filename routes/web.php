@@ -12,10 +12,10 @@ use App\Livewire\Requisitions\QuotationWizard;
 use App\Livewire\Requisitions\RequisitionIndex;
 use App\Livewire\Suppliers\SupplierIndex;
 use App\Livewire\Settings\SettingsIndex;
+use App\Livewire\Users\UserIndex;
 use App\Livewire\Notifications\NotificationIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Rutas Web — Muulsinik ERP v1
@@ -55,9 +55,15 @@ Route::middleware('auth')->group(function () {
 
     // Documentos (RF-DOC)
 
-
+    // Usuarios
+    Route::get('/usuarios', UserIndex::class)->name('usuarios.index');
+    
     // Reportes
     Route::get('/reportes', ReportIndex::class)->name('reportes.index');
+
+    // Cotizador (Trabajos Menores)
+    Route::get('/cotizador', \App\Livewire\QuickBudgets\QuickBudgetIndex::class)->name('cotizador.index');
+    Route::get('/cotizador/wizard/{id?}', \App\Livewire\QuickBudgets\QuickBudgetWizard::class)->name('cotizador.wizard');
 
     // Catálogo de Productos (RF-REQ-05)
     Route::get('/productos', ProductIndex::class)->name('productos.index');

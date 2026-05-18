@@ -68,14 +68,14 @@ A nivel general, el sistema permitirá:
 - Leer datos directamente de celdas en archivos XLSX.
 - Estructurar la información extraída (proveedor, tienda, proyecto, productos, cantidades, precios) y presentarla en un formulario editable.
 - Notificar al usuario cuando algún campo no pueda identificarse automáticamente, para completarlo manualmente.
-- Gestionar proyectos de construcción con seguimiento de presupuesto y avance, incluyendo presupuestos rápidos.
-- Registrar y controlar gastos administrativos y operativos, distribuyéndolos entre proyectos activos.
-- Visualizar reportes detallados de compras por proveedor, vendedor y por producto para una mejor gestión.
-- Almacenar y vincular automáticamente los archivos de cotizaciones procesadas a sus respectivas requisiciones, y los comprobantes a sus respectivos gastos operativos, para asegurar la trazabilidad sin necesidad de un repositorio complejo.
-- Administrar proveedores, vendedores y órdenes de compra.
+- Gestionar proyectos de construcción con seguimiento de presupuesto y avance.
+- Módulo de "Cotizador de Trabajos Menores" (Presupuestos Rápidos) para estimar costos de pequeños trabajos usando datos históricos del sistema.
+- Registrar y controlar gastos operativos fijos (sueldos, luz, agua, teléfono, etc.) y distribuirlos proporcionalmente entre los proyectos activos.
+- Visualizar reportes detallados y bien organizados de compras por proveedor, vendedor y por producto (top productos), incluyendo filtros avanzados.
+- Almacenar y vincular automáticamente los archivos de cotizaciones procesadas a sus respectivas requisiciones, y los comprobantes a sus respectivos gastos operativos.
+- Administrar proveedores y vendedores.
 - Emitir alertas cuando el gasto alcance un porcentaje determinado del presupuesto.
-- Generar reportes de compras por proveedor y por vendedor.
-- Controlar el acceso mediante roles de usuario con distintos niveles de permisos.
+- Módulo de administración de usuarios y roles de acceso.
 
 ### 2.3 Roles de Usuario
 
@@ -84,7 +84,7 @@ Para una constructora de tamaño pequeño, se definen tres roles funcionales que
 | Rol | Descripción | Nivel de Acceso |
 |---|---|---|
 | **Administrador** | Gestiona usuarios, roles, configuración global y catálogo de productos. Accede a todos los módulos. | Total |
-| **Encargado de Compras** | Carga cotizaciones, procesa requisiciones, administra proveedores y vendedores, genera órdenes de compra y consulta reportes. | Alto |
+| **Encargado de Compras** | Carga cotizaciones, procesa requisiciones, administra proveedores y vendedores, y consulta reportes. | Alto |
 | **Supervisor / Operativo** | Consulta proyectos activos, registra gastos, revisa requisiciones y documentos asociados a su proyecto. | Medio (lectura en reportes, escritura en gastos y solicitudes) |
 
 > **Nota:** El Administrador puede asignar o revocar roles a cualquier usuario desde el panel de configuración. Los permisos de cada rol son configurables por el administrador para adaptarse a futuros ajustes operativos sin necesidad de intervención del equipo de desarrollo.
@@ -120,8 +120,8 @@ Los requerimientos funcionales se identifican con el formato **RF-[Módulo]-[Nú
 **AUTH-01 [✅ Implementado] — Inicio de sesión seguro**
 El sistema deberá autenticar a los usuarios mediante correo electrónico y contraseña. Las contraseñas deberán almacenarse con hash bcrypt. Se implementará protección contra ataques de fuerza bruta mediante bloqueo temporal tras cinco intentos fallidos.
 
-**AUTH-02 [✅ Implementado] — Gestión de roles y permisos**
-El administrador podrá crear, editar y desactivar usuarios. Cada usuario tendrá asignado un rol que determina las vistas y acciones disponibles. Los roles predefinidos son: Administrador, Encargado de Compras y Supervisor / Operativo.
+**AUTH-02 [⏳ Pendiente] — Gestión de roles y permisos (Módulo de Usuarios)**
+El administrador podrá crear, editar y desactivar usuarios desde un panel de Administración de Usuarios dedicado. Cada usuario tendrá asignado un rol que determina las vistas y acciones disponibles. Los roles predefinidos son: Administrador, Encargado de Compras y Supervisor / Operativo.
 
 **AUTH-03 [✅ Implementado] — Selección de proyecto activo**
 Una vez autenticado, el usuario seleccionará el proyecto activo mediante un selector global visible en la barra de navegación superior. Todas las operaciones de registro de gastos, carga de cotizaciones, requisiciones y compras quedarán automáticamente asociadas al proyecto activo. El usuario podrá cambiar de proyecto activo en cualquier momento sin necesidad de cerrar sesión.
@@ -141,8 +141,8 @@ El sistema permitirá crear proyectos con los siguientes campos: nombre, descrip
 **PROY-02 [✅ Implementado] — Seguimiento de avance presupuestal**
 El sistema calculará automáticamente el porcentaje de presupuesto consumido en tiempo real, sumando todos los gastos registrados vinculados al proyecto. Este indicador será visible en el panel principal del proyecto.
 
-**PROY-03 [✅ Implementado] — Generación de presupuestos rápidos**
-Para proyectos de menor escala, el sistema ofrecerá un asistente de presupuesto rápido basado en una lista de conceptos y costos unitarios. El presupuesto generado podrá exportarse en PDF.
+**PROY-03 [⏳ Pendiente] — Cotizador de Trabajos Menores (Presupuestos Rápidos)**
+Para proyectos de menor escala o trabajos rápidos (ej. colado de un piso), el sistema ofrecerá un módulo de presupuestos rápidos. Este utilizará los datos históricos del sistema (precios de productos almacenados en el catálogo de compras anteriores) para estimar el costo de manera automática e inmediata, sin necesidad de planificación exhaustiva. El presupuesto generado podrá exportarse en PDF.
 
 **PROY-04 [✅ Implementado] — Dashboard por proyecto**
 Cada proyecto contará con un panel de resumen que mostrará: presupuesto total, gasto acumulado, gasto del mes actual, número de requisiciones pendientes y documentos recientes.
@@ -154,11 +154,11 @@ El sistema conservará el historial completo de proyectos finalizados, permitien
 
 ### 3.3 Módulo de Control de Gastos Administrativos y Operativos
 
-**GASTO-01 [✅ Implementado] — Registro de gastos**
-El sistema permitirá registrar gastos administrativos y operativos con los siguientes atributos: concepto, monto, fecha, categoría, proyecto asociado, comprobante adjunto (imagen o PDF) y usuario que lo registra.
+**GASTO-01 [✅ Implementado] — Registro de gastos operativos**
+El sistema permitirá registrar gastos operativos y administrativos fijos (ej. sueldos, recibos de luz, agua, teléfono, rentas) con los siguientes atributos: concepto, monto, fecha, categoría, comprobante adjunto (imagen o PDF) y usuario que lo registra.
 
-**GASTO-02 [✅ Implementado] — Distribución de gastos administrativos entre proyectos**
-Un gasto (especialmente gastos administrativos compartidos) podrá distribuirse y asignarse a uno o más proyectos activos. El usuario deberá especificar el porcentaje o monto asignado a cada uno para prorratear los costos correctamente.
+**GASTO-02 [✅ Implementado] — Distribución de gastos operativos entre proyectos**
+Los gastos operativos (especialmente los servicios y nómina) podrán distribuirse y asignarse a uno o más proyectos activos. El usuario deberá especificar el porcentaje o monto asignado a cada uno para prorratear los costos correctamente y mantener el costo real actualizado de cada proyecto.
 
 **GASTO-03 [✅ Implementado] — Alertas de presupuesto**
 El sistema enviará una notificación interna (y opcionalmente por correo) cuando el gasto acumulado de un proyecto alcance el 70%, el 90% y el 100% del presupuesto asignado. Los umbrales de alerta serán configurables por el administrador.
@@ -199,10 +199,7 @@ Cada proveedor podrá tener uno o más vendedores registrados con nombre, teléf
 **PROV-03 [✅ Implementado] — Historial de compras por proveedor**
 El sistema mostrará el historial completo de compras realizadas a cada proveedor, con filtros por proyecto, período y monto.
 
-**PROV-04 [✅ Implementado] — Registro de órdenes de compra**
-El sistema permitirá generar órdenes de compra asociadas a un proveedor y un proyecto. Una orden de compra podrá originarse desde una requisición aprobada o crearse de forma independiente.
-
-**PROV-05 [✅ Implementado] — Reporte de compras por proveedor y vendedor**
+**PROV-04 [✅ Implementado] — Reporte de compras por proveedor y vendedor**
 El sistema generará reportes que consoliden el total de compras agrupado por proveedor y por vendedor, exportables en PDF y XLSX.
 
 ---
@@ -266,7 +263,7 @@ Además del flujo automatizado, el usuario podrá crear requisiciones de forma m
 Una requisición recién creada tendrá estado **"Borrador"**. El flujo de estados es el siguiente:
 
 ```
-Borrador → Pendiente de aprobación → Aprobada → Convertida en Orden de Compra
+Borrador → Pendiente de aprobación → Aprobada / Lista para compra
                                    ↘ Rechazada (con comentario obligatorio)
 ```
 
@@ -288,11 +285,11 @@ El sistema permitirá exportar cualquier requisición en:
 **REP-01 [✅ Implementado] — Reporte de gastos globales**
 El sistema generará un reporte anual de gastos operativos con distribución entre proyectos activos, visualizado mediante gráficas de barras y pastel.
 
-**REP-02 [✅ Implementado] — Reporte consolidado de compras**
-Mostrará el total de compras agrupado por proveedor, vendedor, categoría de producto y proyecto en un período seleccionable.
+**REP-02 [✅ Implementado] — Reporte consolidado de compras (Por Proveedor y Vendedor)**
+Mostrará el total de compras de manera organizada, agrupado por proveedor y por vendedor, permitiendo saber exactamente cuánto se le compra a cada uno en un período seleccionable. Contará con filtros adecuados para segmentar la información.
 
-**REP-03 [✅ Implementado] — Reporte de compras por producto**
-Listará los productos adquiridos en un periodo, indicando a qué proveedores se les compró, qué cantidades (volumen) y el historial de precios unitarios.
+**REP-03 [✅ Implementado] — Reporte de compras por producto (Top Productos)**
+Listará los productos más adquiridos (mayor volumen/gasto), indicando a qué proveedores se les compró, cantidades y el historial de precios unitarios, siendo muy útil para negociaciones y control.
 
 **REP-04 [✅ Implementado] — Exportación de reportes**
 Todos los reportes del sistema serán exportables en formato PDF y XLSX.
@@ -339,7 +336,7 @@ Este es el flujo central del sistema y debe sentirse fluido y directo para el us
 8. El Administrador / Encargado de Compras aprueba o rechaza
        │
        ▼
-9. Requisición aprobada → Se puede exportar (PDF / XLSX) o convertir en Orden de Compra
+9. Requisición aprobada → Se puede exportar (PDF / XLSX) para enviar directamente al proveedor
 ```
 
 ### 4.2 Flujo de Registro de Gastos
@@ -370,8 +367,7 @@ Este es el flujo central del sistema y debe sentirse fluido y directo para el us
 2. Registrar o buscar proveedor existente
        │
        ├── Agregar / editar vendedores del proveedor
-       ├── Consultar historial de compras
-       └── Ver requisiciones y órdenes de compra asociadas
+       └── Consultar historial de compras
 ```
 
 ---
@@ -667,9 +663,6 @@ requisitions ──────────────────────�
 
 requisition_items ──────────────────────────────────────────────────────
   id, requisition_id, product_id, quantity, unit, unit_price, supplier_id
-
-purchase_orders ────────────────────────────────────────────────────────
-  id, requisition_id, supplier_id, project_id, total, status, date
 ```
 
 > **Nota sobre la integración documental:** La tabla `quotations` se encarga de almacenar la ruta del archivo original de la cotización (`file_path`) y su vinculación directa a la `requisition_id`. Del mismo modo, los gastos operativos vinculan sus tickets en el campo `receipt_file` en la tabla `expenses`.

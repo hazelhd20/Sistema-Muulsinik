@@ -8,14 +8,6 @@
     isImage() {
         return (this.previewType && this.previewType.startsWith('image/')) || (this.previewUrl && this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i));
     },
-    openLocalPreview() {
-        const fileInput = document.getElementById('file-upload-input');
-        if (fileInput && fileInput.files.length > 0) {
-            this.previewUrl = URL.createObjectURL(fileInput.files[0]);
-            this.previewType = fileInput.files[0].type;
-            this.showPreviewModal = true;
-        }
-    },
     openServerPreview(url, mimeType) {
         this.previewUrl = url;
         this.previewType = mimeType;
@@ -40,7 +32,7 @@
         {{-- Step Indicator --}}
         <div class="flex items-center gap-2 mt-6">
             @foreach([1 => 'Subir archivo', 2 => 'Procesando', 3 => 'Revisar y guardar'] as $num => $label)
-                <div class="flex items-center gap-2 {{ $num < count([1, 2, 3]) ? 'flex-1' : '' }}">
+                <div class="flex items-center gap-2 {{ $num < 3 ? 'flex-1' : '' }}">
                     <div class="flex items-center gap-2">
                         <div
                             class="w-8 h-8 rounded-full flex items-center justify-center text-small font-bold transition-all duration-300
@@ -68,117 +60,23 @@
     @if($step === 1)
         <div class="card max-w-2xl mx-auto">
             <div class="p-8">
-                {{-- Drag & Drop Zone --}}
-                <div wire:key="upload-zone" x-data="{ isDragging: false }"
-                    x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })"
-                    x-on:dragover.prevent="isDragging = true" x-on:dragleave.prevent="isDragging = false"
-                    x-on:drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
-                    class="relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer"
-                    :class="isDragging ? 'border-primary-500 bg-primary-50/50 scale-[1.02]' : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20'"
-                    @click="$refs.fileInput.click()">
-                    <input id="file-upload-input" x-ref="fileInput" type="file" wire:model="file"
-                        accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" class="hidden">
-
-                    <div class="flex flex-col items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center">
-                            <i data-lucide="upload-cloud" class="w-8 h-8 text-primary-600" wire:ignore></i>
-                        </div>
-
-                        <div>
-                            <p class="text-h3 text-text-primary">
-                                Arrastra tu cotización aquí
-                            </p>
-                            <p class="text-body text-text-muted mt-1">
-                                o haz clic para seleccionar un archivo
-                            </p>
-                        </div>
-
-                        <div class="flex items-center gap-3 mt-2">
-                            <span class="px-3 py-1 rounded-lg bg-red-50 text-red-600 text-xs-fluid font-medium">PDF</span>
-                            <span
-                                class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs-fluid font-medium">XLSX</span>
-                            <span
-                                class="px-3 py-1 rounded-lg bg-amber-50 text-amber-600 text-xs-fluid font-medium">JPG</span>
-                            <span
-                                class="px-3 py-1 rounded-lg bg-green-50 text-green-600 text-xs-fluid font-medium">PNG</span>
-                        </div>
-
-                        <p class="text-xs-fluid text-text-muted mt-1">Máximo 20 MB</p>
-                    </div>
-                </div>
-
-                {{-- Loading indicator while uploading --}}
-                <div x-data="{ uploading: false }" x-on:livewire-upload-start.window="uploading = true"
-                    x-on:livewire-upload-finish.window="uploading = false"
-                    x-on:livewire-upload-error.window="uploading = false" x-show="uploading" x-cloak class="mt-4 w-full">
-                    <div
-                        class="flex items-center justify-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-100">
-                        <svg class="animate-spin h-5 w-5 text-primary-600" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                fill="none" />
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        <span class="text-body font-medium text-primary-700">Subiendo archivo...</span>
-                    </div>
-                </div>
-
-                {{-- File selected preview --}}
-                @if($file && !$errors->has('file'))
-                    @php
-                        $ext = strtolower($file->getClientOriginalExtension());
-                        $iconData = match (true) {
-                            in_array($ext, ['jpg', 'jpeg', 'png']) => ['icon' => 'image', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50'],
-                            in_array($ext, ['xlsx', 'xls']) => ['icon' => 'file-spreadsheet', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
-                            $ext === 'pdf' => ['icon' => 'file-text', 'color' => 'text-red-600', 'bg' => 'bg-red-50'],
-                            default => ['icon' => 'file', 'color' => 'text-primary-600', 'bg' => 'bg-primary-50'],
-                        };
-                    @endphp
-                    <div wire:key="file-preview-{{ md5($file->getClientOriginalName()) }}" x-data
-                        x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })"
-                        class="mt-4 p-4 rounded-xl bg-surface-main border border-gray-100 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg {{ $iconData['bg'] }} flex items-center justify-center">
-                                <i data-lucide="{{ $iconData['icon'] }}" class="w-5 h-5 {{ $iconData['color'] }}"
-                                    wire:ignore></i>
-                            </div>
-                            <div>
-                                <p class="text-body font-medium text-text-primary">{{ $file->getClientOriginalName() }}</p>
-                                @php
-                                    $fileSize = 0;
-                                    try {
-                                        $fileSize = $file->getSize();
-                                    } catch (\Exception $e) {
-                                    }
-                                @endphp
-                                <p class="text-xs-fluid text-text-muted">{{ number_format($fileSize / 1024, 1) }} KB</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" @click="openLocalPreview"
-                                class="p-1.5 rounded-lg hover:bg-primary-50 text-primary-600 transition" title="Vista previa">
-                                <i data-lucide="eye" class="w-4 h-4" wire:ignore></i>
-                            </button>
-                            <button wire:key="btn-remove-file" type="button" wire:click="$set('file', null)"
-                                @click="document.getElementById('file-upload-input').value = ''"
-                                class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
-                                <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
-                            </button>
-                        </div>
-                    </div>
-                @endif
-
-                @error('file')
-                    <div wire:key="upload-error" x-data
-                        x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })"
-                        class="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-body flex items-center gap-2">
-                        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0" wire:ignore></i>
-                        {{ $message }}
-                    </div>
-                @enderror
+                <x-file-input
+                    wire:model="file"
+                    variant="dropzone"
+                    accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                    maxSize="20 MB"
+                    :formats="['PDF', 'XLSX', 'JPG', 'PNG']"
+                    title="Arrastra tu cotización aquí"
+                    subtitle="o haz clic para seleccionar un archivo"
+                    inputId="file-upload-input"
+                />
 
                 {{-- Process Button --}}
                 @if($file && !$errors->has('file'))
-                    <button wire:key="process-btn" x-data
+                    <button wire:key="process-btn"
+                        x-data="{ visible: true }"
+                        x-show="visible"
+                        @file-removed.window="visible = false"
                         x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })" type="button"
                         wire:click="processUpload" wire:loading.attr="disabled" wire:target="processUpload"
                         class="btn-primary relative w-full mt-6 py-3 text-body">
@@ -706,30 +604,31 @@
     @endif
 
     {{-- ═══════ PREVIEW MODAL ═══════ --}}
-    <div x-show="showPreviewModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        style="display: none;">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
+    <div x-show="showPreviewModal" x-cloak
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        @keydown.escape.window="showPreviewModal = false">
+        <div class="absolute inset-0 bg-black/60" @click="showPreviewModal = false"></div>
+        <div class="modal-card w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-scale-in"
             x-transition>
-            <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-surface-card">
-                <h3 class="text-h2 text-gray-800 flex items-center gap-2">
+            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+                <h3 class="text-h2 text-text-primary flex items-center gap-2">
                     <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
                 </h3>
                 <button @click="showPreviewModal = false"
-                    class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                    class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-hidden bg-gray-50/50 p-4 relative">
+            <div class="flex-1 overflow-hidden bg-surface-main p-4 relative">
                 <template x-if="isImage()">
                     <img :src="previewUrl" class="w-full h-full object-contain rounded-lg">
                 </template>
                 <template x-if="isPdf()">
                     <iframe :src="previewUrl"
-                        class="w-full h-full border border-gray-200 rounded-lg shadow-sm bg-white"></iframe>
+                        class="w-full h-full border border-border rounded-lg bg-surface-card"></iframe>
                 </template>
                 <template x-if="!isImage() && !isPdf()">
-                    <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
+                    <div class="flex flex-col items-center justify-center h-full text-text-muted gap-3">
                         <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
                         <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
                         <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
