@@ -241,7 +241,11 @@
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
         document.addEventListener('livewire:navigated', () => lucide.createIcons());
         document.addEventListener('livewire:init', () => {
-            Livewire.hook('morph.updated', () => lucide.createIcons());
+            Livewire.hook('commit', ({ succeed }) => {
+                succeed(() => {
+                    setTimeout(() => lucide.createIcons(), 10);
+                });
+            });
         });
 
         window.addEventListener('toast', event => {
