@@ -95,6 +95,16 @@
                         </span>
                     </button>
                 @endif
+
+                {{-- Botón de Simulación para Pruebas y Verificaciones --}}
+                <div class="mt-6 pt-6 border-t border-border flex flex-col items-center gap-2">
+                    <p class="text-xs-fluid text-text-muted">¿Deseas verificar la interfaz sin procesar un archivo?</p>
+                    <button type="button" wire:click="loadMockDataForTesting"
+                        class="px-4 py-2 rounded-xl bg-surface-hover hover:bg-surface-hover/80 text-text-primary text-xs-fluid font-medium flex items-center gap-1.5 transition">
+                        <i data-lucide="beaker" class="w-4 h-4 text-primary-600"></i>
+                        Simular datos de prueba (Paso 3)
+                    </button>
+                </div>
             </div>
         </div>
     @endif
@@ -364,20 +374,8 @@
                 </datalist>
 
                 @if(count($items) > 0)
-                    {{-- Leyenda de indicadores --}}
-                    <div class="flex items-center gap-4 mb-3">
-                        <span class="text-xs-fluid text-text-muted">Indicadores:</span>
-                        <span class="flex items-center gap-1.5 text-xs-fluid text-text-muted">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>Existente
-                        </span>
-                        <span class="flex items-center gap-1.5 text-xs-fluid text-text-muted">
-                            <span class="w-2 h-2 rounded-full bg-primary-400 shrink-0"></span>Similitud
-                        </span>
-                        <span class="flex items-center gap-1.5 text-xs-fluid text-text-muted">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>Pendiente / Nuevo
-                        </span>
-                    </div>
-                        <div class="table-embedded">
+                     {{-- Tabla de productos --}}
+                        <div class="table-embedded md:!overflow-visible">
                             <table>
                                 <thead>
                                     <tr>
@@ -398,140 +396,224 @@
                                             $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                             $productStatus = $item['_match']['product']['status'] ?? '';
                                             $productBorder = match(true) {
-                                                !empty($item['conflict'])                => 'border-amber-400',
-                                                $productStatus === 'exact'              => 'border-emerald-400',
-                                                $productStatus === 'fuzzy'              => 'border-primary-400',
-                                                default                                 => '',
+                                                $productStatus === 'exact'  => 'border-emerald-500/30 bg-emerald-50/5',
+                                                $productStatus === 'fuzzy'  => 'border-primary-500/30 bg-primary-50/5',
+                                                $productStatus === 'new'    => 'border-amber-500/30 bg-amber-50/5',
+                                                default                     => '',
                                             };
-                                            $productTitle = match(true) {
-                                                !empty($item['conflict'])               => 'Datos diferentes al catálogo registrado',
-                                                $productStatus === 'exact'              => 'Producto existente en catálogo',
-                                                $productStatus === 'fuzzy'              => 'Similitud ' . round(($item['_match']['product']['confidence'] ?? 0) * 100) . '% con producto existente',
-                                                $productStatus === 'new'                => 'Se registrará como nuevo producto',
-                                                default                                 => '',
-                                            };
-                                            $catBorder = ($item['category_id']) ? 'border-emerald-400' : (($item['category_name'] && empty($item['category_id'])) ? 'border-amber-400' : '');
-                                            $catTitle  = ($item['category_id']) ? 'Categoría asignada' : (($item['category_name'] && empty($item['category_id'])) ? 'Sugerido por IA: ' . $item['category_name'] : '');
-                                            $unitBorder = (($item['_match']['measure']['status'] ?? '') === 'new') ? 'border-amber-400' : '';
-                                            $unitTitle  = (($item['_match']['measure']['status'] ?? '') === 'new') ? 'Se registrará como nueva unidad de medida' : '';
                                         @endphp
-                                        <tr class="{{ !empty($item['conflict']) ? 'bg-amber-50/40' : '' }}"
-                                            wire:key="item-row-{{ $i }}">
-                                            {{-- Nombre --}}
-                                            <td>
-                                                <div class="relative">
-                                                    @if($productBorder)
-                                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full z-10
-                                                            @if($productBorder === 'border-emerald-400') bg-emerald-400
-                                                            @elseif($productBorder === 'border-primary-400') bg-primary-400
-                                                            @elseif($productBorder === 'border-amber-400') bg-amber-400
-                                                            @endif"
-                                                            title="{{ $productTitle }}"></span>
+                                        <tr class="align-top hover:bg-surface-hover/30 transition-all duration-200" wire:key="item-row-{{ $i }}">
+                                            {{-- Nombre / Producto --}}
+                                            <td class="pb-4">
+                                                <div class="relative" x-data="{ open: false }">
+                                                    @php
+                                                        $isFuzzyPending = isset($item['product_confirmed']) && !$item['product_confirmed'] && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
+                                                    @endphp
+                                                    <div class="flex items-center gap-1.5">
+                                                        <div class="flex-1 min-w-0">
+                                                            <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
+                                                                class="input {{ $productBorder }} text-small"
+                                                                placeholder="Nombre del producto">
+                                                        </div>
+                                                        @if($isFuzzyPending)
+                                                            <button type="button" @click="open = !open" 
+                                                                class="p-1 rounded-lg hover:bg-primary-100/50 text-primary-600 transition shrink-0 animate-pulse"
+                                                                title="Coincidencia difusa detectada">
+                                                                <i data-lucide="sparkles" class="w-4 h-4" wire:ignore></i>
+                                                            </button>
+                                                        @elseif(($item['_match']['product']['status'] ?? '') === 'exact')
+                                                            <div class="p-1 text-emerald-600 shrink-0" title="Confirmado en catálogo">
+                                                                <i data-lucide="check-circle-2" class="w-4 h-4" wire:ignore></i>
+                                                            </div>
+                                                        @elseif(($item['_match']['product']['status'] ?? '') === 'new')
+                                                            <div class="p-1 text-amber-600 shrink-0" title="Se creará como nuevo">
+                                                                <i data-lucide="plus-circle" class="w-4 h-4" wire:ignore></i>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+
+                                                    @if($isFuzzyPending)
+                                                        {{-- Popover flotante absoluto de confirmación fuzzy --}}
+                                                        <div x-show="open" @click.outside="open = false" x-cloak
+                                                            class="absolute z-[95] left-0 top-[38px] mt-1 w-72 p-3 rounded-xl border border-primary-200 bg-white shadow-xl animate-scale-in text-xs"
+                                                            x-transition>
+                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-gray-100">
+                                                                <i data-lucide="sparkles" class="w-4 h-4 text-primary-600 shrink-0 mt-0.5" wire:ignore></i>
+                                                                <div>
+                                                                    <p class="font-semibold text-gray-900">Coincidencia detectada</p>
+                                                                    <p class="text-[10px] text-gray-500">¿El producto corresponde a la base de datos?</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="space-y-1.5 mb-3 text-[11px]">
+                                                                <div class="flex justify-between gap-2">
+                                                                    <span class="text-gray-500">En cotización:</span>
+                                                                    <span class="font-medium text-gray-800 text-right">{{ $item['name'] }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between gap-2">
+                                                                    <span class="text-gray-500">En catálogo:</span>
+                                                                    <span class="font-bold text-primary-950 text-right">"{{ $item['_match']['product']['catalog_name'] }}"</span>
+                                                                </div>
+                                                                <div class="flex justify-between gap-2 pt-1 border-t border-gray-50 text-[10px]">
+                                                                    <span class="text-gray-400">Nivel de confianza:</span>
+                                                                    <span class="font-semibold text-primary-600">{{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}% de similitud</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex flex-col gap-1">
+                                                                <button type="button" wire:click="confirmProductAssociation({{ $i }})" @click="open = false"
+                                                                    class="w-full py-1.5 rounded bg-primary-600 text-white text-[10px] font-semibold hover:bg-primary-700 transition">
+                                                                    Confirmar y vincular (✓)
+                                                                </button>
+                                                                <button type="button" wire:click="rejectProductAssociation({{ $i }})" @click="open = false"
+                                                                    class="w-full py-1.5 rounded bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-semibold hover:bg-gray-100 transition">
+                                                                    Crear como producto nuevo
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     @endif
-                                                    <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                        class="input"
-                                                        placeholder="Nombre del producto">
                                                 </div>
                                             </td>
 
                                             {{-- Categoría --}}
-                                            <td>
-                                                <div class="relative">
-                                                    @if($catBorder)
-                                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full z-[60]
-                                                            @if($catBorder === 'border-emerald-400') bg-emerald-400
-                                                            @elseif($catBorder === 'border-amber-400') bg-amber-400
-                                                            @endif"
-                                                            title="{{ $catTitle }}"></span>
+                                            <td class="pb-4">
+                                                <div class="relative" x-data="{ open: false }">
+                                                    @php
+                                                        $hasCatConflict = isset($item['conflict']['category']);
+                                                    @endphp
+                                                    <div class="flex items-center gap-1">
+                                                        <div class="flex-1 min-w-0">
+                                                            <x-custom-select wire:model.live="items.{{ $i }}.category_id" :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría" />
+                                                        </div>
+                                                        @if($hasCatConflict)
+                                                            <button type="button" @click="open = !open" 
+                                                                class="p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse"
+                                                                title="Discrepancia en categoría">
+                                                                <i data-lucide="alert-triangle" class="w-4 h-4" wire:ignore></i>
+                                                            </button>
+                                                        @endif
+                                                    </div>
+
+                                                    @if($hasCatConflict)
+                                                        <div x-show="open" @click.outside="open = false" x-cloak
+                                                            class="absolute z-[90] right-0 mt-1 w-64 p-3 rounded-xl border border-amber-200 bg-white shadow-xl animate-scale-in text-xs"
+                                                            x-transition>
+                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-gray-100">
+                                                                <i data-lucide="help-circle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" wire:ignore></i>
+                                                                <div>
+                                                                    <p class="font-semibold text-gray-900">¿Categoría diferente?</p>
+                                                                    <p class="text-[10px] text-gray-500">La IA sugirió una categoría diferente.</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="space-y-1.5 mb-3 text-[11px]">
+                                                                <div class="flex justify-between gap-2">
+                                                                    <span class="text-gray-500">Registrada:</span>
+                                                                    <span class="font-medium text-gray-800 text-right">{{ $item['conflict']['category']['registered'] }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between gap-2">
+                                                                    <span class="text-gray-500">Propuesta IA:</span>
+                                                                    <span class="font-bold text-amber-600 text-right">{{ $item['conflict']['category']['suggested'] }}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex flex-col gap-1">
+                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'category')" @click="open = false"
+                                                                    class="w-full py-1.5 rounded bg-amber-600 text-white text-[10px] font-semibold hover:bg-amber-700 transition">
+                                                                    Actualizar catálogo maestro
+                                                                </button>
+                                                                <button type="button" wire:click="dismissProductConflict({{ $i }})" @click="open = false"
+                                                                    class="w-full py-1.5 rounded bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-semibold hover:bg-gray-100 transition">
+                                                                    Conservar catálogo
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     @endif
-                                                    <x-custom-select wire:model.live="items.{{ $i }}.category_id" :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría" />
                                                 </div>
                                             </td>
 
                                             {{-- Cantidad --}}
-                                            <td>
+                                            <td class="pb-4">
                                                 <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
-                                                    class="input text-center tabular-nums" placeholder="0">
+                                                    class="input text-center tabular-nums text-small" placeholder="0">
                                             </td>
 
                                             {{-- Unidad --}}
-                                            <td>
-                                                <div class="relative">
-                                                    @if($unitBorder)
-                                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 z-10"
-                                                            title="{{ $unitTitle }}"></span>
+                                            <td class="pb-4">
+                                                <div class="relative" x-data="{ open: false }">
+                                                    @php
+                                                        $hasUnitConflict = isset($item['conflict']['unit']);
+                                                    @endphp
+                                                    <div class="flex items-center gap-1">
+                                                        <div class="flex-1 min-w-0">
+                                                            <input type="text" wire:model.live.debounce.400ms="items.{{ $i }}.unit" list="measures-list"
+                                                                class="input text-center text-small {{ $hasUnitConflict ? 'border-amber-300 focus:border-amber-500 focus:ring-amber-200 bg-amber-50/10' : '' }}" 
+                                                                placeholder="Unidad">
+                                                        </div>
+                                                        @if($hasUnitConflict)
+                                                            <button type="button" @click="open = !open" 
+                                                                class="p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse"
+                                                                title="Discrepancia en unidad">
+                                                                <i data-lucide="alert-triangle" class="w-4 h-4" wire:ignore></i>
+                                                            </button>
+                                                        @endif
+                                                    </div>
+
+                                                    @if($hasUnitConflict)
+                                                        <div x-show="open" @click.outside="open = false" x-cloak
+                                                            class="absolute z-[90] right-0 mt-1 w-64 p-3 rounded-xl border border-amber-200 bg-white shadow-xl animate-scale-in text-xs"
+                                                            x-transition>
+                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-gray-100">
+                                                                <i data-lucide="help-circle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" wire:ignore></i>
+                                                                <div>
+                                                                    <p class="font-semibold text-gray-900">¿Unidad diferente?</p>
+                                                                    <p class="text-[10px] text-gray-500">La IA sugirió una unidad de medida diferente.</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="space-y-1.5 mb-3 text-[11px]">
+                                                                <div class="flex justify-between gap-2">
+                                                                    <span class="text-gray-500">Registrada:</span>
+                                                                    <span class="font-medium text-gray-800 text-right">{{ $item['conflict']['unit']['registered'] }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between gap-2">
+                                                                    <span class="text-gray-500">Propuesta IA:</span>
+                                                                    <span class="font-bold text-amber-600 text-right">{{ $item['conflict']['unit']['suggested'] }}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex flex-col gap-1">
+                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'unit')" @click="open = false"
+                                                                    class="w-full py-1.5 rounded bg-amber-600 text-white text-[10px] font-semibold hover:bg-amber-700 transition">
+                                                                    Actualizar catálogo maestro
+                                                                </button>
+                                                                <button type="button" wire:click="dismissProductConflict({{ $i }})" @click="open = false"
+                                                                    class="w-full py-1.5 rounded bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-semibold hover:bg-gray-100 transition">
+                                                                    Conservar catálogo
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     @endif
-                                                    <input type="text" wire:model.live.debounce.400ms="items.{{ $i }}.unit" list="measures-list"
-                                                        class="input" placeholder="Unidad">
                                                 </div>
                                             </td>
 
                                             {{-- Precio Unitario --}}
-                                            <td>
+                                            <td class="pb-4">
                                                 <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
-                                                    class="input text-right tabular-nums" placeholder="0.00">
+                                                    class="input text-right tabular-nums text-small" placeholder="0.00">
                                             </td>
 
                                             {{-- Subtotal --}}
-                                            <td class="text-right font-medium text-text-primary tabular-nums">
+                                            <td class="text-right font-medium text-text-primary tabular-nums text-small pt-2.5 pb-4">
                                                 ${{ number_format($itemSubtotal, 2, '.', ',') }}
                                             </td>
 
                                             {{-- Total con IVA --}}
-                                            <td class="text-right font-semibold text-text-primary tabular-nums">
+                                            <td class="text-right font-semibold text-text-primary tabular-nums text-small pt-2.5 pb-4">
                                                 ${{ number_format($itemTotal, 2, '.', ',') }}
                                             </td>
 
                                             {{-- Delete --}}
-                                            <td class="text-center">
-                                                <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger">
+                                            <td class="text-center pb-4">
+                                                <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger mt-1">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 </button>
                                             </td>
                                         </tr>
-
-                                        {{-- Fila de conflicto: visible solo cuando hay diferencias con el producto registrado --}}
-                                        @if(!empty($item['conflict']))
-                                            <tr class="border-t-0 bg-amber-50/60" wire:key="item-conflict-{{ $i }}">
-                                                <td colspan="8">
-                                                    <div class="flex items-center gap-3 flex-wrap">
-                                                        <p class="text-xs-fluid font-semibold text-amber-900 shrink-0">
-                                                            Datos diferentes al catálogo:
-                                                        </p>
-                                                        @if(isset($item['conflict']['category']))
-                                                            <span class="text-xs-fluid text-amber-800">
-                                                                Categoría <span class="line-through text-amber-500">{{ $item['conflict']['category']['registered'] }}</span>
-                                                                → <span class="font-semibold">{{ $item['conflict']['category']['suggested'] }}</span>
-                                                            </span>
-                                                        @endif
-                                                        @if(isset($item['conflict']['unit']))
-                                                            <span class="text-xs-fluid text-amber-800">
-                                                                Unidad <span class="line-through text-amber-500">{{ $item['conflict']['unit']['registered'] }}</span>
-                                                                → <span class="font-semibold">{{ $item['conflict']['unit']['suggested'] }}</span>
-                                                            </span>
-                                                        @endif
-                                                        <div class="flex flex-wrap gap-1.5 ml-auto">
-                                                            @if(isset($item['conflict']['category']) && isset($item['conflict']['unit']))
-                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'both')"
-                                                                    class="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs-fluid font-medium hover:bg-amber-700 transition">
-                                                                    Actualizar ambos
-                                                                </button>
-                                                            @endif
-                                                            @if(isset($item['conflict']['category']))
-                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'category')"
-                                                                    class="btn-secondary text-xs-fluid">Solo categoría</button>
-                                                            @endif
-                                                            @if(isset($item['conflict']['unit']))
-                                                                <button type="button" wire:click="resolveProductConflict({{ $i }}, 'unit')"
-                                                                    class="btn-secondary text-xs-fluid">Solo unidad</button>
-                                                            @endif
-                                                            <button type="button" wire:click="dismissProductConflict({{ $i }})"
-                                                                class="btn-secondary text-xs-fluid">Ignorar</button>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>

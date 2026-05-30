@@ -5,6 +5,7 @@ namespace App\Livewire\Requisitions;
 use App\Jobs\ProcessQuotationJob;
 use App\Models\Document;
 use App\Models\Measure;
+use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\Supplier;
@@ -326,6 +327,7 @@ class QuotationWizard extends Component
             $conflict = null;
             $existingProductId = null;
             $productMatchStatus = 'new';
+            $existingProduct = null;
 
             if ($productMatch !== null) {
                 $existingProduct = $productMatch['match']->load(['category', 'measure']);
@@ -362,12 +364,22 @@ class QuotationWizard extends Component
                 }
             }
 
+            $suggestedCategoryId = $matchedCategory?->id ?? null;
+            $suggestedCategoryName = $item['category'] ?? 'General';
+            $suggestedUnit = $item['unit'] ?? 'pza';
+
             $this->items[] = [
                 'name' => $item['name'] ?? '',
                 'quantity' => $item['quantity'] ?? 0,
-                'unit' => $item['unit'] ?? 'pza',
-                'category_id' => $matchedCategory?->id ?? null,
-                'category_name' => $item['category'] ?? 'General',
+                'unit' => ($existingProduct && $existingProduct->measure_id)
+                    ? ($existingProduct->measure?->abbreviation ?? $suggestedUnit)
+                    : $suggestedUnit,
+                'category_id' => ($existingProduct)
+                    ? $existingProduct->category_id
+                    : $suggestedCategoryId,
+                'category_name' => ($existingProduct)
+                    ? ($existingProduct->category?->name ?? 'General')
+                    : $suggestedCategoryName,
                 'unit_price' => $item['unit_price'] ?? 0,
                 'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
                 'tax_amount' => $item['tax_amount'] ?? null,
@@ -376,10 +388,12 @@ class QuotationWizard extends Component
                 'line_total' => $item['line_total'] ?? null,
                 'product_id' => $existingProductId,
                 'conflict' => $conflict,
+                'product_confirmed' => ($productMatchStatus === 'exact' || $productMatchStatus === 'new'),
                 '_match' => [
                     'product'  => [
                         'status'     => $productMatchStatus,
                         'confidence' => $productMatch['confidence'] ?? null,
+                        'catalog_name' => $existingProduct ? $existingProduct->canonical_name : null,
                     ],
                     'category' => [
                         'status'         => $matchedCategory ? 'matched' : 'unmatched',
@@ -389,6 +403,12 @@ class QuotationWizard extends Component
                         'status'    => $measureMatch ? 'matched' : 'new',
                         'canonical' => $measureMatch['canonical'] ?? ($item['unit'] ?? null),
                         'unit_name' => $item['unit_name'] ?? null,
+                    ],
+                    'suggested' => [
+                        'category_id' => $suggestedCategoryId,
+                        'category_name' => $suggestedCategoryName,
+                        'unit' => $suggestedUnit,
+                        'name' => $item['name'] ?? '',
                     ],
                 ],
             ];
@@ -495,6 +515,8 @@ class QuotationWizard extends Component
 
         if (($field === 'category' || $field === 'both') && isset($conflict['category'])) {
             $updates['category_id'] = $conflict['category']['suggested_id'];
+            $this->items[$index]['category_id'] = $conflict['category']['suggested_id'];
+            $this->items[$index]['category_name'] = $conflict['category']['suggested'];
             unset($this->items[$index]['conflict']['category']);
         }
 
@@ -523,6 +545,77 @@ class QuotationWizard extends Component
         if (empty($this->items[$index]['conflict'])) {
             $this->items[$index]['conflict'] = null;
         }
+    }
+
+    /**
+     * Confirma la asociación difusa de un producto y actualiza sus datos en la vista
+     * para que coincidan con los oficiales del catálogo.
+     */
+    public function confirmProductAssociation(int $index): void
+    {
+        $item = $this->items[$index] ?? null;
+        if (!$item || empty($item['product_id'])) {
+            return;
+        }
+
+        $product = Product::find($item['product_id']);
+        if (!$product) {
+            return;
+        }
+
+        $existingProduct = $product->load(['category', 'measure']);
+
+        // Sincronizar el estado local con los datos oficiales del catálogo
+        $this->items[$index]['name'] = $existingProduct->canonical_name;
+        $this->items[$index]['category_id'] = $existingProduct->category_id;
+        $this->items[$index]['category_name'] = $existingProduct->category?->name ?? 'General';
+        $this->items[$index]['unit'] = $existingProduct->measure?->abbreviation ?? 'pza';
+        $this->items[$index]['product_confirmed'] = true;
+
+        // El match status pasa a exacto puesto que ya está confirmado por el usuario
+        $this->items[$index]['_match']['product']['status'] = 'exact';
+
+        // Al confirmar que es este producto oficial, ya no hay conflictos en la vista respecto al catálogo
+        $this->items[$index]['conflict'] = null;
+
+        $this->detectAlerts();
+    }
+
+    /**
+     * Rechaza la asociación difusa con el producto del catálogo y restablece el ítem
+     * para que se cree como producto nuevo con los valores sugeridos por la IA.
+     */
+    public function rejectProductAssociation(int $index): void
+    {
+        $item = $this->items[$index] ?? null;
+        if (!$item) {
+            return;
+        }
+
+        // Obtener los datos sugeridos por la IA originalmente desde el respaldo
+        $suggested = $item['_match']['suggested'] ?? [];
+
+        $this->items[$index]['product_id'] = null;
+        $this->items[$index]['product_confirmed'] = true; // Confirmado que se creará como nuevo
+        $this->items[$index]['_match']['product']['status'] = 'new';
+        $this->items[$index]['_match']['product']['confidence'] = null;
+        $this->items[$index]['conflict'] = null; // No hay conflictos ya que es un producto nuevo
+
+        // Restablecer el nombre de entrada al original extraído y los valores de la IA
+        if (isset($suggested['name'])) {
+            $this->items[$index]['name'] = $suggested['name'];
+        }
+        if (isset($suggested['category_id'])) {
+            $this->items[$index]['category_id'] = $suggested['category_id'];
+        }
+        if (isset($suggested['category_name'])) {
+            $this->items[$index]['category_name'] = $suggested['category_name'];
+        }
+        if (isset($suggested['unit'])) {
+            $this->items[$index]['unit'] = $suggested['unit'];
+        }
+
+        $this->detectAlerts();
     }
 
     /**
@@ -716,6 +809,231 @@ class QuotationWizard extends Component
         $this->rawText = '';
         $this->quotationIncludesTax = null;
         $this->taxDetectedByAI = false;
+    }
+
+    /**
+     * Carga datos de prueba ficticios pero basados en su base de datos real
+     * para verificar la UI de alertas, popovers y confirmaciones.
+     */
+    public function loadMockDataForTesting(): void
+    {
+        // 1. Tomar un proyecto activo
+        $project = \App\Models\Project::where('status', 'activo')->first();
+        if ($project) {
+            $this->projectId = $project->id;
+        }
+
+        // 2. Tomar categorías y unidades existentes en la base de datos
+        $categories = \App\Models\Category::limit(3)->get();
+        $measures = Measure::limit(2)->get();
+        $products = Product::limit(2)->get();
+
+        // Inicializar ítems vacíos
+        $this->items = [];
+        $this->supplierName = 'CEMEX S.A. DE C.V.';
+        $this->supplierId = '';
+        $this->vendorName = 'Leticia Dzul';
+        $this->date = now()->format('Y-m-d');
+
+        // Normalizar proveedor de prueba
+        $this->updatedSupplierName($this->supplierName);
+
+        // Ítem 1: Simular producto existente con conflictos
+        if ($products->count() > 0) {
+            $prod1 = $products->first()->load(['category', 'measure']);
+            
+            // Sugerir categoría diferente
+            $otherCat = \App\Models\Category::where('id', '!=', $prod1->category_id)->first() ?? $categories->last();
+            // Sugerir unidad diferente
+            $otherUnit = Measure::where('id', '!=', $prod1->measure_id)->first() ?? $measures->last();
+
+            $conflictFields = [];
+            if ($otherCat && $prod1->category_id) {
+                $conflictFields['category'] = [
+                    'registered' => $prod1->category?->name,
+                    'registered_id' => $prod1->category_id,
+                    'suggested' => $otherCat->name,
+                    'suggested_id' => $otherCat->id,
+                ];
+            }
+            if ($otherUnit && $prod1->measure_id) {
+                $conflictFields['unit'] = [
+                    'registered' => $prod1->measure?->abbreviation,
+                    'registered_measure_id' => $prod1->measure_id,
+                    'suggested' => $otherUnit->abbreviation ?? 'bulto',
+                ];
+            }
+
+            $this->items[] = [
+                'name' => $prod1->canonical_name,
+                'quantity' => 5,
+                'unit' => $prod1->measure?->abbreviation ?? 'pza',
+                'category_id' => $prod1->category_id,
+                'category_name' => $prod1->category?->name ?? 'General',
+                'unit_price' => 150.00,
+                'unit_price_original' => 150.00,
+                'tax_amount' => 24.00,
+                'tax_source' => 'calculated',
+                'line_subtotal' => 750.00,
+                'line_total' => 870.00,
+                'product_id' => $prod1->id,
+                'conflict' => !empty($conflictFields) ? $conflictFields : null,
+                'product_confirmed' => true,
+                '_match' => [
+                    'product' => [
+                        'status' => 'exact',
+                        'confidence' => 1.0,
+                        'catalog_name' => $prod1->canonical_name,
+                    ],
+                    'category' => [
+                        'status' => 'matched',
+                        'suggested_name' => $otherCat?->name ?? 'General',
+                    ],
+                    'measure' => [
+                        'status' => 'matched',
+                        'canonical' => $prod1->measure?->abbreviation ?? 'pza',
+                        'unit_name' => $prod1->measure?->name ?? 'Pieza',
+                    ],
+                    'suggested' => [
+                        'category_id' => $otherCat?->id,
+                        'category_name' => $otherCat?->name ?? 'General',
+                        'unit' => $otherUnit?->abbreviation ?? 'bulto',
+                        'name' => $prod1->canonical_name,
+                    ]
+                ]
+            ];
+        }
+
+        // Ítem 2: Simular producto difuso (Fuzzy Match) pendiente de confirmación
+        if ($products->count() > 1) {
+            $prod2 = $products->skip(1)->first()->load(['category', 'measure']);
+            
+            $this->items[] = [
+                'name' => $prod2->canonical_name . ' Extra', // Nombre con agregado para simular coincidencia difusa
+                'quantity' => 10,
+                'unit' => $prod2->measure?->abbreviation ?? 'pza',
+                'category_id' => $prod2->category_id,
+                'category_name' => $prod2->category?->name ?? 'General',
+                'unit_price' => 85.50,
+                'unit_price_original' => 85.50,
+                'tax_amount' => 13.68,
+                'tax_source' => 'calculated',
+                'line_subtotal' => 855.00,
+                'line_total' => 991.68,
+                'product_id' => $prod2->id,
+                'conflict' => null,
+                'product_confirmed' => false, // Desconfirmado para probar el badge
+                '_match' => [
+                    'product' => [
+                        'status' => 'fuzzy',
+                        'confidence' => 0.84,
+                        'catalog_name' => $prod2->canonical_name,
+                    ],
+                    'category' => [
+                        'status' => 'matched',
+                        'suggested_name' => $prod2->category?->name ?? 'General',
+                    ],
+                    'measure' => [
+                        'status' => 'matched',
+                        'canonical' => $prod2->measure?->abbreviation ?? 'pza',
+                        'unit_name' => $prod2->measure?->name ?? 'Pieza',
+                    ],
+                    'suggested' => [
+                        'category_id' => $prod2->category_id,
+                        'category_name' => $prod2->category?->name ?? 'General',
+                        'unit' => $prod2->measure?->abbreviation ?? 'pza',
+                        'name' => $prod2->canonical_name . ' Extra',
+                    ]
+                ]
+            ];
+        } else {
+            // Fallback si solo hay 1 o 0 productos en catálogo
+            $this->items[] = [
+                'name' => 'Tubo Galvanizado 1" (Fuzzy Demo)',
+                'quantity' => 12,
+                'unit' => 'pza',
+                'category_id' => $categories->first()?->id ?? null,
+                'category_name' => $categories->first()?->name ?? 'Ferretería',
+                'unit_price' => 310.00,
+                'unit_price_original' => 310.00,
+                'tax_amount' => 49.60,
+                'tax_source' => 'calculated',
+                'line_subtotal' => 3720.00,
+                'line_total' => 4315.20,
+                'product_id' => 999, // ID simulado
+                'conflict' => null,
+                'product_confirmed' => false,
+                '_match' => [
+                    'product' => [
+                        'status' => 'fuzzy',
+                        'confidence' => 0.79,
+                        'catalog_name' => 'Tubo Galvanizado C-40 1"',
+                    ],
+                    'category' => [
+                        'status' => 'matched',
+                        'suggested_name' => 'Ferretería',
+                    ],
+                    'measure' => [
+                        'status' => 'matched',
+                        'canonical' => 'pza',
+                        'unit_name' => 'Pieza',
+                    ],
+                    'suggested' => [
+                        'category_id' => $categories->first()?->id ?? null,
+                        'category_name' => $categories->first()?->name ?? 'Ferretería',
+                        'unit' => 'pza',
+                        'name' => 'Tubo Galvanizado 1" (Fuzzy Demo)',
+                    ]
+                ]
+            ];
+        }
+
+        // Ítem 3: Producto nuevo
+        $this->items[] = [
+            'name' => 'Clavos de Acero 2" Nuevos',
+            'quantity' => 20,
+            'unit' => 'kg',
+            'category_id' => $categories->last()?->id ?? null,
+            'category_name' => $categories->last()?->name ?? 'Construcción',
+            'unit_price' => 45.00,
+            'unit_price_original' => 45.00,
+            'tax_amount' => 7.20,
+            'tax_source' => 'calculated',
+            'line_subtotal' => 900.00,
+            'line_total' => 1044.00,
+            'product_id' => null,
+            'conflict' => null,
+            'product_confirmed' => true,
+            '_match' => [
+                'product' => [
+                    'status' => 'new',
+                    'confidence' => null,
+                    'catalog_name' => null,
+                ],
+                'category' => [
+                    'status' => 'unmatched',
+                    'suggested_name' => 'Construcción',
+                ],
+                'measure' => [
+                    'status' => 'new',
+                    'canonical' => 'kg',
+                    'unit_name' => 'Kilogramo',
+                ],
+                'suggested' => [
+                    'category_id' => $categories->last()?->id ?? null,
+                    'category_name' => $categories->last()?->name ?? 'Construcción',
+                    'unit' => 'kg',
+                    'name' => 'Clavos de Acero 2" Nuevos',
+                ]
+            ]
+        ];
+
+        // Cambiar al paso 3 directamente
+        $this->step = 3;
+        $this->quotationIncludesTax = true;
+        $this->taxDetectedByAI = true;
+
+        $this->detectAlerts();
     }
 
     #[Layout('components.layouts.app')]
