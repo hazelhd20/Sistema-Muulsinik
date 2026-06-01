@@ -1,4 +1,4 @@
-@props(['options' => [], 'placeholder' => 'Seleccionar...'])
+@props(['options' => [], 'placeholder' => 'Seleccionar...', 'textClass' => ''])
 
 <div
     x-data="{
@@ -32,7 +32,9 @@
             this.dropStyle = {
                 position: 'fixed',
                 left: rect.left + 'px',
-                width: rect.width + 'px',
+                minWidth: rect.width + 'px',
+                width: 'max-content',
+                maxWidth: 'min(400px, 90vw)',
                 maxHeight: Math.min(maxH, openUp ? rect.top - 8 : spaceBelow) + 'px',
                 ...(openUp
                     ? { bottom: (window.innerHeight - rect.top + 4) + 'px', top: 'auto' }
@@ -71,7 +73,7 @@
         class="input flex items-center justify-between text-left w-full h-full"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
-        <div class="flex items-center gap-2 truncate">
+        <div class="flex items-center gap-2 truncate {{ $textClass }}">
             {{ $slot }}
             <span x-text="selectedLabel" :class="{ 'text-text-muted': !value }" class="truncate"></span>
         </div>

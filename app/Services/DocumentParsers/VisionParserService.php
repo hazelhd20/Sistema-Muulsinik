@@ -29,19 +29,12 @@ class VisionParserService implements ParserInterface
             return $result;
         }
 
-        // Gemini no disponible o falló: retornar estructura vacía
-        // para que el usuario pueda capturar manualmente los datos.
+        // Gemini no disponible o falló: lanzar excepción para que el Job la capture
+        // y el UI muestre la opción de reintentar o continuar manualmente.
         Log::warning('Vision Parser: Gemini no pudo procesar el archivo.', [
             'path' => $filePath,
         ]);
 
-        return [
-            'supplier' => null,
-            'store'    => null,
-            'seller'   => null,
-            'tax_info' => null,
-            'items'    => [],
-            'raw_text' => '[No se pudo extraer texto del archivo]',
-        ];
+        throw new \Exception('La IA de Gemini está experimentando alta demanda o no pudo procesar el archivo en este momento. Por favor, intenta de nuevo o continúa manualmente.');
     }
 }

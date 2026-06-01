@@ -153,6 +153,7 @@ input[type="search"]::-webkit-search-results-decoration {
         justify-content: center;
         gap: 0.4375rem;
         padding: 0.4375rem 1rem;
+        min-height: 2.25rem;
         background-color: var(--color-danger);
         color: #fff;
         font-weight: 600;
@@ -175,6 +176,7 @@ input[type="search"]::-webkit-search-results-decoration {
         justify-content: center;
         gap: 0.4375rem;
         padding: 0.4375rem 1rem;
+        min-height: 2.25rem;
         background-color: var(--color-surface-card);
         color: var(--color-text-primary);
         font-weight: 500;
@@ -350,6 +352,26 @@ input[type="search"]::-webkit-search-results-decoration {
     .btn-icon:hover         { background-color: var(--color-surface-hover); color: var(--color-text-secondary); }
     .btn-icon-primary:hover { background-color: var(--color-primary-50);    color: var(--color-primary-600); }
     .btn-icon-danger:hover  { background-color: #FEF2F2;                    color: var(--color-danger); }
+
+    /* ── Icon Button Secondary (with border and card background) ── */
+    .btn-icon-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.4375rem;
+        background-color: var(--color-surface-card);
+        color: var(--color-text-secondary);
+        border: 1px solid var(--color-border);
+        transition: background-color 120ms, border-color 120ms, box-shadow 120ms;
+        cursor: pointer;
+    }
+    .btn-icon-secondary:hover {
+        background-color: var(--color-surface-hover);
+        border-color: var(--color-border-strong);
+        color: var(--color-text-primary);
+    }
 
     /* ── Inline link with trailing icon ("Ver todos", "Ver reportes") ── */
     .link-more {

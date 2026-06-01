@@ -19,7 +19,8 @@ class RequisitionItemResolverService
 {
     public function __construct(
         private DataNormalizerService $normalizer
-    ) {}
+    ) {
+    }
 
     /**
      * Resolver o crear un proveedor por nombre
@@ -251,7 +252,8 @@ class RequisitionItemResolverService
                 'tax_source' => $item['tax_source'] ?? null,
                 'line_subtotal' => $item['line_subtotal'] ?? null,
                 'line_total' => $item['line_total'] ?? null,
-                'supplier_id' => $supplierId,
+                'discount_percent' => $item['discount_percent'] ?? null,
+                'supplier_id' => $item['supplier_id'] ?? $supplierId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -275,6 +277,18 @@ class RequisitionItemResolverService
 
         // Resolver vendedor
         $finalVendorId = $this->resolveVendor($vendorName, $finalSupplierId);
+
+        // Si se especificó un vendor_id directo en la data (ej. desde requisición manual),
+        // priorizarlo y sincronizar su supplier_id si no se ha resuelto aún.
+        if (empty($finalVendorId) && !empty($requisitionData['vendor_id'])) {
+            $finalVendorId = (int) $requisitionData['vendor_id'];
+            if (empty($finalSupplierId)) {
+                $vendor = Vendor::find($finalVendorId);
+                if ($vendor) {
+                    $finalSupplierId = $vendor->supplier_id;
+                }
+            }
+        }
 
         // Crear requisición
         $requisition = Requisition::create([

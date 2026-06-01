@@ -10,6 +10,7 @@ use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\Supplier;
 use App\Services\DataNormalizerService;
+use App\Services\DiscountNormalizerService;
 use App\Services\DocumentParsers\DocumentParserFactory;
 use App\Services\RequisitionItemResolverService;
 use App\Services\TaxNormalizerService;
@@ -52,31 +53,12 @@ class QuotationWizard extends Component
     public array $items = [];
     public string $rawText = '';
 
-    /* ── Alertas tipificadas ──────────────────────────── */
-    public array $alerts = [
-        'errors'   => [],
-        'warnings' => [],
-        'info'     => [],
-    ];
 
     /* ── Metadata de resolución (proveedor/vendedor) ──── */
     public array $supplierMatch = [];
     public array $vendorMatch = [];
 
-    /* ── Contexto fiscal (IVA) ───────────────────────── */
 
-    /**
-     * null  = Gemini no pudo determinar si los precios incluyen IVA (toggle visible).
-     * true  = Los precios incluyen IVA (confirmado por IA o usuario).
-     * false = Los precios NO incluyen IVA.
-     */
-    public ?bool $quotationIncludesTax = null;
-
-    /**
-     * true = La IA detectó información de IVA en la cotización.
-     * false = No se encontró ninguna referencia a IVA.
-     */
-    public bool $taxDetectedByAI = false;
 
     public function mount(): void
     {
@@ -227,6 +209,22 @@ class QuotationWizard extends Component
         $this->errorMessage = null;
     }
 
+    /**
+     * Permite continuar a la captura manual cuando la extracción falla.
+     */
+    public function continueManually(): void
+    {
+        if ($this->quotationId) {
+            $quotation = Quotation::find($this->quotationId);
+            if ($quotation) {
+                // Forzar el paso al formulario con datos vacíos o los que se hayan extraído
+                $this->loadParsedData($quotation);
+            }
+        }
+        $this->step = 3;
+        $this->processingStatus = 'completed';
+    }
+
     /* ═══════════════════════════════════════════════════
      *  PASO 3 — Formulario editable
      * ═══════════════════════════════════════════════════ */
@@ -240,7 +238,11 @@ class QuotationWizard extends Component
     {
         $data = $quotation->raw_parsed_data ?? [];
 
-        // Normalizar datos fiscales antes de cargar al formulario
+        // Normalizar descuentos ANTES de impuestos (pipeline: Precio → Descuento → IVA)
+        $discountNormalizer = app(DiscountNormalizerService::class);
+        $data = $discountNormalizer->normalize($data);
+
+        // Normalizar datos fiscales después de descuentos
         $taxNormalizer = app(TaxNormalizerService::class);
         $data = $taxNormalizer->normalize($data);
 
@@ -252,21 +254,10 @@ class QuotationWizard extends Component
         $this->vendorName = !empty($data['seller']) ? $dataNormalizer->normalizeTitleCase($data['seller']) : '';
         $this->rawText = $data['raw_text'] ?? '';
         $this->items = [];
-        $this->alerts = ['errors' => [], 'warnings' => [], 'info' => []];
         $this->supplierMatch = [];
         $this->vendorMatch = [];
 
-        // Extraer contexto fiscal global
-        $taxInfo = $data['tax_info'] ?? [];
-        $this->taxDetectedByAI = $taxInfo['tax_detected'] ?? false;
 
-        if (isset($taxInfo['prices_include_tax'])) {
-            $this->quotationIncludesTax = $taxInfo['prices_include_tax'];
-        } else {
-            $hasResolvedTax = collect($data['items'] ?? [])
-                ->contains(fn($item) => !empty($item['tax_source']));
-            $this->quotationIncludesTax = $hasResolvedTax ? false : null;
-        }
 
         // Intentar asociar proveedor existente con fuzzy matching
         if ($this->supplierName) {
@@ -276,9 +267,9 @@ class QuotationWizard extends Component
                 $this->supplierId = $match['match']->id;
                 $this->supplierName = $match['match']->trade_name;
                 $this->supplierMatch = [
-                    'status'     => $match['source'] === 'exact' ? 'exact' : 'fuzzy',
+                    'status' => $match['source'] === 'exact' ? 'exact' : 'fuzzy',
                     'confidence' => $match['confidence'],
-                    'id'         => $match['match']->id,
+                    'id' => $match['match']->id,
                 ];
             } else {
                 $this->supplierMatch = ['status' => 'new'];
@@ -296,9 +287,9 @@ class QuotationWizard extends Component
             if ($vendorMatchResult !== null) {
                 $this->vendorName = $vendorMatchResult['match']->name;
                 $this->vendorMatch = [
-                    'status'     => $vendorMatchResult['source'] === 'exact' ? 'exact' : 'fuzzy',
+                    'status' => $vendorMatchResult['source'] === 'exact' ? 'exact' : 'fuzzy',
                     'confidence' => $vendorMatchResult['confidence'],
-                    'id'         => $vendorMatchResult['match']->id,
+                    'id' => $vendorMatchResult['match']->id,
                 ];
             } else {
                 $this->vendorMatch = ['status' => 'new'];
@@ -336,8 +327,10 @@ class QuotationWizard extends Component
                 $conflictFields = [];
 
                 // Conflicto de categoría: la IA sugirió una diferente a la registrada
-                if ($matchedCategory && $existingProduct->category_id
-                    && $matchedCategory->id !== $existingProduct->category_id) {
+                if (
+                    $matchedCategory && $existingProduct->category_id
+                    && $matchedCategory->id !== $existingProduct->category_id
+                ) {
                     $conflictFields['category'] = [
                         'registered' => $existingProduct->category?->name,
                         'registered_id' => $existingProduct->category_id,
@@ -386,21 +379,22 @@ class QuotationWizard extends Component
                 'tax_source' => $item['tax_source'] ?? null,
                 'line_subtotal' => $item['line_subtotal'] ?? null,
                 'line_total' => $item['line_total'] ?? null,
+                'discount_percent' => $item['discount_percent'] ?? null,
                 'product_id' => $existingProductId,
                 'conflict' => $conflict,
                 'product_confirmed' => ($productMatchStatus === 'exact' || $productMatchStatus === 'new'),
                 '_match' => [
-                    'product'  => [
-                        'status'     => $productMatchStatus,
+                    'product' => [
+                        'status' => $productMatchStatus,
                         'confidence' => $productMatch['confidence'] ?? null,
                         'catalog_name' => $existingProduct ? $existingProduct->canonical_name : null,
                     ],
                     'category' => [
-                        'status'         => $matchedCategory ? 'matched' : 'unmatched',
+                        'status' => $matchedCategory ? 'matched' : 'unmatched',
                         'suggested_name' => $item['category'] ?? null,
                     ],
-                    'measure'  => [
-                        'status'    => $measureMatch ? 'matched' : 'new',
+                    'measure' => [
+                        'status' => $measureMatch ? 'matched' : 'new',
                         'canonical' => $measureMatch['canonical'] ?? ($item['unit'] ?? null),
                         'unit_name' => $item['unit_name'] ?? null,
                     ],
@@ -413,77 +407,6 @@ class QuotationWizard extends Component
                 ],
             ];
         }
-
-        // RF-REQ-06: Detectar campos incompletos (sistema tipificado)
-        $this->detectAlerts();
-    }
-
-    /**
-     * RF-REQ-06 — Detecta campos incompletos y genera alertas tipificadas.
-     *
-     * Tres niveles:
-     * - errors:   Bloquean o comprometen el guardado (rojo)
-     * - warnings: Requieren atención del usuario (ámbar)
-     * - info:     Informativos sobre el estado de la detección (azul)
-     */
-    private function detectAlerts(): void
-    {
-        $errors = [];
-        $warnings = [];
-        $info = [];
-
-        // ── Errores (bloquean guardado) ──
-        if (empty($this->projectId)) {
-            $errors[] = 'Proyecto no asignado — selecciona un proyecto.';
-        }
-
-        if (empty($this->items)) {
-            $errors[] = 'No se detectaron productos — agrégalos manualmente.';
-        }
-
-        foreach ($this->items as $i => $item) {
-            $row = $i + 1;
-            if (empty($item['name'])) {
-                $errors[] = "Producto en fila {$row}: nombre vacío.";
-            }
-        }
-
-        // ── Warnings (requieren atención) ──
-        if (empty($this->supplierName) && empty($this->supplierId)) {
-            $warnings[] = 'Proveedor no identificado — asígnalo manualmente.';
-        }
-
-        if ($this->quotationIncludesTax === null && !empty($this->items)) {
-            $warnings[] = 'No se detectó si los precios incluyen IVA — indica si los precios ya incluyen el impuesto.';
-        }
-
-        foreach ($this->items as $i => $item) {
-            $row = $i + 1;
-            if (empty($item['unit_price']) || $item['unit_price'] <= 0) {
-                $warnings[] = "Producto \"{$item['name']}\" (fila {$row}): precio no identificado.";
-            }
-            if (empty($item['quantity']) || $item['quantity'] <= 0) {
-                $warnings[] = "Producto \"{$item['name']}\" (fila {$row}): cantidad no identificada.";
-            }
-        }
-
-        // ── Info (contexto sobre detecciones) ──
-        $existingCount = collect($this->items)->filter(fn($item) => ($item['_match']['product']['status'] ?? '') !== 'new')->count();
-        $newCount = count($this->items) - $existingCount;
-
-        if ($existingCount > 0) {
-            $info[] = "{$existingCount} producto(s) ya existente(s) en el catálogo.";
-        }
-        if ($newCount > 0) {
-            $info[] = "{$newCount} producto(s) nuevo(s) — se crearán al guardar.";
-        }
-
-        if (!empty($this->supplierMatch) && ($this->supplierMatch['status'] ?? '') === 'fuzzy') {
-            $conf = ($this->supplierMatch['confidence'] ?? 0) * 100;
-            $info[] = "Proveedor detectado por similitud ({$conf}% de confianza).";
-        }
-
-        $this->alerts = compact('errors', 'warnings', 'info');
     }
 
     /* ── Acciones del formulario editable ─────────────── */
@@ -578,7 +501,6 @@ class QuotationWizard extends Component
         // Al confirmar que es este producto oficial, ya no hay conflictos en la vista respecto al catálogo
         $this->items[$index]['conflict'] = null;
 
-        $this->detectAlerts();
     }
 
     /**
@@ -615,7 +537,6 @@ class QuotationWizard extends Component
             $this->items[$index]['unit'] = $suggested['unit'];
         }
 
-        $this->detectAlerts();
     }
 
     /**
@@ -631,17 +552,32 @@ class QuotationWizard extends Component
 
     public function updatedProjectId(): void
     {
-        $this->detectAlerts();
     }
 
     public function updatedDate(): void
     {
-        $this->detectAlerts();
     }
 
-    public function updatedItems(): void
+    public function updatedItems($value = null, $key = null): void
     {
-        $this->detectAlerts();
+        // Recalcular dinámicamente line_subtotal, tax_amount y line_total SOLO si el usuario edita
+        // explícitamente la cantidad o el precio unitario. Esto preserva los cálculos exactos
+        // del proveedor si se edita cualquier otro campo (ej. nombre, unidad, categoría).
+        if ($key !== null && (str_ends_with($key, '.quantity') || str_ends_with($key, '.unit_price'))) {
+            $parts = explode('.', $key);
+            $i = $parts[0];
+
+            if (isset($this->items[$i])) {
+                $qty = (float) ($this->items[$i]['quantity'] ?? 0);
+                $price = (float) ($this->items[$i]['unit_price'] ?? 0);
+
+                $calculatedSubtotal = round($price * $qty, 2);
+                $this->items[$i]['line_subtotal'] = $calculatedSubtotal;
+                $this->items[$i]['tax_amount'] = round($calculatedSubtotal * 0.16, 2);
+                $this->items[$i]['line_total'] = round($calculatedSubtotal + $this->items[$i]['tax_amount'], 2);
+            }
+        }
+
     }
 
     /**
@@ -663,16 +599,15 @@ class QuotationWizard extends Component
         if ($match !== null) {
             $this->supplierId = $match['match']->id;
             $this->supplierMatch = [
-                'status'     => $match['source'] === 'exact' ? 'exact' : 'fuzzy',
+                'status' => $match['source'] === 'exact' ? 'exact' : 'fuzzy',
                 'confidence' => $match['confidence'],
-                'id'         => $match['match']->id,
+                'id' => $match['match']->id,
             ];
         } else {
             $this->supplierId = '';
             $this->supplierMatch = ['status' => 'new'];
         }
 
-        $this->detectAlerts();
     }
 
     public function addItem(): void
@@ -689,54 +624,16 @@ class QuotationWizard extends Component
             'tax_source' => null,
             'line_subtotal' => null,
             'line_total' => null,
+            'discount_percent' => null,
             'product_id' => null,
         ];
 
-        $this->detectAlerts();
     }
 
     public function removeItem(int $index): void
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
-        $this->detectAlerts();
-    }
-
-    /* ── Acciones fiscales (IVA) ─────────────────────── */
-
-    /**
-     * Toggle global: El usuario indica si los precios incluyen IVA.
-     * Recalcula todos los ítems que no tengan tax_source resuelto.
-     */
-    public function setTaxInclusion(bool $includesTax): void
-    {
-        $this->quotationIncludesTax = $includesTax;
-        $normalizer = app(TaxNormalizerService::class);
-
-        foreach ($this->items as $i => $item) {
-            // Solo recalcular ítems que no tienen IVA ya resuelto por el proveedor
-            $existingSource = $item['tax_source'] ?? null;
-            if ($existingSource === 'supplier_per_item') {
-                continue;
-            }
-
-            $originalPrice = (float) ($item['unit_price_original'] ?? $item['unit_price'] ?? 0);
-            if ($originalPrice <= 0) {
-                continue;
-            }
-
-            $quantity = (float) ($item['quantity'] ?? 1);
-            $resolved = $normalizer->resolveForUserChoice($originalPrice, $quantity, $includesTax);
-
-            $this->items[$i]['unit_price'] = $resolved['unit_price'];
-            $this->items[$i]['tax_amount'] = $resolved['tax_amount'];
-            $this->items[$i]['tax_source'] = $resolved['tax_source'];
-            $this->items[$i]['line_subtotal'] = $resolved['line_subtotal'];
-            $this->items[$i]['line_total'] = $resolved['line_total'];
-        }
-
-        // Limpiar la advertencia de IVA
-        $this->detectAlerts();
     }
 
     /* ═══════════════════════════════════════════════════
@@ -803,12 +700,9 @@ class QuotationWizard extends Component
         $this->vendorName = '';
         $this->annotations = '';
         $this->items = [];
-        $this->alerts = ['errors' => [], 'warnings' => [], 'info' => []];
         $this->supplierMatch = [];
         $this->vendorMatch = [];
         $this->rawText = '';
-        $this->quotationIncludesTax = null;
-        $this->taxDetectedByAI = false;
     }
 
     /**
@@ -841,7 +735,7 @@ class QuotationWizard extends Component
         // Ítem 1: Simular producto existente con conflictos
         if ($products->count() > 0) {
             $prod1 = $products->first()->load(['category', 'measure']);
-            
+
             // Sugerir categoría diferente
             $otherCat = \App\Models\Category::where('id', '!=', $prod1->category_id)->first() ?? $categories->last();
             // Sugerir unidad diferente
@@ -870,12 +764,13 @@ class QuotationWizard extends Component
                 'unit' => $prod1->measure?->abbreviation ?? 'pza',
                 'category_id' => $prod1->category_id,
                 'category_name' => $prod1->category?->name ?? 'General',
-                'unit_price' => 150.00,
+                'unit_price' => 135.00,
                 'unit_price_original' => 150.00,
-                'tax_amount' => 24.00,
+                'tax_amount' => 21.60,
                 'tax_source' => 'calculated',
-                'line_subtotal' => 750.00,
-                'line_total' => 870.00,
+                'line_subtotal' => 675.00,
+                'line_total' => 783.00,
+                'discount_percent' => 10.0,
                 'product_id' => $prod1->id,
                 'conflict' => !empty($conflictFields) ? $conflictFields : null,
                 'product_confirmed' => true,
@@ -907,19 +802,20 @@ class QuotationWizard extends Component
         // Ítem 2: Simular producto difuso (Fuzzy Match) pendiente de confirmación
         if ($products->count() > 1) {
             $prod2 = $products->skip(1)->first()->load(['category', 'measure']);
-            
+
             $this->items[] = [
                 'name' => $prod2->canonical_name . ' Extra', // Nombre con agregado para simular coincidencia difusa
                 'quantity' => 10,
                 'unit' => $prod2->measure?->abbreviation ?? 'pza',
                 'category_id' => $prod2->category_id,
                 'category_name' => $prod2->category?->name ?? 'General',
-                'unit_price' => 85.50,
+                'unit_price' => 81.23,
                 'unit_price_original' => 85.50,
-                'tax_amount' => 13.68,
+                'tax_amount' => 12.997,
                 'tax_source' => 'calculated',
-                'line_subtotal' => 855.00,
-                'line_total' => 991.68,
+                'line_subtotal' => 812.30,
+                'line_total' => 942.27,
+                'discount_percent' => 5.0,
                 'product_id' => $prod2->id,
                 'conflict' => null,
                 'product_confirmed' => false, // Desconfirmado para probar el badge
@@ -960,6 +856,7 @@ class QuotationWizard extends Component
                 'tax_source' => 'calculated',
                 'line_subtotal' => 3720.00,
                 'line_total' => 4315.20,
+                'discount_percent' => null,
                 'product_id' => 999, // ID simulado
                 'conflict' => null,
                 'product_confirmed' => false,
@@ -1001,6 +898,7 @@ class QuotationWizard extends Component
             'tax_source' => 'calculated',
             'line_subtotal' => 900.00,
             'line_total' => 1044.00,
+            'discount_percent' => null,
             'product_id' => null,
             'conflict' => null,
             'product_confirmed' => true,
@@ -1030,10 +928,6 @@ class QuotationWizard extends Component
 
         // Cambiar al paso 3 directamente
         $this->step = 3;
-        $this->quotationIncludesTax = true;
-        $this->taxDetectedByAI = true;
-
-        $this->detectAlerts();
     }
 
     #[Layout('components.layouts.app')]
@@ -1045,7 +939,7 @@ class QuotationWizard extends Component
         $measures = Measure::orderBy('name')->get();
         $categories = \App\Models\Category::orderBy('name')->get();
 
-        $vendors = [];
+        $vendors = collect();
         if ($this->supplierId) {
             $vendors = \App\Models\Vendor::where('supplier_id', $this->supplierId)->orderBy('name')->get();
         }

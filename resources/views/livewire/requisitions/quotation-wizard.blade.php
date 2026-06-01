@@ -15,45 +15,44 @@
     }
 }">
     {{-- ═══════ WIZARD HEADER ═══════ --}}
-    <div class="mb-8">
-        <div class="flex items-center gap-3 mb-2">
-            <a href="{{ route('requisiciones.index') }}" class="p-2 rounded-xl hover:bg-surface-hover transition"
-                title="Volver">
-                <i data-lucide="arrow-left" class="w-5 h-5 text-text-muted"></i>
-            </a>
-            <div>
-                <h1 class="text-h1 text-text-primary">Subir Cotización</h1>
-                <p class="text-body text-text-muted">Carga un archivo y el sistema extraerá la información
-                    automáticamente
-                </p>
-            </div>
-        </div>
-
-        {{-- Step Indicator --}}
-        <div class="flex items-center gap-2 mt-6">
-            @foreach([1 => 'Subir archivo', 2 => 'Procesando', 3 => 'Revisar y guardar'] as $num => $label)
-                <div class="flex items-center gap-2 {{ $num < 3 ? 'flex-1' : '' }}">
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="w-8 h-8 rounded-full flex items-center justify-center text-small font-bold transition-all duration-300
-                                        {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
-                            @if($step > $num)
-                                <i data-lucide="check" class="w-4 h-4"></i>
-                            @else
-                                {{ $num }}
-                            @endif
-                        </div>
-                        <span
-                            class="text-body font-medium {{ $step >= $num ? 'text-text-primary' : 'text-text-muted' }}">{{ $label }}</span>
-                    </div>
-                    @if($num < 3)
-                        <div
-                            class="flex-1 h-0.5 mx-2 rounded {{ $step > $num ? 'bg-green-500' : 'bg-gray-200' }} transition-all duration-500">
-                        </div>
-                    @endif
+    <x-page-header subtitle="Requisiciones">
+        <x-slot:heading>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('requisiciones.index') }}" class="btn-icon-secondary" title="Volver">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </a>
+                <div>
+                    <span class="text-h1 text-text-primary block leading-none">Subir Cotización</span>
+                    <span class="text-body text-text-muted block mt-1">Carga un archivo y el sistema extraerá la información automáticamente</span>
                 </div>
-            @endforeach
-        </div>
+            </div>
+        </x-slot:heading>
+    </x-page-header>
+
+    {{-- Step Indicator --}}
+    <div class="flex items-center gap-2 mb-8">
+        @foreach([1 => 'Subir archivo', 2 => 'Procesando', 3 => 'Revisar y guardar'] as $num => $label)
+            <div class="flex items-center gap-2 {{ $num < 3 ? 'flex-1' : '' }}">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-small font-bold transition-all duration-300
+                                        {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
+                        @if($step > $num)
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        @else
+                            {{ $num }}
+                        @endif
+                    </div>
+                    <span
+                        class="text-body font-medium {{ $step >= $num ? 'text-text-primary' : 'text-text-muted' }}">{{ $label }}</span>
+                </div>
+                @if($num < 3)
+                    <div
+                        class="flex-1 h-0.5 mx-2 rounded {{ $step > $num ? 'bg-green-500' : 'bg-gray-200' }} transition-all duration-500">
+                    </div>
+                @endif
+            </div>
+        @endforeach
     </div>
 
     {{-- ═══════ PASO 1: UPLOAD ═══════ --}}
@@ -138,25 +137,40 @@
 
                 @elseif($processingStatus === 'failed')
                     {{-- Error state --}}
-                    <div class="mb-6">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
-                            <i data-lucide="alert-triangle" class="w-10 h-10 text-red-500"></i>
+                    <div class="flex flex-col items-center max-w-lg mx-auto text-center py-6">
+                        {{-- Ícono animado --}}
+                        <div class="relative flex items-center justify-center w-24 h-24 mb-6">
+                            <div class="absolute inset-0 bg-red-100 rounded-full animate-pulse opacity-60"></div>
+                            <div class="absolute inset-2 bg-red-100 rounded-full"></div>
+                            <div class="relative flex items-center justify-center w-16 h-16 bg-red-500 text-white rounded-full shadow-lg shadow-red-500/30">
+                                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+                            </div>
                         </div>
-                        <h2 class="text-h1 text-text-primary mb-2">Error al procesar</h2>
-                        <p class="text-body text-red-600 bg-red-50 p-3 rounded-xl">
-                            {{ $errorMessage ?? 'Ocurrió un error inesperado.' }}
-                        </p>
-                    </div>
 
-                    <div class="flex items-center justify-center gap-3">
-                        <button wire:click="retryProcessing" class="btn-primary">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                            Reintentar
-                        </button>
-                        <button wire:click="resetWizard" class="btn-secondary">
-                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                            Subir otro archivo
-                        </button>
+                        {{-- Título y Mensaje --}}
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4 tracking-tight">Error al procesar el archivo</h2>
+
+                        <div class="w-full bg-red-50/80 border border-red-100 p-5 rounded-2xl mb-8 shadow-sm">
+                            <p class="text-sm font-medium text-red-800 leading-relaxed">
+                                {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
+                            </p>
+                        </div>
+
+                        {{-- Botones de acción --}}
+                        <div class="flex flex-col sm:flex-row w-full gap-3 justify-center">
+                            <button wire:click="retryProcessing" class="btn-primary group">
+                                <i data-lucide="refresh-cw" class="w-4 h-4 transition-transform group-hover:rotate-180 duration-500"></i>
+                                Reintentar
+                            </button>
+                            <button wire:click="continueManually" class="btn-secondary hover:border-gray-300 transition-colors">
+                                <i data-lucide="edit-3" class="w-4 h-4 text-gray-500"></i>
+                                Llenar manualmente
+                            </button>
+                            <button wire:click="resetWizard" class="btn-secondary hover:border-gray-300 transition-colors">
+                                <i data-lucide="file-up" class="w-4 h-4 text-gray-500"></i>
+                                Cambiar archivo
+                            </button>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -168,63 +182,7 @@
         <form wire:submit="saveRequisition" x-data
             x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
 
-            {{-- RF-REQ-06: Alertas tipificadas (3 niveles) --}}
-            @if(!empty($alerts['errors']))
-                <div class="mb-4 p-4 rounded-xl bg-red-50 border border-red-200">
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="x-circle" class="w-5 h-5 text-red-600 shrink-0 mt-0.5"></i>
-                        <div>
-                            <h3 class="text-small font-semibold text-red-800 mb-1">Campos obligatorios</h3>
-                            <ul class="text-body text-red-700 space-y-0.5">
-                                @foreach($alerts['errors'] as $error)
-                                    <li class="flex items-center gap-1.5">
-                                        <span class="w-1 h-1 bg-red-500 rounded-full shrink-0"></span>
-                                        {{ $error }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
-            @if(!empty($alerts['warnings']))
-                <div class="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
-                        <div>
-                            <h3 class="text-small font-semibold text-amber-800 mb-1">Campos pendientes de revisar</h3>
-                            <ul class="text-body text-amber-700 space-y-0.5">
-                                @foreach($alerts['warnings'] as $warning)
-                                    <li class="flex items-center gap-1.5">
-                                        <span class="w-1 h-1 bg-amber-500 rounded-full shrink-0"></span>
-                                        {{ $warning }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if(!empty($alerts['info']))
-                <div class="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200">
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"></i>
-                        <div>
-                            <h3 class="text-small font-semibold text-blue-800 mb-1">Resumen de detección</h3>
-                            <ul class="text-body text-blue-700 space-y-0.5">
-                                @foreach($alerts['info'] as $infoMsg)
-                                    <li class="flex items-center gap-1.5">
-                                        <span class="w-1 h-1 bg-blue-500 rounded-full shrink-0"></span>
-                                        {{ $infoMsg }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
             {{-- General Info --}}
             <div class="card mb-6">
@@ -244,134 +202,85 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="label">Proyecto *</label>
+                    <x-form-field label="Proyecto" :required="true" :error="$errors->first('projectId')">
                         <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
                             placeholder="Seleccionar proyecto..." />
-                        @error('projectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
 
-                    <div>
-                        <label class="label">Proveedor</label>
-                        <input type="text" wire:model.live="supplierName" list="suppliers-list" class="input"
-                            placeholder="Nombre del proveedor...">
-                        <datalist id="suppliers-list">
-                            @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->trade_name }}"></option>
-                            @endforeach
-                        </datalist>
-                        @if(($supplierMatch['status'] ?? '') === 'new')
-                            <p class="mt-1 text-xs-fluid text-amber-600">Se creará como nuevo proveedor</p>
-                        @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
-                            <p class="mt-1 text-xs-fluid text-primary-600">Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%</p>
-                        @elseif(($supplierMatch['status'] ?? '') === 'exact')
-                            <p class="mt-1 text-xs-fluid text-emerald-600">Proveedor existente</p>
-                        @endif
-                    </div>
+                    <x-form-field label="Proveedor" :error="$errors->first('supplierName')">
+                        <div class="relative w-full">
+                            <x-custom-combobox 
+                                wire:model.live="supplierName" 
+                                :options="$suppliers->pluck('trade_name')->toArray()"
+                                placeholder="Nombre del proveedor..."
+                                class="w-full"
+                                inputClass="{{ isset($supplierMatch['status']) ? 'pr-8' : '' }}"
+                            >
+                            </x-custom-combobox>
+                            @if(($supplierMatch['status'] ?? '') === 'new')
+                                <i data-lucide="plus-circle" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" title="Se creará como nuevo proveedor" wire:ignore></i>
+                            @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
+                                <i data-lucide="sparkles" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none" title="Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%" wire:ignore></i>
+                            @elseif(($supplierMatch['status'] ?? '') === 'exact')
+                                <i data-lucide="check-circle-2" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 pointer-events-none" title="Proveedor existente" wire:ignore></i>
+                            @endif
+                        </div>
+                    </x-form-field>
 
-                    <div>
-                        <label class="label">Tienda / Sucursal</label>
+                    <x-form-field label="Tienda / Sucursal" :error="$errors->first('storeName')">
                         <input wire:model="storeName" type="text" class="input" placeholder="Sucursal (opcional)">
-                    </div>
+                    </x-form-field>
 
-                    <div>
-                        <label class="label">Fecha *</label>
+                    <x-form-field label="Fecha" :required="true" :error="$errors->first('date')">
                         <input wire:model="date" type="date" class="input">
-                        @error('date') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
 
-                    <div>
-                        <label class="label">Vendedor</label>
-                        <input wire:model.live="vendorName" type="text" list="vendors-list" class="input"
-                            placeholder="Nombre del vendedor...">
-                        <datalist id="vendors-list">
-                            @foreach($vendors as $vendor)
-                                <option value="{{ $vendor->name }}"></option>
-                            @endforeach
-                        </datalist>
-                        @if(($vendorMatch['status'] ?? '') === 'new')
-                            <p class="mt-1 text-xs-fluid text-amber-600">Se creará como nuevo vendedor</p>
-                        @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
-                            <p class="mt-1 text-xs-fluid text-primary-600">Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%</p>
-                        @elseif(($vendorMatch['status'] ?? '') === 'exact')
-                            <p class="mt-1 text-xs-fluid text-emerald-600">Vendedor existente</p>
-                        @endif
-                    </div>
+                    <x-form-field label="Vendedor" :error="$errors->first('vendorName')">
+                        <div class="relative w-full">
+                            <x-custom-combobox 
+                                wire:model.live="vendorName" 
+                                :options="$vendors->pluck('name')->toArray()"
+                                placeholder="Nombre del vendedor..."
+                                class="w-full"
+                                inputClass="{{ isset($vendorMatch['status']) ? 'pr-8' : '' }}"
+                            >
+                            </x-custom-combobox>
+                            @if(($vendorMatch['status'] ?? '') === 'new')
+                                <i data-lucide="plus-circle" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" title="Se creará como nuevo vendedor" wire:ignore></i>
+                            @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
+                                <i data-lucide="sparkles" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none" title="Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%" wire:ignore></i>
+                            @elseif(($vendorMatch['status'] ?? '') === 'exact')
+                                <i data-lucide="check-circle-2" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 pointer-events-none" title="Vendedor existente" wire:ignore></i>
+                            @endif
+                        </div>
+                    </x-form-field>
                 </div>
 
-                <div>
-                    <label class="label">Anotaciones</label>
+                <x-form-field label="Anotaciones" :error="$errors->first('annotations')" class="mt-4">
                     <textarea wire:model="annotations" class="input" rows="2"
                         placeholder="Anotaciones de la requisición (opcional)..."></textarea>
-                    @error('annotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                </x-form-field>
             </div>
 
-            {{-- IVA Toggle — visible cuando la IA no pudo detectar --}}
-            @if($quotationIncludesTax === null && count($items) > 0)
-                <div class="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <i data-lucide="receipt" class="w-4 h-4 text-amber-700" wire:ignore></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-small font-semibold text-amber-900 mb-0.5">¿Los precios incluyen IVA?</p>
-                        <p class="text-xs-fluid text-amber-700 mb-3">No se detectó información de IVA. Indica si los precios ya incluyen el 16%.</p>
-                        <div class="flex flex-wrap gap-2">
-                            <button type="button" wire:click="setTaxInclusion(false)" class="btn-secondary">
-                                Sin IVA incluido
-                            </button>
-                            <button type="button" wire:click="setTaxInclusion(true)" class="btn-secondary">
-                                IVA ya incluido
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            @elseif($quotationIncludesTax !== null && count($items) > 0)
-                <div class="mb-6 px-4 py-3 rounded-xl border border-border bg-surface-card flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="receipt" class="w-4 h-4 text-emerald-600" wire:ignore></i>
-                        <span class="text-small font-medium text-text-primary">IVA:</span>
-                        @if($quotationIncludesTax)
-                            <span class="badge badge-primary">Con IVA incluido — se desglosa automáticamente</span>
-                        @else
-                            <span class="badge badge-success">Sin IVA — se calcula al 16%</span>
-                        @endif
-                        @if($taxDetectedByAI)
-                            <span class="text-xs-fluid text-text-muted">· detectado por IA</span>
-                        @endif
-                    </div>
-                    <button type="button" wire:click="$set('quotationIncludesTax', null)"
-                        class="text-xs-fluid text-text-muted hover:text-primary-600 transition">
-                        Cambiar
-                    </button>
-                </div>
-            @endif
 
-            {{-- Products Table --}}
+
             <div class="card mb-6">
-                <div class="flex items-center justify-between mb-5">
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-h2 text-text-primary">Productos</h2>
-                        <span class="badge badge-secondary">{{ count($items) }} {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>Productos</span>
+                        <span class="badge badge-secondary ml-1">{{ count($items) }}
+                            {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
                     </div>
-                    <button type="button" wire:click="addItem" class="btn-secondary">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Agregar
-                    </button>
+                    <div class="flex items-center gap-4">
+                        <button type="button" wire:click="addItem" class="btn-secondary">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Agregar
+                        </button>
+                    </div>
                 </div>
 
                 @error('items') <p class="mb-3 text-xs-fluid text-danger">{{ $message }}</p> @enderror
 
-                <datalist id="measures-list">
-                    @foreach($measures as $measure)
-                        <option value="{{ $measure->name }}">{{ $measure->abbreviation ? '(' . $measure->abbreviation . ')' : '' }}</option>
-                    @endforeach
-                </datalist>
-                <datalist id="categories-list">
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->name }}"></option>
-                    @endforeach
-                </datalist>
 
                 @if(count($items) > 0)
                      {{-- Tabla de productos --}}
@@ -395,38 +304,40 @@
                                             $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
                                             $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                             $productStatus = $item['_match']['product']['status'] ?? '';
-                                            $productBorder = match(true) {
-                                                $productStatus === 'exact'  => 'border-emerald-500/30 bg-emerald-50/5',
-                                                $productStatus === 'fuzzy'  => 'border-primary-500/30 bg-primary-50/5',
-                                                $productStatus === 'new'    => 'border-amber-500/30 bg-amber-50/5',
-                                                default                     => '',
+                                            $productBorder = match (true) {
+                                                $productStatus === 'exact' => 'border-emerald-500/30 bg-emerald-50/5',
+                                                $productStatus === 'fuzzy' => 'border-primary-500/30 bg-primary-50/5',
+                                                $productStatus === 'new' => 'border-amber-500/30 bg-amber-50/5',
+                                                default => '',
                                             };
                                         @endphp
-                                        <tr class="align-top hover:bg-surface-hover/30 transition-all duration-200" wire:key="item-row-{{ $i }}">
+                                        <tr class="align-top hover:bg-surface-hover/30 transition-all duration-200 group"
+                                            wire:key="item-row-{{ $i }}">
                                             {{-- Nombre / Producto --}}
                                             <td class="pb-4">
                                                 <div class="relative" x-data="{ open: false }">
                                                     @php
                                                         $isFuzzyPending = isset($item['product_confirmed']) && !$item['product_confirmed'] && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
+                                                        $hasProductIndicator = $isFuzzyPending || ($item['_match']['product']['status'] ?? '') === 'exact' || ($item['_match']['product']['status'] ?? '') === 'new';
                                                     @endphp
-                                                    <div class="flex items-center gap-1.5">
-                                                        <div class="flex-1 min-w-0">
-                                                            <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                                class="input {{ $productBorder }} text-small"
-                                                                placeholder="Nombre del producto">
-                                                        </div>
+                                                    <div class="relative w-full">
+                                                        <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
+                                                            class="input {{ $productBorder }} text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                            placeholder="Nombre del producto">
                                                         @if($isFuzzyPending)
-                                                            <button type="button" @click="open = !open" 
-                                                                class="p-1 rounded-lg hover:bg-primary-100/50 text-primary-600 transition shrink-0 animate-pulse"
+                                                            <button type="button" @click="open = !open"
+                                                                class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-primary-100/50 text-primary-600 transition shrink-0 animate-pulse z-10"
                                                                 title="Coincidencia difusa detectada">
                                                                 <i data-lucide="sparkles" class="w-4 h-4" wire:ignore></i>
                                                             </button>
                                                         @elseif(($item['_match']['product']['status'] ?? '') === 'exact')
-                                                            <div class="p-1 text-emerald-600 shrink-0" title="Confirmado en catálogo">
+                                                            <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-emerald-600 shrink-0 z-10"
+                                                                title="Confirmado en catálogo">
                                                                 <i data-lucide="check-circle-2" class="w-4 h-4" wire:ignore></i>
                                                             </div>
                                                         @elseif(($item['_match']['product']['status'] ?? '') === 'new')
-                                                            <div class="p-1 text-amber-600 shrink-0" title="Se creará como nuevo">
+                                                            <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-amber-600 shrink-0 z-10"
+                                                                title="Se creará como nuevo">
                                                                 <i data-lucide="plus-circle" class="w-4 h-4" wire:ignore></i>
                                                             </div>
                                                         @endif
@@ -479,13 +390,14 @@
                                                     @php
                                                         $hasCatConflict = isset($item['conflict']['category']);
                                                     @endphp
-                                                    <div class="flex items-center gap-1">
-                                                        <div class="flex-1 min-w-0">
-                                                            <x-custom-select wire:model.live="items.{{ $i }}.category_id" :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría" />
-                                                        </div>
+                                                    <div class="relative w-full">
+                                                        <x-custom-select wire:model.live="items.{{ $i }}.category_id"
+                                                            :options="$categories->pluck('name', 'id')->toArray()"
+                                                            placeholder="Sin categoría"
+                                                            textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
                                                         @if($hasCatConflict)
-                                                            <button type="button" @click="open = !open" 
-                                                                class="p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse"
+                                                            <button type="button" @click="open = !open"
+                                                                class="absolute right-8 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse z-10"
                                                                 title="Discrepancia en categoría">
                                                                 <i data-lucide="alert-triangle" class="w-4 h-4" wire:ignore></i>
                                                             </button>
@@ -531,7 +443,7 @@
                                             {{-- Cantidad --}}
                                             <td class="pb-4">
                                                 <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
-                                                    class="input text-center tabular-nums text-small" placeholder="0">
+                                                    class="input text-center tabular-nums text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white" placeholder="0">
                                             </td>
 
                                             {{-- Unidad --}}
@@ -540,15 +452,17 @@
                                                     @php
                                                         $hasUnitConflict = isset($item['conflict']['unit']);
                                                     @endphp
-                                                    <div class="flex items-center gap-1">
-                                                        <div class="flex-1 min-w-0">
-                                                            <input type="text" wire:model.live.debounce.400ms="items.{{ $i }}.unit" list="measures-list"
-                                                                class="input text-center text-small {{ $hasUnitConflict ? 'border-amber-300 focus:border-amber-500 focus:ring-amber-200 bg-amber-50/10' : '' }}" 
-                                                                placeholder="Unidad">
-                                                        </div>
+                                                    <div class="relative w-full">
+                                                        <x-custom-combobox 
+                                                            wire:model.live.debounce.400ms="items.{{ $i }}.unit" 
+                                                            :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
+                                                            placeholder="Unidad"
+                                                            inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}"
+                                                        >
+                                                        </x-custom-combobox>
                                                         @if($hasUnitConflict)
                                                             <button type="button" @click="open = !open" 
-                                                                class="p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse"
+                                                                class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse z-10"
                                                                 title="Discrepancia en unidad">
                                                                 <i data-lucide="alert-triangle" class="w-4 h-4" wire:ignore></i>
                                                             </button>
@@ -594,22 +508,32 @@
                                             {{-- Precio Unitario --}}
                                             <td class="pb-4">
                                                 <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
-                                                    class="input text-right tabular-nums text-small" placeholder="0.00">
+                                                    class="input text-right tabular-nums text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white" placeholder="0.00">
+                                                @if(($item['discount_percent'] ?? 0) > 0)
+                                                    <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs-fluid">
+                                                        <span class="text-text-muted line-through tabular-nums">
+                                                            ${{ number_format($item['unit_price_original'] ?? 0, 2, '.', ',') }}
+                                                        </span>
+                                                        <span class="text-emerald-600 font-medium">
+                                                            -{{ rtrim(rtrim(number_format($item['discount_percent'], 2, '.', ''), '0'), '.') }}%
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </td>
 
                                             {{-- Subtotal --}}
-                                            <td class="text-right font-medium text-text-primary tabular-nums text-small pt-2.5 pb-4">
+                                            <td class="text-right font-medium text-text-primary tabular-nums text-small align-middle pb-4">
                                                 ${{ number_format($itemSubtotal, 2, '.', ',') }}
                                             </td>
 
                                             {{-- Total con IVA --}}
-                                            <td class="text-right font-semibold text-text-primary tabular-nums text-small pt-2.5 pb-4">
+                                            <td class="text-right font-semibold text-text-primary tabular-nums text-small align-middle pb-4">
                                                 ${{ number_format($itemTotal, 2, '.', ',') }}
                                             </td>
 
                                             {{-- Delete --}}
                                             <td class="text-center pb-4">
-                                                <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger mt-1">
+                                                <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 </button>
                                             </td>
@@ -624,9 +548,33 @@
                             $subtotalSinIva = collect($items)->sum(fn($item) => $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)));
                             $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
                             $totalIva = $totalConIva - $subtotalSinIva;
+                            $totalDescuento = collect($items)->sum(function ($item) {
+                                $original = (float) ($item['unit_price_original'] ?? 0);
+                                $net = (float) ($item['unit_price'] ?? 0);
+                                $qty = (float) ($item['quantity'] ?? 0);
+                                if ($original <= 0 || $net <= 0 || $original <= $net) {
+                                    return 0;
+                                }
+                                return round(($original - $net) * $qty, 2);
+                            });
+                            $hasAnyDiscount = $totalDescuento > 0;
+                            $subtotalBruto = $hasAnyDiscount ? ($subtotalSinIva + $totalDescuento) : 0;
                         @endphp
-                        <div class="flex justify-end mt-3">
-                            <div class="min-w-[260px] space-y-1.5">
+                        <div class="flex justify-end mt-4">
+                            <div class="min-w-[280px] space-y-1.5 bg-surface-hover/30 p-5 rounded-2xl border border-border">
+                                @if($hasAnyDiscount)
+                                    <div class="flex items-center justify-between gap-6">
+                                        <span class="text-small text-text-muted">Subtotal bruto</span>
+                                        <span class="text-small font-medium text-text-muted tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-6">
+                                        <span class="text-small text-emerald-600 flex items-center gap-1">
+                                            <i data-lucide="tag" class="w-3 h-3" wire:ignore></i>
+                                            Descuento total
+                                        </span>
+                                        <span class="text-small font-medium text-emerald-600 tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
+                                    </div>
+                                @endif
                                 <div class="flex items-center justify-between gap-6">
                                     <span class="text-small text-text-muted">Subtotal s/IVA</span>
                                     <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
@@ -639,13 +587,13 @@
                                         @endif
                                     </span>
                                 </div>
-                                <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
-                                    <span class="text-small font-semibold text-text-primary">Total c/IVA</span>
-                                    <span class="text-body font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                <div class="flex items-center justify-between gap-6 pt-3 mt-3 border-t border-border">
+                                    <span class="text-body font-semibold text-text-primary">Total c/IVA</span>
+                                    <span class="text-h2 font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                                 </div>
                             </div>
                         </div>
-                    @else
+                @else
                         <div class="text-center py-10 border-2 border-dashed border-border rounded-xl">
                             <div class="w-10 h-10 rounded-xl bg-surface-hover flex items-center justify-center mx-auto mb-3">
                                 <i data-lucide="package-open" class="w-5 h-5 text-text-muted"></i>
@@ -722,3 +670,4 @@
         </div>
     </div>
 </div>
+

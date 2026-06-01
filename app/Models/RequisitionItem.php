@@ -8,20 +8,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RequisitionItem extends Model
 {
     protected $fillable = [
-        'requisition_id', 'product_id', 'measure_id',
-        'quantity', 'unit_price', 'unit_price_original',
-        'tax_amount', 'tax_source',
-        'line_subtotal', 'line_total',
+        'requisition_id',
+        'product_id',
+        'measure_id',
+        'quantity',
+        'unit_price',
+        'unit_price_original',
+        'tax_amount',
+        'tax_source',
+        'line_subtotal',
+        'line_total',
+        'discount_percent',
         'supplier_id',
     ];
 
     protected $casts = [
-        'quantity'             => 'decimal:4',
-        'unit_price'           => 'decimal:2',
-        'unit_price_original'  => 'decimal:2',
-        'tax_amount'           => 'decimal:2',
-        'line_subtotal'        => 'decimal:2',
-        'line_total'           => 'decimal:2',
+        'quantity' => 'decimal:4',
+        'unit_price' => 'decimal:2',
+        'unit_price_original' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'line_subtotal' => 'decimal:2',
+        'line_total' => 'decimal:2',
+        'discount_percent' => 'decimal:4',
     ];
 
     /**
@@ -79,6 +87,37 @@ class RequisitionItem extends Model
     public function isTaxResolved(): bool
     {
         return $this->tax_source !== null;
+    }
+
+    /** Indica si el ítem tiene descuento aplicado. */
+    public function hasDiscount(): bool
+    {
+        return ($this->discount_percent ?? 0) > 0;
+    }
+
+    /**
+     * Monto de descuento unitario. Derivado, no almacenado.
+     *
+     * Se calcula desde unit_price_original y discount_percent para evitar
+     * redundancia de datos y riesgo de inconsistencia.
+     */
+    public function getDiscountAmountAttribute(): float
+    {
+        $percent = (float) ($this->discount_percent ?? 0);
+        if ($percent <= 0) {
+            return 0.0;
+        }
+
+        return round((float) $this->unit_price_original * ($percent / 100), 2);
+    }
+
+    /**
+     * Descuento total de la partida (descuento unitario × cantidad).
+     * Derivado, no almacenado.
+     */
+    public function getLineDiscountTotalAttribute(): float
+    {
+        return round($this->discount_amount * (float) $this->quantity, 2);
     }
 
     public function requisition(): BelongsTo

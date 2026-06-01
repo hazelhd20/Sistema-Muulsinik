@@ -74,7 +74,7 @@ class GeminiStructurerService
         $mimeType = $this->resolveFileMimeType($filePath);
         if ($mimeType === null) {
             Log::warning('Gemini Vision: MIME type no soportado.', [
-                'path'          => $filePath,
+                'path' => $filePath,
                 'detected_mime' => mime_content_type($filePath),
             ]);
             return null;
@@ -105,7 +105,7 @@ class GeminiStructurerService
         } catch (\Throwable $e) {
             Log::warning('Gemini Vision: Error al procesar archivo de cotización.', [
                 'error' => $e->getMessage(),
-                'path'  => $filePath,
+                'path' => $filePath,
             ]);
 
             return null;
@@ -153,7 +153,7 @@ class GeminiStructurerService
             return $this->parseJsonResponse($responseText);
         } catch (\Throwable $e) {
             Log::warning('Gemini AI: Error al estructurar texto de cotización.', [
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
                 'fallback' => 'Se usará el parser de regex como fallback.',
             ]);
 
@@ -231,11 +231,17 @@ class GeminiStructurerService
     private function buildExtractionRules(): string
     {
         // Cache por 1 hora - las categorías y unidades cambian poco frecuentemente
-        $categoriesList = Cache::remember('extraction:categories', 3600, fn() =>
+        $categoriesList = Cache::remember(
+            'extraction:categories',
+            3600,
+            fn() =>
             \App\Models\Category::pluck('name')->implode(', ')
         );
 
-        $unitsList = Cache::remember('extraction:units', 3600, fn() =>
+        $unitsList = Cache::remember(
+            'extraction:units',
+            3600,
+            fn() =>
             \App\Models\Measure::pluck('abbreviation')->unique()->implode(', ')
         );
 
@@ -262,7 +268,9 @@ class GeminiStructurerService
                     "unit": "pza",
                     "unit_name": "Pieza",
                     "unit_price": 150.50,
-                    "discount": 0.00,
+                    "discount_percent": null,
+                    "discount_amount": null,
+                    "unit_price_with_discount": null,
                     "tax_amount": 24.08,
                     "price_includes_tax": false,
                     "line_subtotal": 1505.00,
@@ -277,11 +285,12 @@ class GeminiStructurerService
         - "Importe" o "Subtotal" o "Monto" → es el SUBTOTAL DE LÍNEA (cantidad × precio unitario, SIN IVA). Va en "line_subtotal".
         - "Impuesto" o "IVA" o "I.V.A." → es el MONTO DE IVA de esa línea. Va en "tax_amount".
         - "Importe Neto" o "Total" o "Neto" o "Total con IVA" → es el TOTAL DE LÍNEA (subtotal + IVA). Va en "line_total".
-        - "Descuento" → Si aparece una columna de descuento, ponlo en "discount".
+        - "Descuento" o "% Desc." o "Bonificación" → Información de descuento. Ver reglas detalladas abajo.
+        - "Precio c/descuento" o "Precio neto" o "Precio especial" → Precio unitario YA CON descuento aplicado. Va en "unit_price_with_discount".
 
         Para identificar correctamente cuál es cuál:
         1. El PRECIO UNITARIO es siempre el valor más PEQUEÑO por producto. Si multiplicas cantidad × precio unitario deberías obtener el subtotal.
-        2. El SUBTOTAL DE LÍNEA (importe) es = (cantidad × precio unitario) - descuento.
+        2. El SUBTOTAL DE LÍNEA (importe) es = cantidad × precio unitario neto (después de descuento si aplica).
         3. El IMPUESTO es un monto menor, normalmente ~16% del subtotal.
         4. El TOTAL DE LÍNEA (importe neto) es = subtotal + impuesto.
         5. Si solo hay 2 columnas numéricas y una es mucho mayor que la otra, la grande probablemente es subtotal/total y la pequeña es precio unitario.
@@ -311,8 +320,10 @@ class GeminiStructurerService
         - En "supplier", "store" y "seller": Usa Mayúsculas Al Inicio De Cada Palabra (Title Case).
         - En "unit": intenta usar una de estas unidades existentes: [{$unitsList}]. Si no coincide ninguna, usa una abreviatura estándar de construcción (ej: pza, kg, m, m2, m3, lt, bulto, rollo, caja, paquete, jg). Sé consistente.
         - En "unit_name": pon el NOMBRE COMPLETO de la unidad de medida en español, con Mayúscula al inicio (ej: "Pieza", "Kilogramo", "Metro lineal", "Juego", "Bolsa", "Par", "Galón", "Cubeta"). SIEMPRE incluye este campo, incluso para unidades conocidas. Si la cotización dice "jg", pon "Juego". Si dice "bls", pon "Bolsa". Si dice "par", pon "Par". Usa el contexto del documento para deducir el nombre completo.
-        - En "unit_price": pon el precio unitario TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0.
-        - En "discount": pon el valor del descuento si aparece. Si no, pon 0.
+        - En "unit_price": pon el precio unitario ORIGINAL (antes de descuento) TAL COMO aparece en la cotización. NO lo modifiques, NO le quites ni agregues IVA. Si no se identifica, intenta calcularlo como subtotal ÷ cantidad. Si tampoco puedes, pon 0. IMPORTANTE: si hay descuento, este debe ser el precio ANTES del descuento.
+        - En "discount_percent": si aparece un porcentaje de descuento (ej: "10%", "% Desc."), ponlo como número (ej: 10.0). Si no aparece, pon null.
+        - En "discount_amount": si aparece un monto de descuento por unidad (ej: "$15.00 desc."), ponlo como número. Si no aparece, pon null.
+        - En "unit_price_with_discount": si aparece una columna con el precio unitario YA descontado (ej: "Precio neto", "Precio c/desc.", "Precio especial"), pon ese valor. Si solo hay un precio y no hay descuento, pon null. Si hay descuento pero no columna separada de precio descontado, pon null (el sistema lo calculará).
         - En "tax_amount": si la cotización desglosa el IVA por producto (por línea), pon ese valor exacto. Si NO lo desglosa por producto, pon null.
         - En "price_includes_tax": true si el precio unitario YA tiene IVA incluido, false si el IVA se suma aparte, null si no puedes determinarlo.
         - En "quantity": si no se identifica, pon 1.
@@ -346,12 +357,12 @@ class GeminiStructurerService
 
         return match ($extension) {
             'jpg', 'jpeg' => MimeType::IMAGE_JPEG,
-            'png'         => MimeType::IMAGE_PNG,
-            'webp'        => MimeType::IMAGE_WEBP,
-            'heic'        => MimeType::IMAGE_HEIC,
-            'heif'        => MimeType::IMAGE_HEIF,
-            'pdf'         => MimeType::APPLICATION_PDF,
-            default       => null,
+            'png' => MimeType::IMAGE_PNG,
+            'webp' => MimeType::IMAGE_WEBP,
+            'heic' => MimeType::IMAGE_HEIC,
+            'heif' => MimeType::IMAGE_HEIF,
+            'pdf' => MimeType::APPLICATION_PDF,
+            default => null,
         };
     }
 
@@ -389,17 +400,19 @@ class GeminiStructurerService
             $validated = $this->crossValidateRow($item);
 
             $items[] = [
-                'name'               => trim($item['name']),
-                'category'           => isset($item['category']) ? trim($item['category']) : null,
-                'quantity'           => $validated['quantity'],
-                'unit'               => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
-                'unit_name'          => isset($item['unit_name']) ? trim($item['unit_name']) : null,
-                'unit_price'         => $validated['unit_price'],
-                'discount'           => $validated['discount'],
-                'tax_amount'         => $validated['tax_amount'],
+                'name' => trim($item['name']),
+                'category' => isset($item['category']) ? trim($item['category']) : null,
+                'quantity' => $validated['quantity'],
+                'unit' => isset($item['unit']) ? strtolower(trim($item['unit'])) : null,
+                'unit_name' => isset($item['unit_name']) ? trim($item['unit_name']) : null,
+                'unit_price' => $validated['unit_price'],
+                'discount_percent' => $validated['discount_percent'],
+                'discount_amount' => $validated['discount_amount'],
+                'unit_price_with_discount' => $validated['unit_price_with_discount'],
+                'tax_amount' => $validated['tax_amount'],
                 'price_includes_tax' => $item['price_includes_tax'] ?? null,
-                'line_subtotal'      => $validated['line_subtotal'],
-                'line_total'         => $validated['line_total'],
+                'line_subtotal' => $validated['line_subtotal'],
+                'line_total' => $validated['line_total'],
             ];
         }
 
@@ -407,21 +420,21 @@ class GeminiStructurerService
         $taxInfo = $data['tax_info'] ?? null;
         if (is_array($taxInfo)) {
             $taxInfo = [
-                'tax_rate'             => $taxInfo['tax_rate'] ?? null,
-                'prices_include_tax'   => $taxInfo['prices_include_tax'] ?? null,
-                'tax_detected'         => $taxInfo['tax_detected'] ?? false,
-                'subtotal'             => isset($taxInfo['subtotal']) ? (float) $taxInfo['subtotal'] : null,
-                'tax_total'            => isset($taxInfo['tax_total']) ? (float) $taxInfo['tax_total'] : null,
-                'grand_total'          => isset($taxInfo['grand_total']) ? (float) $taxInfo['grand_total'] : null,
+                'tax_rate' => $taxInfo['tax_rate'] ?? null,
+                'prices_include_tax' => $taxInfo['prices_include_tax'] ?? null,
+                'tax_detected' => $taxInfo['tax_detected'] ?? false,
+                'subtotal' => isset($taxInfo['subtotal']) ? (float) $taxInfo['subtotal'] : null,
+                'tax_total' => isset($taxInfo['tax_total']) ? (float) $taxInfo['tax_total'] : null,
+                'grand_total' => isset($taxInfo['grand_total']) ? (float) $taxInfo['grand_total'] : null,
             ];
         }
 
         return [
             'supplier' => $data['supplier'] ?? null,
-            'store'    => $data['store'] ?? null,
-            'seller'   => $data['seller'] ?? null,
+            'store' => $data['store'] ?? null,
+            'seller' => $data['seller'] ?? null,
             'tax_info' => $taxInfo,
-            'items'    => $items,
+            'items' => $items,
         ];
     }
 
@@ -435,28 +448,46 @@ class GeminiStructurerService
      */
     private function crossValidateRow(array $item): array
     {
-        $unitPrice    = isset($item['unit_price']) ? (float) $item['unit_price'] : null;
-        $quantity     = isset($item['quantity']) ? (float) $item['quantity'] : null;
-        $discount     = isset($item['discount']) ? (float) $item['discount'] : null;
+        $unitPrice = isset($item['unit_price']) ? (float) $item['unit_price'] : null;
+        $quantity = isset($item['quantity']) ? (float) $item['quantity'] : null;
+        $discountPercent = isset($item['discount_percent']) ? (float) $item['discount_percent'] : null;
+        $discountAmount = isset($item['discount_amount']) ? (float) $item['discount_amount'] : null;
+        $unitPriceWithDiscount = isset($item['unit_price_with_discount']) ? (float) $item['unit_price_with_discount'] : null;
         $lineSubtotal = isset($item['line_subtotal']) ? (float) $item['line_subtotal'] : null;
-        $lineTotal    = isset($item['line_total']) ? (float) $item['line_total'] : null;
-        $taxAmount    = isset($item['tax_amount']) ? (float) $item['tax_amount'] : null;
+        $lineTotal = isset($item['line_total']) ? (float) $item['line_total'] : null;
+        $taxAmount = isset($item['tax_amount']) ? (float) $item['tax_amount'] : null;
 
-        // 1. Descuento absurdo (mayor que el subtotal o el unit_price)
-        // La IA frecuentemente confunde la columna de Total con Descuento si están cerca.
-        if ($discount !== null && $discount > 0) {
-            $baseForDiscount = $lineSubtotal ?? ($unitPrice !== null && $quantity !== null ? $unitPrice * $quantity : null);
-            if ($baseForDiscount !== null && $discount > $baseForDiscount) {
-                // Si el "descuento" es gigantesco, probablemente es el Total
-                if ($lineTotal === null || $lineTotal < $discount) {
-                    $lineTotal = $discount;
-                }
-                Log::info('Gemini AI: Corrección automática de discount (era mayor al subtotal, posible Total).', [
-                    'original_discount' => $discount,
-                    'new_line_total' => $lineTotal
+        // 1. Validar descuentos absurdos
+        // Porcentaje de descuento fuera de rango
+        if ($discountPercent !== null && ($discountPercent > 100 || $discountPercent < 0)) {
+            Log::info('Gemini AI: Porcentaje de descuento fuera de rango, ignorado.', [
+                'discount_percent' => $discountPercent,
+            ]);
+            $discountPercent = null;
+        }
+
+        // Monto de descuento mayor que el precio unitario
+        if ($discountAmount !== null && $discountAmount > 0) {
+            if ($unitPrice !== null && $discountAmount >= $unitPrice) {
+                Log::info('Gemini AI: Monto de descuento mayor al precio unitario, posible confusión de columna.', [
+                    'discount_amount' => $discountAmount,
+                    'unit_price' => $unitPrice,
                 ]);
-                $discount = 0.0;
+                // Si parece un total, reasignar
+                if ($lineTotal === null || $lineTotal < $discountAmount) {
+                    $lineTotal = $discountAmount;
+                }
+                $discountAmount = null;
             }
+        }
+
+        // Precio con descuento mayor o igual al precio original
+        if ($unitPriceWithDiscount !== null && $unitPrice !== null && $unitPriceWithDiscount >= $unitPrice) {
+            Log::info('Gemini AI: Precio con descuento >= precio original, ignorado.', [
+                'unit_price_with_discount' => $unitPriceWithDiscount,
+                'unit_price' => $unitPrice,
+            ]);
+            $unitPriceWithDiscount = null;
         }
 
         // 2. IVA absurdo (mayor que el subtotal)
@@ -493,9 +524,16 @@ class GeminiStructurerService
             }
         }
 
-        // 6. Recalcular Subtotal si falta pero tenemos unitPrice, quantity y discount
+        // 6. Recalcular Subtotal si falta pero tenemos datos suficientes
         if ($lineSubtotal === null && $unitPrice !== null && $quantity !== null) {
-            $calculatedSubtotal = round(($unitPrice * $quantity) - ($discount ?? 0), 2);
+            // Si hay precio con descuento, usar ese como base para el subtotal
+            $effectivePrice = $unitPriceWithDiscount ?? $unitPrice;
+            if ($discountAmount !== null && $unitPriceWithDiscount === null) {
+                $effectivePrice = $unitPrice - $discountAmount;
+            } elseif ($discountPercent !== null && $unitPriceWithDiscount === null) {
+                $effectivePrice = $unitPrice * (1 - $discountPercent / 100);
+            }
+            $calculatedSubtotal = round($effectivePrice * $quantity, 2);
             if ($calculatedSubtotal > 0) {
                 $lineSubtotal = $calculatedSubtotal;
             }
@@ -506,12 +544,14 @@ class GeminiStructurerService
         // El sistema ahora almacena line_subtotal y line_total del proveedor directamente.
 
         return [
-            'unit_price'    => $unitPrice,
-            'quantity'      => $quantity,
-            'discount'      => $discount,
+            'unit_price' => $unitPrice,
+            'quantity' => $quantity,
+            'discount_percent' => $discountPercent,
+            'discount_amount' => $discountAmount,
+            'unit_price_with_discount' => $unitPriceWithDiscount,
             'line_subtotal' => $lineSubtotal,
-            'line_total'    => $lineTotal,
-            'tax_amount'    => $taxAmount,
+            'line_total' => $lineTotal,
+            'tax_amount' => $taxAmount,
         ];
     }
 

@@ -40,10 +40,10 @@ class TaxNormalizerService
     public function normalize(array $parsedData): array
     {
         $taxInfo = $parsedData['tax_info'] ?? [];
-        $items   = $parsedData['items'] ?? [];
+        $items = $parsedData['items'] ?? [];
 
         $normalizedItems = array_map(
-            fn (array $item) => $this->normalizeItem($item, $taxInfo),
+            fn(array $item) => $this->normalizeItem($item, $taxInfo),
             $items,
         );
 
@@ -69,30 +69,30 @@ class TaxNormalizerService
         $qty = max($quantity, 1.0);
 
         if ($includesTax) {
-            $netPrice     = round($originalPrice / (1 + self::TAX_RATE), 2);
+            $netPrice = round($originalPrice / (1 + self::TAX_RATE), 2);
             $lineSubtotal = round($netPrice * $qty, 2);
-            $lineTotal    = round($originalPrice * $qty, 2);
-            $taxAmount    = round($lineTotal - $lineSubtotal, 2);
+            $lineTotal = round($originalPrice * $qty, 2);
+            $taxAmount = round($lineTotal - $lineSubtotal, 2);
 
             return [
-                'unit_price'    => $netPrice,
-                'tax_amount'    => $taxAmount,
-                'tax_source'    => 'user_confirmed',
+                'unit_price' => $netPrice,
+                'tax_amount' => $taxAmount,
+                'tax_source' => 'user_confirmed',
                 'line_subtotal' => $lineSubtotal,
-                'line_total'    => $lineTotal,
+                'line_total' => $lineTotal,
             ];
         }
 
         $lineSubtotal = round($originalPrice * $qty, 2);
-        $taxAmount    = round($lineSubtotal * self::TAX_RATE, 2);
-        $lineTotal    = round($lineSubtotal + $taxAmount, 2);
+        $taxAmount = round($lineSubtotal * self::TAX_RATE, 2);
+        $lineTotal = round($lineSubtotal + $taxAmount, 2);
 
         return [
-            'unit_price'    => round($originalPrice, 2),
-            'tax_amount'    => $taxAmount,
-            'tax_source'    => 'user_confirmed',
+            'unit_price' => round($originalPrice, 2),
+            'tax_amount' => $taxAmount,
+            'tax_source' => 'user_confirmed',
             'line_subtotal' => $lineSubtotal,
-            'line_total'    => $lineTotal,
+            'line_total' => $lineTotal,
         ];
     }
 
@@ -106,41 +106,56 @@ class TaxNormalizerService
      */
     private function normalizeItem(array $item, array $taxInfo): array
     {
-        $rawPrice     = (float) ($item['unit_price'] ?? 0);
-        $quantity     = (float) ($item['quantity'] ?? 1);
-        $itemTax      = $item['tax_amount'] ?? null;
+        $rawPrice = (float) ($item['unit_price'] ?? 0);
+        $quantity = (float) ($item['quantity'] ?? 1);
+        $itemTax = $item['tax_amount'] ?? null;
         $itemIncludes = $item['price_includes_tax'] ?? null;
         $globalIncludes = $taxInfo['prices_include_tax'] ?? null;
-        $taxDetected  = $taxInfo['tax_detected'] ?? false;
+        $taxDetected = $taxInfo['tax_detected'] ?? false;
 
-        // Guardar siempre el precio original para trazabilidad
-        $item['unit_price_original'] = $rawPrice;
+        // Guardar siempre el precio original para trazabilidad si no se ha establecido antes
+        if (!isset($item['unit_price_original'])) {
+            $item['unit_price_original'] = $rawPrice;
+        }
 
         // Preservar line_subtotal y line_total del proveedor si existen
         $providerLineSubtotal = isset($item['line_subtotal']) ? (float) $item['line_subtotal'] : null;
-        $providerLineTotal    = isset($item['line_total']) ? (float) $item['line_total'] : null;
+        $providerLineTotal = isset($item['line_total']) ? (float) $item['line_total'] : null;
 
         // Caso 1: El proveedor desglosa IVA por producto
         if ($itemTax !== null && $itemTax > 0) {
             return $this->applySupplierPerItemTax(
-                $item, $rawPrice, $quantity, (float) $itemTax,
-                $itemIncludes, $providerLineSubtotal, $providerLineTotal
+                $item,
+                $rawPrice,
+                $quantity,
+                (float) $itemTax,
+                $itemIncludes,
+                $providerLineSubtotal,
+                $providerLineTotal
             );
         }
 
         // Caso 2: Información global disponible
         if ($taxDetected && $globalIncludes !== null) {
             return $this->applyGlobalTaxContext(
-                $item, $rawPrice, $quantity, $globalIncludes,
-                $providerLineSubtotal, $providerLineTotal
+                $item,
+                $rawPrice,
+                $quantity,
+                $globalIncludes,
+                $providerLineSubtotal,
+                $providerLineTotal
             );
         }
 
         // Caso 3: Información por ítem pero sin monto específico
         if ($itemIncludes !== null) {
             return $this->applyGlobalTaxContext(
-                $item, $rawPrice, $quantity, $itemIncludes,
-                $providerLineSubtotal, $providerLineTotal
+                $item,
+                $rawPrice,
+                $quantity,
+                $itemIncludes,
+                $providerLineSubtotal,
+                $providerLineTotal
             );
         }
 
@@ -148,7 +163,7 @@ class TaxNormalizerService
         $item['tax_amount'] = null;
         $item['tax_source'] = null;
         $item['line_subtotal'] = $providerLineSubtotal;
-        $item['line_total']    = $providerLineTotal;
+        $item['line_total'] = $providerLineTotal;
 
         return $item;
     }
@@ -188,7 +203,7 @@ class TaxNormalizerService
 
         // Totales de línea: priorizar valores del proveedor
         $item['line_subtotal'] = $providerLineSubtotal ?? round($item['unit_price'] * $qty, 2);
-        $item['line_total']    = $providerLineTotal ?? round($item['line_subtotal'] + $supplierTaxAmount, 2);
+        $item['line_total'] = $providerLineTotal ?? round($item['line_subtotal'] + $supplierTaxAmount, 2);
 
         return $item;
     }
@@ -209,25 +224,25 @@ class TaxNormalizerService
 
         if ($includesTax) {
             // Precio incluye IVA → desglosar
-            $netPrice     = round($rawPrice / (1 + self::TAX_RATE), 2);
+            $netPrice = round($rawPrice / (1 + self::TAX_RATE), 2);
             $lineSubtotal = $providerLineSubtotal ?? round($netPrice * $qty, 2);
-            $lineTotal    = $providerLineTotal ?? round($rawPrice * $qty, 2);
-            $taxAmount    = round($lineTotal - $lineSubtotal, 2);
+            $lineTotal = $providerLineTotal ?? round($rawPrice * $qty, 2);
+            $taxAmount = round($lineTotal - $lineSubtotal, 2);
 
-            $item['unit_price']    = $netPrice;
-            $item['tax_amount']    = $taxAmount;
+            $item['unit_price'] = $netPrice;
+            $item['tax_amount'] = $taxAmount;
             $item['line_subtotal'] = $lineSubtotal;
-            $item['line_total']    = $lineTotal;
+            $item['line_total'] = $lineTotal;
         } else {
             // Precio ya es sin IVA → calcular IVA
             $lineSubtotal = $providerLineSubtotal ?? round($rawPrice * $qty, 2);
-            $taxAmount    = round($lineSubtotal * self::TAX_RATE, 2);
-            $lineTotal    = $providerLineTotal ?? round($lineSubtotal + $taxAmount, 2);
+            $taxAmount = round($lineSubtotal * self::TAX_RATE, 2);
+            $lineTotal = $providerLineTotal ?? round($lineSubtotal + $taxAmount, 2);
 
-            $item['unit_price']    = round($rawPrice, 2);
-            $item['tax_amount']    = $taxAmount;
+            $item['unit_price'] = round($rawPrice, 2);
+            $item['tax_amount'] = $taxAmount;
             $item['line_subtotal'] = $lineSubtotal;
-            $item['line_total']    = $lineTotal;
+            $item['line_total'] = $lineTotal;
         }
 
         $item['tax_source'] = 'supplier_global';
