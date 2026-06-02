@@ -37,7 +37,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute top-full left-0 mt-2 w-[28rem] bg-surface-card rounded-xl shadow-2xl border border-border overflow-hidden z-50"
+        class="absolute top-full left-0 mt-2 w-[28rem] bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-50"
         style="display: none;"
     >
         @php
@@ -45,13 +45,9 @@
         @endphp
 
         @if(!$hasAnyResults && strlen($query) >= 2)
-            <div class="p-8 text-center">
-                <div class="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-3">
-                    <i data-lucide="search-x" class="w-5 h-5 text-text-muted"></i>
-                </div>
-                <p class="text-small text-text-secondary">No se encontraron resultados</p>
-                <p class="text-xs-fluid text-text-muted mt-1">Intenta con otros términos de búsqueda</p>
-            </div>
+            <x-empty-state icon="search-x" title="No se encontraron resultados" message="Intenta con otros términos de búsqueda" class="py-8" />
+        @elseif(!$hasAnyResults && strlen($query) < 2)
+            <x-empty-state icon="search" title="¿Qué estás buscando?" message="Busca requisiciones, proveedores, proyectos o productos." class="py-8" />
         @endif
 
         <div class="max-h-[70vh] overflow-y-auto">
@@ -188,12 +184,9 @@
                 @endphp
 
                 @if(!$hasAnyResultsMobile && strlen($query) >= 2)
-                    <div class="p-8 text-center">
-                        <div class="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="search-x" class="w-5 h-5 text-text-muted"></i>
-                        </div>
-                        <p class="text-small text-text-secondary">No se encontraron resultados</p>
-                    </div>
+                    <x-empty-state icon="search-x" title="No se encontraron resultados" class="py-8" />
+                @elseif(!$hasAnyResultsMobile && strlen($query) < 2)
+                    <x-empty-state icon="search" title="Explora tu sistema" message="Busca cualquier recurso por nombre o identificador." class="py-8" />
                 @endif
 
                 @if(!empty($results['requisitions']))

@@ -17,7 +17,7 @@
             <button
                 wire:click="deleteAll"
                 wire:confirm="¿Estás seguro de eliminar todas las notificaciones? Esta acción no se puede deshacer."
-                class="btn btn-secondary text-danger hover:bg-red-50"
+                class="btn btn-secondary text-danger hover:bg-surface-hover hover:border-danger/50"
             >
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                 <span>Eliminar todas</span>
@@ -52,32 +52,26 @@
     {{-- Notifications List --}}
     <div class="card p-0">
         @if($this->notifications->isEmpty())
-            <div class="p-12 text-center">
-                <div class="w-16 h-16 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="bell-off" class="w-6 h-6 text-text-muted"></i>
-                </div>
-                <h3 class="text-h3 font-semibold text-text-primary">No hay notificaciones</h3>
-                <p class="text-body text-text-secondary mt-2">
-                    @if($filter === 'unread')
-                        No tienes notificaciones sin leer.
-                    @elseif($filter === 'read')
-                        No tienes notificaciones leídas.
-                    @else
-                        Las notificaciones aparecerán aquí cuando ocurran eventos importantes en el sistema.
-                    @endif
-                </p>
-            </div>
+            <x-empty-state icon="bell-off" title="No hay notificaciones">
+                @if($filter === 'unread')
+                    No tienes notificaciones sin leer.
+                @elseif($filter === 'read')
+                    No tienes notificaciones leídas.
+                @else
+                    Las notificaciones aparecerán aquí cuando ocurran eventos importantes en el sistema.
+                @endif
+            </x-empty-state>
         @else
             <div class="divide-y divide-border">
                 @foreach($this->notifications as $notification)
                     @php
                         $data = $notification->data;
                         $colorClasses = [
-                            'primary' => 'bg-primary-50 text-primary-600',
-                            'success' => 'bg-emerald-50 text-emerald-600',
-                            'warning' => 'bg-amber-50 text-amber-600',
-                            'danger' => 'bg-red-50 text-red-600',
-                        ][$data['color'] ?? 'primary'] ?? 'bg-primary-50 text-primary-600';
+                            'primary' => 'bg-surface-hover text-primary-600',
+                            'success' => 'bg-surface-hover text-emerald-600',
+                            'warning' => 'bg-surface-hover text-amber-600',
+                            'danger'  => 'bg-surface-hover text-danger',
+                        ][$data['color'] ?? 'primary'] ?? 'bg-surface-hover text-primary-600';
 
                         $isUnread = is_null($notification->read_at);
                     @endphp

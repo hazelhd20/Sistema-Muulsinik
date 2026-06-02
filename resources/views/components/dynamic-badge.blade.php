@@ -1,7 +1,6 @@
 @props([
     'value' => '',
 ])
-
 @php
     $colors = [
         'bg-blue-50 text-blue-700 border-blue-200',
@@ -19,6 +18,7 @@
     $colorClass = $colors[$hash % count($colors)];
 @endphp
 
+   
 <span {{ $attributes->merge(['class' => "inline-flex items-center px-2 py-0.5 rounded-full text-xs-fluid font-medium border {$colorClass}"]) }}>
     {{ $slot->isNotEmpty() ? $slot : $value }}
 </span>

@@ -43,12 +43,8 @@
         {{-- Lista de notificaciones --}}
         <div class="max-h-[60vh] overflow-y-auto">
             @if(empty($notifications))
-                <div class="p-6 text-center">
-                    <div class="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-3">
-                        <i data-lucide="bell-off" class="w-5 h-5 text-text-muted"></i>
-                    </div>
-                    <p class="text-small text-text-secondary">No hay notificaciones</p>
-                    <p class="text-xs-fluid text-text-muted mt-1">Las notificaciones aparecerán aquí</p>
+                <div class="py-4">
+                    <x-empty-state icon="bell-off" title="No hay notificaciones" message="Estás al día." />
                 </div>
             @else
                 @foreach($notifications as $notification)

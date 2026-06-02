@@ -41,8 +41,8 @@
     {{-- KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <div class="stat-card">
-            <div class="stat-icon bg-primary-50">
-                <i data-lucide="dollar-sign" class="w-5 h-5 text-primary-600"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="dollar-sign" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-h2 font-bold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</p>
@@ -50,8 +50,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-emerald-50">
-                <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="receipt" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-h2 text-text-primary">{{ $expenseCount }}</p>
@@ -59,8 +59,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-amber-50">
-                <i data-lucide="check-circle" class="w-5 h-5 text-amber-500"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="check-circle" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-h2 text-text-primary">{{ $requisitionsApproved }}</p>
@@ -68,8 +68,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-sky-50">
-                <i data-lucide="hard-hat" class="w-5 h-5 text-sky-600"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="hard-hat" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-h2 text-text-primary">{{ $activeProjects }}/{{ $totalProjects }}</p>
@@ -97,8 +97,8 @@
         <div class="card">
             <h2 class="text-small font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
             @if($expenseByCategory->isEmpty())
-                <div class="flex items-center justify-center h-52 text-text-muted text-body">
-                    Sin datos para el período
+                <div class="h-52 flex flex-col items-center justify-center">
+                    <x-empty-state icon="pie-chart" title="Sin datos para el período" class="py-0" />
                 </div>
             @else
                 <div class="h-52" wire:ignore x-data="categoryChart()" x-init="init()">
@@ -128,7 +128,7 @@
         <div class="card">
             <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
             @if($budgetComparison->isEmpty())
-                <div class="flex items-center justify-center py-8 text-text-muted text-body">Sin proyectos activos</div>
+                <x-empty-state icon="folder-open" title="Sin proyectos activos" class="py-8" />
             @else
                 <div class="space-y-4">
                     @foreach($budgetComparison as $comp)
@@ -177,20 +177,22 @@
                     @forelse($topProjects as $i => $proj)
                         <tr>
                             <td>
-                                <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                                <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                     {{ $i + 1 }}
                                 </span>
                             </td>
                             <td>
                                 <p class="font-medium">{{ $proj->name }}</p>
-                                <p class="text-xs-fluid text-text-muted">{{ $proj->client ?? 'Sin cliente' }}</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $proj->client ?? '—' }}</p>
                             </td>
                             <td class="text-right text-body text-text-secondary">${{ number_format($proj->budget, 0, '.', ',') }}</td>
                             <td class="text-right text-body font-semibold text-text-primary">${{ number_format($proj->total_spent, 0, '.', ',') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center py-8 text-text-muted">Sin datos</td>
+                            <td colspan="4" class="p-0">
+                                <x-empty-state icon="folder-open" title="Sin datos" message="No hay proyectos en este período." class="py-8" />
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -225,7 +227,7 @@
                 @forelse($topSuppliers as $i => $supplier)
                     <tr>
                         <td>
-                            <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                            <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                 {{ $i + 1 }}
                             </span>
                         </td>
@@ -278,7 +280,7 @@
                 @forelse($topVendors as $i => $vendor)
                     <tr>
                         <td>
-                            <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                            <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                 {{ $i + 1 }}
                             </span>
                         </td>
@@ -326,7 +328,7 @@
                     @forelse($topProducts as $i => $product)
                         <tr>
                             <td>
-                                <span class="w-6 h-6 rounded-lg bg-primary-50 text-primary-700 text-xs-fluid font-bold flex items-center justify-center">
+                                <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                     {{ $i + 1 }}
                                 </span>
                             </td>
@@ -363,7 +365,9 @@
         <div class="card">
             <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
             @if($productsByCategory->isEmpty())
-                <div class="flex items-center justify-center h-52 text-text-muted text-body">Sin datos</div>
+                <div class="h-52 flex flex-col items-center justify-center">
+                    <x-empty-state icon="pie-chart" title="Sin datos" class="py-0" />
+                </div>
             @else
                 <div class="h-52" wire:ignore x-data="productCategoryChart()" x-init="init()">
                     <canvas id="product-category-chart"></canvas>
@@ -376,7 +380,7 @@
                         <div class="flex items-center justify-between text-body">
                             <div class="flex items-center gap-2">
                                 <div class="w-2.5 h-2.5 rounded-full" style="background: {{ $pcColors[$i] ?? '#9ca3af' }}"></div>
-                                <span class="text-text-secondary">{{ $pc->category_name ?? 'Sin categoría' }}</span>
+                                <span class="text-text-secondary">{{ $pc->category_name ?? '—' }}</span>
                             </div>
                             <span class="font-medium text-text-primary">${{ number_format($pc->total_amount, 0, '.', ',') }}</span>
                         </div>

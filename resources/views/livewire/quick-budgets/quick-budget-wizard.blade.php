@@ -58,30 +58,30 @@
                     {{-- Search Product --}}
                     <div class="relative" x-data="{ open: @entangle('searchResults').length > 0 }">
                         <div class="relative">
-                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500"></i>
-                            <input wire:model.live.debounce.300ms="searchQuery" type="text" class="input pl-10 border-primary-300 focus:border-primary-500 bg-primary-50/30" placeholder="Buscar producto para agregar (carga precio histórico)...">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+                            <input wire:model.live.debounce.300ms="searchQuery" type="text" class="input pl-10 border-border focus:border-primary-500 bg-surface-card" placeholder="Buscar producto para agregar (carga precio histórico)...">
                             <div wire:loading wire:target="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-4 w-4 text-primary-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                                <svg class="animate-spin h-4 w-4 text-text-muted" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                             </div>
                         </div>
 
                         {{-- Dropdown Results --}}
                         @if(!empty($searchResults))
-                            <div class="absolute z-10 mt-1 w-full bg-surface-panel rounded-lg shadow-lg border border-border overflow-hidden">
+                            <div class="absolute z-10 mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
                                 <ul class="max-h-60 overflow-y-auto py-1">
                                     @foreach($searchResults as $index => $product)
                                         <li>
-                                            <button wire:click="addProduct({{ $index }})" class="w-full text-left px-4 py-2 hover:bg-surface-hover flex items-center justify-between group transition-colors">
+                                            <button wire:click="addProduct({{ $index }})" class="w-full text-left px-4 py-2.5 hover:bg-surface-hover flex items-center justify-between group transition-colors">
                                                 <div>
-                                                    <p class="text-body font-medium text-text-primary group-hover:text-primary-600">{{ $product['name'] }}</p>
-                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                    <p class="text-small font-medium text-text-primary group-hover:text-primary-600">{{ $product['name'] }}</p>
+                                                    <div class="flex items-center gap-2 mt-1">
                                                         <span class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
-                                                        <span class="text-[10px] bg-surface-main px-1.5 py-0.5 rounded text-text-secondary">{{ $product['measure_abbr'] }}</span>
+                                                        <span class="badge badge-secondary">{{ $product['measure_abbr'] }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="text-right">
                                                     <p class="text-xs-fluid text-text-muted mb-0.5">Último costo</p>
-                                                    <p class="text-body font-semibold text-text-primary">${{ number_format($product['last_price'], 2) }}</p>
+                                                    <p class="text-small font-semibold text-text-primary">${{ number_format($product['last_price'], 2) }}</p>
                                                 </div>
                                             </button>
                                         </li>
@@ -106,10 +106,10 @@
                         </thead>
                         <tbody>
                             @forelse($items as $index => $item)
-                                <tr class="group" wire:key="item-row-{{ $index }}">
+                                <tr class="group transition-colors duration-150 hover:bg-surface-hover/30" wire:key="item-row-{{ $index }}">
                                     <td class="px-4 py-3 text-center">
-                                        <button wire:click="removeItem({{ $index }})" class="text-text-muted hover:text-danger transition-colors p-1 rounded hover:bg-surface-main opacity-0 group-hover:opacity-100">
-                                            <i data-lucide="x" class="w-4 h-4"></i>
+                                        <button wire:click="removeItem({{ $index }})" class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                         </button>
                                     </td>
                                     <td class="px-4 py-3">
@@ -119,22 +119,22 @@
                                                 <span class="text-xs-fluid text-text-muted">Prod. Catálogo ({{ $item['measure_abbr'] }})</span>
                                             </div>
                                         @else
-                                            <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept" class="input h-8 text-body px-2 bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-surface-panel" placeholder="Escribe un concepto...">
+                                            <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept" class="input h-8 text-small px-2 bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white" placeholder="Escribe un concepto...">
                                         @endif
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="relative">
-                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01" class="input h-8 text-body px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-surface-panel">
+                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01" class="input h-8 text-small px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
                                             <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="relative">
-                                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-body text-text-muted pointer-events-none">$</span>
-                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01" class="input h-8 text-body pl-6 pr-2 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-surface-panel">
+                                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
+                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01" class="input h-8 text-small pl-6 pr-2 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-right font-medium text-text-primary tabular-nums">
+                                    <td class="px-4 py-3 text-right font-medium text-text-primary tabular-nums text-small">
                                         ${{ number_format($item['line_total'], 2) }}
                                     </td>
                                 </tr>

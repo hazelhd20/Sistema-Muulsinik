@@ -30,25 +30,25 @@
     </x-page-header>
 
     {{-- Step Indicator --}}
-    <div class="flex items-center gap-2 mb-8">
+    <div class="flex items-center gap-2 mb-8" wire:ignore.self>
         @foreach([1 => 'Subir archivo', 2 => 'Procesando', 3 => 'Revisar y guardar'] as $num => $label)
-            <div class="flex items-center gap-2 {{ $num < 3 ? 'flex-1' : '' }}">
+            <div wire:key="step-indicator-{{ $num }}" class="flex items-center gap-2 {{ $num < 3 ? 'flex-1' : '' }}">
                 <div class="flex items-center gap-2">
                     <div
-                        class="w-8 h-8 rounded-full flex items-center justify-center text-small font-bold transition-all duration-300
-                                        {{ $step > $num ? 'bg-green-500 text-white' : ($step === $num ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-200 text-text-muted') }}">
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-small font-semibold transition-all duration-300 border
+                                        {{ $step > $num ? 'bg-emerald-600 text-white border-emerald-600' : ($step === $num ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-surface-card text-text-muted border-border') }}">
                         @if($step > $num)
-                            <i data-lucide="check" class="w-4 h-4"></i>
+                            <i data-lucide="check" class="w-4 h-4" wire:ignore></i>
                         @else
                             {{ $num }}
                         @endif
                     </div>
                     <span
-                        class="text-body font-medium {{ $step >= $num ? 'text-text-primary' : 'text-text-muted' }}">{{ $label }}</span>
+                        class="text-small font-medium {{ $step >= $num ? 'text-text-primary' : 'text-text-muted' }}">{{ $label }}</span>
                 </div>
                 @if($num < 3)
                     <div
-                        class="flex-1 h-0.5 mx-2 rounded {{ $step > $num ? 'bg-green-500' : 'bg-gray-200' }} transition-all duration-500">
+                        class="flex-1 h-0.5 mx-4 rounded-full {{ $step > $num ? 'bg-emerald-600' : 'bg-border' }} transition-all duration-500">
                     </div>
                 @endif
             </div>
@@ -110,7 +110,9 @@
 
     {{-- ═══════ PASO 2: PROCESAMIENTO ═══════ --}}
     @if($step === 2)
-        <div class="card max-w-lg mx-auto" wire:poll.2s="checkProcessingStatus" x-data
+        <div class="card max-w-lg mx-auto" 
+            @if($processingStatus === 'processing' || $processingStatus === 'pending') wire:poll.2s="checkProcessingStatus" @endif
+            x-data
             x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
             <div class="p-8 text-center">
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
@@ -137,37 +139,34 @@
 
                 @elseif($processingStatus === 'failed')
                     {{-- Error state --}}
-                    <div class="flex flex-col items-center max-w-lg mx-auto text-center py-6">
-                        {{-- Ícono animado --}}
-                        <div class="relative flex items-center justify-center w-24 h-24 mb-6">
-                            <div class="absolute inset-0 bg-red-100 rounded-full animate-pulse opacity-60"></div>
-                            <div class="absolute inset-2 bg-red-100 rounded-full"></div>
-                            <div class="relative flex items-center justify-center w-16 h-16 bg-red-500 text-white rounded-full shadow-lg shadow-red-500/30">
-                                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
-                            </div>
+                    <div class="flex flex-col items-center max-w-lg mx-auto text-center py-4">
+                        {{-- Ícono premium --}}
+                        <div class="w-12 h-12 rounded-xl bg-surface-hover text-danger flex items-center justify-center mb-4 shrink-0">
+                            <i data-lucide="alert-triangle" class="w-6 h-6" wire:ignore></i>
                         </div>
 
                         {{-- Título y Mensaje --}}
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4 tracking-tight">Error al procesar el archivo</h2>
+                        <h2 class="text-h2 font-semibold text-text-primary mb-2">Error al procesar el archivo</h2>
+                        <p class="text-small text-text-muted mb-6">No hemos podido estructurar los datos del documento automáticamente.</p>
 
-                        <div class="w-full bg-red-50/80 border border-red-100 p-5 rounded-2xl mb-8 shadow-sm">
-                            <p class="text-sm font-medium text-red-800 leading-relaxed">
+                        <div class="w-full bg-surface-hover border border-border p-4 rounded-xl mb-6 text-left">
+                            <p class="text-xs-fluid font-medium text-text-secondary leading-relaxed">
                                 {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
                             </p>
                         </div>
 
                         {{-- Botones de acción --}}
-                        <div class="flex flex-col sm:flex-row w-full gap-3 justify-center">
-                            <button wire:click="retryProcessing" class="btn-primary group">
+                        <div class="flex flex-col sm:flex-row w-full gap-2.5 justify-center">
+                            <button wire:click="retryProcessing" class="btn-primary group text-small">
                                 <i data-lucide="refresh-cw" class="w-4 h-4 transition-transform group-hover:rotate-180 duration-500"></i>
                                 Reintentar
                             </button>
-                            <button wire:click="continueManually" class="btn-secondary hover:border-gray-300 transition-colors">
-                                <i data-lucide="edit-3" class="w-4 h-4 text-gray-500"></i>
+                            <button wire:click="continueManually" class="btn-secondary text-small">
+                                <i data-lucide="edit-3" class="w-4 h-4 text-text-muted"></i>
                                 Llenar manualmente
                             </button>
-                            <button wire:click="resetWizard" class="btn-secondary hover:border-gray-300 transition-colors">
-                                <i data-lucide="file-up" class="w-4 h-4 text-gray-500"></i>
+                            <button wire:click="resetWizard" class="btn-secondary text-small">
+                                <i data-lucide="file-up" class="w-4 h-4 text-text-muted"></i>
                                 Cambiar archivo
                             </button>
                         </div>
@@ -346,26 +345,26 @@
                                                     @if($isFuzzyPending)
                                                         {{-- Popover flotante absoluto de confirmación fuzzy --}}
                                                         <div x-show="open" @click.outside="open = false" x-cloak
-                                                            class="absolute z-[95] left-0 top-[38px] mt-1 w-72 p-3 rounded-xl border border-primary-200 bg-white shadow-xl animate-scale-in text-xs"
+                                                            class="absolute z-[95] left-0 top-[38px] mt-1 w-72 p-3.5 rounded-xl border border-border bg-surface-card shadow-lg animate-scale-in text-xs"
                                                             x-transition>
-                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-gray-100">
+                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-border">
                                                                 <i data-lucide="sparkles" class="w-4 h-4 text-primary-600 shrink-0 mt-0.5" wire:ignore></i>
                                                                 <div>
-                                                                    <p class="font-semibold text-gray-900">Coincidencia detectada</p>
-                                                                    <p class="text-[10px] text-gray-500">¿El producto corresponde a la base de datos?</p>
+                                                                    <p class="font-semibold text-text-primary">Coincidencia detectada</p>
+                                                                    <p class="text-[10px] text-text-muted">¿El producto corresponde a la base de datos?</p>
                                                                 </div>
                                                             </div>
                                                             <div class="space-y-1.5 mb-3 text-[11px]">
                                                                 <div class="flex justify-between gap-2">
-                                                                    <span class="text-gray-500">En cotización:</span>
-                                                                    <span class="font-medium text-gray-800 text-right">{{ $item['name'] }}</span>
+                                                                    <span class="text-text-muted">En cotización:</span>
+                                                                    <span class="font-medium text-text-primary text-right">{{ $item['name'] }}</span>
                                                                 </div>
                                                                 <div class="flex justify-between gap-2">
-                                                                    <span class="text-gray-500">En catálogo:</span>
-                                                                    <span class="font-bold text-primary-950 text-right">"{{ $item['_match']['product']['catalog_name'] }}"</span>
+                                                                    <span class="text-text-muted">En catálogo:</span>
+                                                                    <span class="font-semibold text-text-primary text-right">"{{ $item['_match']['product']['catalog_name'] }}"</span>
                                                                 </div>
-                                                                <div class="flex justify-between gap-2 pt-1 border-t border-gray-50 text-[10px]">
-                                                                    <span class="text-gray-400">Nivel de confianza:</span>
+                                                                <div class="flex justify-between gap-2 pt-1 border-t border-border text-[10px]">
+                                                                    <span class="text-text-muted">Nivel de confianza:</span>
                                                                     <span class="font-semibold text-primary-600">{{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}% de similitud</span>
                                                                 </div>
                                                             </div>
@@ -375,7 +374,7 @@
                                                                     Confirmar y vincular (✓)
                                                                 </button>
                                                                 <button type="button" wire:click="rejectProductAssociation({{ $i }})" @click="open = false"
-                                                                    class="w-full py-1.5 rounded bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-semibold hover:bg-gray-100 transition">
+                                                                    class="w-full py-1.5 rounded bg-surface-main border border-border text-text-primary text-[10px] font-semibold hover:bg-surface-hover transition">
                                                                     Crear como producto nuevo
                                                                 </button>
                                                             </div>
@@ -406,22 +405,22 @@
 
                                                     @if($hasCatConflict)
                                                         <div x-show="open" @click.outside="open = false" x-cloak
-                                                            class="absolute z-[90] right-0 mt-1 w-64 p-3 rounded-xl border border-amber-200 bg-white shadow-xl animate-scale-in text-xs"
+                                                            class="absolute z-[90] right-0 mt-1 w-64 p-3.5 rounded-xl border border-border bg-surface-card shadow-lg animate-scale-in text-xs"
                                                             x-transition>
-                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-gray-100">
+                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-border">
                                                                 <i data-lucide="help-circle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" wire:ignore></i>
                                                                 <div>
-                                                                    <p class="font-semibold text-gray-900">¿Categoría diferente?</p>
-                                                                    <p class="text-[10px] text-gray-500">La IA sugirió una categoría diferente.</p>
+                                                                    <p class="font-semibold text-text-primary">¿Categoría diferente?</p>
+                                                                    <p class="text-[10px] text-text-muted">La IA sugirió una categoría diferente.</p>
                                                                 </div>
                                                             </div>
                                                             <div class="space-y-1.5 mb-3 text-[11px]">
                                                                 <div class="flex justify-between gap-2">
-                                                                    <span class="text-gray-500">Registrada:</span>
-                                                                    <span class="font-medium text-gray-800 text-right">{{ $item['conflict']['category']['registered'] }}</span>
+                                                                    <span class="text-text-muted">Registrada:</span>
+                                                                    <span class="font-medium text-text-primary text-right">{{ $item['conflict']['category']['registered'] }}</span>
                                                                 </div>
                                                                 <div class="flex justify-between gap-2">
-                                                                    <span class="text-gray-500">Propuesta IA:</span>
+                                                                    <span class="text-text-muted">Propuesta IA:</span>
                                                                     <span class="font-bold text-amber-600 text-right">{{ $item['conflict']['category']['suggested'] }}</span>
                                                                 </div>
                                                             </div>
@@ -431,7 +430,7 @@
                                                                     Actualizar catálogo maestro
                                                                 </button>
                                                                 <button type="button" wire:click="dismissProductConflict({{ $i }})" @click="open = false"
-                                                                    class="w-full py-1.5 rounded bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-semibold hover:bg-gray-100 transition">
+                                                                    class="w-full py-1.5 rounded bg-surface-main border border-border text-text-primary text-[10px] font-semibold hover:bg-surface-hover transition">
                                                                     Conservar catálogo
                                                                 </button>
                                                             </div>
@@ -471,22 +470,22 @@
 
                                                     @if($hasUnitConflict)
                                                         <div x-show="open" @click.outside="open = false" x-cloak
-                                                            class="absolute z-[90] right-0 mt-1 w-64 p-3 rounded-xl border border-amber-200 bg-white shadow-xl animate-scale-in text-xs"
+                                                            class="absolute z-[90] right-0 mt-1 w-64 p-3.5 rounded-xl border border-border bg-surface-card shadow-lg animate-scale-in text-xs"
                                                             x-transition>
-                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-gray-100">
+                                                            <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-border">
                                                                 <i data-lucide="help-circle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" wire:ignore></i>
                                                                 <div>
-                                                                    <p class="font-semibold text-gray-900">¿Unidad diferente?</p>
-                                                                    <p class="text-[10px] text-gray-500">La IA sugirió una unidad de medida diferente.</p>
+                                                                    <p class="font-semibold text-text-primary">¿Unidad diferente?</p>
+                                                                    <p class="text-[10px] text-text-muted">La IA sugirió una unidad de medida diferente.</p>
                                                                 </div>
                                                             </div>
                                                             <div class="space-y-1.5 mb-3 text-[11px]">
                                                                 <div class="flex justify-between gap-2">
-                                                                    <span class="text-gray-500">Registrada:</span>
-                                                                    <span class="font-medium text-gray-800 text-right">{{ $item['conflict']['unit']['registered'] }}</span>
+                                                                    <span class="text-text-muted">Registrada:</span>
+                                                                    <span class="font-medium text-text-primary text-right">{{ $item['conflict']['unit']['registered'] }}</span>
                                                                 </div>
                                                                 <div class="flex justify-between gap-2">
-                                                                    <span class="text-gray-500">Propuesta IA:</span>
+                                                                    <span class="text-text-muted">Propuesta IA:</span>
                                                                     <span class="font-bold text-amber-600 text-right">{{ $item['conflict']['unit']['suggested'] }}</span>
                                                                 </div>
                                                             </div>
@@ -496,7 +495,7 @@
                                                                     Actualizar catálogo maestro
                                                                 </button>
                                                                 <button type="button" wire:click="dismissProductConflict({{ $i }})" @click="open = false"
-                                                                    class="w-full py-1.5 rounded bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-semibold hover:bg-gray-100 transition">
+                                                                    class="w-full py-1.5 rounded bg-surface-main border border-border text-text-primary text-[10px] font-semibold hover:bg-surface-hover transition">
                                                                     Conservar catálogo
                                                                 </button>
                                                             </div>
@@ -560,36 +559,36 @@
                             $hasAnyDiscount = $totalDescuento > 0;
                             $subtotalBruto = $hasAnyDiscount ? ($subtotalSinIva + $totalDescuento) : 0;
                         @endphp
-                        <div class="flex justify-end mt-4">
-                            <div class="min-w-[280px] space-y-1.5 bg-surface-hover/30 p-5 rounded-2xl border border-border">
+                        <div class="flex justify-end mt-6">
+                            <div class="min-w-[280px] sm:min-w-[300px] space-y-2 bg-surface-hover/30 p-4 rounded-xl border border-border">
                                 @if($hasAnyDiscount)
-                                    <div class="flex items-center justify-between gap-6">
-                                        <span class="text-small text-text-muted">Subtotal bruto</span>
-                                        <span class="text-small font-medium text-text-muted tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
+                                    <div class="flex items-center justify-between gap-6 text-xs-fluid">
+                                        <span class="text-text-muted">Subtotal bruto</span>
+                                        <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between gap-6">
-                                        <span class="text-small text-emerald-600 flex items-center gap-1">
-                                            <i data-lucide="tag" class="w-3 h-3" wire:ignore></i>
+                                    <div class="flex items-center justify-between gap-6 text-xs-fluid">
+                                        <span class="text-emerald-600 flex items-center gap-1">
+                                            <i data-lucide="tag" class="w-3.5 h-3.5" wire:ignore></i>
                                             Descuento total
                                         </span>
-                                        <span class="text-small font-medium text-emerald-600 tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
+                                        <span class="font-semibold text-emerald-600 tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
                                     </div>
                                 @endif
-                                <div class="flex items-center justify-between gap-6">
-                                    <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                                    <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
+                                <div class="flex items-center justify-between gap-6 text-xs-fluid">
+                                    <span class="text-text-muted">Subtotal s/IVA</span>
+                                    <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
                                 </div>
-                                <div class="flex items-center justify-between gap-6">
-                                    <span class="text-small text-text-muted">IVA (16%)</span>
-                                    <span class="text-small font-medium text-text-muted tabular-nums">
+                                <div class="flex items-center justify-between gap-6 text-xs-fluid">
+                                    <span class="text-text-muted">IVA (16%)</span>
+                                    <span class="font-medium text-text-muted tabular-nums">
                                         @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
                                         @else <span class="text-amber-500">Pendiente</span>
                                         @endif
                                     </span>
                                 </div>
-                                <div class="flex items-center justify-between gap-6 pt-3 mt-3 border-t border-border">
-                                    <span class="text-body font-semibold text-text-primary">Total c/IVA</span>
-                                    <span class="text-h2 font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                <div class="flex items-center justify-between gap-6 pt-2.5 mt-2 border-t border-border border-dashed">
+                                    <span class="text-small font-semibold text-text-primary">Total c/IVA</span>
+                                    <span class="text-h2 font-bold text-primary-600 tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                                 </div>
                             </div>
                         </div>

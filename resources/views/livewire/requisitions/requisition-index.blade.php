@@ -18,10 +18,10 @@
     {{-- Header --}}
     <x-page-header subtitle="Compras" title="Requisiciones">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-secondary">
+            <a href="{{ route('requisiciones.manual') }}" class="btn-secondary" wire:navigate>
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 Nueva Manual
-            </button>
+            </a>
             <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
                 <i data-lucide="scan-line" class="w-4 h-4"></i>
                 Subir Cotización
@@ -35,23 +35,15 @@
         <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
             <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar requisición..."
-                class="input pl-10 pr-10 w-full"
-                @focus="focused = true"
-                @blur="focused = false">
-            <button
-                x-show="$wire.search"
-                x-transition
-                @click="$wire.search = ''"
-                type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted"
-            >
+                class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
+            <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
                 <i data-lucide="x" class="w-3.5 h-3.5"></i>
             </button>
         </div>
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button"
-            class="btn-secondary shrink-0"
+        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
             :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter || $wire.projectFilter || $wire.periodFilter }">
             <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
             Filtros
@@ -59,7 +51,8 @@
                 $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
             @endphp
             @if($activeCount > 0)
-                <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
+                <span
+                    class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
             @endif
         </button>
 
@@ -67,7 +60,8 @@
 
         {{-- Clear button: only when filters active --}}
         @if($search || $statusFilter || $projectFilter || $periodFilter)
-            <button wire:click="$set('search', ''); $set('statusFilter', ''); $set('projectFilter', ''); $set('periodFilter', '');" 
+            <button
+                wire:click="$set('search', ''); $set('statusFilter', ''); $set('projectFilter', ''); $set('periodFilter', '');"
                 type="button"
                 class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
                 <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
@@ -77,7 +71,10 @@
     </div>
 
     {{-- Expandable Filters Panel --}}
-    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
+    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
         <div class="card !bg-surface-hover/50 !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
@@ -88,8 +85,7 @@
                     class="w-full sm:w-40" />
                 <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
                     placeholder="Todos los proyectos" class="w-full sm:w-48" />
-                <x-custom-select wire:model.live="periodFilter"
-                    :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+                <x-custom-select wire:model.live="periodFilter" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
                     placeholder="Todos los períodos" class="w-full sm:w-44" />
             </div>
         </div>
@@ -99,9 +95,9 @@
     <div class="space-y-3">
         @forelse($requisitions as $req)
             @php
-                $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file' };
-                $iconBg = match ($req->status) { 'borrador' => 'bg-surface-hover', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-emerald-50', 'rechazada' => 'bg-red-50', default => 'bg-surface-hover' };
-                $iconColor = match ($req->status) { 'borrador' => 'text-text-muted', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-emerald-600', 'rechazada' => 'text-danger', default => 'text-text-muted' };
+                $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file'};
+                $iconBg = match ($req->status) { 'borrador' => 'bg-surface-hover', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-emerald-50', 'rechazada' => 'bg-red-50', default => 'bg-surface-hover'};
+                $iconColor = match ($req->status) { 'borrador' => 'text-text-muted', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-emerald-600', 'rechazada' => 'text-danger', default => 'text-text-muted'};
             @endphp
             <div x-data="{ open: false }" class="card">
 
@@ -117,7 +113,8 @@
                     <div class="flex-1 min-w-0">
                         {{-- Fila 1: número + badge --}}
                         <div class="flex items-center gap-2 mb-1.5">
-                            <h3 class="text-small font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}</h3>
+                            <h3 class="text-small font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}
+                            </h3>
                             <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" class="shrink-0" />
                         </div>
 
@@ -148,7 +145,8 @@
 
                         {{-- Fila 3: anotaciones (solo si existen) --}}
                         @if($req->annotations)
-                            <p class="mt-1.5 text-xs-fluid text-text-muted italic truncate max-w-lg" title="{{ $req->annotations }}">
+                            <p class="mt-1.5 text-xs-fluid text-text-muted italic truncate max-w-lg"
+                                title="{{ $req->annotations }}">
                                 "{{ $req->annotations }}"
                             </p>
                         @endif
@@ -156,7 +154,8 @@
 
                     {{-- Total --}}
                     <div class="text-right shrink-0">
-                        <p class="text-h2 text-text-primary leading-tight">${{ number_format($req->total, 2, '.', ',') }}</p>
+                        <p class="text-h2 text-text-primary leading-tight">${{ number_format($req->total, 2, '.', ',') }}
+                        </p>
                         <p class="text-xs-fluid text-text-muted">estimado</p>
                     </div>
                 </div>
@@ -173,7 +172,7 @@
                             <span>{{ $req->items->count() }} {{ $req->items->count() === 1 ? 'producto' : 'productos' }}</span>
                         </button>
                     @else
-                        <span class="text-xs-fluid text-text-muted/50">Sin productos</span>
+                        <span class="text-text-muted">—</span>
                     @endif
 
                     {{-- Acciones --}}
@@ -184,41 +183,37 @@
                                 $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
                                 $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
                             @endphp
-                            <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
-                                class="btn-icon-primary" title="Ver cotización adjunta">
+                            <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" class="btn-icon-primary"
+                                title="Ver cotización adjunta">
                                 <i data-lucide="file-search" class="w-4 h-4"></i>
                             </button>
                         @endif
 
                         @if($req->status === 'borrador')
                             <button wire:click="submitForApproval({{ $req->id }})"
-                                wire:confirm="¿Enviar esta requisición a aprobación?"
-                                class="btn-icon-primary" title="Enviar a aprobación">
+                                wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
+                                title="Enviar a aprobación">
                                 <i data-lucide="send" class="w-4 h-4"></i>
                             </button>
                         @endif
 
                         @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                            <button wire:click="approve({{ $req->id }})"
-                                wire:confirm="¿Aprobar esta requisición?"
+                            <button wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?"
                                 class="btn-icon-primary" title="Aprobar">
                                 <i data-lucide="check" class="w-4 h-4"></i>
                             </button>
-                            <button wire:click="openRejectModal({{ $req->id }})"
-                                class="btn-icon-danger" title="Rechazar">
+                            <button wire:click="openRejectModal({{ $req->id }})" class="btn-icon-danger" title="Rechazar">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         @endif
 
-                        <a href="{{ route('requisiciones.pdf', $req->id) }}"
-                            target="_blank"
-                            class="btn-icon-primary" title="Descargar PDF">
+                        <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" class="btn-icon-primary"
+                            title="Descargar PDF">
                             <i data-lucide="file-down" class="w-4 h-4"></i>
                         </a>
 
                         @if(in_array($req->status, ['borrador', 'rechazada']))
-                            <button wire:click="deleteRequisition({{ $req->id }})"
-                                wire:confirm="¿Eliminar esta requisición?"
+                            <button wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición?"
                                 class="btn-icon-danger" title="Eliminar">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
@@ -245,19 +240,27 @@
                                 <tbody>
                                     @foreach($req->items as $item)
                                         <tr>
-                                            <td class="font-medium text-text-primary">{{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
-                                            <td class="text-center text-text-secondary tabular-nums">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
-                                            <td class="text-center text-text-muted">{{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
-                                            <td class="text-right text-text-secondary tabular-nums">${{ number_format($item->unit_price, 2, '.', ',') }}</td>
-                                            <td class="text-right text-text-secondary tabular-nums">${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
+                                            <td class="font-medium text-text-primary max-w-[180px] sm:max-w-[240px] truncate"
+                                                title="{{ $item->product_name ?? $item->product?->canonical_name ?? '' }}">
+                                                {{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
+                                            <td class="text-center text-text-secondary tabular-nums">
+                                                {{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
+                                            <td class="text-center text-text-muted">
+                                                {{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
+                                            <td class="text-right text-text-secondary tabular-nums">
+                                                ${{ number_format($item->unit_price, 2, '.', ',') }}</td>
+                                            <td class="text-right text-text-secondary tabular-nums">
+                                                ${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
                                             <td class="text-right tabular-nums">
                                                 @if($item->tax_amount !== null)
-                                                    <span class="text-text-muted">${{ number_format($item->tax_amount, 2, '.', ',') }}</span>
+                                                    <span
+                                                        class="text-text-muted">${{ number_format($item->tax_amount, 2, '.', ',') }}</span>
                                                 @else
-                                                    <span class="text-amber-500">—</span>
+                                                    <span class="text-text-muted">—</span>
                                                 @endif
                                             </td>
-                                            <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
+                                            <td class="text-right font-semibold text-text-primary tabular-nums">
+                                                ${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -267,26 +270,27 @@
                         {{-- Totales --}}
                         @php
                             $reqSubtotal = $req->items->sum(fn($i) => $i->line_subtotal_computed);
-                            $reqTax      = $req->items->sum(fn($i) => (float)($i->tax_amount ?? 0));
-                            $reqTotal    = $req->total;
+                            $reqTax = $req->items->sum(fn($i) => (float) ($i->tax_amount ?? 0));
+                            $reqTotal = $req->total;
                         @endphp
                         <div class="flex justify-end mt-3">
                             <div class="min-w-[260px] space-y-1.5">
                                 <div class="flex items-center justify-between gap-6">
                                     <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                                    <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($reqSubtotal, 2, '.', ',') }}</span>
+                                    <span
+                                        class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($reqSubtotal, 2, '.', ',') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between gap-6">
                                     <span class="text-small text-text-muted">IVA (16%)</span>
                                     <span class="text-small font-medium text-text-muted tabular-nums">
                                         @if($reqTax > 0) ${{ number_format($reqTax, 2, '.', ',') }}
-                                        @else <span class="text-amber-500">—</span>
-                                        @endif
+                                        @else <span class="text-text-muted">—</span> @endif
                                     </span>
                                 </div>
                                 <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
                                     <span class="text-small font-semibold text-text-primary">Total</span>
-                                    <span class="text-body font-bold text-text-primary tabular-nums">${{ number_format($reqTotal, 2, '.', ',') }}</span>
+                                    <span
+                                        class="text-body font-bold text-text-primary tabular-nums">${{ number_format($reqTotal, 2, '.', ',') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -295,253 +299,71 @@
             </div>
         @empty
             <div class="card">
-                <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas" message="Crea una requisición o sube una cotización para comenzar." />
+                <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                    message="Crea una requisición o sube una cotización para comenzar." />
             </div>
         @endforelse
     </div>
 
     <div class="mt-4">{{ $requisitions->links() }}</div>
 
-    {{-- Create Requisition Modal --}}
-    @if($showCreateModal)
-        <x-modal show="showCreateModal" title="Nueva Requisición" maxWidth="4xl">
-                <form wire:submit="createRequisition" class="p-5 space-y-5">
-                    {{-- 1. Datos Generales --}}
-                    <div class="bg-surface-main border border-border p-4 rounded-lg space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="md:col-span-2">
-                                <label class="label">Proyecto *</label>
-                                <x-custom-select wire:model="reqProjectId" :options="$projects->pluck('name', 'id')->toArray()" placeholder="Seleccionar proyecto..." />
-                                @error('reqProjectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
-                            <div class="md:col-span-1">
-                                <label class="label">Vendedor (Opcional)</label>
-                                @php
-                                    $vendorOptions = [];
-                                    foreach($vendors as $vendor) {
-                                        $vendorOptions[$vendor->id] = $vendor->name . ' (' . ($vendor->supplier->trade_name ?? 'Sin Proveedor') . ')';
-                                    }
-                                @endphp
-                                <x-custom-select wire:model="reqVendorId" :options="$vendorOptions" placeholder="Vendedor..." />
-                                @error('reqVendorId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
-                            <div class="md:col-span-1">
-                                <label class="label">Fecha *</label>
-                                <input wire:model="reqDate" type="date" class="input">
-                                @error('reqDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
-                            <div class="md:col-span-4">
-                                <label class="label">Anotaciones</label>
-                                <textarea wire:model="reqAnnotations" class="input" rows="2"
-                                    placeholder="Anotaciones de la requisición (opcional)..."></textarea>
-                                @error('reqAnnotations') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
-                    </div>
 
-                    {{-- 2. Captura de Productos --}}
-                    <div>
-                        <h3 class="text-small font-semibold text-text-primary mb-3">Productos solicitados</h3>
-
-                        {{-- Datalist de productos existentes --}}
-                        <datalist id="products-list">
-                            @foreach($products as $prod)
-                                <option value="{{ $prod->canonical_name }}"></option>
-                            @endforeach
-                        </datalist>
-
-                        {{-- Formulario para añadir --}}
-                        <div class="border border-border rounded-xl p-4 mb-4 bg-surface-main/40 space-y-3">
-                            <div class="flex flex-col sm:flex-row gap-3 items-end">
-                                <div class="flex-1 min-w-[200px]">
-                                    <label class="label">Producto *</label>
-                                    <input wire:model="itemName" type="text" list="products-list" class="input" placeholder="Ej. Cemento Cruz Azul">
-                                </div>
-                                <div class="w-full sm:w-36">
-                                    <label class="label">Categoría</label>
-                                    <x-custom-select wire:model="itemCategoryId" :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría" />
-                                </div>
-                                <div class="w-full sm:w-24">
-                                    <label class="label">Cant. *</label>
-                                    <input wire:model="itemQuantity" type="number" step="0.01" class="input" placeholder="0">
-                                </div>
-                                <div class="w-full sm:w-32">
-                                    <label class="label">Unidad *</label>
-                                    @php
-                                        $measureOptions = $measures->mapWithKeys(fn($m) => [
-                                            ($m->abbreviation ?? $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')
-                                        ])->toArray();
-                                    @endphp
-                                    <x-custom-select wire:model="itemUnit" :options="$measureOptions" placeholder="Seleccionar..." />
-                                </div>
-                                <div class="w-full sm:w-28">
-                                    <label class="label">Precio U.</label>
-                                    <input wire:model="itemPrice" type="number" step="0.01" class="input" placeholder="0.00">
-                                </div>
-                                <div class="w-full sm:w-auto shrink-0">
-                                    <button type="button" wire:click="addItem" class="btn-primary w-full sm:w-auto gap-1.5">
-                                        <i data-lucide="plus" class="w-4 h-4"></i>
-                                        <span>Añadir</span>
-                                    </button>
-                                </div>
-                            </div>
-                            @error('itemName') <p class="mt-1.5 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-
-                        {{-- Tabla de Productos Agregados --}}
-                        @if(count($items) > 0)
-                            <div class="table-embedded">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Categoría</th>
-                                            <th class="text-center">Cant.</th>
-                                            <th class="text-center">Unidad</th>
-                                            <th class="text-right">Precio U.</th>
-                                            <th class="text-right">Subtotal</th>
-                                            <th class="text-right">IVA</th>
-                                            <th class="text-right">Total</th>
-                                            <th class="w-10"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($items as $i => $item)
-                                            @php
-                                                $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
-                                                $iva = round($subtotal * 0.16, 2);
-                                                $total = $subtotal + $iva;
-                                                $catName = '';
-                                                if (!empty($item['category_id'])) {
-                                                    $catName = $categories->firstWhere('id', $item['category_id'])?->name ?? '';
-                                                }
-                                            @endphp
-                                            <tr>
-                                                <td class="font-medium text-text-primary">{{ $item['name'] }}</td>
-                                                <td class="text-text-muted">{{ $catName ?: '—' }}</td>
-                                                <td class="text-center text-text-secondary tabular-nums">{{ $item['quantity'] }}</td>
-                                                <td class="text-center text-text-muted">{{ $item['unit'] }}</td>
-                                                <td class="text-right text-text-secondary tabular-nums">${{ number_format($item['unit_price'], 2) }}</td>
-                                                <td class="text-right text-text-secondary tabular-nums">${{ number_format($subtotal, 2) }}</td>
-                                                <td class="text-right text-text-muted tabular-nums">${{ number_format($iva, 2) }}</td>
-                                                <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($total, 2) }}</td>
-                                                <td class="text-center">
-                                                    <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger">
-                                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {{-- Totales --}}
-                            @php
-                                $subtotalTotal = collect($items)->sum(fn($i) => ($i['quantity'] ?? 0) * ($i['unit_price'] ?? 0));
-                                $ivaTotal = round($subtotalTotal * 0.16, 2);
-                                $grandTotal = $subtotalTotal + $ivaTotal;
-                            @endphp
-                            <div class="flex justify-end mt-3">
-                                <div class="min-w-[260px] space-y-1.5">
-                                    <div class="flex items-center justify-between gap-6">
-                                        <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                                        <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalTotal, 2, '.', ',') }}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between gap-6">
-                                        <span class="text-small text-text-muted">IVA (16%)</span>
-                                        <span class="text-small font-medium text-text-muted tabular-nums">${{ number_format($ivaTotal, 2, '.', ',') }}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
-                                        <span class="text-small font-semibold text-text-primary">Total c/IVA</span>
-                                        <span class="text-body font-bold text-text-primary tabular-nums">${{ number_format($grandTotal, 2, '.', ',') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="text-center py-8 border-2 border-dashed border-border rounded-xl">
-                                <div class="w-10 h-10 rounded-xl bg-surface-hover flex items-center justify-center mx-auto mb-3">
-                                    <i data-lucide="package" class="w-5 h-5 text-text-muted"></i>
-                                </div>
-                                <p class="text-small font-medium text-text-primary mb-0.5">Sin productos</p>
-                                <p class="text-xs-fluid text-text-muted">Usa el formulario para añadir artículos.</p>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                        <button type="button" wire:click="$set('showCreateModal', false)"
-                            class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="createRequisition">
-                            <span wire:loading.class="opacity-0" wire:target="createRequisition"
-                                class="inline-flex items-center gap-1.5 transition-opacity">Crear Requisición</span>
-                            <span wire:loading wire:target="createRequisition"
-                                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                            </span>
-                        </button>
-                    </div>
-                </form>
-        </x-modal>
-    @endif
 
     {{-- Reject Modal (RF-REQ-09: comentario obligatorio) --}}
     @if($showRejectModal)
-        <x-modal show="showRejectModal" title="Rechazar Requisición" subtitle="Indica el motivo del rechazo (obligatorio)" maxWidth="md">
-                    <form wire:submit="confirmReject" class="p-5 space-y-4">
-                        <div>
-                            <label class="label">Motivo del rechazo *</label>
-                            <textarea wire:model="rejectionComment" class="input" rows="3"
-                                placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
-                            @error('rejectionComment') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-                        <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                            <button type="button" wire:click="$set('showRejectModal', false)"
-                                class="btn-secondary">Cancelar</button>
-                            <button type="submit" class="btn-danger">
-                                Confirmar Rechazo
-                            </button>
-                        </div>
-                    </form>
+        <x-modal show="showRejectModal" title="Rechazar Requisición" subtitle="Indica el motivo del rechazo (obligatorio)"
+            maxWidth="md">
+            <form wire:submit="confirmReject" class="p-5 space-y-4">
+                <div>
+                    <label class="label">Motivo del rechazo *</label>
+                    <textarea wire:model="rejectionComment" class="input" rows="3"
+                        placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
+                    @error('rejectionComment') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-border">
+                    <button type="button" wire:click="$set('showRejectModal', false)"
+                        class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-danger">
+                        Confirmar Rechazo
+                    </button>
+                </div>
+            </form>
         </x-modal>
     @endif
 
-{{-- ═══════ PREVIEW MODAL ═══════ --}}
-<div x-show="showPreviewModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
-    style="display: none;">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
-        x-transition>
-        <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
-            <h3 class="text-h3 font-semibold text-text-primary flex items-center gap-2">
-                <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
-            </h3>
-            <button @click="showPreviewModal = false"
-                class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="flex-1 overflow-hidden bg-gray-50/50 p-4 relative">
-            <template x-if="isImage()">
-                <img :src="previewUrl" class="w-full h-full object-contain rounded-lg">
-            </template>
-            <template x-if="isPdf()">
-                <iframe :src="previewUrl"
-                    class="w-full h-full border border-gray-200 rounded-lg shadow-sm bg-white"></iframe>
-            </template>
-            <template x-if="!isImage() && !isPdf()">
-                <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
-                    <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
-                    <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
-                    <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
-                        <i data-lucide="download" class="w-4 h-4"></i> Descargar
-                    </a>
-                </div>
-            </template>
+    {{-- ═══════ PREVIEW MODAL ═══════ --}}
+    <div x-show="showPreviewModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        style="display: none;">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
+        <div class="relative bg-surface-card rounded-2xl shadow-xl border border-border w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
+            x-transition>
+            <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
+                <h3 class="text-h3 font-semibold text-text-primary flex items-center gap-2">
+                    <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
+                </h3>
+                <button @click="showPreviewModal = false"
+                    class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-hidden bg-surface-main p-4 relative">
+                <template x-if="isImage()">
+                    <img :src="previewUrl" class="w-full h-full object-contain rounded-lg">
+                </template>
+                <template x-if="isPdf()">
+                    <iframe :src="previewUrl"
+                        class="w-full h-full border border-border rounded-lg shadow-sm bg-surface-card"></iframe>
+                </template>
+                <template x-if="!isImage() && !isPdf()">
+                    <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
+                        <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
+                        <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
+                        <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Descargar
+                        </a>
+                    </div>
+                </template>
+            </div>
         </div>
     </div>
-</div>
 </div>

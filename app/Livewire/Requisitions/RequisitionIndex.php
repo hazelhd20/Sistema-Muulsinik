@@ -22,21 +22,6 @@ class RequisitionIndex extends Component
     public string $statusFilter = '';
     public string $projectFilter = '';
     public string $periodFilter = '';
-    public bool $showCreateModal = false;
-
-    public $reqProjectId = '';
-    public $reqVendorId = '';
-    public string $reqAnnotations = '';
-    public string $reqDate = '';
-
-    // Ítems temporales para la nueva requisición
-    public array $items = [];
-    public string $itemName = '';
-    public string $itemQuantity = '';
-    public string $itemUnit = 'pza';
-    public string $itemPrice = '';
-    public $itemSupplierId = '';
-    public $itemCategoryId = '';
 
     // Rechazo con comentario obligatorio (RF-REQ-09)
     public bool $showRejectModal = false;
@@ -53,76 +38,7 @@ class RequisitionIndex extends Component
         $this->resetPage();
     }
 
-    public function openCreateModal(): void
-    {
-        $this->resetForm();
-        $this->reqDate = now()->format('Y-m-d');
-        $this->showCreateModal = true;
-    }
 
-    public function addItem(): void
-    {
-        $this->validate([
-            'itemName' => 'required|min:2',
-            'itemQuantity' => 'required|numeric|min:0.01',
-            'itemUnit' => 'required',
-            'itemPrice' => 'required|numeric|min:0',
-        ]);
-
-        $this->items[] = [
-            'name' => $this->itemName,
-            'quantity' => (float) $this->itemQuantity,
-            'unit' => $this->itemUnit,
-            'unit_price' => (float) $this->itemPrice,
-            'supplier_id' => $this->itemSupplierId ?: null,
-            'category_id' => $this->itemCategoryId ?: null,
-        ];
-
-        $this->itemName = '';
-        $this->itemQuantity = '';
-        $this->itemPrice = '';
-        $this->itemSupplierId = '';
-        $this->itemCategoryId = '';
-    }
-
-    public function removeItem(int $index): void
-    {
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
-    }
-
-    public function createRequisition(): void
-    {
-        $this->validate([
-            'reqProjectId' => 'required|exists:projects,id',
-            'reqVendorId' => 'nullable|exists:vendors,id',
-            'reqAnnotations' => 'nullable|max:500',
-            'reqDate' => 'required|date',
-        ]);
-
-        if (empty($this->items)) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Agrega al menos un producto a la requisición.']);
-            return;
-        }
-
-        // Crear requisición con todos sus items usando el servicio
-        $resolver = app(RequisitionItemResolverService::class);
-        $resolver->createRequisitionWithItems(
-            [
-                'project_id' => $this->reqProjectId,
-                'vendor_id' => $this->reqVendorId ?: null,
-                'annotations' => $this->reqAnnotations,
-                'status' => 'borrador',
-                'created_by' => auth()->id(),
-                'date' => $this->reqDate,
-            ],
-            $this->items
-        );
-
-        $this->showCreateModal = false;
-        $this->resetForm();
-        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición creada como borrador.']);
-    }
 
     /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente).
      *  Si el usuario es Administrador (permiso *), la requisición se aprueba automáticamente. */
@@ -208,19 +124,7 @@ class RequisitionIndex extends Component
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición eliminada.']);
     }
 
-    private function resetForm(): void
-    {
-        $this->reqProjectId = '';
-        $this->reqVendorId = '';
-        $this->reqAnnotations = '';
-        $this->reqDate = '';
-        $this->items = [];
-        $this->itemName = '';
-        $this->itemQuantity = '';
-        $this->itemPrice = '';
-        $this->itemSupplierId = '';
-        $this->itemCategoryId = '';
-    }
+
 
     #[Layout('components.layouts.app')]
     #[Title('Requisiciones')]
@@ -243,20 +147,10 @@ class RequisitionIndex extends Component
             ->paginate(10);
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();
-        $suppliers = Supplier::orderBy('trade_name')->get();
-        $vendors = \App\Models\Vendor::orderBy('name')->get();
-        $categories = Category::orderBy('name')->get();
-        $measures = Measure::orderBy('name')->get();
-        $products = Product::orderBy('canonical_name')->get();
 
         return view('livewire.requisitions.requisition-index', compact(
             'requisitions',
-            'projects',
-            'suppliers',
-            'vendors',
-            'categories',
-            'measures',
-            'products'
+            'projects'
         ));
     }
 }

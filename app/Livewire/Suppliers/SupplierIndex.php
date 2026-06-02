@@ -54,13 +54,14 @@ class SupplierIndex extends Component
         $this->rfc = $supplier->rfc ?? '';
         $this->category = $supplier->category ?? '';
         $this->notes = $supplier->notes ?? '';
-        
+
         $this->showCreateModal = true;
     }
 
     public function saveSupplier(): void
     {
-        if ($this->denyUnless('proveedores.crear', 'No tienes permiso para guardar proveedores.')) return;
+        if ($this->denyUnless('proveedores.crear', 'No tienes permiso para guardar proveedores.'))
+            return;
 
         $this->validate([
             'tradeName' => 'required|min:2|max:255',
@@ -132,7 +133,8 @@ class SupplierIndex extends Component
 
     public function saveVendor(): void
     {
-        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para guardar vendedores.')) return;
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para guardar vendedores.'))
+            return;
 
         $this->validate([
             'vendorName' => 'required|min:2|max:255',
@@ -166,19 +168,21 @@ class SupplierIndex extends Component
 
     public function deleteVendor(int $vendorId): void
     {
-        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para eliminar vendedores.')) return;
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para eliminar vendedores.'))
+            return;
 
         Vendor::findOrFail($vendorId)->delete();
     }
 
     public function deleteSupplier(int $supplierId): void
     {
-        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.')) return;
+        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.'))
+            return;
 
         $supplier = Supplier::findOrFail($supplierId);
 
         $isUsed = \App\Models\RequisitionItem::where('supplier_id', $supplierId)->exists() ||
-                  \App\Models\Quotation::where('supplier_id', $supplierId)->exists();
+            \App\Models\Quotation::where('supplier_id', $supplierId)->exists();
 
         if ($isUsed) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proveedor está siendo utilizado en requisiciones o cotizaciones.']);

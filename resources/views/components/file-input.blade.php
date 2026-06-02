@@ -28,15 +28,15 @@
         get iconData() {
             const ext = (this.fileExt || '').toLowerCase();
             const map = {
-                jpg:  { icon: 'image',            color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                jpeg: { icon: 'image',            color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                png:  { icon: 'image',            color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                svg:  { icon: 'image',            color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                pdf:  { icon: 'file-text',        color: 'text-red-600',     bg: 'bg-red-50' },
-                xlsx: { icon: 'file-spreadsheet', color: 'text-blue-600',    bg: 'bg-blue-50' },
-                xls:  { icon: 'file-spreadsheet', color: 'text-blue-600',    bg: 'bg-blue-50' },
+                jpg:  { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
+                jpeg: { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
+                png:  { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
+                svg:  { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
+                pdf:  { icon: 'file-text',        color: 'text-danger',         bg: 'bg-surface-hover' },
+                xlsx: { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-surface-hover' },
+                xls:  { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-surface-hover' },
             };
-            return map[ext] || { icon: 'file', color: 'text-primary-600', bg: 'bg-primary-50' };
+            return map[ext] || { icon: 'file', color: 'text-text-secondary', bg: 'bg-surface-hover' };
         },
         handleFile(e) {
             const file = e.target.files[0];
@@ -139,15 +139,12 @@
                         @foreach($formats as $fmt)
                             @php
                                 $fmtColors = match(strtoupper($fmt)) {
-                                    'PDF'          => 'bg-red-50 text-red-600',
-                                    'XLSX', 'XLS'  => 'bg-blue-50 text-blue-600',
-                                    'JPG', 'JPEG'  => 'bg-amber-50 text-amber-600',
-                                    'PNG'          => 'bg-green-50 text-green-600',
-                                    'SVG'          => 'bg-violet-50 text-violet-600',
-                                    default        => 'bg-gray-50 text-gray-600',
+                                    'PDF'          => 'text-danger',
+                                    'XLSX', 'XLS'  => 'text-primary-600',
+                                    default        => 'text-text-secondary',
                                 };
                             @endphp
-                            <span class="px-3 py-1 rounded-lg {{ $fmtColors }} text-xs-fluid font-medium">{{ strtoupper($fmt) }}</span>
+                            <span class="px-3 py-1 rounded-lg bg-surface-hover {{ $fmtColors }} text-xs-fluid font-medium">{{ strtoupper($fmt) }}</span>
                         @endforeach
                     </div>
                 @endif
@@ -161,7 +158,7 @@
             x-show="fileName"
             x-cloak
             x-effect="if (fileExt) $nextTick(() => renderFileIcon())"
-            class="mt-4 p-3.5 rounded-xl bg-surface-main border border-gray-100"
+            class="mt-4 p-3.5 rounded-xl bg-surface-main border border-border"
         >
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -184,7 +181,7 @@
                         <i data-lucide="eye" class="w-4 h-4" wire:ignore></i>
                     </button>
                     <button type="button" @click="removeFile()"
-                        class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                        class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger transition">
                         <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
                     </button>
                 </div>
@@ -198,7 +195,7 @@
             <div x-show="fileName && previewUrl && previewType && previewType.startsWith('image/')" x-cloak class="relative shrink-0">
                 <img :src="previewUrl" class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-main" />
                 <button type="button" @click="removeFile()"
-                    class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-danger hover:bg-red-50 transition">
+                    class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
                     <i data-lucide="x" class="w-3.5 h-3.5" wire:ignore></i>
                 </button>
             </div>
@@ -210,7 +207,7 @@
                     <span x-ref="fileIconCompact" :class="iconData.color"></span>
                 </div>
                 <button type="button" @click="removeFile()"
-                    class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-danger hover:bg-red-50 transition">
+                    class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
                     <i data-lucide="x" class="w-3.5 h-3.5" wire:ignore></i>
                 </button>
             </div>
@@ -299,7 +296,7 @@
                         <i data-lucide="eye" class="w-4 h-4" wire:ignore></i>
                     </button>
                     <button type="button" @click.stop="removeFile()"
-                        class="p-1.5 rounded-lg hover:bg-red-50 text-text-muted hover:text-danger transition">
+                        class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger transition">
                         <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
                     </button>
                 </div>
@@ -313,7 +310,7 @@
             class="fixed inset-0 z-[300] flex items-center justify-center p-4"
             @keydown.escape.window="closePreview()">
             <div class="absolute inset-0 bg-black/60" @click="closePreview()"></div>
-            <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col bg-surface-card rounded-xl shadow-2xl overflow-hidden animate-scale-in">
+            <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col bg-surface-card rounded-xl border border-border shadow-xl overflow-hidden animate-scale-in">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-border">
                     <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
                     <button type="button" @click="closePreview()"
@@ -335,7 +332,7 @@
 
     {{-- Error slot --}}
     @error($wireModel)
-        <div class="mt-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-body flex items-center gap-2">
+        <div class="mt-2 p-3 rounded-xl bg-surface-hover border border-danger/20 text-danger text-body flex items-center gap-2">
             <i data-lucide="alert-circle" class="w-4 h-4 shrink-0" wire:ignore></i>
             {{ $message }}
         </div>

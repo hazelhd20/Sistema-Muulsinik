@@ -12,8 +12,8 @@
     {{-- Stats row --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         <div class="stat-card">
-            <div class="stat-icon bg-emerald-50">
-                <i data-lucide="trending-up" class="w-5 h-5 text-emerald-600"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="trending-up" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-xs-fluid text-text-muted mb-0.5">Gasto del mes</p>
@@ -21,8 +21,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-primary-50">
-                <i data-lucide="list" class="w-5 h-5 text-primary-600"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="list" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-xs-fluid text-text-muted mb-0.5">Total registros</p>
@@ -30,8 +30,8 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon bg-amber-50">
-                <i data-lucide="calendar" class="w-5 h-5 text-amber-500"></i>
+            <div class="stat-icon bg-surface-hover">
+                <i data-lucide="calendar" class="w-5 h-5 text-text-muted"></i>
             </div>
             <div>
                 <p class="text-xs-fluid text-text-muted mb-0.5">Período</p>
@@ -54,8 +54,7 @@
         </div>
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button"
-            class="btn-secondary shrink-0"
+        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
             :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.projectFilter || $wire.categoryFilter || $wire.periodFilter }">
             <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
             Filtros
@@ -63,7 +62,8 @@
                 $activeCount = ($projectFilter ? 1 : 0) + ($categoryFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
             @endphp
             @if($activeCount > 0)
-                <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
+                <span
+                    class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
             @endif
         </button>
 
@@ -71,7 +71,8 @@
 
         {{-- Clear button: only when filters active --}}
         @if($search || $projectFilter || $categoryFilter || $periodFilter)
-            <button wire:click="$set('search', ''); $set('projectFilter', ''); $set('categoryFilter', ''); $set('periodFilter', '');" 
+            <button
+                wire:click="$set('search', ''); $set('projectFilter', ''); $set('categoryFilter', ''); $set('periodFilter', '');"
                 type="button"
                 class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
                 <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
@@ -81,7 +82,10 @@
     </div>
 
     {{-- Expandable Filters Panel --}}
-    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
+    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
         <div class="card !bg-surface-hover/50 !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
@@ -90,10 +94,10 @@
                 </div>
                 <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
                     placeholder="Todos los proyectos" class="w-full sm:w-48" />
-                <x-custom-select wire:model.live="categoryFilter" :options="$categories" placeholder="Todas las categorías"
-                    class="w-full sm:w-44" />
-                <x-custom-select wire:model.live="periodFilter" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos"
-                    class="w-full sm:w-44" />
+                <x-custom-select wire:model.live="categoryFilter" :options="$categories"
+                    placeholder="Todas las categorías" class="w-full sm:w-44" />
+                <x-custom-select wire:model.live="periodFilter" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+                    placeholder="Todos los períodos" class="w-full sm:w-44" />
             </div>
         </div>
     </div>
@@ -191,16 +195,22 @@
                         <div class="flex items-center justify-between mb-1">
                             <label class="label mb-0">Proyecto *</label>
                             <div class="flex items-center gap-1.5">
-                                <input type="checkbox" wire:model.live="isDistributed" id="isDistributed" class="rounded border-border text-primary-600 focus:ring-primary-500 w-3 h-3">
-                                <label for="isDistributed" class="text-[10px] uppercase font-bold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear (Activos)</label>
+                                <input type="checkbox" wire:model.live="isDistributed" id="isDistributed"
+                                    class="rounded border-border text-primary-600 focus:ring-primary-500 w-3 h-3">
+                                <label for="isDistributed"
+                                    class="text-[10px] uppercase font-bold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
+                                    (Activos)</label>
                             </div>
                         </div>
-                        
+
                         <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
                             <div x-show="!distributed">
-                                <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()" placeholder="Seleccionar..." />
+                                <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
+                                    placeholder="Seleccionar..." />
                             </div>
-                            <div x-show="distributed" class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed" style="display: none;">
+                            <div x-show="distributed"
+                                class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed"
+                                style="display: none;">
                                 <i data-lucide="split" class="w-4 h-4 mr-2"></i> Gasto distribuido
                             </div>
                         </div>
@@ -215,7 +225,8 @@
 
                 <div>
                     <label class="label">Comprobante (opcional)</label>
-                    <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile" accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
+                    <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile"
+                        accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">

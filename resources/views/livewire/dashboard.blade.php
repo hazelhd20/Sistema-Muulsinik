@@ -127,8 +127,8 @@
 
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-green-50 flex items-center justify-center">
-                            <i data-lucide="check-circle" class="w-3 h-3 text-green-600"></i>
+                        <div class="w-5 h-5 rounded bg-emerald-50 flex items-center justify-center">
+                            <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i>
                         </div>
                         <span class="text-small text-text-secondary">Req. aprobadas</span>
                     </div>
@@ -167,7 +167,7 @@
                         <tr>
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
-                                <p class="text-xs-fluid text-text-muted">{{ $project->client ?? 'Sin cliente' }}</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $project->client ?? '—' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
@@ -269,7 +269,7 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#111827',
+                            backgroundColor: '#0F1117',
                             titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
                             bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
                             padding: 10,
@@ -283,14 +283,14 @@
                         x: {
                             grid: { display: false },
                             border: { display: false },
-                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9CA3AF' }
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9299A8' }
                         },
                         y: {
                             grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
                             border: { display: false, dash: [4, 4] },
                             ticks: {
                                 font: { family: 'Plus Jakarta Sans', size: 11 },
-                                color: '#9CA3AF',
+                                color: '#9299A8',
                                 callback: (v) => `$${(v / 1000).toFixed(0)}k`
                             }
                         }

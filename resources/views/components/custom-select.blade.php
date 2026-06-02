@@ -92,7 +92,7 @@
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
         :style="dropStyle"
-        class="z-[200] bg-surface-card border border-gray-100 rounded-xl shadow-lg overflow-hidden flex flex-col"
+        class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col"
         style="display: none;"
     >
         <!-- Search Input -->

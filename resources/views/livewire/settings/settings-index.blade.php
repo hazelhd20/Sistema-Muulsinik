@@ -42,8 +42,8 @@
                                 <img src="{{ asset('storage/' . $company_logo) }}" alt="Logo"
                                      class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-main">
                                 <button type="button" wire:click="deleteLogo"
-                                        class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-danger hover:bg-red-50 transition">
-                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                        class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-main border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         @endif

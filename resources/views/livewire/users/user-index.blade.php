@@ -96,15 +96,15 @@
                                 @if($user->role)
                                     <x-dynamic-badge :value="$user->role->name" />
                                 @else
-                                    <span class="text-xs-fluid text-text-muted italic">Sin rol asignado</span>
+                                    <span class="text-text-muted">—</span>
                                 @endif
                             </td>
                             <td>
                                 <button wire:click="toggleActive({{ $user->id }})" 
                                     class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs-fluid font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
                                     {{ $user->active 
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
-                                        : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' }}"
+                                        ? 'bg-surface-main text-emerald-600 border-border hover:border-emerald-500/50 hover:bg-surface-hover' 
+                                        : 'bg-surface-main text-danger border-border hover:border-danger/50 hover:bg-surface-hover' }}"
                                     title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
                                     @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
                                     
