@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // --- Rutas públicas ---
-Route::get('/', fn () => redirect('/login'));
+Route::get('/', fn() => redirect('/login'));
 Route::get('/login', Login::class)->name('login')->middleware('guest');
 
 Route::post('/logout', function () {
@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
 
     // Usuarios
     Route::get('/usuarios', UserIndex::class)->name('usuarios.index');
-    
+
     // Reportes
     Route::get('/reportes', ReportIndex::class)->name('reportes.index');
 
@@ -86,13 +86,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/preview-file', function (\Illuminate\Http\Request $request) {
         $path = $request->query('path');
         $disk = $request->query('disk', 'local');
-        
+
         if (!in_array($disk, ['local', 'public']) || !$path || str_contains($path, '..') || !\Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
             abort(404);
         }
-        
+
         $mime = \Illuminate\Support\Facades\Storage::disk($disk)->mimeType($path);
-        
+
         return response()->file(\Illuminate\Support\Facades\Storage::disk($disk)->path($path), [
             'Content-Type' => $mime,
             'Content-Disposition' => 'inline; filename="' . basename($path) . '"'

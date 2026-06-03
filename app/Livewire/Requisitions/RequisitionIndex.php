@@ -136,11 +136,11 @@ class RequisitionIndex extends Component
             ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
             ->when($this->periodFilter, function ($q) {
                 match ($this->periodFilter) {
-                    'this_month'   => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
-                    'last_month'   => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
+                    'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
+                    'last_month' => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
                     'this_quarter' => $q->whereBetween('date', [now()->startOfQuarter(), now()->endOfQuarter()]),
-                    'this_year'    => $q->whereYear('date', now()->year),
-                    default        => null,
+                    'this_year' => $q->whereYear('date', now()->year),
+                    default => null,
                 };
             })
             ->latest()

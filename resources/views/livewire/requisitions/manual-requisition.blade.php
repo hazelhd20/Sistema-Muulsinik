@@ -47,7 +47,8 @@
 
         {{-- 2. Captura de Productos --}}
         <div class="card p-6">
-            <h3 class="text-small font-semibold text-text-primary mb-4 border-b border-border pb-2">Productos Solicitados</h3>
+            <h3 class="text-small font-semibold text-text-primary mb-4 border-b border-border pb-2">Productos
+                Solicitados</h3>
 
             {{-- Datalist de productos existentes --}}
             <datalist id="products-list">
@@ -70,7 +71,8 @@
                     </div>
                     <div class="w-full sm:w-28">
                         <label class="label">Cant. *</label>
-                        <input wire:model="itemQuantity" type="number" step="0.01" class="input w-full text-right" placeholder="0">
+                        <input wire:model="itemQuantity" type="number" step="0.01" class="input w-full text-right"
+                            placeholder="0">
                     </div>
                     <div class="w-full sm:w-36">
                         <label class="label">Unidad *</label>
@@ -84,7 +86,8 @@
                     </div>
                     <div class="w-full sm:w-32">
                         <label class="label">Precio U.</label>
-                        <input wire:model="itemPrice" type="number" step="0.01" class="input w-full text-right" placeholder="0.00">
+                        <input wire:model="itemPrice" type="number" step="0.01" class="input w-full text-right"
+                            placeholder="0.00">
                     </div>
                     <div class="w-full sm:w-auto shrink-0">
                         <button type="button" wire:click="addItem" class="btn-primary w-full sm:w-auto gap-1.5 h-10">
@@ -127,17 +130,20 @@
                                 <tr class="hover:bg-surface-hover/50 transition-colors">
                                     <td class="px-4 py-3 font-medium text-text-primary">{{ $item['name'] }}</td>
                                     <td class="px-4 py-3 text-text-muted">{{ $catName ?: '—' }}</td>
-                                    <td class="px-4 py-3 text-center text-text-secondary tabular-nums">{{ $item['quantity'] }}</td>
+                                    <td class="px-4 py-3 text-center text-text-secondary tabular-nums">{{ $item['quantity'] }}
+                                    </td>
                                     <td class="px-4 py-3 text-center text-text-muted">{{ $item['unit'] }}</td>
                                     <td class="px-4 py-3 text-right text-text-secondary tabular-nums">
                                         ${{ number_format($item['unit_price'], 2) }}</td>
                                     <td class="px-4 py-3 text-right text-text-secondary tabular-nums">
                                         ${{ number_format($subtotal, 2) }}</td>
-                                    <td class="px-4 py-3 text-right text-text-muted tabular-nums">${{ number_format($iva, 2) }}</td>
+                                    <td class="px-4 py-3 text-right text-text-muted tabular-nums">${{ number_format($iva, 2) }}
+                                    </td>
                                     <td class="px-4 py-3 text-right font-semibold text-text-primary tabular-nums">
                                         ${{ number_format($total, 2) }}</td>
                                     <td class="px-4 py-3 text-center">
-                                        <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger" title="Eliminar ítem">
+                                        <button type="button" wire:click="removeItem({{ $i }})" class="btn-icon-danger"
+                                            title="Eliminar ítem">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </td>
@@ -157,15 +163,18 @@
                     <div class="min-w-[300px] bg-surface-main border border-border rounded-xl p-5 space-y-2">
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                            <span class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalTotal, 2, '.', ',') }}</span>
+                            <span
+                                class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalTotal, 2, '.', ',') }}</span>
                         </div>
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">IVA (16%)</span>
-                            <span class="text-small font-medium text-text-muted tabular-nums">${{ number_format($ivaTotal, 2, '.', ',') }}</span>
+                            <span
+                                class="text-small font-medium text-text-muted tabular-nums">${{ number_format($ivaTotal, 2, '.', ',') }}</span>
                         </div>
                         <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border">
                             <span class="text-body font-semibold text-text-primary">Total c/IVA</span>
-                            <span class="text-h3 font-bold text-text-primary tabular-nums">${{ number_format($grandTotal, 2, '.', ',') }}</span>
+                            <span
+                                class="text-h3 font-bold text-text-primary tabular-nums">${{ number_format($grandTotal, 2, '.', ',') }}</span>
                         </div>
                     </div>
                 </div>
@@ -175,7 +184,8 @@
                         <i data-lucide="package-plus" class="w-6 h-6 text-text-muted"></i>
                     </div>
                     <p class="text-body font-medium text-text-primary mb-1">Sin productos</p>
-                    <p class="text-small text-text-muted">Usa el formulario superior para añadir artículos a tu requisición.</p>
+                    <p class="text-small text-text-muted">Usa el formulario superior para añadir artículos a tu requisición.
+                    </p>
                 </div>
             @endif
         </div>

@@ -55,7 +55,8 @@ class ProjectIndex extends Component
 
     public function createProject(): void
     {
-        if ($this->denyUnless('proyectos.crear', 'No tienes permiso para crear proyectos.')) return;
+        if ($this->denyUnless('proyectos.crear', 'No tienes permiso para crear proyectos.'))
+            return;
 
         $this->validate([
             'name' => 'required|min:3|max:255',
@@ -83,7 +84,8 @@ class ProjectIndex extends Component
 
     public function updateProject(): void
     {
-        if ($this->denyUnless('proyectos.editar', 'No tienes permiso para editar proyectos.')) return;
+        if ($this->denyUnless('proyectos.editar', 'No tienes permiso para editar proyectos.'))
+            return;
 
         $this->validate([
             'name' => 'required|min:3|max:255',
@@ -112,13 +114,14 @@ class ProjectIndex extends Component
 
     public function deleteProject(int $projectId): void
     {
-        if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.')) return;
+        if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.'))
+            return;
 
         $project = Project::findOrFail($projectId);
 
         $hasDependencies = \App\Models\Requisition::where('project_id', $projectId)->exists() ||
-                           \App\Models\Expense::where('project_id', $projectId)->exists() ||
-                           \App\Models\Quotation::where('project_id', $projectId)->exists();
+            \App\Models\Expense::where('project_id', $projectId)->exists() ||
+            \App\Models\Quotation::where('project_id', $projectId)->exists();
 
         if ($hasDependencies) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proyecto tiene requisiciones, cotizaciones o gastos asociados.']);

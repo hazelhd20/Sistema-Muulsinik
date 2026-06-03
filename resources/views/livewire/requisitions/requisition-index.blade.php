@@ -92,8 +92,9 @@
     </div>
 
     {{-- Requisitions list --}}
-    <div class="space-y-3">
-        @forelse($requisitions as $req)
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage" class="space-y-3 w-full">
+            @forelse($requisitions as $req)
             @php
                 $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file'};
                 $iconBg = match ($req->status) { 'borrador' => 'bg-surface-hover', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-emerald-50', 'rechazada' => 'bg-red-50', default => 'bg-surface-hover'};
@@ -184,7 +185,7 @@
                                 $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
                             @endphp
                             <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" class="btn-icon-primary"
-                                title="Ver cotización adjunta">
+                                title="Ver cotización adjunta" aria-label="Ver cotización adjunta">
                                 <i data-lucide="file-search" class="w-4 h-4"></i>
                             </button>
                         @endif
@@ -192,32 +193,39 @@
                         @if($req->status === 'borrador')
                             <button wire:click="submitForApproval({{ $req->id }})"
                                 wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
-                                title="Enviar a aprobación">
+                                title="Enviar a aprobación" aria-label="Enviar a aprobación">
                                 <i data-lucide="send" class="w-4 h-4"></i>
                             </button>
                         @endif
 
                         @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
                             <button wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?"
-                                class="btn-icon-primary" title="Aprobar">
+                                class="btn-icon-primary bg-emerald-50 text-emerald-600 hover:bg-emerald-100" title="Aprobar" aria-label="Aprobar">
                                 <i data-lucide="check" class="w-4 h-4"></i>
                             </button>
-                            <button wire:click="openRejectModal({{ $req->id }})" class="btn-icon-danger" title="Rechazar">
-                                <i data-lucide="x" class="w-4 h-4"></i>
-                            </button>
                         @endif
 
-                        <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" class="btn-icon-primary"
-                            title="Descargar PDF">
-                            <i data-lucide="file-down" class="w-4 h-4"></i>
-                        </a>
-
-                        @if(in_array($req->status, ['borrador', 'rechazada']))
-                            <button wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición?"
-                                class="btn-icon-danger" title="Eliminar">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        {{-- Kebab Menu for secondary actions --}}
+                        <div x-data="{ openMenu: false }" class="relative">
+                            <button @click="openMenu = !openMenu" @click.away="openMenu = false" class="btn-icon" aria-label="Más opciones" title="Más opciones">
+                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
                             </button>
-                        @endif
+                            <div x-show="openMenu" x-transition class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1" style="display:none;">
+                                <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" class="flex items-center gap-2 px-3 py-2 text-small text-text-primary hover:bg-surface-hover w-full text-left">
+                                    <i data-lucide="file-down" class="w-4 h-4 text-text-muted"></i> Descargar PDF
+                                </a>
+                                @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                    <button wire:click="openRejectModal({{ $req->id }})" class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                        <i data-lucide="x" class="w-4 h-4"></i> Rechazar
+                                    </button>
+                                @endif
+                                @if(in_array($req->status, ['borrador', 'rechazada']))
+                                    <button wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición?" class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -303,6 +311,31 @@
                     message="Crea una requisición o sube una cotización para comenzar." />
             </div>
         @endforelse
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage" class="hidden space-y-3 absolute inset-0 w-full z-10 bg-surface-main">
+            @for($i=0; $i<3; $i++)
+            <div class="card flex items-start gap-4">
+                <div class="w-9 h-9 rounded-xl skeleton shrink-0 mt-0.5"></div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="h-4 skeleton rounded w-32"></div>
+                        <div class="h-5 skeleton rounded-full w-20"></div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                        <div class="h-3 skeleton rounded w-24"></div>
+                        <div class="h-3 skeleton rounded w-20"></div>
+                        <div class="h-3 skeleton rounded w-28"></div>
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="h-6 skeleton rounded w-24 mb-1"></div>
+                    <div class="h-3 skeleton rounded w-16 ml-auto"></div>
+                </div>
+            </div>
+            @endfor
+        </div>
     </div>
 
     <div class="mt-4">{{ $requisitions->links() }}</div>

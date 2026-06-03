@@ -18,7 +18,7 @@ class UserIndex extends Component
 
     public string $search = '';
     public string $roleFilter = '';
-    
+
     public bool $showCreateModal = false;
     public bool $showEditModal = false;
     public ?int $editingId = null;
@@ -43,14 +43,16 @@ class UserIndex extends Component
 
     public function openCreateModal(): void
     {
-        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.')) return;
+        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.'))
+            return;
         $this->resetForm();
         $this->showCreateModal = true;
     }
 
     public function openEditModal(int $id): void
     {
-        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.')) return;
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
+            return;
         $user = User::findOrFail($id);
         $this->editingId = $user->id;
         $this->name = $user->name;
@@ -63,7 +65,8 @@ class UserIndex extends Component
 
     public function createUser(): void
     {
-        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.')) return;
+        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.'))
+            return;
 
         $this->validate([
             'name' => 'required|string|max:255',
@@ -88,7 +91,8 @@ class UserIndex extends Component
 
     public function updateUser(): void
     {
-        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.')) return;
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
+            return;
 
         $this->validate([
             'name' => 'required|string|max:255',
@@ -119,7 +123,8 @@ class UserIndex extends Component
 
     public function deleteUser(int $id): void
     {
-        if ($this->denyUnless('usuarios.eliminar', 'No tienes permiso para eliminar usuarios.')) return;
+        if ($this->denyUnless('usuarios.eliminar', 'No tienes permiso para eliminar usuarios.'))
+            return;
 
         if (auth()->id() === $id) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No puedes eliminar tu propio usuario.']);
@@ -132,7 +137,8 @@ class UserIndex extends Component
 
     public function toggleActive(int $id): void
     {
-        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.')) return;
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
+            return;
 
         if (auth()->id() === $id) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No puedes desactivar tu propio usuario.']);
@@ -141,7 +147,7 @@ class UserIndex extends Component
 
         $user = User::findOrFail($id);
         $user->update(['active' => !$user->active]);
-        
+
         $status = $user->active ? 'activado' : 'desactivado';
         $this->dispatch('toast', ['icon' => 'success', 'message' => "Usuario {$status} correctamente."]);
     }

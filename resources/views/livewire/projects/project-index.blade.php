@@ -63,8 +63,9 @@
     </div>
 
     {{-- Projects Grid --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
-        @forelse($projects as $project)
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-5 w-full">
+            @forelse($projects as $project)
             <div class="card group">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">
@@ -107,16 +108,16 @@
                         <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                        <a href="{{ url('/proyectos/' . $project->id) }}" class="btn-icon" title="Ver detalle">
+                        <a href="{{ url('/proyectos/' . $project->id) }}" class="btn-icon" title="Ver detalle" aria-label="Ver detalle">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </a>
                         <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary"
-                            title="Editar proyecto">
+                            title="Editar proyecto" aria-label="Editar proyecto">
                             <i data-lucide="pencil" class="w-4 h-4"></i>
                         </button>
                         <button wire:click="deleteProject({{ $project->id }})"
                             wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
-                            class="btn-icon-danger" title="Eliminar proyecto">
+                            class="btn-icon-danger" title="Eliminar proyecto" aria-label="Eliminar proyecto">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -128,6 +129,43 @@
                     message="Crea tu primer proyecto para comenzar." />
             </div>
         @endforelse
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 absolute inset-0 w-full z-10 bg-surface-main">
+            @for($i=0; $i<6; $i++)
+            <div class="card">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-3 min-w-0 w-full">
+                        <div class="w-9 h-9 rounded-lg skeleton shrink-0"></div>
+                        <div class="w-full">
+                            <div class="h-4 skeleton rounded w-3/4 mb-1"></div>
+                            <div class="h-3 skeleton rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3.5">
+                    <div class="flex justify-between mb-1.5">
+                        <div class="h-3 skeleton rounded w-1/3"></div>
+                        <div class="h-3 skeleton rounded w-8"></div>
+                    </div>
+                    <div class="w-full h-1.5 skeleton rounded-full mb-1.5"></div>
+                    <div class="flex justify-between">
+                        <div class="h-3 skeleton rounded w-1/4"></div>
+                        <div class="h-3 skeleton rounded w-1/4"></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-border">
+                    <div class="h-3 skeleton rounded w-24"></div>
+                    <div class="flex gap-1">
+                        <div class="w-8 h-8 skeleton rounded"></div>
+                        <div class="w-8 h-8 skeleton rounded"></div>
+                        <div class="w-8 h-8 skeleton rounded"></div>
+                    </div>
+                </div>
+            </div>
+            @endfor
+        </div>
     </div>
 
     {{-- Pagination --}}

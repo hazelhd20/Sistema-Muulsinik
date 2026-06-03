@@ -37,7 +37,8 @@
                     </div>
                     <div class="col-span-2">
                         <label class="label">Descripción / Notas</label>
-                        <textarea wire:model="description" class="input min-h-[80px]" placeholder="Detalles adicionales del trabajo..."></textarea>
+                        <textarea wire:model="description" class="input min-h-[80px]"
+                            placeholder="Detalles adicionales del trabajo..."></textarea>
                     </div>
                 </div>
             </div>
@@ -58,30 +59,46 @@
                     {{-- Search Product --}}
                     <div class="relative" x-data="{ open: @entangle('searchResults').length > 0 }">
                         <div class="relative">
-                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-                            <input wire:model.live.debounce.300ms="searchQuery" type="text" class="input pl-10 border-border focus:border-primary-500 bg-surface-card" placeholder="Buscar producto para agregar (carga precio histórico)...">
-                            <div wire:loading wire:target="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-4 w-4 text-text-muted" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                            <i data-lucide="search"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+                            <input wire:model.live.debounce.300ms="searchQuery" type="text"
+                                class="input pl-10 border-border focus:border-primary-500 bg-surface-card"
+                                placeholder="Buscar producto para agregar (carga precio histórico)...">
+                            <div wire:loading wire:target="searchQuery"
+                                class="absolute right-3 top-1/2 -translate-y-1/2">
+                                <svg class="animate-spin h-4 w-4 text-text-muted" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4" fill="none" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
                             </div>
                         </div>
 
                         {{-- Dropdown Results --}}
                         @if(!empty($searchResults))
-                            <div class="absolute z-10 mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
+                            <div
+                                class="absolute z-10 mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
                                 <ul class="max-h-60 overflow-y-auto py-1">
                                     @foreach($searchResults as $index => $product)
                                         <li>
-                                            <button wire:click="addProduct({{ $index }})" class="w-full text-left px-4 py-2.5 hover:bg-surface-hover flex items-center justify-between group transition-colors">
+                                            <button wire:click="addProduct({{ $index }})"
+                                                class="w-full text-left px-4 py-2.5 hover:bg-surface-hover flex items-center justify-between group transition-colors">
                                                 <div>
-                                                    <p class="text-small font-medium text-text-primary group-hover:text-primary-600">{{ $product['name'] }}</p>
+                                                    <p
+                                                        class="text-small font-medium text-text-primary group-hover:text-primary-600">
+                                                        {{ $product['name'] }}</p>
                                                     <div class="flex items-center gap-2 mt-1">
-                                                        <span class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
-                                                        <span class="badge badge-secondary">{{ $product['measure_abbr'] }}</span>
+                                                        <span
+                                                            class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
+                                                        <span
+                                                            class="badge badge-secondary">{{ $product['measure_abbr'] }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="text-right">
                                                     <p class="text-xs-fluid text-text-muted mb-0.5">Último costo</p>
-                                                    <p class="text-small font-semibold text-text-primary">${{ number_format($product['last_price'], 2) }}</p>
+                                                    <p class="text-small font-semibold text-text-primary">
+                                                        ${{ number_format($product['last_price'], 2) }}</p>
                                                 </div>
                                             </button>
                                         </li>
@@ -106,32 +123,44 @@
                         </thead>
                         <tbody>
                             @forelse($items as $index => $item)
-                                <tr class="group transition-colors duration-150 hover:bg-surface-hover/30" wire:key="item-row-{{ $index }}">
+                                <tr class="group transition-colors duration-150 hover:bg-surface-hover/30"
+                                    wire:key="item-row-{{ $index }}">
                                     <td class="px-4 py-3 text-center">
-                                        <button wire:click="removeItem({{ $index }})" class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button wire:click="removeItem({{ $index }})"
+                                            class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                         </button>
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($item['product_id'])
                                             <div class="flex flex-col">
-                                                <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
-                                                <span class="text-xs-fluid text-text-muted">Prod. Catálogo ({{ $item['measure_abbr'] }})</span>
+                                                <span
+                                                    class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
+                                                <span class="text-xs-fluid text-text-muted">Prod. Catálogo
+                                                    ({{ $item['measure_abbr'] }})</span>
                                             </div>
                                         @else
-                                            <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept" class="input h-8 text-small px-2 bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white" placeholder="Escribe un concepto...">
+                                            <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
+                                                class="input h-8 text-small px-2 bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white"
+                                                placeholder="Escribe un concepto...">
                                         @endif
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="relative">
-                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01" class="input h-8 text-small px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
-                                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
+                                            <input type="number"
+                                                wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01"
+                                                class="input h-8 text-small px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
+                                            <span
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="relative">
-                                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
-                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01" class="input h-8 text-small pl-6 pr-2 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
+                                            <span
+                                                class="absolute left-2 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
+                                            <input type="number"
+                                                wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01"
+                                                class="input h-8 text-small pl-6 pr-2 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-right font-medium text-text-primary tabular-nums text-small">
@@ -144,7 +173,8 @@
                                         <div class="flex flex-col items-center justify-center">
                                             <i data-lucide="package-search" class="w-8 h-8 mb-2 opacity-50"></i>
                                             <p class="text-body font-medium">No hay conceptos en la cotización</p>
-                                            <p class="text-xs-fluid mt-1">Busca un producto arriba o agrega un concepto manual.</p>
+                                            <p class="text-xs-fluid mt-1">Busca un producto arriba o agrega un concepto
+                                                manual.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -166,19 +196,22 @@
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between items-center text-body text-text-secondary">
                         <span>Costo Directo (Subtotal)</span>
-                        <span class="tabular-nums font-medium text-text-primary">${{ number_format($this->subtotal, 2) }}</span>
+                        <span
+                            class="tabular-nums font-medium text-text-primary">${{ number_format($this->subtotal, 2) }}</span>
                     </div>
 
                     <div class="pt-3 border-t border-border border-dashed">
                         <label class="flex items-center justify-between mb-1">
                             <span class="text-body text-text-secondary flex items-center gap-1.5">
                                 Margen de Ganancia/Imprevistos
-                                <i data-lucide="help-circle" class="w-3.5 h-3.5 text-text-muted" title="Porcentaje extra sobre el costo directo."></i>
+                                <i data-lucide="help-circle" class="w-3.5 h-3.5 text-text-muted"
+                                    title="Porcentaje extra sobre el costo directo."></i>
                             </span>
                         </label>
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1">
-                                <input type="number" wire:model.live.debounce.500ms="marginPercent" step="1" min="0" max="100" class="input h-9 text-right pr-8">
+                                <input type="number" wire:model.live.debounce.500ms="marginPercent" step="1" min="0"
+                                    max="100" class="input h-9 text-right pr-8">
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">%</span>
                             </div>
                             <div class="text-right flex-1 text-body text-text-muted">
@@ -189,7 +222,8 @@
                 </div>
 
                 <div class="bg-surface-main rounded-lg p-4 flex flex-col items-center justify-center text-center">
-                    <p class="text-xs-fluid text-text-muted mb-1 uppercase tracking-wider font-semibold">Total Presupuestado</p>
+                    <p class="text-xs-fluid text-text-muted mb-1 uppercase tracking-wider font-semibold">Total
+                        Presupuestado</p>
                     <p class="text-3xl font-bold text-text-primary tabular-nums tracking-tight">
                         ${{ number_format($this->grand_total, 2) }}
                     </p>
@@ -203,7 +237,8 @@
                         </div>
                         <div class="flex justify-between items-center text-xs-fluid text-text-muted">
                             <span>Monto promedio por ítem:</span>
-                            <span class="font-medium text-text-primary">${{ number_format($this->grand_total / count($items), 2) }}</span>
+                            <span
+                                class="font-medium text-text-primary">${{ number_format($this->grand_total / count($items), 2) }}</span>
                         </div>
                     </div>
                 @endif

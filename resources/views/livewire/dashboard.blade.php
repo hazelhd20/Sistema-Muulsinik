@@ -154,7 +154,7 @@
                     <i data-lucide="arrow-right" class="w-3 h-3"></i>
                 </a>
             </div>
-            <table>
+            <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
                 <thead>
                     <tr>
                         <th>Proyecto</th>
@@ -185,6 +185,28 @@
                     @endforelse
                 </tbody>
             </table>
+            
+            <table wire:loading.class.remove="hidden" class="hidden w-full">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Estado</th>
+                        <th class="text-right">Presupuesto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for($i=0; $i<3; $i++)
+                    <tr>
+                        <td>
+                            <div class="h-4 skeleton rounded w-3/4 mb-1"></div>
+                            <div class="h-3 skeleton rounded w-1/2"></div>
+                        </td>
+                        <td><div class="h-6 skeleton rounded-full w-20"></div></td>
+                        <td class="text-right"><div class="h-4 skeleton rounded w-16 ml-auto"></div></td>
+                    </tr>
+                    @endfor
+                </tbody>
+            </table>
         </div>
 
         {{-- Requisiciones recientes --}}
@@ -197,7 +219,7 @@
                     <i data-lucide="arrow-right" class="w-3 h-3"></i>
                 </a>
             </div>
-            <table>
+            <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
                 <thead>
                     <tr>
                         <th>Número</th>
@@ -226,6 +248,28 @@
                             </td>
                         </tr>
                     @endforelse
+                </tbody>
+            </table>
+            
+            <table wire:loading.class.remove="hidden" class="hidden w-full">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Estado</th>
+                        <th>Proyecto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for($i=0; $i<3; $i++)
+                    <tr>
+                        <td>
+                            <div class="h-4 skeleton rounded w-1/2 mb-1"></div>
+                            <div class="h-3 skeleton rounded w-3/4"></div>
+                        </td>
+                        <td><div class="h-6 skeleton rounded-full w-20"></div></td>
+                        <td><div class="h-4 skeleton rounded w-2/3"></div></td>
+                    </tr>
+                    @endfor
                 </tbody>
             </table>
         </div>

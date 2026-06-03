@@ -1,394 +1,416 @@
- <div>
+<div>
     {{-- Header --}}
     <x-page-header subtitle="Analítica" title="Reportes">
         <x-slot:actions>
-            <x-custom-select 
-                wire:model.live="projectFilter" 
-                :options="$projects->pluck('name', 'id')->toArray()" 
-                placeholder="Todos los proyectos" 
-                class="w-auto min-w-[180px]"
-            />
-            <x-custom-select 
-                wire:model.live="period" 
-                :options="['week' => 'Última semana', 'month' => 'Último mes', 'quarter' => 'Último trimestre', 'year' => 'Último año', 'all' => 'Todo']" 
-                class="w-auto min-w-[140px]"
-                placeholder=""
-            />
+            <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
+                placeholder="Todos los proyectos" class="w-auto min-w-[180px]" />
+            <x-custom-select wire:model.live="period" :options="['week' => 'Última semana', 'month' => 'Último mes', 'quarter' => 'Último trimestre', 'year' => 'Último año', 'all' => 'Todo']" class="w-auto min-w-[140px]"
+                placeholder="" />
         </x-slot:actions>
     </x-page-header>
 
     {{-- Tabs --}}
     <div class="flex items-center gap-1 mb-5 border-b border-border" x-data="{ tab: @entangle('activeTab') }">
-        <button @click="tab = 'overview'; $wire.set('activeTab', 'overview')" :class="tab === 'overview' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+        <button @click="tab = 'overview'; $wire.set('activeTab', 'overview')"
+            :class="tab === 'overview' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
+            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
             <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Resumen
         </button>
-        <button @click="tab = 'suppliers'; $wire.set('activeTab', 'suppliers')" :class="tab === 'suppliers' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+        <button @click="tab = 'suppliers'; $wire.set('activeTab', 'suppliers')"
+            :class="tab === 'suppliers' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
+            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
             <i data-lucide="building-2" class="w-3.5 h-3.5"></i> Proveedores
         </button>
-        <button @click="tab = 'vendors'; $wire.set('activeTab', 'vendors')" :class="tab === 'vendors' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+        <button @click="tab = 'vendors'; $wire.set('activeTab', 'vendors')"
+            :class="tab === 'vendors' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
+            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
             <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Vendedores
         </button>
-        <button @click="tab = 'products'; $wire.set('activeTab', 'products')" :class="tab === 'products' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'" class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
+        <button @click="tab = 'products'; $wire.set('activeTab', 'products')"
+            :class="tab === 'products' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
+            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
             <i data-lucide="package" class="w-3.5 h-3.5"></i> Productos
         </button>
     </div>
 
     {{-- ═══════════════════════════════════════════════════ --}}
-    {{-- TAB: RESUMEN GENERAL                               --}}
+    {{-- TAB: RESUMEN GENERAL --}}
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'overview')
 
-    {{-- KPI Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="dollar-sign" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-h2 font-bold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</p>
-                <p class="text-xs-fluid text-text-muted">Gasto total del período</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="receipt" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-h2 text-text-primary">{{ $expenseCount }}</p>
-                <p class="text-xs-fluid text-text-muted">Transacciones · ${{ number_format($avgExpense, 0, '.', ',') }} prom.</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="check-circle" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-h2 text-text-primary">{{ $requisitionsApproved }}</p>
-                <p class="text-xs-fluid text-text-muted">Requisiciones aprobadas</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="hard-hat" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-h2 text-text-primary">{{ $activeProjects }}/{{ $totalProjects }}</p>
-                <p class="text-xs-fluid text-text-muted">Proyectos activos</p>
-            </div>
-        </div>
-    </div>
-
-    {{-- Charts row --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        {{-- Tendencia mensual --}}
-        <div class="lg:col-span-2 card">
-            <div class="flex items-center justify-between mb-4">
+        {{-- KPI Cards --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+            <div class="stat-card">
+                <div class="stat-icon bg-surface-hover">
+                    <i data-lucide="dollar-sign" class="w-5 h-5 text-text-muted"></i>
+                </div>
                 <div>
-                    <h2 class="text-small font-semibold text-text-primary">Tendencia de Gastos</h2>
-                    <p class="text-xs-fluid text-text-muted">Últimos 12 meses</p>
+                    <p class="text-h2 font-bold text-text-primary tabular-nums">
+                        ${{ number_format($totalExpenses, 0, '.', ',') }}</p>
+                    <p class="text-xs-fluid text-text-muted">Gasto total del período</p>
                 </div>
             </div>
-            <div class="h-64" wire:ignore x-data="trendChart()" x-init="init()">
-                <canvas id="trend-chart"></canvas>
+            <div class="stat-card">
+                <div class="stat-icon bg-surface-hover">
+                    <i data-lucide="receipt" class="w-5 h-5 text-text-muted"></i>
+                </div>
+                <div>
+                    <p class="text-h2 text-text-primary">{{ $expenseCount }}</p>
+                    <p class="text-xs-fluid text-text-muted">Transacciones · ${{ number_format($avgExpense, 0, '.', ',') }}
+                        prom.</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-surface-hover">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-text-muted"></i>
+                </div>
+                <div>
+                    <p class="text-h2 text-text-primary">{{ $requisitionsApproved }}</p>
+                    <p class="text-xs-fluid text-text-muted">Requisiciones aprobadas</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-surface-hover">
+                    <i data-lucide="hard-hat" class="w-5 h-5 text-text-muted"></i>
+                </div>
+                <div>
+                    <p class="text-h2 text-text-primary">{{ $activeProjects }}/{{ $totalProjects }}</p>
+                    <p class="text-xs-fluid text-text-muted">Proyectos activos</p>
+                </div>
             </div>
         </div>
 
-        {{-- Distribución por categoría (donut) --}}
-        <div class="card">
-            <h2 class="text-small font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
-            @if($expenseByCategory->isEmpty())
-                <div class="h-52 flex flex-col items-center justify-center">
-                    <x-empty-state icon="pie-chart" title="Sin datos para el período" class="py-0" />
+        {{-- Charts row --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            {{-- Tendencia mensual --}}
+            <div class="lg:col-span-2 card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-small font-semibold text-text-primary">Tendencia de Gastos</h2>
+                        <p class="text-xs-fluid text-text-muted">Últimos 12 meses</p>
+                    </div>
                 </div>
-            @else
-                <div class="h-52" wire:ignore x-data="categoryChart()" x-init="init()">
-                    <canvas id="category-chart"></canvas>
+                <div class="h-64" wire:ignore x-data="trendChart()" x-init="init()">
+                    <canvas id="trend-chart"></canvas>
                 </div>
-                <div class="mt-4 space-y-2">
-                    @php
-                        $catColors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
-                    @endphp
-                    @foreach($expenseByCategory->take(5) as $i => $cat)
-                        <div class="flex items-center justify-between text-body">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2.5 h-2.5 rounded-full" style="background: {{ $catColors[$i] ?? '#9ca3af' }}"></div>
-                                <span class="text-text-secondary">{{ $categoryLabels[$cat->category] ?? $cat->category }}</span>
-                            </div>
-                            <span class="font-medium text-text-primary">${{ number_format($cat->total, 0, '.', ',') }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </div>
+            </div>
 
-    {{-- Budget comparison + Top projects --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {{-- Presupuesto vs Gasto --}}
-        <div class="card">
-            <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
-            @if($budgetComparison->isEmpty())
-                <x-empty-state icon="folder-open" title="Sin proyectos activos" class="py-8" />
-            @else
-                <div class="space-y-4">
-                    @foreach($budgetComparison as $comp)
+            {{-- Distribución por categoría (donut) --}}
+            <div class="card">
+                <h2 class="text-small font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
+                @if($expenseByCategory->isEmpty())
+                    <div class="h-52 flex flex-col items-center justify-center">
+                        <x-empty-state icon="pie-chart" title="Sin datos para el período" class="py-0" />
+                    </div>
+                @else
+                    <div class="h-52" wire:ignore x-data="categoryChart()" x-init="init()">
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                    <div class="mt-4 space-y-2">
                         @php
-                            $p = min($comp['percent'], 100);
-                            $barColor = $comp['percent'] >= 90 ? 'bg-danger' : ($comp['percent'] >= 70 ? 'bg-warning' : 'bg-primary-600');
+                            $catColors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
                         @endphp
-                        <div>
-                            <div class="flex items-center justify-between text-body mb-1">
-                                <span class="font-medium text-text-primary truncate max-w-[60%]">{{ $comp['name'] }}</span>
-                                <span class="text-text-muted text-xs-fluid">
-                                    ${{ number_format($comp['spent'], 0, '.', ',') }} / ${{ number_format($comp['budget'], 0, '.', ',') }}
-                                </span>
+                        @foreach($expenseByCategory->take(5) as $i => $cat)
+                            <div class="flex items-center justify-between text-body">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2.5 h-2.5 rounded-full" style="background: {{ $catColors[$i] ?? '#9ca3af' }}">
+                                    </div>
+                                    <span class="text-text-secondary">{{ $categoryLabels[$cat->category] ?? $cat->category }}</span>
+                                </div>
+                                <span class="font-medium text-text-primary">${{ number_format($cat->total, 0, '.', ',') }}</span>
                             </div>
-                            <div class="w-full h-2.5 bg-surface-main rounded-full overflow-hidden">
-                                <div class="{{ $barColor }} h-full rounded-full transition-all duration-500" style="width: {{ $p }}%"></div>
-                            </div>
-                            <div class="flex justify-between mt-0.5">
-                                <span class="text-xs-fluid text-text-muted">{{ $comp['percent'] }}% usado</span>
-                                @if($comp['percent'] >= 90)
-                                    <span class="text-xs-fluid font-semibold text-danger">⚠ Sobrepresupuesto</span>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+                        @endforeach
+                    </div>
+                @endif
+            </div>
         </div>
 
-        {{-- Top 5 proyectos por gasto --}}
-        <div class="table-container">
-            <div class="px-4 py-3 border-b border-border">
-                <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
-                <p class="text-xs-fluid text-text-muted">Período seleccionado</p>
+        {{-- Budget comparison + Top projects --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {{-- Presupuesto vs Gasto --}}
+            <div class="card">
+                <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
+                @if($budgetComparison->isEmpty())
+                    <x-empty-state icon="folder-open" title="Sin proyectos activos" class="py-8" />
+                @else
+                    <div class="space-y-4">
+                        @foreach($budgetComparison as $comp)
+                            @php
+                                $p = min($comp['percent'], 100);
+                                $barColor = $comp['percent'] >= 90 ? 'bg-danger' : ($comp['percent'] >= 70 ? 'bg-warning' : 'bg-primary-600');
+                            @endphp
+                            <div>
+                                <div class="flex items-center justify-between text-body mb-1">
+                                    <span class="font-medium text-text-primary truncate max-w-[60%]">{{ $comp['name'] }}</span>
+                                    <span class="text-text-muted text-xs-fluid">
+                                        ${{ number_format($comp['spent'], 0, '.', ',') }} /
+                                        ${{ number_format($comp['budget'], 0, '.', ',') }}
+                                    </span>
+                                </div>
+                                <div class="w-full h-2.5 bg-surface-main rounded-full overflow-hidden">
+                                    <div class="{{ $barColor }} h-full rounded-full transition-all duration-500"
+                                        style="width: {{ $p }}%"></div>
+                                </div>
+                                <div class="flex justify-between mt-0.5">
+                                    <span class="text-xs-fluid text-text-muted">{{ $comp['percent'] }}% usado</span>
+                                    @if($comp['percent'] >= 90)
+                                        <span class="text-xs-fluid font-semibold text-danger">⚠ Sobrepresupuesto</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Proyecto</th>
-                        <th class="text-right">Presupuesto</th>
-                        <th class="text-right">Gastado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($topProjects as $i => $proj)
+
+            {{-- Top 5 proyectos por gasto --}}
+            <div class="table-container">
+                <div class="px-4 py-3 border-b border-border">
+                    <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
+                    <p class="text-xs-fluid text-text-muted">Período seleccionado</p>
+                </div>
+                <table>
+                    <thead>
                         <tr>
-                            <td>
-                                <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
-                                    {{ $i + 1 }}
-                                </span>
-                            </td>
-                            <td>
-                                <p class="font-medium">{{ $proj->name }}</p>
-                                <p class="text-xs-fluid text-text-muted">{{ $proj->client ?? '—' }}</p>
-                            </td>
-                            <td class="text-right text-body text-text-secondary">${{ number_format($proj->budget, 0, '.', ',') }}</td>
-                            <td class="text-right text-body font-semibold text-text-primary">${{ number_format($proj->total_spent, 0, '.', ',') }}</td>
+                            <th>#</th>
+                            <th>Proyecto</th>
+                            <th class="text-right">Presupuesto</th>
+                            <th class="text-right">Gastado</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="p-0">
-                                <x-empty-state icon="folder-open" title="Sin datos" message="No hay proyectos en este período." class="py-8" />
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($topProjects as $i => $proj)
+                            <tr>
+                                <td>
+                                    <span
+                                        class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                        {{ $i + 1 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <p class="font-medium">{{ $proj->name }}</p>
+                                    <p class="text-xs-fluid text-text-muted">{{ $proj->client ?? '—' }}</p>
+                                </td>
+                                <td class="text-right text-body text-text-secondary">
+                                    ${{ number_format($proj->budget, 0, '.', ',') }}</td>
+                                <td class="text-right text-body font-semibold text-text-primary">
+                                    ${{ number_format($proj->total_spent, 0, '.', ',') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="p-0">
+                                    <x-empty-state icon="folder-open" title="Sin datos"
+                                        message="No hay proyectos en este período." class="py-8" />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
     @endif
 
     {{-- ═══════════════════════════════════════════════════ --}}
-    {{-- TAB: PROVEEDORES                                    --}}
+    {{-- TAB: PROVEEDORES --}}
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'suppliers')
-    <div class="table-container">
-        <div class="px-4 py-3 border-b border-border flex items-center justify-between">
-            <div>
-                <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
-                <p class="text-xs-fluid text-text-muted">Monto total de requisiciones aprobadas en el período</p>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Proveedor</th>
-                    <th>Categoría</th>
-                    <th class="text-center">Requisiciones</th>
-                    <th class="text-center">Productos</th>
-                    <th class="text-right">Monto Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($topSuppliers as $i => $supplier)
-                    <tr>
-                        <td>
-                            <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
-                                {{ $i + 1 }}
-                            </span>
-                        </td>
-                        <td class="font-medium text-text-primary">{{ $supplier->trade_name }}</td>
-                        <td>
-                            @if($supplier->category)
-                                <x-dynamic-badge :value="$supplier->category" />
-                            @else
-                                <span class="text-text-muted">—</span>
-                            @endif
-                        </td>
-                        <td class="text-center text-body tabular-nums">{{ $supplier->total_requisitions }}</td>
-                        <td class="text-center text-body tabular-nums">{{ $supplier->total_items }}</td>
-                        <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($supplier->total_amount, 2, '.', ',') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6">
-                            <x-empty-state icon="building-2" title="Sin datos de proveedores" message="No hay requisiciones aprobadas en este período." />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    @endif
-
-    {{-- ═══════════════════════════════════════════════════ --}}
-    {{-- TAB: VENDEDORES                                     --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
-    @if($activeTab === 'vendors')
-    <div class="table-container">
-        <div class="px-4 py-3 border-b border-border flex items-center justify-between">
-            <div>
-                <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
-                <p class="text-xs-fluid text-text-muted">Montos por vendedor/contacto de proveedor en el período</p>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Vendedor</th>
-                    <th>Proveedor</th>
-                    <th class="text-center">Requisiciones</th>
-                    <th class="text-right">Monto Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($topVendors as $i => $vendor)
-                    <tr>
-                        <td>
-                            <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
-                                {{ $i + 1 }}
-                            </span>
-                        </td>
-                        <td class="font-medium text-text-primary">{{ $vendor->vendor_name }}</td>
-                        <td class="text-body text-text-secondary">{{ $vendor->supplier_name }}</td>
-                        <td class="text-center text-body tabular-nums">{{ $vendor->total_requisitions }}</td>
-                        <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($vendor->total_amount, 2, '.', ',') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5">
-                            <x-empty-state icon="user-check" title="Sin datos de vendedores" message="No hay requisiciones aprobadas en este período." />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    @endif
-
-    {{-- ═══════════════════════════════════════════════════ --}}
-    {{-- TAB: PRODUCTOS MÁS COMPRADOS                       --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
-    @if($activeTab === 'products')
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        {{-- Tabla de productos --}}
-        <div class="lg:col-span-2 table-container">
-            <div class="px-4 py-3 border-b border-border">
-                <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
-                <p class="text-xs-fluid text-text-muted">Top 15 por monto en requisiciones aprobadas</p>
+        <div class="table-container">
+            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                    <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
+                    <p class="text-xs-fluid text-text-muted">Monto total de requisiciones aprobadas en el período</p>
+                </div>
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Producto</th>
+                        <th>Proveedor</th>
                         <th>Categoría</th>
-                        <th class="text-center">Veces</th>
-                        <th class="text-right">Cant. Total</th>
-                        <th class="text-right">Precio Prom.</th>
+                        <th class="text-center">Requisiciones</th>
+                        <th class="text-center">Productos</th>
                         <th class="text-right">Monto Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($topProducts as $i => $product)
+                    @forelse($topSuppliers as $i => $supplier)
                         <tr>
                             <td>
-                                <span class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                <span
+                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                     {{ $i + 1 }}
                                 </span>
                             </td>
+                            <td class="font-medium text-text-primary">{{ $supplier->trade_name }}</td>
                             <td>
-                                <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
-                                @if($product->measure_abbr)
-                                    <span class="badge badge-secondary text-[10px]">{{ $product->measure_abbr }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($product->category_name)
-                                    <x-dynamic-badge :value="$product->category_name" />
+                                @if($supplier->category)
+                                    <x-dynamic-badge :value="$supplier->category" />
                                 @else
                                     <span class="text-text-muted">—</span>
                                 @endif
                             </td>
-                            <td class="text-center text-body tabular-nums">{{ $product->times_purchased }}</td>
-                            <td class="text-right text-body tabular-nums">{{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}</td>
-                            <td class="text-right text-body text-text-secondary tabular-nums">${{ number_format($product->avg_price, 2, '.', ',') }}</td>
-                            <td class="text-right font-semibold text-text-primary tabular-nums">${{ number_format($product->total_amount, 2, '.', ',') }}</td>
+                            <td class="text-center text-body tabular-nums">{{ $supplier->total_requisitions }}</td>
+                            <td class="text-center text-body tabular-nums">{{ $supplier->total_items }}</td>
+                            <td class="text-right font-semibold text-text-primary tabular-nums">
+                                ${{ number_format($supplier->total_amount, 2, '.', ',') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
-                                <x-empty-state icon="package" title="Sin datos de productos" message="No hay requisiciones aprobadas en este período." />
+                            <td colspan="6">
+                                <x-empty-state icon="building-2" title="Sin datos de proveedores"
+                                    message="No hay requisiciones aprobadas en este período." />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+    @endif
 
-        {{-- Donut por categoría de producto --}}
-        <div class="card">
-            <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
-            @if($productsByCategory->isEmpty())
-                <div class="h-52 flex flex-col items-center justify-center">
-                    <x-empty-state icon="pie-chart" title="Sin datos" class="py-0" />
+    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- TAB: VENDEDORES --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'vendors')
+        <div class="table-container">
+            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                    <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
+                    <p class="text-xs-fluid text-text-muted">Montos por vendedor/contacto de proveedor en el período</p>
                 </div>
-            @else
-                <div class="h-52" wire:ignore x-data="productCategoryChart()" x-init="init()">
-                    <canvas id="product-category-chart"></canvas>
-                </div>
-                <div class="mt-4 space-y-2">
-                    @php
-                        $pcColors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
-                    @endphp
-                    @foreach($productsByCategory->take(6) as $i => $pc)
-                        <div class="flex items-center justify-between text-body">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2.5 h-2.5 rounded-full" style="background: {{ $pcColors[$i] ?? '#9ca3af' }}"></div>
-                                <span class="text-text-secondary">{{ $pc->category_name ?? '—' }}</span>
-                            </div>
-                            <span class="font-medium text-text-primary">${{ number_format($pc->total_amount, 0, '.', ',') }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Vendedor</th>
+                        <th>Proveedor</th>
+                        <th class="text-center">Requisiciones</th>
+                        <th class="text-right">Monto Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($topVendors as $i => $vendor)
+                        <tr>
+                            <td>
+                                <span
+                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                    {{ $i + 1 }}
+                                </span>
+                            </td>
+                            <td class="font-medium text-text-primary">{{ $vendor->vendor_name }}</td>
+                            <td class="text-body text-text-secondary">{{ $vendor->supplier_name }}</td>
+                            <td class="text-center text-body tabular-nums">{{ $vendor->total_requisitions }}</td>
+                            <td class="text-right font-semibold text-text-primary tabular-nums">
+                                ${{ number_format($vendor->total_amount, 2, '.', ',') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">
+                                <x-empty-state icon="user-check" title="Sin datos de vendedores"
+                                    message="No hay requisiciones aprobadas en este período." />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    </div>
+    @endif
+
+    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- TAB: PRODUCTOS MÁS COMPRADOS --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
+    @if($activeTab === 'products')
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            {{-- Tabla de productos --}}
+            <div class="lg:col-span-2 table-container">
+                <div class="px-4 py-3 border-b border-border">
+                    <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
+                    <p class="text-xs-fluid text-text-muted">Top 15 por monto en requisiciones aprobadas</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th class="text-center">Veces</th>
+                            <th class="text-right">Cant. Total</th>
+                            <th class="text-right">Precio Prom.</th>
+                            <th class="text-right">Monto Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($topProducts as $i => $product)
+                            <tr>
+                                <td>
+                                    <span
+                                        class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                        {{ $i + 1 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
+                                    @if($product->measure_abbr)
+                                        <span class="badge badge-secondary text-[10px]">{{ $product->measure_abbr }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($product->category_name)
+                                        <x-dynamic-badge :value="$product->category_name" />
+                                    @else
+                                        <span class="text-text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-center text-body tabular-nums">{{ $product->times_purchased }}</td>
+                                <td class="text-right text-body tabular-nums">
+                                    {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}</td>
+                                <td class="text-right text-body text-text-secondary tabular-nums">
+                                    ${{ number_format($product->avg_price, 2, '.', ',') }}</td>
+                                <td class="text-right font-semibold text-text-primary tabular-nums">
+                                    ${{ number_format($product->total_amount, 2, '.', ',') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7">
+                                    <x-empty-state icon="package" title="Sin datos de productos"
+                                        message="No hay requisiciones aprobadas en este período." />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Donut por categoría de producto --}}
+            <div class="card">
+                <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
+                @if($productsByCategory->isEmpty())
+                    <div class="h-52 flex flex-col items-center justify-center">
+                        <x-empty-state icon="pie-chart" title="Sin datos" class="py-0" />
+                    </div>
+                @else
+                    <div class="h-52" wire:ignore x-data="productCategoryChart()" x-init="init()">
+                        <canvas id="product-category-chart"></canvas>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        @php
+                            $pcColors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+                        @endphp
+                        @foreach($productsByCategory->take(6) as $i => $pc)
+                            <div class="flex items-center justify-between text-body">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2.5 h-2.5 rounded-full" style="background: {{ $pcColors[$i] ?? '#9ca3af' }}">
+                                    </div>
+                                    <span class="text-text-secondary">{{ $pc->category_name ?? '—' }}</span>
+                                </div>
+                                <span
+                                    class="font-medium text-text-primary">${{ number_format($pc->total_amount, 0, '.', ',') }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </div>
     @endif
 
 </div>

@@ -35,8 +35,9 @@
     </div>
 
     {{-- Suppliers Grid --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        @forelse($suppliers as $supplier)
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 w-full">
+            @forelse($suppliers as $supplier)
             <div class="card">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3 min-w-0">
@@ -72,16 +73,16 @@
                         {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                     </span>
                     <div class="flex items-center gap-1">
-                        <button wire:click="viewVendors({{ $supplier->id }})" class="btn-icon" title="Ver vendedores">
+                        <button wire:click="viewVendors({{ $supplier->id }})" class="btn-icon" title="Ver vendedores" aria-label="Ver vendedores">
                             <i data-lucide="users" class="w-4 h-4"></i>
                         </button>
                         <button wire:click="openEditSupplierModal({{ $supplier->id }})" class="btn-icon-primary"
-                            title="Editar proveedor">
+                            title="Editar proveedor" aria-label="Editar proveedor">
                             <i data-lucide="pencil" class="w-4 h-4"></i>
                         </button>
                         <button wire:click="deleteSupplier({{ $supplier->id }})"
                             wire:confirm="¿Eliminar este proveedor y todos sus vendedores?" class="btn-icon-danger"
-                            title="Eliminar proveedor">
+                            title="Eliminar proveedor" aria-label="Eliminar proveedor">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -93,6 +94,35 @@
                     message="Agrega un proveedor para comenzar." />
             </div>
         @endforelse
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 absolute inset-0 w-full z-10 bg-surface-main">
+            @for($i=0; $i<6; $i++)
+            <div class="card">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-3 min-w-0 w-full">
+                        <div class="w-9 h-9 rounded-lg skeleton shrink-0"></div>
+                        <div class="w-full">
+                            <div class="h-4 skeleton rounded w-3/4 mb-1"></div>
+                            <div class="h-3 skeleton rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-1.5 mb-4">
+                    <div class="h-3 skeleton rounded w-full"></div>
+                    <div class="h-3 skeleton rounded w-5/6"></div>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-border">
+                    <div class="h-3 skeleton rounded w-24"></div>
+                    <div class="flex gap-1">
+                        <div class="w-8 h-8 skeleton rounded"></div>
+                        <div class="w-8 h-8 skeleton rounded"></div>
+                    </div>
+                </div>
+            </div>
+            @endfor
+        </div>
     </div>
 
     <div class="mt-4">{{ $suppliers->links() }}</div>
