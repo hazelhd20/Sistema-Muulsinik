@@ -23,6 +23,7 @@ class Dashboard extends Component
             ->whereYear('date', now()->year)
             ->sum('amount');
         $pendingRequisitions = Requisition::where('status', 'pendiente')->count();
+        $approvedRequisitions = Requisition::where('status', 'aprobada')->count();
         $totalSuppliers = Supplier::count();
 
         $recentProjects = Project::latest()->take(5)->get();
@@ -43,7 +44,7 @@ class Dashboard extends Component
 
         return view('livewire.dashboard', compact(
             'totalProjects', 'activeProjects', 'totalExpenses',
-            'monthExpenses', 'pendingRequisitions', 'totalSuppliers',
+            'monthExpenses', 'pendingRequisitions', 'approvedRequisitions', 'totalSuppliers',
             'recentProjects', 'recentExpenses', 'recentRequisitions',
             'monthlyExpenses'
         ));

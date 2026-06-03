@@ -297,6 +297,17 @@ input[type="search"]::-webkit-search-results-decoration {
         box-shadow: 0 0 0 3px rgba(2, 48, 200, 0.08);
     }
 
+    .input-error,
+    .has-error .input {
+        border-color: var(--color-danger) !important;
+        background-color: #FEF2F2 !important;
+    }
+
+    .input-error:focus,
+    .has-error .input:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+    }
+
     .input::placeholder {
         color: var(--color-text-muted);
     }
@@ -430,7 +441,8 @@ input[type="search"]::-webkit-search-results-decoration {
     .table-container {
         background-color: var(--color-surface-card);
         border-radius: 0.625rem;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
         border: 1px solid var(--color-border);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
@@ -482,6 +494,8 @@ input[type="search"]::-webkit-search-results-decoration {
         background-color: transparent;
         border: none;
         cursor: pointer;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
     }
 
     .btn-icon:hover {

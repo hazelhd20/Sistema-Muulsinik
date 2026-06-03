@@ -10,10 +10,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class ExpenseIndex extends Component
 {
-    use WithPagination, WithFileUploads, EnforcesPermissions;
+    use WithPagination, WithFileUploads, EnforcesPermissions, WithSorting;
 
     public string $search = '';
     public string $projectFilter = '';
@@ -47,6 +48,12 @@ class ExpenseIndex extends Component
     public function updatedPeriodFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function mount(): void
+    {
+        $this->sortField = 'date';
+        $this->sortDirection = 'desc';
     }
 
     public function openCreateModal(): void
@@ -163,7 +170,7 @@ class ExpenseIndex extends Component
                     default        => null,
                 };
             })
-            ->latest('date')
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();

@@ -7,10 +7,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class QuickBudgetIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithSorting;
 
     public string $search = '';
 
@@ -33,7 +34,7 @@ class QuickBudgetIndex extends Component
             ->when($this->search, fn ($q) => $q->where('title', 'like', "%{$this->search}%")
                 ->orWhere('client', 'like', "%{$this->search}%"))
             ->withCount('items')
-            ->latest()
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         return view('livewire.quick-budgets.quick-budget-index', compact('budgets'));

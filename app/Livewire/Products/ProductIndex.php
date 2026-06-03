@@ -10,10 +10,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class ProductIndex extends Component
 {
-    use WithPagination, EnforcesPermissions;
+    use WithPagination, EnforcesPermissions, WithSorting;
 
     public string $search = '';
     public string $categoryFilter = '';
@@ -30,6 +31,12 @@ class ProductIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function mount(): void
+    {
+        $this->sortField = 'canonical_name';
+        $this->sortDirection = 'asc';
     }
 
     public function openCreateModal(): void
@@ -128,7 +135,7 @@ class ProductIndex extends Component
             ->with(['category', 'measure'])
             ->when($this->search, fn($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
             ->when($this->categoryFilter, fn($q) => $q->where('category_id', $this->categoryFilter))
-            ->orderBy('canonical_name')
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         $suppliers = \App\Models\Supplier::orderBy('trade_name')->get();

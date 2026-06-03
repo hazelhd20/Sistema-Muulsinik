@@ -13,10 +13,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class RequisitionIndex extends Component
 {
     use WithPagination;
+    use WithSorting;
 
     public string $search = '';
     public string $statusFilter = '';
@@ -143,7 +145,7 @@ class RequisitionIndex extends Component
                     default => null,
                 };
             })
-            ->latest()
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();

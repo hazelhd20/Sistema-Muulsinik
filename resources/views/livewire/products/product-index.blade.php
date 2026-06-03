@@ -49,7 +49,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !bg-surface-hover/50 !p-4">
+        <div class="card !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div class="flex items-center gap-2">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -67,9 +67,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Producto</th>
-                    <th>Categoría</th>
-                    <th>Unidad</th>
+                    <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="category_id" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="measure_id" label="Unidad" :sortField="$sortField" :sortDirection="$sortDirection" />
                     <th class="actions">Acciones</th>
                 </tr>
             </thead>

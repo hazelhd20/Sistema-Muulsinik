@@ -39,7 +39,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nombre</th>
+                    <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
                     <th class="actions">Acciones</th>
                 </tr>
             </thead>

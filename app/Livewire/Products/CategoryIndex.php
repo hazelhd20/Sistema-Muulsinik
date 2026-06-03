@@ -8,10 +8,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class CategoryIndex extends Component
 {
-    use WithPagination, EnforcesPermissions;
+    use WithPagination, EnforcesPermissions, WithSorting;
 
     public string $search = '';
 
@@ -26,6 +27,12 @@ class CategoryIndex extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function mount(): void
+    {
+        $this->sortField = 'name';
+        $this->sortDirection = 'asc';
     }
 
     public function openCreateModal(): void
@@ -87,7 +94,7 @@ class CategoryIndex extends Component
     public function render()
     {
         $categories = Category::where('name', 'like', '%' . $this->search . '%')
-            ->orderBy('name')
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         return view('livewire.products.category-index', compact('categories'));

@@ -8,10 +8,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class MeasureIndex extends Component
 {
-    use WithPagination, EnforcesPermissions;
+    use WithPagination, EnforcesPermissions, WithSorting;
 
     public string $search = '';
 
@@ -28,6 +29,12 @@ class MeasureIndex extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function mount(): void
+    {
+        $this->sortField = 'name';
+        $this->sortDirection = 'asc';
     }
 
     public function openCreateModal(): void
@@ -92,7 +99,7 @@ class MeasureIndex extends Component
     {
         $measures = Measure::where('name', 'like', '%' . $this->search . '%')
             ->orWhere('abbreviation', 'like', '%' . $this->search . '%')
-            ->orderBy('name')
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         return view('livewire.measures.measure-index', compact('measures'));

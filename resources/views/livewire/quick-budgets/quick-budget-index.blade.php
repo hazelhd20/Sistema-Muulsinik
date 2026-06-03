@@ -27,11 +27,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Título</th>
-                    <th>Cliente</th>
-                    <th>Fecha</th>
+                    <x-sortable-header field="title" label="Título" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="client" label="Cliente" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="created_at" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
                     <th class="text-center">Ítems</th>
-                    <th class="text-right">Monto Total</th>
+                    <x-sortable-header field="grand_total" label="Monto Total" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
                     <th class="actions">Acciones</th>
                 </tr>
             </thead>

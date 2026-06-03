@@ -1,6 +1,6 @@
 @props(['label' => '', 'error' => null, 'hint' => null, 'required' => false])
 
-<div {{ $attributes }}>
+<div {{ $attributes->class([$error ? 'has-error' : '']) }}>
     @if($label)
         <label class="label">{{ $label }}@if($required) *@endif</label>
     @endif

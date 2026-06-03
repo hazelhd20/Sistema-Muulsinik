@@ -22,6 +22,7 @@
 <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6 lg:p-8"
      role="dialog" aria-modal="true"
      x-data
+     x-trap.noscroll="true"
      @keydown.escape.window="$wire.set('{{ $show }}', false)"
      x-init="$nextTick(() => {
          const first = $el.querySelector('input:not([type=hidden]):not([type=file]),textarea,select');

@@ -133,7 +133,7 @@
                         <span class="text-small text-text-secondary">Req. aprobadas</span>
                     </div>
                     <span class="text-small font-semibold text-text-primary tabular-nums">
-                        {{ \App\Models\Requisition::where('status', 'aprobada')->count() }}
+                        {{ $approvedRequisitions }}
                     </span>
                 </div>
 
@@ -164,7 +164,7 @@
                 </thead>
                 <tbody>
                     @forelse($recentProjects as $project)
-                        <tr>
+                        <tr wire:click="" onclick="Livewire.navigate('{{ url('/proyectos') }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
                                 <p class="text-xs-fluid text-text-muted">{{ $project->client ?? '—' }}</p>
@@ -229,7 +229,7 @@
                 </thead>
                 <tbody>
                     @forelse($recentRequisitions as $req)
-                        <tr>
+                        <tr wire:click="" onclick="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">
                                     {{ $req->number ?? 'REQ-' . $req->id }}

@@ -11,10 +11,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class UserIndex extends Component
 {
-    use WithPagination, EnforcesPermissions;
+    use WithPagination, EnforcesPermissions, WithSorting;
 
     public string $search = '';
     public string $roleFilter = '';
@@ -171,7 +172,7 @@ class UserIndex extends Component
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%"))
             ->when($this->roleFilter, fn($q) => $q->where('role_id', $this->roleFilter))
-            ->latest()
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 
         $roles = Role::all();

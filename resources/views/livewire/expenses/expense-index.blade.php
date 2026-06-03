@@ -86,7 +86,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !bg-surface-hover/50 !p-4">
+        <div class="card !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -108,11 +108,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Concepto</th>
-                    <th>Proyecto</th>
-                    <th>Categoría</th>
-                    <th>Fecha</th>
-                    <th class="numeric">Monto</th>
+                    <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
                     <th class="actions">Acciones</th>
                 </tr>
             </thead>

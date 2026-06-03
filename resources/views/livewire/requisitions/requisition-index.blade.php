@@ -32,15 +32,7 @@
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
         {{-- Search: compact width --}}
-        <div class="relative w-full sm:w-72" x-data="{ focused: false }">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar requisición..."
-                class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
-            <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-            </button>
-        </div>
+        <x-search-input wire:model.live.debounce.50ms="search" placeholder="Buscar requisición..." />
 
         {{-- Filters Toggle Button with counter badge --}}
         <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
@@ -75,7 +67,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !bg-surface-hover/50 !p-4">
+        <div class="card !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -91,250 +83,187 @@
         </div>
     </div>
 
-    {{-- Requisitions list --}}
+    {{-- Requisitions Table --}}
     <div class="relative min-h-[200px]">
-        <div wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage" class="space-y-3 w-full">
-            @forelse($requisitions as $req)
-            @php
-                $iconName = match ($req->status) { 'borrador' => 'file-edit', 'pendiente' => 'clock', 'aprobada' => 'check-circle', 'rechazada' => 'x-circle', default => 'file'};
-                $iconBg = match ($req->status) { 'borrador' => 'bg-surface-hover', 'pendiente' => 'bg-amber-50', 'aprobada' => 'bg-emerald-50', 'rechazada' => 'bg-red-50', default => 'bg-surface-hover'};
-                $iconColor = match ($req->status) { 'borrador' => 'text-text-muted', 'pendiente' => 'text-amber-600', 'aprobada' => 'text-emerald-600', 'rechazada' => 'text-danger', default => 'text-text-muted'};
-            @endphp
-            <div x-data="{ open: false }" class="card">
+        <div wire:loading.class="hidden"
+            wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
+            class="w-full">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <x-sortable-header field="number" label="Folio" :sortField="$sortField"
+                                :sortDirection="$sortDirection" />
+                            <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
+                                :sortDirection="$sortDirection" />
+                            <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
+                                :sortDirection="$sortDirection" />
+                            <th>Creador</th>
+                            <th>Proveedor</th>
+                            <x-sortable-header field="total" label="Total" :sortField="$sortField"
+                                :sortDirection="$sortDirection" align="right" />
+                            <x-sortable-header field="status" label="Estado" :sortField="$sortField"
+                                :sortDirection="$sortDirection" />
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($requisitions as $req)
+                            <tr class="group cursor-pointer hover:bg-surface-hover" wire:click=""
+                                onclick="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')">
+                                <td class="font-medium whitespace-nowrap">
+                                    {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
+                                </td>
+                                <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
+                                    {{ $req->project->name ?? '—' }}
+                                </td>
+                                <td class="whitespace-nowrap">
+                                    {{ $req->date?->format('d/m/Y') }}
+                                </td>
+                                <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
+                                    {{ $req->creator->name ?? '—' }}
+                                </td>
+                                <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
+                                    {{ $req->vendor?->name ?? '—' }}
+                                </td>
+                                <td class="text-right font-semibold tabular-nums text-text-primary">
+                                    ${{ number_format($req->total, 2, '.', ',') }}
+                                </td>
+                                <td>
+                                    <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                </td>
+                                <td onclick="event.stopPropagation()">
+                                    <div class="flex items-center justify-end gap-1">
+                                        @if($req->quotations->isNotEmpty())
+                                            @php
+                                                $firstQuot = $req->quotations->first();
+                                                $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                                $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                                            @endphp
+                                            <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
+                                                class="btn-icon-primary" title="Ver cotización adjunta"
+                                                aria-label="Ver cotización adjunta">
+                                                <i data-lucide="file-search" class="w-4 h-4"></i>
+                                            </button>
+                                        @endif
 
-                {{-- ── Cuerpo principal ── --}}
-                <div class="flex items-start gap-4">
+                                        @if($req->status === 'borrador')
+                                            <button wire:click="submitForApproval({{ $req->id }})"
+                                                wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
+                                                title="Enviar a aprobación" aria-label="Enviar a aprobación">
+                                                <i data-lucide="send" class="w-4 h-4"></i>
+                                            </button>
+                                        @endif
 
-                    {{-- Ícono de estado --}}
-                    <div class="w-9 h-9 rounded-xl {{ $iconBg }} flex items-center justify-center shrink-0 mt-0.5">
-                        <i data-lucide="{{ $iconName }}" class="w-4 h-4 {{ $iconColor }}"></i>
-                    </div>
+                                        @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                            <button wire:click="approve({{ $req->id }})"
+                                                wire:confirm="¿Aprobar esta requisición?"
+                                                class="btn-icon-primary bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                                title="Aprobar" aria-label="Aprobar">
+                                                <i data-lucide="check" class="w-4 h-4"></i>
+                                            </button>
+                                        @endif
 
-                    {{-- Info central --}}
-                    <div class="flex-1 min-w-0">
-                        {{-- Fila 1: número + badge --}}
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <h3 class="text-small font-semibold text-text-primary">{{ $req->number ?? 'REQ-' . $req->id }}
-                            </h3>
-                            <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" class="shrink-0" />
-                        </div>
-
-                        {{-- Fila 2: metadatos primarios --}}
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs-fluid text-text-muted">
-                            <span class="flex items-center gap-1">
-                                <i data-lucide="hard-hat" class="w-3 h-3 shrink-0"></i>
-                                <span class="truncate max-w-[160px]">{{ $req->project->name ?? '—' }}</span>
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <i data-lucide="calendar" class="w-3 h-3 shrink-0"></i>
-                                {{ $req->date?->format('d/m/Y') }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <i data-lucide="user" class="w-3 h-3 shrink-0"></i>
-                                {{ $req->creator->name ?? '—' }}
-                            </span>
-                            @if($req->vendor)
-                                <span class="flex items-center gap-1">
-                                    <i data-lucide="contact" class="w-3 h-3 shrink-0"></i>
-                                    {{ $req->vendor->name }}
-                                    @if($req->vendor->supplier)
-                                        <span class="text-text-muted/60">· {{ $req->vendor->supplier->trade_name }}</span>
-                                    @endif
-                                </span>
-                            @endif
-                        </div>
-
-                        {{-- Fila 3: anotaciones (solo si existen) --}}
-                        @if($req->annotations)
-                            <p class="mt-1.5 text-xs-fluid text-text-muted italic truncate max-w-lg"
-                                title="{{ $req->annotations }}">
-                                "{{ $req->annotations }}"
-                            </p>
-                        @endif
-                    </div>
-
-                    {{-- Total --}}
-                    <div class="text-right shrink-0">
-                        <p class="text-h2 text-text-primary leading-tight">${{ number_format($req->total, 2, '.', ',') }}
-                        </p>
-                        <p class="text-xs-fluid text-text-muted">estimado</p>
-                    </div>
-                </div>
-
-                {{-- ── Footer: trigger collapsible + acciones ── --}}
-                <div class="mt-3 pt-3 border-t border-border flex items-center justify-between">
-
-                    {{-- Trigger de productos --}}
-                    @if($req->items->isNotEmpty())
-                        <button @click="open = !open"
-                            class="flex items-center gap-1.5 text-xs-fluid font-medium text-text-muted hover:text-primary-600 transition-colors">
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200"
-                                :class="open && 'rotate-180'"></i>
-                            <span>{{ $req->items->count() }} {{ $req->items->count() === 1 ? 'producto' : 'productos' }}</span>
-                        </button>
-                    @else
-                        <span class="text-text-muted">—</span>
-                    @endif
-
-                    {{-- Acciones --}}
-                    <div class="flex items-center gap-1">
-                        @if($req->quotations->isNotEmpty())
-                            @php
-                                $firstQuot = $req->quotations->first();
-                                $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                            @endphp
-                            <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" class="btn-icon-primary"
-                                title="Ver cotización adjunta" aria-label="Ver cotización adjunta">
-                                <i data-lucide="file-search" class="w-4 h-4"></i>
-                            </button>
-                        @endif
-
-                        @if($req->status === 'borrador')
-                            <button wire:click="submitForApproval({{ $req->id }})"
-                                wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
-                                title="Enviar a aprobación" aria-label="Enviar a aprobación">
-                                <i data-lucide="send" class="w-4 h-4"></i>
-                            </button>
-                        @endif
-
-                        @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                            <button wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?"
-                                class="btn-icon-primary bg-emerald-50 text-emerald-600 hover:bg-emerald-100" title="Aprobar" aria-label="Aprobar">
-                                <i data-lucide="check" class="w-4 h-4"></i>
-                            </button>
-                        @endif
-
-                        {{-- Kebab Menu for secondary actions --}}
-                        <div x-data="{ openMenu: false }" class="relative">
-                            <button @click="openMenu = !openMenu" @click.away="openMenu = false" class="btn-icon" aria-label="Más opciones" title="Más opciones">
-                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                            </button>
-                            <div x-show="openMenu" x-transition class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1" style="display:none;">
-                                <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" class="flex items-center gap-2 px-3 py-2 text-small text-text-primary hover:bg-surface-hover w-full text-left">
-                                    <i data-lucide="file-down" class="w-4 h-4 text-text-muted"></i> Descargar PDF
-                                </a>
-                                @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                    <button wire:click="openRejectModal({{ $req->id }})" class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
-                                        <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                                    </button>
-                                @endif
-                                @if(in_array($req->status, ['borrador', 'rechazada']))
-                                    <button wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición?" class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- ── Tabla colapsable de productos ── --}}
-                @if($req->items->isNotEmpty())
-                    <div x-show="open" x-collapse x-cloak class="mt-3" style="display: none;">
-                        <div class="table-embedded">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th class="text-center">Cant.</th>
-                                        <th class="text-center">Unidad</th>
-                                        <th class="text-right">P. Unit.</th>
-                                        <th class="text-right">Subtotal</th>
-                                        <th class="text-right">IVA</th>
-                                        <th class="text-right">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($req->items as $item)
-                                        <tr>
-                                            <td class="font-medium text-text-primary max-w-[180px] sm:max-w-[240px] truncate"
-                                                title="{{ $item->product_name ?? $item->product?->canonical_name ?? '' }}">
-                                                {{ $item->product_name ?? $item->product?->canonical_name ?? '—' }}</td>
-                                            <td class="text-center text-text-secondary tabular-nums">
-                                                {{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}</td>
-                                            <td class="text-center text-text-muted">
-                                                {{ $item->measure?->abbreviation ?? $item->unit ?? '—' }}</td>
-                                            <td class="text-right text-text-secondary tabular-nums">
-                                                ${{ number_format($item->unit_price, 2, '.', ',') }}</td>
-                                            <td class="text-right text-text-secondary tabular-nums">
-                                                ${{ number_format($item->line_subtotal_computed, 2, '.', ',') }}</td>
-                                            <td class="text-right tabular-nums">
-                                                @if($item->tax_amount !== null)
-                                                    <span
-                                                        class="text-text-muted">${{ number_format($item->tax_amount, 2, '.', ',') }}</span>
-                                                @else
-                                                    <span class="text-text-muted">—</span>
+                                        {{-- Kebab Menu for secondary actions --}}
+                                        <div x-data="{ openMenu: false }" class="relative">
+                                            <button @click="openMenu = !openMenu" @click.away="openMenu = false"
+                                                class="btn-icon" aria-label="Más opciones" title="Más opciones">
+                                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                            </button>
+                                            <div x-show="openMenu" x-transition
+                                                class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1"
+                                                style="display:none;">
+                                                <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank"
+                                                    class="flex items-center gap-2 px-3 py-2 text-small text-text-primary hover:bg-surface-hover w-full text-left">
+                                                    <i data-lucide="file-down" class="w-4 h-4 text-text-muted"></i>
+                                                    Descargar PDF
+                                                </a>
+                                                @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                                    <button wire:click="openRejectModal({{ $req->id }})"
+                                                        class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                                        <i data-lucide="x" class="w-4 h-4"></i> Rechazar
+                                                    </button>
                                                 @endif
-                                            </td>
-                                            <td class="text-right font-semibold text-text-primary tabular-nums">
-                                                ${{ number_format($item->line_total_computed, 2, '.', ',') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {{-- Totales --}}
-                        @php
-                            $reqSubtotal = $req->items->sum(fn($i) => $i->line_subtotal_computed);
-                            $reqTax = $req->items->sum(fn($i) => (float) ($i->tax_amount ?? 0));
-                            $reqTotal = $req->total;
-                        @endphp
-                        <div class="flex justify-end mt-3">
-                            <div class="min-w-[260px] space-y-1.5">
-                                <div class="flex items-center justify-between gap-6">
-                                    <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                                    <span
-                                        class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($reqSubtotal, 2, '.', ',') }}</span>
-                                </div>
-                                <div class="flex items-center justify-between gap-6">
-                                    <span class="text-small text-text-muted">IVA (16%)</span>
-                                    <span class="text-small font-medium text-text-muted tabular-nums">
-                                        @if($reqTax > 0) ${{ number_format($reqTax, 2, '.', ',') }}
-                                        @else <span class="text-text-muted">—</span> @endif
-                                    </span>
-                                </div>
-                                <div class="flex items-center justify-between gap-6 pt-1.5 border-t border-border">
-                                    <span class="text-small font-semibold text-text-primary">Total</span>
-                                    <span
-                                        class="text-body font-bold text-text-primary tabular-nums">${{ number_format($reqTotal, 2, '.', ',') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
+                                                @if(in_array($req->status, ['borrador', 'rechazada']))
+                                                    <button wire:click="deleteRequisition({{ $req->id }})"
+                                                        wire:confirm="¿Eliminar esta requisición?"
+                                                        class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-8">
+                                    <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                                        message="Crea una requisición o sube una cotización para comenzar." />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        @empty
-            <div class="card">
-                <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                    message="Crea una requisición o sube una cotización para comenzar." />
-            </div>
-        @endforelse
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage" class="hidden space-y-3 absolute inset-0 w-full z-10 bg-surface-main">
-            @for($i=0; $i<3; $i++)
-            <div class="card flex items-start gap-4">
-                <div class="w-9 h-9 rounded-xl skeleton shrink-0 mt-0.5"></div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <div class="h-4 skeleton rounded w-32"></div>
-                        <div class="h-5 skeleton rounded-full w-20"></div>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                        <div class="h-3 skeleton rounded w-24"></div>
-                        <div class="h-3 skeleton rounded w-20"></div>
-                        <div class="h-3 skeleton rounded w-28"></div>
-                    </div>
-                </div>
-                <div class="text-right shrink-0">
-                    <div class="h-6 skeleton rounded w-24 mb-1"></div>
-                    <div class="h-3 skeleton rounded w-16 ml-auto"></div>
-                </div>
+        <div wire:loading.class.remove="hidden"
+            wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-10"></th>
+                            <th>Folio</th>
+                            <th>Proyecto</th>
+                            <th>Fecha</th>
+                            <th>Creador</th>
+                            <th>Proveedor</th>
+                            <th class="text-right">Total</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 5; $i++)
+                            <tr>
+                                <td class="text-center">
+                                    <div class="w-4 h-4 skeleton rounded mx-auto"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-16"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-24"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-20"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-24"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-32"></div>
+                                </td>
+                                <td class="text-right">
+                                    <div class="h-4 skeleton rounded w-20 ml-auto"></div>
+                                </td>
+                                <td>
+                                    <div class="h-6 skeleton rounded-full w-20"></div>
+                                </td>
+                                <td class="text-right flex justify-end gap-1">
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
             </div>
-            @endfor
         </div>
     </div>
 

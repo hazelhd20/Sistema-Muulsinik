@@ -12,15 +12,7 @@
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
         {{-- Search: compact width --}}
-        <div class="relative w-full sm:w-72" x-data="{ focused: false }">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar por nombre o RFC..."
-                class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
-            <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-            </button>
-        </div>
+        <x-search-input wire:model.live.debounce.50ms="search" placeholder="Buscar por nombre o RFC..." />
 
         <div class="flex-1"></div>
 
@@ -34,94 +26,127 @@
         @endif
     </div>
 
-    {{-- Suppliers Grid --}}
+    {{-- Suppliers Table --}}
     <div class="relative min-h-[200px]">
-        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 w-full">
-            @forelse($suppliers as $supplier)
-            <div class="card">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-9 h-9 rounded-lg bg-surface-hover flex items-center justify-center shrink-0">
-                            <i data-lucide="building-2" class="w-5 h-5 text-text-muted"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h3 class="text-small font-semibold text-text-primary truncate">{{ $supplier->trade_name }}</h3>
-                            @if($supplier->rfc)
-                                <p class="text-xs-fluid text-text-muted font-mono">{{ $supplier->rfc }}</p>
-                            @endif
-                        </div>
-                    </div>
-                    @if($supplier->category)
-                        <x-dynamic-badge :value="$supplier->category" class="shrink-0" />
-                    @endif
-                </div>
-
-                {{-- Notas --}}
-                <div class="space-y-1.5 mb-4 text-body text-text-secondary">
-                    @if($supplier->notes)
-                        <div class="flex items-start gap-2">
-                            <i data-lucide="sticky-note" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
-                            <span class="line-clamp-2">{{ $supplier->notes }}</span>
-                        </div>
-                    @endif
-                </div>
-
-                {{-- Footer --}}
-                <div class="flex items-center justify-between pt-3 border-t border-border">
-                    <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-muted">
-                        <i data-lucide="users" class="w-3.5 h-3.5"></i>
-                        {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
-                    </span>
-                    <div class="flex items-center gap-1">
-                        <button wire:click="viewVendors({{ $supplier->id }})" class="btn-icon" title="Ver vendedores" aria-label="Ver vendedores">
-                            <i data-lucide="users" class="w-4 h-4"></i>
-                        </button>
-                        <button wire:click="openEditSupplierModal({{ $supplier->id }})" class="btn-icon-primary"
-                            title="Editar proveedor" aria-label="Editar proveedor">
-                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                        </button>
-                        <button wire:click="deleteSupplier({{ $supplier->id }})"
-                            wire:confirm="¿Eliminar este proveedor y todos sus vendedores?" class="btn-icon-danger"
-                            title="Eliminar proveedor" aria-label="Eliminar proveedor">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
+        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <x-sortable-header field="trade_name" label="Proveedor" :sortField="$sortField" :sortDirection="$sortDirection" />
+                            <x-sortable-header field="rfc" label="RFC" :sortField="$sortField" :sortDirection="$sortDirection" />
+                            <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
+                            <th>Vendedores</th>
+                            <th>Notas</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($suppliers as $supplier)
+                            <tr class="group">
+                                <td class="font-medium whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-surface-hover flex items-center justify-center shrink-0">
+                                            <i data-lucide="building-2" class="w-4 h-4 text-text-muted"></i>
+                                        </div>
+                                        <span class="max-w-[200px] truncate" title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($supplier->rfc)
+                                        <span class="text-xs-fluid text-text-muted font-mono">{{ $supplier->rfc }}</span>
+                                    @else
+                                        <span class="text-text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($supplier->category)
+                                        <x-dynamic-badge :value="$supplier->category" />
+                                    @else
+                                        <span class="text-text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary">
+                                        <i data-lucide="users" class="w-3.5 h-3.5 text-text-muted"></i>
+                                        {{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($supplier->notes)
+                                        <div class="flex items-start gap-1 max-w-[250px]" title="{{ $supplier->notes }}">
+                                            <i data-lucide="sticky-note" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
+                                            <span class="text-xs-fluid text-text-secondary truncate">{{ $supplier->notes }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button wire:click="viewVendors({{ $supplier->id }})" class="btn-icon" title="Ver vendedores" aria-label="Ver vendedores">
+                                            <i data-lucide="users" class="w-4 h-4"></i>
+                                        </button>
+                                        <button wire:click="openEditSupplierModal({{ $supplier->id }})" class="btn-icon-primary"
+                                            title="Editar proveedor" aria-label="Editar proveedor">
+                                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                                        </button>
+                                        <button wire:click="deleteSupplier({{ $supplier->id }})"
+                                            wire:confirm="¿Eliminar este proveedor y todos sus vendedores?" class="btn-icon-danger"
+                                            title="Eliminar proveedor" aria-label="Eliminar proveedor">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-8">
+                                    <x-empty-state icon="truck" title="No hay proveedores registrados" message="Agrega un proveedor para comenzar." />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        @empty
-            <div class="col-span-full card">
-                <x-empty-state icon="truck" title="No hay proveedores registrados"
-                    message="Agrega un proveedor para comenzar." />
-            </div>
-        @endforelse
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 absolute inset-0 w-full z-10 bg-surface-main">
-            @for($i=0; $i<6; $i++)
-            <div class="card">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center gap-3 min-w-0 w-full">
-                        <div class="w-9 h-9 rounded-lg skeleton shrink-0"></div>
-                        <div class="w-full">
-                            <div class="h-4 skeleton rounded w-3/4 mb-1"></div>
-                            <div class="h-3 skeleton rounded w-1/2"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="space-y-1.5 mb-4">
-                    <div class="h-3 skeleton rounded w-full"></div>
-                    <div class="h-3 skeleton rounded w-5/6"></div>
-                </div>
-                <div class="flex items-center justify-between pt-3 border-t border-border">
-                    <div class="h-3 skeleton rounded w-24"></div>
-                    <div class="flex gap-1">
-                        <div class="w-8 h-8 skeleton rounded"></div>
-                        <div class="w-8 h-8 skeleton rounded"></div>
-                    </div>
-                </div>
+        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>RFC</th>
+                            <th>Categoría</th>
+                            <th>Vendedores</th>
+                            <th>Notas</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for($i=0; $i<6; $i++)
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg skeleton shrink-0"></div>
+                                    <div class="h-4 skeleton rounded w-32"></div>
+                                </div>
+                            </td>
+                            <td><div class="h-4 skeleton rounded w-20"></div></td>
+                            <td><div class="h-5 skeleton rounded-full w-24"></div></td>
+                            <td><div class="h-4 skeleton rounded w-20"></div></td>
+                            <td><div class="h-4 skeleton rounded w-40"></div></td>
+                            <td class="text-right flex justify-end gap-1">
+                                <div class="w-8 h-8 skeleton rounded"></div>
+                                <div class="w-8 h-8 skeleton rounded"></div>
+                            </td>
+                        </tr>
+                        @endfor
+                    </tbody>
+                </table>
             </div>
-            @endfor
         </div>
     </div>
 
@@ -134,7 +159,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
                         <label class="label">Nombre comercial *</label>
-                        <input wire:model="tradeName" type="text" class="input" placeholder="Ej. Materiales del Sureste">
+                        <input wire:model="tradeName" type="text" class="input @error('tradeName') input-error @enderror" placeholder="Ej. Materiales del Sureste">
                         @error('tradeName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
                     <div>
@@ -157,22 +182,9 @@
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <button type="button" wire:click="$set('showCreateModal', false)"
                         class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-primary relative" wire:loading.attr="disabled"
-                        wire:target="saveSupplier">
-                        <span wire:loading.class="opacity-0" wire:target="saveSupplier"
-                            class="inline-flex items-center gap-1.5 transition-opacity">
-                            {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
-                        </span>
-                        <span wire:loading wire:target="saveSupplier"
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                    fill="none" />
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                        </span>
-                    </button>
+                    <x-submit-button target="saveSupplier">
+                        {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
+                    </x-submit-button>
                 </div>
             </form>
         </x-modal>
@@ -217,27 +229,16 @@
                 {{-- Add vendor form --}}
                 @if($showAddVendor)
                     <form wire:submit="saveVendor" class="space-y-3 p-4 rounded-lg border border-border bg-surface-main">
-                        <input wire:model="vendorName" type="text" class="input" placeholder="Nombre del vendedor *">
+                        <input wire:model="vendorName" type="text" class="input @error('vendorName') input-error @enderror" placeholder="Nombre del vendedor *">
                         @error('vendorName') <p class="text-xs-fluid text-danger">{{ $message }}</p> @enderror
                         <div class="grid grid-cols-2 gap-3">
                             <input wire:model="vendorPhone" type="tel" class="input" placeholder="Teléfono">
                             <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
                         </div>
                         <div class="flex gap-2">
-                            <button type="submit" class="btn-primary relative text-xs-fluid" wire:loading.attr="disabled">
-                                <span wire:loading.class="opacity-0" wire:target="saveVendor" class="transition-opacity">
-                                    {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
-                                </span>
-                                <span wire:loading wire:target="saveVendor"
-                                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                            fill="none" />
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                    </svg>
-                                </span>
-                            </button>
+                            <x-submit-button target="saveVendor" class="text-xs-fluid">
+                                {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
+                            </x-submit-button>
                             <button type="button" wire:click="$set('showAddVendor', false)"
                                 class="btn-secondary text-xs-fluid">Cancelar</button>
                         </div>

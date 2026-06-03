@@ -39,8 +39,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nombre</th>
-                    <th>Abreviación</th>
+                    <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
+                    <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField" :sortDirection="$sortDirection" />
                     <th class="actions">Acciones</th>
                 </tr>
             </thead>

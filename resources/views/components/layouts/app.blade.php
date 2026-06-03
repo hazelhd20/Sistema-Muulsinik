@@ -19,6 +19,9 @@
     {{-- SweetAlert2 CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    {{-- Alpine Focus Plugin (RF-REQ-10: Focus Trap) --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -38,6 +41,8 @@
             }
         }, true);
     </script>
+
+    <div wire:loading class="fixed top-0 inset-x-0 h-1 bg-primary-600 progress-indeterminate z-50"></div>
 
     <div class="flex min-h-screen">
 

@@ -9,10 +9,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Livewire\Concerns\WithSorting;
 
 class SupplierIndex extends Component
 {
-    use WithPagination, EnforcesPermissions;
+    use WithPagination, EnforcesPermissions, WithSorting;
 
     public string $search = '';
     public bool $showCreateModal = false;
@@ -210,7 +211,7 @@ class SupplierIndex extends Component
         $suppliers = Supplier::withCount('vendors')
             ->when($this->search, fn($q) => $q->where('trade_name', 'like', "%{$this->search}%")
                 ->orWhere('rfc', 'like', "%{$this->search}%"))
-            ->latest()
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(12);
 
         $viewingSupplier = $this->viewingSupplierId
