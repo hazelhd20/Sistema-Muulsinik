@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/requisiciones', RequisitionIndex::class)->name('requisiciones.index');
     Route::get('/requisiciones/manual', ManualRequisition::class)->name('requisiciones.manual');
     Route::get('/requisiciones/subir-cotizacion', QuotationWizard::class)->name('requisiciones.upload');
+    Route::get('/requisiciones/{id}', \App\Livewire\Requisitions\RequisitionShow::class)->name('requisiciones.show');
     Route::get('/requisiciones/{id}/pdf', [RequisitionPdfController::class, 'download'])->name('requisiciones.pdf');
 
     // Proveedores (RF-PROV)

@@ -1,4 +1,4 @@
-@props(['options' => [], 'placeholder' => 'Seleccionar...', 'textClass' => '', 'minSearch' => 6])
+@props(['options' => [], 'placeholder' => 'Seleccionar...', 'textClass' => '', 'minSearch' => 10])
 
 <div
     x-data="{

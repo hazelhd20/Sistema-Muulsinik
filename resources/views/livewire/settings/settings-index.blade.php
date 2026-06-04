@@ -96,36 +96,19 @@
                         <p class="section-row-desc">Teléfono y correo para documentos.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="label">Teléfono</label>
+                        <x-form-field label="Teléfono" error="{{ $errors->first('company_phone') }}">
                             <input type="text" wire:model="company_phone" class="input" placeholder="+52 999 123 4567">
-                            @error('company_phone') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label class="label">Correo electrónico</label>
+                        </x-form-field>
+                        <x-form-field label="Correo electrónico" error="{{ $errors->first('company_email') }}">
                             <input type="email" wire:model="company_email" class="input" placeholder="contacto@empresa.com">
-                            @error('company_email') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                        </div>
+                        </x-form-field>
                     </div>
                 </div>
             </div>
 
             {{-- Footer action --}}
             <div class="flex justify-end">
-                <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="saveEmpresa">
-                    <span wire:loading.class="opacity-0" wire:target="saveEmpresa"
-                        class="inline-flex items-center gap-1.5 transition-opacity">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                        Guardar cambios
-                    </span>
-                    <span wire:loading wire:target="saveEmpresa"
-                        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    </span>
-                </button>
+                <x-submit-button target="saveEmpresa" icon="check">Guardar cambios</x-submit-button>
             </div>
 
         </form>
@@ -196,21 +179,15 @@
                     </div>
                     <div class="space-y-3">
                         <div class="grid grid-cols-3 gap-3">
-                            <div>
-                                <label class="label">Símbolo</label>
+                            <x-form-field label="Símbolo" error="{{ $errors->first('currency_symbol') }}">
                                 <input type="text" wire:model.live="currency_symbol" class="input" placeholder="$">
-                                @error('currency_symbol') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
-                            <div>
-                                <label class="label">Posición</label>
+                            </x-form-field>
+                            <x-form-field label="Posición" error="{{ $errors->first('currency_position') }}">
                                 <x-custom-select wire:model.live="currency_position" :options="['before' => 'Antes ($100)', 'after' => 'Después (100$)']" placeholder="" />
-                                @error('currency_position') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
-                            <div>
-                                <label class="label">Decimales</label>
+                            </x-form-field>
+                            <x-form-field label="Decimales" error="{{ $errors->first('decimal_places') }}">
                                 <input type="number" wire:model.live="decimal_places" class="input" min="0" max="4">
-                                @error('decimal_places') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                            </div>
+                            </x-form-field>
                         </div>
                         <div class="flex items-center gap-2 text-xs-fluid text-text-muted">
                             <span>Vista previa:</span>
@@ -246,20 +223,7 @@
 
             {{-- Footer action --}}
             <div class="flex justify-end">
-                <button type="submit" class="btn-primary relative" wire:loading.attr="disabled" wire:target="saveDocumentos">
-                    <span wire:loading.class="opacity-0" wire:target="saveDocumentos"
-                        class="inline-flex items-center gap-1.5 transition-opacity">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                        Guardar cambios
-                    </span>
-                    <span wire:loading wire:target="saveDocumentos"
-                        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    </span>
-                </button>
+                <x-submit-button target="saveDocumentos" icon="check">Guardar cambios</x-submit-button>
             </div>
 
         </form>

@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Supplier;
 use App\Models\Vendor;
 use App\Services\RequisitionItemResolverService;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -22,41 +23,79 @@ class ManualRequisition extends Component
 
     // Ítems temporales para la nueva requisición
     public array $items = [];
-    public string $itemName = '';
-    public string $itemQuantity = '';
-    public string $itemUnit = 'pza';
-    public string $itemPrice = '';
-    public $itemSupplierId = '';
-    public $itemCategoryId = '';
+
+    // Search for products (pattern from QuickBudgetWizard)
+    public string $searchQuery = '';
+    public array $searchResults = [];
 
     public function mount()
     {
         $this->reqDate = now()->format('Y-m-d');
     }
 
-    public function addItem(): void
+    public function updatedSearchQuery()
     {
-        $this->validate([
-            'itemName' => 'required|min:2',
-            'itemQuantity' => 'required|numeric|min:0.01',
-            'itemUnit' => 'required',
-            'itemPrice' => 'required|numeric|min:0',
-        ]);
+        if (strlen($this->searchQuery) < 2) {
+            $this->searchResults = [];
+            return;
+        }
+
+        $categories = Category::all()->keyBy('id');
+        $measures = Measure::all()->keyBy('id');
+
+        $this->searchResults = Product::with('measure', 'category')
+            ->where('canonical_name', 'like', "%{$this->searchQuery}%")
+            ->take(10)
+            ->get()
+            ->map(function ($product) {
+                $lastPrice = DB::table('requisition_items')
+                    ->join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                    ->where('requisition_items.product_id', $product->id)
+                    ->where('requisitions.status', 'aprobada')
+                    ->orderByDesc('requisitions.created_at')
+                    ->value('unit_price');
+
+                return [
+                    'id' => $product->id,
+                    'name' => $product->canonical_name,
+                    'category' => $product->category ? $product->category->name : 'Sin categoría',
+                    'category_id' => $product->category_id,
+                    'measure_abbr' => $product->measure ? $product->measure->abbreviation : '—',
+                    'unit' => $product->measure ? ($product->measure->abbreviation ?: $product->measure->name) : 'pza',
+                    'last_price' => $lastPrice ? (float) $lastPrice : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function addProduct(int $index): void
+    {
+        $product = $this->searchResults[$index] ?? null;
+        if (!$product) {
+            return;
+        }
 
         $this->items[] = [
-            'name' => $this->itemName,
-            'quantity' => (float) $this->itemQuantity,
-            'unit' => $this->itemUnit,
-            'unit_price' => (float) $this->itemPrice,
-            'supplier_id' => $this->itemSupplierId ?: null,
-            'category_id' => $this->itemCategoryId ?: null,
+            'name' => $product['name'],
+            'quantity' => 1,
+            'unit' => $product['unit'],
+            'unit_price' => $product['last_price'],
+            'category_id' => $product['category_id'],
         ];
 
-        $this->itemName = '';
-        $this->itemQuantity = '';
-        $this->itemPrice = '';
-        $this->itemSupplierId = '';
-        $this->itemCategoryId = '';
+        $this->searchQuery = '';
+        $this->searchResults = [];
+    }
+
+    public function addManualItem(): void
+    {
+        $this->items[] = [
+            'name' => '',
+            'quantity' => 1,
+            'unit' => 'pza',
+            'unit_price' => 0,
+            'category_id' => null,
+        ];
     }
 
     public function removeItem(int $index): void
@@ -79,7 +118,18 @@ class ManualRequisition extends Component
             return;
         }
 
-        // Crear requisición con todos sus items usando el servicio
+        // Validate items have names
+        foreach ($this->items as $i => $item) {
+            if (empty(trim($item['name'] ?? ''))) {
+                $this->dispatch('toast', ['icon' => 'error', 'message' => 'El producto en la fila ' . ($i + 1) . ' no tiene nombre.']);
+                return;
+            }
+            if (($item['quantity'] ?? 0) <= 0) {
+                $this->dispatch('toast', ['icon' => 'error', 'message' => 'La cantidad en la fila ' . ($i + 1) . ' debe ser mayor a 0.']);
+                return;
+            }
+        }
+
         $resolver = app(RequisitionItemResolverService::class);
         $resolver->createRequisitionWithItems(
             [
@@ -105,14 +155,12 @@ class ManualRequisition extends Component
         $vendors = Vendor::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
         $measures = Measure::orderBy('name')->get();
-        $products = Product::orderBy('canonical_name')->get();
 
         return view('livewire.requisitions.manual-requisition', compact(
             'projects',
             'vendors',
             'categories',
-            'measures',
-            'products'
+            'measures'
         ));
     }
 }

@@ -20,8 +20,7 @@ class UserIndex extends Component
     public string $search = '';
     public string $roleFilter = '';
 
-    public bool $showCreateModal = false;
-    public bool $showEditModal = false;
+    public bool $showModal = false;
     public ?int $editingId = null;
 
     public string $name = '';
@@ -47,7 +46,7 @@ class UserIndex extends Component
         if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.'))
             return;
         $this->resetForm();
-        $this->showCreateModal = true;
+        $this->showModal = true;
     }
 
     public function openEditModal(int $id): void
@@ -61,10 +60,19 @@ class UserIndex extends Component
         $this->role_id = (string) $user->role_id;
         $this->active = $user->active;
         $this->password = '';
-        $this->showEditModal = true;
+        $this->showModal = true;
     }
 
-    public function createUser(): void
+    public function saveUser(): void
+    {
+        if ($this->editingId) {
+            $this->updateUser();
+        } else {
+            $this->createUser();
+        }
+    }
+
+    private function createUser(): void
     {
         if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.'))
             return;
@@ -85,12 +93,12 @@ class UserIndex extends Component
             'active' => $this->active,
         ]);
 
-        $this->showCreateModal = false;
+        $this->showModal = false;
         $this->resetForm();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Usuario creado exitosamente.']);
     }
 
-    public function updateUser(): void
+    private function updateUser(): void
     {
         if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
             return;
@@ -117,7 +125,7 @@ class UserIndex extends Component
 
         $user->update($data);
 
-        $this->showEditModal = false;
+        $this->showModal = false;
         $this->resetForm();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Usuario actualizado correctamente.']);
     }

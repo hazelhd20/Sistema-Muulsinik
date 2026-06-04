@@ -363,7 +363,8 @@
                                 </td>
                                 <td class="text-center text-body tabular-nums">{{ $product->times_purchased }}</td>
                                 <td class="text-right text-body tabular-nums">
-                                    {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}</td>
+                                    {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}
+                                </td>
                                 <td class="text-right text-body text-text-secondary tabular-nums">
                                     ${{ number_format($product->avg_price, 2, '.', ',') }}</td>
                                 <td class="text-right font-semibold text-text-primary tabular-nums">

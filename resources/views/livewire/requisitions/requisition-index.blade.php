@@ -67,7 +67,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !p-4">
+        <div class="bg-surface-hover border border-border rounded-xl p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -89,123 +89,121 @@
             wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
             class="w-full">
             <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <x-sortable-header field="number" label="Folio" :sortField="$sortField"
-                                :sortDirection="$sortDirection" />
-                            <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
-                                :sortDirection="$sortDirection" />
-                            <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
-                                :sortDirection="$sortDirection" />
-                            <th>Creador</th>
-                            <th>Proveedor</th>
-                            <x-sortable-header field="total" label="Total" :sortField="$sortField"
-                                :sortDirection="$sortDirection" align="right" />
-                            <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                :sortDirection="$sortDirection" />
-                            <th class="text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($requisitions as $req)
-                            <tr class="group cursor-pointer hover:bg-surface-hover" wire:click=""
-                                onclick="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')">
-                                <td class="font-medium whitespace-nowrap">
-                                    {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
-                                </td>
-                                <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
-                                    {{ $req->project->name ?? '—' }}
-                                </td>
-                                <td class="whitespace-nowrap">
-                                    {{ $req->date?->format('d/m/Y') }}
-                                </td>
-                                <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
-                                    {{ $req->creator->name ?? '—' }}
-                                </td>
-                                <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
-                                    {{ $req->vendor?->name ?? '—' }}
-                                </td>
-                                <td class="text-right font-semibold tabular-nums text-text-primary">
-                                    ${{ number_format($req->total, 2, '.', ',') }}
-                                </td>
-                                <td>
-                                    <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
-                                </td>
-                                <td onclick="event.stopPropagation()">
-                                    <div class="flex items-center justify-end gap-1">
-                                        @if($req->quotations->isNotEmpty())
-                                            @php
-                                                $firstQuot = $req->quotations->first();
-                                                $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                                $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                            @endphp
-                                            <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
-                                                class="btn-icon-primary" title="Ver cotización adjunta"
-                                                aria-label="Ver cotización adjunta">
-                                                <i data-lucide="file-search" class="w-4 h-4"></i>
-                                            </button>
-                                        @endif
+                @if($requisitions->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <x-sortable-header field="number" label="Folio" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th>Creador</th>
+                                <th>Proveedor</th>
+                                <x-sortable-header field="total" label="Total" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" align="right" />
+                                <x-sortable-header field="status" label="Estado" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th class="text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($requisitions as $req)
+                                <tr class="group cursor-pointer hover:bg-surface-hover" wire:click=""
+                                    onclick="Livewire.navigate('{{ route('requisiciones.show', ['id' => $req->id]) }}')">
+                                    <td class="font-medium whitespace-nowrap">
+                                        {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
+                                    </td>
+                                    <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
+                                        {{ $req->project->name ?? '—' }}
+                                    </td>
+                                    <td class="whitespace-nowrap">
+                                        {{ $req->date?->format('d/m/Y') }}
+                                    </td>
+                                    <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
+                                        {{ $req->creator->name ?? '—' }}
+                                    </td>
+                                    <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
+                                        {{ $req->vendor?->name ?? '—' }}
+                                    </td>
+                                    <td class="text-right font-semibold tabular-nums text-text-primary">
+                                        ${{ number_format($req->total, 2, '.', ',') }}
+                                    </td>
+                                    <td>
+                                        <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                    </td>
+                                    <td onclick="event.stopPropagation()">
+                                        <div class="flex items-center justify-end gap-1">
+                                            @if($req->quotations->isNotEmpty())
+                                                @php
+                                                    $firstQuot = $req->quotations->first();
+                                                    $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                                    $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                                                @endphp
+                                                <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
+                                                    class="btn-icon-primary" title="Ver cotización adjunta"
+                                                    aria-label="Ver cotización adjunta">
+                                                    <i data-lucide="file-search" class="w-4 h-4"></i>
+                                                </button>
+                                            @endif
 
-                                        @if($req->status === 'borrador')
-                                            <button wire:click="submitForApproval({{ $req->id }})"
-                                                wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
-                                                title="Enviar a aprobación" aria-label="Enviar a aprobación">
-                                                <i data-lucide="send" class="w-4 h-4"></i>
-                                            </button>
-                                        @endif
+                                            @if($req->status === 'borrador')
+                                                <button wire:click="submitForApproval({{ $req->id }})"
+                                                    wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
+                                                    title="Enviar a aprobación" aria-label="Enviar a aprobación">
+                                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                                </button>
+                                            @endif
 
-                                        @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                            <button wire:click="approve({{ $req->id }})"
-                                                wire:confirm="¿Aprobar esta requisición?"
-                                                class="btn-icon-primary bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                                                title="Aprobar" aria-label="Aprobar">
-                                                <i data-lucide="check" class="w-4 h-4"></i>
-                                            </button>
-                                        @endif
+                                            @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                                <button wire:click="approve({{ $req->id }})"
+                                                    wire:confirm="¿Aprobar esta requisición?"
+                                                    class="btn-icon-primary bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                                    title="Aprobar" aria-label="Aprobar">
+                                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                                </button>
+                                            @endif
 
-                                        {{-- Kebab Menu for secondary actions --}}
-                                        <div x-data="{ openMenu: false }" class="relative">
-                                            <button @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                                class="btn-icon" aria-label="Más opciones" title="Más opciones">
-                                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                                            </button>
-                                            <div x-show="openMenu" x-transition
-                                                class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1"
-                                                style="display:none;">
-                                                <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank"
-                                                    class="flex items-center gap-2 px-3 py-2 text-small text-text-primary hover:bg-surface-hover w-full text-left">
-                                                    <i data-lucide="file-down" class="w-4 h-4 text-text-muted"></i>
-                                                    Descargar PDF
-                                                </a>
-                                                @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                    <button wire:click="openRejectModal({{ $req->id }})"
-                                                        class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
-                                                        <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                                                    </button>
-                                                @endif
-                                                @if(in_array($req->status, ['borrador', 'rechazada']))
-                                                    <button wire:click="deleteRequisition({{ $req->id }})"
-                                                        wire:confirm="¿Eliminar esta requisición?"
-                                                        class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
-                                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
-                                                    </button>
-                                                @endif
+                                            {{-- Kebab Menu for secondary actions --}}
+                                            <div x-data="{ openMenu: false }" class="relative">
+                                                <button @click="openMenu = !openMenu" @click.away="openMenu = false"
+                                                    class="btn-icon" aria-label="Más opciones" title="Más opciones">
+                                                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                                </button>
+                                                <div x-show="openMenu" x-transition
+                                                    class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1"
+                                                    style="display:none;">
+                                                    <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank"
+                                                        class="flex items-center gap-2 px-3 py-2 text-small text-text-primary hover:bg-surface-hover w-full text-left">
+                                                        <i data-lucide="file-down" class="w-4 h-4 text-text-muted"></i>
+                                                        Descargar PDF
+                                                    </a>
+                                                    @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                                        <button wire:click="openRejectModal({{ $req->id }})"
+                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                                            <i data-lucide="x" class="w-4 h-4"></i> Rechazar
+                                                        </button>
+                                                    @endif
+                                                    @if(in_array($req->status, ['borrador', 'rechazada']))
+                                                        <button wire:click="deleteRequisition({{ $req->id }})"
+                                                            wire:confirm="¿Eliminar esta requisición?"
+                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                                            <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-8">
-                                    <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                                        message="Crea una requisición o sube una cotización para comenzar." />
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                        message="Crea una requisición o sube una cotización para comenzar." />
+                @endif
             </div>
         </div>
 
@@ -276,12 +274,10 @@
         <x-modal show="showRejectModal" title="Rechazar Requisición" subtitle="Indica el motivo del rechazo (obligatorio)"
             maxWidth="md">
             <form wire:submit="confirmReject" class="p-5 space-y-4">
-                <div>
-                    <label class="label">Motivo del rechazo *</label>
+                <x-form-field label="Motivo del rechazo" required error="{{ $errors->first('rejectionComment') }}">
                     <textarea wire:model="rejectionComment" class="input" rows="3"
                         placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
-                    @error('rejectionComment') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <button type="button" wire:click="$set('showRejectModal', false)"
                         class="btn-secondary">Cancelar</button>
@@ -294,38 +290,5 @@
     @endif
 
     {{-- ═══════ PREVIEW MODAL ═══════ --}}
-    <div x-show="showPreviewModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        style="display: none;">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
-        <div class="relative bg-surface-card rounded-2xl shadow-xl border border-border w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
-            x-transition>
-            <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
-                <h3 class="text-h3 font-semibold text-text-primary flex items-center gap-2">
-                    <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
-                </h3>
-                <button @click="showPreviewModal = false"
-                    class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="flex-1 overflow-hidden bg-surface-main p-4 relative">
-                <template x-if="isImage()">
-                    <img :src="previewUrl" class="w-full h-full object-contain rounded-lg">
-                </template>
-                <template x-if="isPdf()">
-                    <iframe :src="previewUrl"
-                        class="w-full h-full border border-border rounded-lg shadow-sm bg-surface-card"></iframe>
-                </template>
-                <template x-if="!isImage() && !isPdf()">
-                    <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-3">
-                        <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
-                        <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
-                        <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
-                            <i data-lucide="download" class="w-4 h-4"></i> Descargar
-                        </a>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
+    <x-preview-modal />
 </div>

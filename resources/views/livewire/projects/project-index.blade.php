@@ -56,91 +56,105 @@
 
     {{-- Projects Table --}}
     <div class="relative min-h-[200px] mb-5">
-        <div wire:loading.class="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage" class="w-full">
+        <div wire:loading.class="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage"
+            class="w-full">
             <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <x-sortable-header field="client" label="Cliente" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <x-sortable-header field="start_date" label="Fechas" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <th>Ejecución</th>
-                            <x-sortable-header field="status" label="Estado" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <th class="text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($projects as $project)
-                            <tr class="group">
-                                <td class="font-medium whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-8 h-8 rounded-lg bg-surface-hover flex items-center justify-center shrink-0">
-                                            <i data-lucide="hard-hat" class="w-4 h-4 text-text-muted"></i>
-                                        </div>
-                                        <span class="max-w-[200px] truncate" title="{{ $project->name }}">{{ $project->name }}</span>
-                                    </div>
-                                </td>
-                                <td class="max-w-[150px] truncate text-text-secondary" title="{{ $project->client ?? '—' }}">
-                                    {{ $project->client ?? '—' }}
-                                </td>
-                                <td>
-                                    <div class="flex items-center gap-1 text-text-primary">
-                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-text-muted"></i>
-                                        <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="text-text-primary font-medium tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</div>
-                                    <div class="text-xs-fluid text-text-muted mt-0.5 tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }} gastado</div>
-                                </td>
-                                <td class="min-w-[120px]">
-                                    <div class="flex items-center justify-between text-xs-fluid mb-1.5">
-                                        <span class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
-                                    </div>
-                                    <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
-                                        @php
-                                            $percent = min($project->budget_used_percent, 100);
-                                            $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
-                                        @endphp
-                                        <div class="{{ $barColor }} h-full rounded-full transition-all duration-500"
-                                            style="width: {{ $percent }}%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
-                                </td>
-                                <td>
-                                    <div class="flex items-center justify-end gap-1">
-                                        <a href="{{ url('/proyectos/' . $project->id) }}" class="btn-icon" title="Ver detalle" aria-label="Ver detalle">
-                                            <i data-lucide="eye" class="w-4 h-4"></i>
-                                        </a>
-                                        <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary"
-                                            title="Editar proyecto" aria-label="Editar proyecto">
-                                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                                        </button>
-                                        <button wire:click="deleteProject({{ $project->id }})"
-                                            wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
-                                            class="btn-icon-danger" title="Eliminar proyecto" aria-label="Eliminar proyecto">
-                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                @if($projects->isNotEmpty())
+                    <table>
+                        <thead>
                             <tr>
-                                <td colspan="7" class="text-center py-8">
-                                    <x-empty-state icon="folder-open" title="No hay proyectos registrados" message="Crea tu primer proyecto para comenzar." />
-                                </td>
+                                <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="client" label="Cliente" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="start_date" label="Fechas" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th>Ejecución</th>
+                                <x-sortable-header field="status" label="Estado" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th class="text-right">Acciones</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($projects as $project)
+                                <tr class="group">
+                                    <td class="font-medium whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-surface-hover flex items-center justify-center shrink-0">
+                                                <i data-lucide="hard-hat" class="w-4 h-4 text-text-muted"></i>
+                                            </div>
+                                            <span class="max-w-[200px] truncate"
+                                                title="{{ $project->name }}">{{ $project->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="max-w-[150px] truncate text-text-secondary"
+                                        title="{{ $project->client ?? '—' }}">
+                                        {{ $project->client ?? '—' }}
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-1 text-text-primary">
+                                            <i data-lucide="calendar" class="w-3.5 h-3.5 text-text-muted"></i>
+                                            <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-text-primary font-medium tabular-nums">
+                                            ${{ number_format($project->budget, 0, '.', ',') }}</div>
+                                        <div class="text-xs-fluid text-text-muted mt-0.5 tabular-nums">
+                                            ${{ number_format($project->total_expenses, 0, '.', ',') }} gastado</div>
+                                    </td>
+                                    <td class="min-w-[120px]">
+                                        <div class="flex items-center justify-between text-xs-fluid mb-1.5">
+                                            <span
+                                                class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+                                        </div>
+                                        <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
+                                            @php
+                                                $percent = min($project->budget_used_percent, 100);
+                                                $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
+                                            @endphp
+                                            <div class="{{ $barColor }} h-full rounded-full transition-all duration-500"
+                                                style="width: {{ $percent }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center justify-end gap-1">
+                                            <a href="{{ url('/proyectos/' . $project->id) }}" class="btn-icon"
+                                                title="Ver detalle" aria-label="Ver detalle">
+                                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                            </a>
+                                            <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary"
+                                                title="Editar proyecto" aria-label="Editar proyecto">
+                                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                            </button>
+                                            <button wire:click="deleteProject({{ $project->id }})"
+                                                wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
+                                                class="btn-icon-danger" title="Eliminar proyecto"
+                                                aria-label="Eliminar proyecto">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="folder-open" title="No hay proyectos registrados"
+                        message="Crea tu primer proyecto para comenzar." />
+                @endif
             </div>
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage" class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="table-container">
                 <table>
                     <thead>
@@ -155,30 +169,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for($i=0; $i<6; $i++)
-                        <tr>
-                            <td>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-lg skeleton shrink-0"></div>
-                                    <div class="h-4 skeleton rounded w-32"></div>
-                                </div>
-                            </td>
-                            <td><div class="h-4 skeleton rounded w-24"></div></td>
-                            <td><div class="h-4 skeleton rounded w-20"></div></td>
-                            <td>
-                                <div class="h-4 skeleton rounded w-20 mb-1"></div>
-                                <div class="h-3 skeleton rounded w-16"></div>
-                            </td>
-                            <td>
-                                <div class="h-3 skeleton rounded w-8 mb-1.5"></div>
-                                <div class="w-full h-1.5 skeleton rounded-full"></div>
-                            </td>
-                            <td><div class="h-6 skeleton rounded-full w-20"></div></td>
-                            <td class="text-right flex justify-end gap-1">
-                                <div class="w-8 h-8 skeleton rounded"></div>
-                                <div class="w-8 h-8 skeleton rounded"></div>
-                            </td>
-                        </tr>
+                        @for($i = 0; $i < 6; $i++)
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg skeleton shrink-0"></div>
+                                        <div class="h-4 skeleton rounded w-32"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-24"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-20"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-20 mb-1"></div>
+                                    <div class="h-3 skeleton rounded w-16"></div>
+                                </td>
+                                <td>
+                                    <div class="h-3 skeleton rounded w-8 mb-1.5"></div>
+                                    <div class="w-full h-1.5 skeleton rounded-full"></div>
+                                </td>
+                                <td>
+                                    <div class="h-6 skeleton rounded-full w-20"></div>
+                                </td>
+                                <td class="text-right flex justify-end gap-1">
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                </td>
+                            </tr>
                         @endfor
                     </tbody>
                 </table>
@@ -193,54 +213,45 @@
     @if($showModal)
         <x-modal show="showModal" :title="$editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'">
             <form wire:submit="saveProject" class="p-5 space-y-4">
-                <div>
-                    <label class="label">Nombre del proyecto *</label>
-                    <input wire:model="name" type="text" class="input @error('name') input-error @enderror" placeholder="Ej. Residencial Los Álamos">
-                    @error('name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                <x-form-field label="Nombre del proyecto" required error="{{ $errors->first('name') }}">
+                    <input wire:model="name" type="text" class="input @error('name') input-error @enderror"
+                        placeholder="Ej. Residencial Los Álamos">
+                </x-form-field>
 
-                <div>
-                    <label class="label">Descripción</label>
+                <x-form-field label="Descripción" error="{{ $errors->first('description') }}">
                     <textarea wire:model="description" class="input @error('description') input-error @enderror" rows="3"
                         placeholder="Descripción breve del proyecto..."></textarea>
-                    @error('description') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                </x-form-field>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="label">Cliente</label>
+                    <x-form-field label="Cliente" error="{{ $errors->first('client') }}">
                         <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
-                    </div>
-                    <div>
-                        <label class="label">Presupuesto *</label>
-                        <input wire:model="budget" type="number" step="0.01" class="input @error('budget') input-error @enderror" placeholder="0.00">
-                        @error('budget') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
+                    <x-form-field label="Presupuesto" required error="{{ $errors->first('budget') }}">
+                        <input wire:model="budget" type="number" step="0.01"
+                            class="input @error('budget') input-error @enderror" placeholder="0.00">
+                    </x-form-field>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="label">Fecha de inicio</label>
+                    <x-form-field label="Fecha de inicio" error="{{ $errors->first('startDate') }}">
                         <input wire:model="startDate" type="date" class="input">
-                    </div>
-                    <div>
-                        <label class="label">Fecha estimada de término</label>
+                    </x-form-field>
+                    <x-form-field label="Fecha estimada de término" error="{{ $errors->first('endDate') }}">
                         <input wire:model="endDate" type="date" class="input @error('endDate') input-error @enderror">
-                        @error('endDate') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
                 @if($editingId)
-                <div>
-                    <label class="label">Estado</label>
-                    <x-custom-select wire:model="status" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Seleccionar estado..." />
-                    @error('status') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                    <x-form-field label="Estado" error="{{ $errors->first('status') }}">
+                        <x-custom-select wire:model="status" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Seleccionar estado..." />
+                    </x-form-field>
                 @endif
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <button type="button" wire:click="$set('showModal', false)" class="btn-secondary">Cancelar</button>
-                    <x-submit-button target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-submit-button>
+                    <x-submit-button
+                        target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-submit-button>
                 </div>
             </form>
         </x-modal>

@@ -9,36 +9,7 @@
         </x-slot:actions>
     </x-page-header>
 
-    {{-- Stats row --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="trending-up" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-xs-fluid text-text-muted mb-0.5">Gasto del mes</p>
-                <p class="text-h2 text-text-primary">${{ number_format($totalMonth, 0, '.', ',') }}</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="list" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-xs-fluid text-text-muted mb-0.5">Total registros</p>
-                <p class="text-h2 text-text-primary">{{ $expenses->total() }}</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-surface-hover">
-                <i data-lucide="calendar" class="w-5 h-5 text-text-muted"></i>
-            </div>
-            <div>
-                <p class="text-xs-fluid text-text-muted mb-0.5">Período</p>
-                <p class="text-body font-semibold text-text-primary">{{ now()->format('F Y') }}</p>
-            </div>
-        </div>
-    </div>
+
 
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
@@ -86,7 +57,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !p-4">
+        <div class="bg-surface-hover border border-border rounded-xl p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -105,64 +76,62 @@
 
     {{-- Table --}}
     <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
-                    <th class="actions">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($expenses as $expense)
+        @if($expenses->isNotEmpty())
+            <table>
+                <thead>
                     <tr>
-                        <td>
-                            <p class="font-medium">{{ $expense->concept }}</p>
-                            <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
-                        </td>
-                        <td>
-                            @if($expense->is_distributed)
-                                <span class="badge badge-secondary" title="Prorrateado entre proyectos activos">
-                                    <i data-lucide="split" class="w-3 h-3 mr-1 inline-block"></i> Distribuido
-                                </span>
-                            @else
-                                <span class="text-body">{{ $expense->project->name ?? '—' }}</span>
-                            @endif
-                        </td>
-                        <td>
-                            <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
-                        </td>
-                        <td class="text-body text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
-                        <td class="numeric font-semibold">${{ number_format($expense->amount, 2, '.', ',') }}</td>
-                        <td class="actions">
-                            <div class="flex items-center justify-end gap-1">
-                                @if($expense->receipt_file)
-                                    <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank"
-                                        class="btn-icon-primary" title="Ver comprobante">
-                                        <i data-lucide="file-text" class="w-4 h-4"></i>
-                                    </a>
+                        <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                        <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                        <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
+                        <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
+                        <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
+                        <th class="actions">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($expenses as $expense)
+                        <tr>
+                            <td>
+                                <p class="font-medium">{{ $expense->concept }}</p>
+                                <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
+                            </td>
+                            <td>
+                                @if($expense->is_distributed)
+                                    <span class="badge badge-secondary" title="Prorrateado entre proyectos activos">
+                                        <i data-lucide="split" class="w-3 h-3 mr-1 inline-block"></i> Distribuido
+                                    </span>
+                                @else
+                                    <span class="text-body">{{ $expense->project->name ?? '—' }}</span>
                                 @endif
-                                <button wire:click="deleteExpense({{ $expense->id }})"
-                                    wire:confirm="¿Deseas eliminar este gasto? Esta acción no se puede deshacer."
-                                    class="btn-icon-danger">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6">
-                            <x-empty-state icon="receipt" title="No hay gastos registrados"
-                                message="Registra un gasto para comenzar a llevar el control." />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </td>
+                            <td>
+                                <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
+                            </td>
+                            <td class="text-body text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
+                            <td class="numeric font-semibold">${{ number_format($expense->amount, 2, '.', ',') }}</td>
+                            <td class="actions">
+                                <div class="flex items-center justify-end gap-1">
+                                    @if($expense->receipt_file)
+                                        <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank"
+                                            class="btn-icon-primary" title="Ver comprobante">
+                                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                                        </a>
+                                    @endif
+                                    <button wire:click="deleteExpense({{ $expense->id }})"
+                                        wire:confirm="¿Deseas eliminar este gasto? Esta acción no se puede deshacer."
+                                        class="btn-icon-danger">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <x-empty-state icon="receipt" title="No hay gastos registrados"
+                message="Registra un gasto para comenzar a llevar el control." />
+        @endif
     </div>
 
     <div class="mt-4">{{ $expenses->links() }}</div>
@@ -171,23 +140,17 @@
     @if($showCreateModal)
         <x-modal show="showCreateModal" title="Registrar Gasto">
             <form wire:submit="createExpense" class="p-5 space-y-4">
-                <div>
-                    <label class="label">Concepto *</label>
+                <x-form-field label="Concepto" required error="{{ $errors->first('concept') }}">
                     <input wire:model="concept" type="text" class="input" placeholder="Ej. Compra de cemento">
-                    @error('concept') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                </x-form-field>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="label">Monto *</label>
+                    <x-form-field label="Monto" required error="{{ $errors->first('amount') }}">
                         <input wire:model="amount" type="number" step="0.01" class="input" placeholder="0.00">
-                        @error('amount') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label class="label">Fecha *</label>
+                    </x-form-field>
+                    <x-form-field label="Fecha" required error="{{ $errors->first('date') }}">
                         <input wire:model="date" type="date" class="input">
-                        @error('date') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -216,36 +179,20 @@
                         </div>
                         @error('projectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
                     </div>
-                    <div>
-                        <label class="label">Categoría *</label>
+                    <x-form-field label="Categoría" required error="{{ $errors->first('category') }}">
                         <x-custom-select wire:model="category" :options="$categories" placeholder="Seleccionar..." />
-                        @error('category') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
-                <div>
-                    <label class="label">Comprobante (opcional)</label>
-                    <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile"
-                        accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
-                </div>
+                <x-form-field label="Comprobante (opcional)">
+                    <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile" accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
+                </x-form-field>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)"
-                        class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-primary relative" wire:loading.attr="disabled"
-                        wire:target="createExpense">
-                        <span wire:loading.class="opacity-0" wire:target="createExpense"
-                            class="inline-flex items-center gap-1.5 transition-opacity">Registrar Gasto</span>
-                        <span wire:loading wire:target="createExpense"
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                    fill="none" />
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                        </span>
-                    </button>
+                    <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
+                    <x-submit-button target="createExpense">
+                        Registrar Gasto
+                    </x-submit-button>
                 </div>
             </form>
         </x-modal>

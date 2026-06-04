@@ -64,64 +64,65 @@
 
     {{-- Products table --}}
     <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <x-sortable-header field="category_id" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <x-sortable-header field="measure_id" label="Unidad" :sortField="$sortField" :sortDirection="$sortDirection" />
-                    <th class="actions">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($products as $product)
+        @if($products->isNotEmpty())
+            <table>
+                <thead>
                     <tr>
-                        <td>
-                            <div>
-                                <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
-                                @if($product->description)
-                                    <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                        <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
+                            :sortDirection="$sortDirection" />
+                        <x-sortable-header field="category_id" label="Categoría" :sortField="$sortField"
+                            :sortDirection="$sortDirection" />
+                        <x-sortable-header field="measure_id" label="Unidad" :sortField="$sortField"
+                            :sortDirection="$sortDirection" />
+                        <th class="actions">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($products as $product)
+                        <tr>
+                            <td>
+                                <div>
+                                    <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
+                                    @if($product->description)
+                                        <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
+                                @if($product->category)
+                                    <x-dynamic-badge :value="$product->category->name" />
+                                @else
+                                    <span class="text-text-muted">—</span>
                                 @endif
-                            </div>
-                        </td>
-                        <td>
-                            @if($product->category)
-                                <x-dynamic-badge :value="$product->category->name" />
-                            @else
-                                <span class="text-text-muted">—</span>
-                            @endif
-                        </td>
-                        <td class="text-body text-text-secondary">
-                            @if($product->measure && $product->measure->abbreviation)
-                                <span class="badge badge-secondary">{{ $product->measure->abbreviation }}</span>
-                            @else
-                                <span class="text-text-muted">—</span>
-                            @endif
-                        </td>
-                        <td class="actions">
-                            <div class="flex items-center justify-end gap-1">
-                                <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary"
-                                    title="Editar producto">
-                                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                                </button>
-                                <button wire:click="deleteProduct({{ $product->id }})"
-                                    wire:confirm="¿Eliminar este producto?" class="btn-icon-danger"
-                                    title="Eliminar producto">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5">
-                            <x-empty-state icon="package" title="No hay productos en el catálogo"
-                                message="Agrega productos para gestionar tu inventario." />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </td>
+                            <td class="text-body text-text-secondary">
+                                @if($product->measure && $product->measure->abbreviation)
+                                    <span class="badge badge-secondary">{{ $product->measure->abbreviation }}</span>
+                                @else
+                                    <span class="text-text-muted">—</span>
+                                @endif
+                            </td>
+                            <td class="actions">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary"
+                                        title="Editar producto">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </button>
+                                    <button wire:click="deleteProduct({{ $product->id }})"
+                                        wire:confirm="¿Eliminar este producto?" class="btn-icon-danger"
+                                        title="Eliminar producto">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <x-empty-state icon="package" title="No hay productos en el catálogo"
+                message="Agrega productos para gestionar tu inventario." />
+        @endif
     </div>
 
     <div class="mt-4">{{ $products->links() }}</div>
@@ -130,48 +131,28 @@
     @if($showCreateModal)
         <x-modal show="showCreateModal" :title="$editingId ? 'Editar Producto' : 'Nuevo Producto'" maxWidth="md">
             <form wire:submit="saveProduct" class="p-5 space-y-4">
-                <div>
-                    <label class="label">Nombre canónico *</label>
+                <x-form-field label="Nombre canónico" required hint="Nombre estándar del producto en el catálogo interno"
+                    error="{{ $errors->first('canonicalName') }}">
                     <input wire:model="canonicalName" type="text" class="input" placeholder="Ej. Cemento Portland CPC 30R">
-                    <p class="mt-1 text-xs-fluid text-text-muted">Nombre estándar del producto en el catálogo interno</p>
-                    @error('canonicalName') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                </div>
+                </x-form-field>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="label">Unidad *</label>
+                    <x-form-field label="Unidad" required error="{{ $errors->first('measureId') }}">
                         <x-custom-select wire:model="measureId" :options="$measures" placeholder="Seleccionar..." />
-                        @error('measureId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label class="label">Categoría *</label>
+                    </x-form-field>
+                    <x-form-field label="Categoría" required error="{{ $errors->first('categoryId') }}">
                         <x-custom-select wire:model="categoryId" :options="$categories" placeholder="Seleccionar..." />
-                        @error('categoryId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
-                <div>
-                    <label class="label">Descripción</label>
+                <x-form-field label="Descripción" error="{{ $errors->first('description') }}">
                     <textarea wire:model="description" class="input" rows="2"
                         placeholder="Descripción técnica opcional..."></textarea>
-                </div>
+                </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <button type="button" wire:click="$set('showCreateModal', false)"
                         class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-primary relative" wire:loading.attr="disabled"
-                        wire:target="saveProduct">
-                        <span wire:loading.class="opacity-0" wire:target="saveProduct"
-                            class="inline-flex items-center gap-1.5 transition-opacity">
-                            {{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}
-                        </span>
-                        <span wire:loading wire:target="saveProduct"
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                    fill="none" />
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                        </span>
-                    </button>
+                    <x-submit-button target="saveProduct">
+                        {{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}
+                    </x-submit-button>
                 </div>
             </form>
         </x-modal>
