@@ -7,6 +7,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\Expenses\ExpenseIndex;
 use App\Livewire\Products\ProductIndex;
 use App\Livewire\Projects\ProjectIndex;
+use App\Livewire\Projects\ProjectShow;
 use App\Livewire\Reports\ReportIndex;
 use App\Livewire\Requisitions\ManualRequisition;
 use App\Livewire\Requisitions\QuotationWizard;
@@ -42,6 +43,7 @@ Route::middleware('auth')->group(function () {
 
     // Proyectos (RF-PROY)
     Route::get('/proyectos', ProjectIndex::class)->name('proyectos.index');
+    Route::get('/proyectos/{id}', ProjectShow::class)->name('proyectos.show');
 
     // Gastos (RF-GASTO)
     Route::get('/gastos', ExpenseIndex::class)->name('gastos.index');

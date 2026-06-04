@@ -57,7 +57,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="bg-surface-hover border border-border rounded-xl p-4">
+        <div class="card !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -97,7 +97,7 @@
                             </td>
                             <td>
                                 @if($expense->is_distributed)
-                                    <span class="badge badge-secondary" title="Prorrateado entre proyectos activos">
+                                    <span class="badge badge-primary" title="Prorrateado entre proyectos activos">
                                         <i data-lucide="split" class="w-3 h-3 mr-1 inline-block"></i> Distribuido
                                     </span>
                                 @else

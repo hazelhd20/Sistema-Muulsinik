@@ -80,15 +80,9 @@
                         <tbody>
                             @foreach($projects as $project)
                                 <tr class="group">
-                                    <td class="font-medium whitespace-nowrap">
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="w-8 h-8 rounded-lg bg-surface-hover flex items-center justify-center shrink-0">
-                                                <i data-lucide="hard-hat" class="w-4 h-4 text-text-muted"></i>
-                                            </div>
-                                            <span class="max-w-[200px] truncate"
-                                                title="{{ $project->name }}">{{ $project->name }}</span>
-                                        </div>
+                                    <td class="font-medium whitespace-nowrap text-text-primary">
+                                        <span class="max-w-[200px] truncate"
+                                            title="{{ $project->name }}">{{ $project->name }}</span>
                                     </td>
                                     <td class="max-w-[150px] truncate text-text-secondary"
                                         title="{{ $project->client ?? '—' }}">
@@ -125,8 +119,8 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-1">
-                                            <a href="{{ url('/proyectos/' . $project->id) }}" class="btn-icon"
-                                                title="Ver detalle" aria-label="Ver detalle">
+                                            <a href="{{ route('proyectos.show', $project->id) }}" class="btn-icon"
+                                                title="Ver detalle" aria-label="Ver detalle" wire:navigate>
                                                 <i data-lucide="eye" class="w-4 h-4"></i>
                                             </a>
                                             <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary"
@@ -172,10 +166,7 @@
                         @for($i = 0; $i < 6; $i++)
                             <tr>
                                 <td>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-8 h-8 rounded-lg skeleton shrink-0"></div>
-                                        <div class="h-4 skeleton rounded w-32"></div>
-                                    </div>
+                                    <div class="h-4 skeleton rounded w-32"></div>
                                 </td>
                                 <td>
                                     <div class="h-4 skeleton rounded w-24"></div>

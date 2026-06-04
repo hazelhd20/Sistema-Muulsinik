@@ -18,10 +18,22 @@ class Dashboard extends Component
     {
         $totalProjects = Project::count();
         $activeProjects = Project::where('status', 'activo')->count();
-        $totalExpenses = Expense::sum('amount');
-        $monthExpenses = Expense::whereMonth('date', now()->month)
+        $requisitionsTotalAllTime = (float) Requisition::where('status', 'aprobada')
+            ->with('items')
+            ->get()
+            ->sum(fn($req) => $req->total);
+        $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
+
+        $requisitionsTotalThisMonth = (float) Requisition::where('status', 'aprobada')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->with('items')
+            ->get()
+            ->sum(fn($req) => $req->total);
+        $monthExpenses = (float) Expense::whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->sum('amount');
+            ->sum('amount') + $requisitionsTotalThisMonth;
+
         $pendingRequisitions = Requisition::where('status', 'pendiente')->count();
         $approvedRequisitions = Requisition::where('status', 'aprobada')->count();
         $totalSuppliers = Supplier::count();
@@ -30,15 +42,25 @@ class Dashboard extends Component
         $recentExpenses = Expense::with(['project', 'user'])->latest()->take(5)->get();
         $recentRequisitions = Requisition::with(['project', 'creator'])->latest()->take(5)->get();
 
-        // Datos para gráfico de gastos mensuales (últimos 6 meses)
+        // Datos para gráfico de gastos mensuales (últimos 6 meses) (Directo + Requisiciones Aprobadas)
         $monthlyExpenses = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
+            
+            $direct = (float) Expense::whereMonth('date', $date->month)
+                ->whereYear('date', $date->year)
+                ->sum('amount');
+                
+            $requisitions = (float) Requisition::where('status', 'aprobada')
+                ->whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->with('items')
+                ->get()
+                ->sum(fn($req) => $req->total);
+
             $monthlyExpenses[] = [
                 'month' => $date->translatedFormat('M'),
-                'total' => (float) Expense::whereMonth('date', $date->month)
-                    ->whereYear('date', $date->year)
-                    ->sum('amount'),
+                'total' => $direct + $requisitions,
             ];
         }
 

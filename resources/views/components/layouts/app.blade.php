@@ -174,8 +174,8 @@
 
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
-                    <button type="submit" class="nav-link w-full text-left group hover:bg-red-50 hover:!text-red-600">
-                        <i data-lucide="log-out" class="w-4 h-4 shrink-0 group-hover:text-red-500"></i>
+                    <button type="submit" class="nav-link w-full text-left group hover:bg-danger-light hover:!text-danger">
+                        <i data-lucide="log-out" class="w-4 h-4 shrink-0 group-hover:text-danger-hover"></i>
                         <span>Cerrar sesión</span>
                     </button>
                 </form>

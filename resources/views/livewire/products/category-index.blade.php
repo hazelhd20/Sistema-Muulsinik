@@ -47,8 +47,8 @@
                 <tbody>
                     @foreach ($categories as $category)
                         <tr wire:key="category-row-{{ $category->id }}">
-                            <td>
-                                <x-dynamic-badge :value="$category->name" />
+                            <td class="font-medium text-text-primary">
+                                {{ $category->name }}
                             </td>
                             <td class="actions">
                                 <div class="flex items-center justify-end gap-1">

@@ -36,8 +36,8 @@
         </div>
 
         {{-- Items List --}}
-        <div class="card p-0 overflow-hidden">
-            <div class="px-6 py-5 flex items-center justify-between">
+        <div class="card mb-6">
+            <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h2 class="text-h2 text-text-primary">Conceptos y Materiales</h2>
                     @if(count($items) > 0)
@@ -51,7 +51,7 @@
             </div>
 
             {{-- Search Product --}}
-            <div class="px-6 pb-4" x-data>
+            <div class="mb-4" x-data>
                 <div class="relative">
                     <div class="relative">
                         <i data-lucide="search"
@@ -100,81 +100,76 @@
             </div>
 
             {{-- Items Table --}}
-            <div class="table-embedded border-t-0 border-x-0 rounded-none">
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="w-10"></th>
-                            <th>Concepto</th>
-                            <th class="w-24 text-center">Cant.</th>
-                            <th class="w-32 text-right">P. Unitario</th>
-                            <th class="w-32 text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($items as $index => $item)
-                            <tr class="group transition-colors duration-150 hover:bg-surface-hover/30"
-                                wire:key="item-row-{{ $index }}">
-                                <td class="px-4 py-3 text-center">
-                                    <button type="button" wire:click="removeItem({{ $index }})"
-                                        class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                </td>
-                                <td class="px-4 py-3">
-                                    @if($item['product_id'])
-                                        <div class="flex flex-col">
-                                            <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
-                                            <span class="text-xs-fluid text-text-muted">Prod. Catálogo
-                                                ({{ $item['measure_abbr'] }})</span>
-                                        </div>
-                                    @else
-                                        <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
-                                            class="input h-8 text-small px-2 bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white"
-                                            placeholder="Escribe un concepto...">
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="relative">
-                                        <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity"
-                                            step="0.01"
-                                            class="input h-8 text-small px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
-                                        <span
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="relative">
-                                        <span
-                                            class="absolute left-2 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
-                                        <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price"
-                                            step="0.01"
-                                            class="input h-8 text-small pl-6 pr-2 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-right font-medium text-text-primary tabular-nums text-small">
-                                    ${{ number_format($item['line_total'], 2) }}
-                                </td>
-                            </tr>
-                        @empty
+            @if(count($items) > 0)
+                <div class="table-embedded">
+                    <table>
+                        <thead>
                             <tr>
-                                <td colspan="5" class="py-8 text-center text-text-muted">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <i data-lucide="package-search" class="w-8 h-8 mb-2 opacity-50"></i>
-                                        <p class="text-body font-medium">No hay conceptos en la cotización</p>
-                                        <p class="text-xs-fluid mt-1">Busca un producto arriba o agrega un concepto manual.
-                                        </p>
-                                    </div>
-                                </td>
+                                <th>Concepto</th>
+                                <th class="w-24 text-center">Cant.</th>
+                                <th class="w-32 text-right">P. Unitario</th>
+                                <th class="w-32 text-right">Total</th>
+                                <th class="w-10"></th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            @foreach($items as $index => $item)
+                                <tr class="group transition-colors duration-150 hover:bg-surface-hover/30"
+                                    wire:key="item-row-{{ $index }}">
+                                    <td class="px-4 py-3">
+                                        @if($item['product_id'])
+                                            <div class="flex flex-col">
+                                                <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
+                                                <span class="text-xs-fluid text-text-muted">Prod. Catálogo
+                                                    ({{ $item['measure_abbr'] }})</span>
+                                            </div>
+                                        @else
+                                            <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
+                                                class="input h-8 text-small px-2 bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white"
+                                                placeholder="Escribe un concepto...">
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="relative">
+                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity"
+                                                step="0.01"
+                                                class="input h-8 text-small px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
+                                            <span
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-2 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
+                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price"
+                                                step="0.01"
+                                                class="input h-8 text-small pl-6 pr-2 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right font-medium text-text-primary tabular-nums text-small">
+                                        ${{ number_format($item['line_total'], 2) }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <button type="button" wire:click="removeItem({{ $index }})"
+                                            class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <x-empty-state icon="package-search" title="No hay conceptos en la cotización"
+                    message="Busca un producto arriba o agrega un concepto manual."
+                    class="border border-dashed border-border rounded-xl py-10" />
+            @endif
 
             {{-- Totals --}}
             @if(!empty($items))
-                <div class="flex justify-end px-6 py-5">
+                <div class="flex justify-end mt-4">
                     <x-totals-summary>
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Costo Directo (Subtotal)</span>

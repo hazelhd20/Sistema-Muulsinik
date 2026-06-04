@@ -158,7 +158,7 @@
             x-show="fileName"
             x-cloak
             x-effect="if (fileExt) $nextTick(() => renderFileIcon())"
-            class="mt-4 p-3.5 rounded-xl bg-surface-main border border-border"
+            class="mt-4 p-3.5 rounded-xl bg-surface-card border border-border shadow-sm"
         >
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -193,7 +193,7 @@
         <div class="flex items-center gap-3">
             {{-- Inline thumbnail --}}
             <div x-show="fileName && previewUrl && previewType && previewType.startsWith('image/')" x-cloak class="relative shrink-0">
-                <img :src="previewUrl" class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-main" />
+                <img :src="previewUrl" class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-card" />
                 <button type="button" @click="removeFile()"
                     class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
                     <i data-lucide="x" class="w-3.5 h-3.5" wire:ignore></i>
@@ -202,7 +202,7 @@
 
             {{-- Non-image file selected --}}
             <div x-show="fileName && !(previewType && previewType.startsWith('image/'))" x-cloak class="relative shrink-0">
-                <div class="h-16 w-16 rounded-lg flex items-center justify-center border border-border bg-surface-main"
+                <div class="h-16 w-16 rounded-lg flex items-center justify-center border border-border bg-surface-card"
                      :class="iconData.bg">
                     <span x-ref="fileIconCompact" :class="iconData.color"></span>
                 </div>
@@ -224,7 +224,7 @@
                     :class="isDragging
                         ? 'border-primary-500 bg-primary-50/50'
                         : (fileName
-                            ? 'border-border bg-surface-main hover:border-primary-300'
+                            ? 'border-border bg-surface-card hover:border-primary-300 shadow-sm'
                             : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20')"
                 >
                     <div class="flex items-center gap-2">
@@ -257,7 +257,7 @@
             :class="isDragging
                 ? 'border-primary-500 bg-primary-50/50'
                 : (fileName
-                    ? 'border-border bg-surface-main'
+                    ? 'border-border bg-surface-card shadow-sm'
                     : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20')"
         >
             {{-- Empty state --}}

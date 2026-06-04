@@ -51,9 +51,9 @@
                     @php
                         $colorClasses = [
                             'primary' => 'bg-primary-50 text-primary-600',
-                            'success' => 'bg-emerald-50 text-emerald-600',
-                            'warning' => 'bg-amber-50 text-amber-600',
-                            'danger' => 'bg-red-50 text-red-600',
+                            'success' => 'bg-success-light text-success',
+                            'warning' => 'bg-warning-light text-warning',
+                            'danger' => 'bg-danger-light text-danger',
                         ][$notification['color']] ?? 'bg-primary-50 text-primary-600';
 
                         $isUnread = is_null($notification['read_at']);

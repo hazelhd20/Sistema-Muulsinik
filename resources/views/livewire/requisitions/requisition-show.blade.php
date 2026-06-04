@@ -23,7 +23,7 @@
                     </h2>
                     <p class="text-small text-text-muted mt-1">{{ $requisition->date?->format('d/m/Y') }}</p>
                 </div>
-                <x-status-badge :status="$requisition->estatus" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                <x-status-badge :status="$requisition->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -42,10 +42,10 @@
                     <span
                         class="text-small font-medium text-text-primary">{{ $requisition->vendor?->name ?? '—' }}</span>
                 </div>
-                @if($requisition->notes)
+                @if($requisition->annotations)
                     <div class="col-span-2 md:col-span-3">
                         <span class="text-xs-fluid text-text-muted block mb-1">Notas</span>
-                        <span class="text-small text-text-primary">{{ $requisition->notes }}</span>
+                        <span class="text-small text-text-primary">{{ $requisition->annotations }}</span>
                     </div>
                 @endif
             </div>
@@ -72,26 +72,31 @@
                         @forelse($requisition->items as $item)
                             <tr class="hover:bg-surface-hover/30">
                                 <td>
-                                    <p class="font-medium text-small">{{ $item->product_name ?? $item->product?->name }}</p>
+                                    <p class="font-medium text-small">{{ $item->product?->canonical_name ?? 'Producto no encontrado' }}</p>
                                 </td>
                                 <td>
-                                    <span class="text-small text-text-muted">{{ $item->category_name ?? '—' }}</span>
+                                    <span class="text-small text-text-muted">{{ $item->product?->category?->name ?? '—' }}</span>
                                 </td>
                                 <td class="text-right tabular-nums text-small">
                                     {{ number_format($item->quantity, 2) }}
-                                    {{ $item->measure_abbr ?? $item->measure?->abbreviation ?? '' }}
+                                    {{ $item->measure?->abbreviation ?? '' }}
                                 </td>
                                 <td class="text-right tabular-nums text-small">
                                     ${{ number_format($item->unit_price, 2) }}
                                 </td>
                                 <td class="text-right font-medium tabular-nums text-small">
-                                    ${{ number_format($item->total_price, 2) }}
+                                    ${{ number_format($item->line_total_computed, 2) }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-6 text-text-muted">
-                                    No hay productos registrados en esta requisición.
+                                <td colspan="5">
+                                    <div class="flex flex-col items-center justify-center py-10 gap-2">
+                                        <div class="w-10 h-10 rounded-full bg-surface-main flex items-center justify-center">
+                                            <i data-lucide="package" class="w-5 h-5 text-text-muted"></i>
+                                        </div>
+                                        <p class="text-small text-text-muted">Sin productos registrados</p>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
@@ -107,25 +112,21 @@
                         <span
                             class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($requisition->subtotal, 2) }}</span>
                     </div>
-                    @if($requisition->discount > 0)
+                    @php
+                        $discountTotal = $requisition->items->sum('line_discount_total');
+                    @endphp
+                    @if($discountTotal > 0)
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-danger">Descuento</span>
                             <span
-                                class="text-small font-medium text-danger tabular-nums">-${{ number_format($requisition->discount, 2) }}</span>
+                                class="text-small font-medium text-danger tabular-nums">-${{ number_format($discountTotal, 2) }}</span>
                         </div>
                     @endif
                     <div class="flex items-center justify-between gap-6">
-                        <span class="text-small text-text-muted">IVA ({{ $requisition->tax_rate }}%)</span>
+                        <span class="text-small text-text-muted">IVA</span>
                         <span
-                            class="text-small font-medium text-text-muted tabular-nums">${{ number_format($requisition->tax, 2) }}</span>
+                            class="text-small font-medium text-text-muted tabular-nums">${{ number_format($requisition->tax_amount, 2) }}</span>
                     </div>
-                    @if($requisition->retention_isr > 0 || $requisition->retention_iva > 0)
-                        <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-danger">Retenciones</span>
-                            <span
-                                class="text-small font-medium text-danger tabular-nums">-${{ number_format($requisition->retention_isr + $requisition->retention_iva, 2) }}</span>
-                        </div>
-                    @endif
                     <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border">
                         <span class="text-body font-semibold text-text-primary">Total</span>
                         <span

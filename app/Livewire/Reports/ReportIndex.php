@@ -18,8 +18,12 @@ class ReportIndex extends Component
     public string $projectFilter = '';
     public string $activeTab = 'overview';
 
-    public function updatedPeriod(): void { /* triggers re-render */ }
-    public function updatedProjectFilter(): void { /* triggers re-render */ }
+    public function updatedPeriod(): void
+    { /* triggers re-render */
+    }
+    public function updatedProjectFilter(): void
+    { /* triggers re-render */
+    }
 
     private function getDateFrom(): \Carbon\Carbon
     {
@@ -47,15 +51,46 @@ class ReportIndex extends Component
     }
 
     /** Datos para la pestaña de Resumen General */
+    /** Datos para la pestaña de Resumen General */
     private function getOverviewData(\Carbon\Carbon $dateFrom): array
     {
-        $expenseQuery = Expense::where('date', '>=', $dateFrom);
+        // 1. Calcular el total de gastos del período (Directos + Requisiciones Aprobadas + Distribuidos si hay proyecto)
         if ($this->projectFilter) {
-            $expenseQuery->where('project_id', $this->projectFilter);
+            $direct = (float) Expense::where('project_id', $this->projectFilter)
+                ->where('date', '>=', $dateFrom)
+                ->sum('amount');
+
+            $distributed = (float) \App\Models\ExpenseAllocation::where('project_id', $this->projectFilter)
+                ->whereHas('expense', fn($q) => $q->where('date', '>=', $dateFrom))
+                ->sum('amount');
+
+            $requisitions = (float) Requisition::where('project_id', $this->projectFilter)
+                ->where('status', 'aprobada')
+                ->where('created_at', '>=', $dateFrom)
+                ->with('items')
+                ->get()
+                ->sum(fn($req) => $req->total);
+
+            $totalExpenses = $direct + $distributed + $requisitions;
+
+            // Contador de transacciones del período (gastos directos asociados)
+            $expenseCount = Expense::where('project_id', $this->projectFilter)
+                ->where('date', '>=', $dateFrom)
+                ->count();
+        } else {
+            $direct = (float) Expense::where('date', '>=', $dateFrom)->sum('amount');
+
+            $requisitions = (float) Requisition::where('status', 'aprobada')
+                ->where('created_at', '>=', $dateFrom)
+                ->with('items')
+                ->get()
+                ->sum(fn($req) => $req->total);
+
+            $totalExpenses = $direct + $requisitions;
+
+            $expenseCount = Expense::where('date', '>=', $dateFrom)->count();
         }
 
-        $totalExpenses = (float) $expenseQuery->sum('amount');
-        $expenseCount = $expenseQuery->count();
         $avgExpense = $expenseCount > 0 ? $totalExpenses / $expenseCount : 0;
 
         $totalProjects = Project::count();
@@ -64,46 +99,111 @@ class ReportIndex extends Component
 
         $requisitionsApproved = Requisition::where('status', 'aprobada')
             ->where('created_at', '>=', $dateFrom)
+            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
             ->count();
-        $requisitionsPending = Requisition::where('status', 'pendiente')->count();
+        $requisitionsPending = Requisition::where('status', 'pendiente')
+            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
+            ->count();
 
         // Gastos por categoría
-        $expenseByCategoryQuery = Expense::select('category', DB::raw('SUM(amount) as total'))
-            ->where('date', '>=', $dateFrom)
-            ->groupBy('category')
-            ->orderByDesc('total');
         if ($this->projectFilter) {
-            $expenseByCategoryQuery->where('project_id', $this->projectFilter);
-        }
-        $expenseByCategory = $expenseByCategoryQuery->get();
+            // Gastos directos del proyecto
+            $directExpenses = Expense::select('category', DB::raw('SUM(amount) as total'))
+                ->where('project_id', $this->projectFilter)
+                ->where('date', '>=', $dateFrom)
+                ->groupBy('category')
+                ->get();
 
-        // Gastos mensuales (últimos 12 meses)
+            // Gastos distribuidos (prorrateados) asignados al proyecto
+            $allocatedExpenses = \App\Models\ExpenseAllocation::select('expenses.category', DB::raw('SUM(expense_allocations.amount) as total'))
+                ->join('expenses', 'expenses.id', '=', 'expense_allocations.expense_id')
+                ->where('expense_allocations.project_id', $this->projectFilter)
+                ->where('expenses.date', '>=', $dateFrom)
+                ->groupBy('expenses.category')
+                ->get();
+
+            // Unificar por categoría en PHP
+            $categoriesMerged = [];
+            foreach ($directExpenses as $de) {
+                $categoriesMerged[$de->category] = (float) $de->total;
+            }
+            foreach ($allocatedExpenses as $ae) {
+                $categoriesMerged[$ae->category] = ($categoriesMerged[$ae->category] ?? 0.0) + (float) $ae->total;
+            }
+
+            $expenseByCategory = collect($categoriesMerged)->map(function ($total, $category) {
+                return (object) [
+                    'category' => $category,
+                    'total' => $total,
+                ];
+            })->sortByDesc('total');
+        } else {
+            $expenseByCategory = Expense::select('category', DB::raw('SUM(amount) as total'))
+                ->where('date', '>=', $dateFrom)
+                ->groupBy('category')
+                ->orderByDesc('total')
+                ->get();
+        }
+
+        // Gastos mensuales (últimos 12 meses) (Directo + Distribuido + Requisiciones Aprobadas)
         $monthlyData = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $query = Expense::whereMonth('date', $date->month)
-                ->whereYear('date', $date->year);
+
             if ($this->projectFilter) {
-                $query->where('project_id', $this->projectFilter);
+                $directMonth = (float) Expense::where('project_id', $this->projectFilter)
+                    ->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)
+                    ->sum('amount');
+
+                $distributedMonth = (float) \App\Models\ExpenseAllocation::where('project_id', $this->projectFilter)
+                    ->whereHas('expense', fn($q) => $q->whereMonth('date', $date->month)->whereYear('date', $date->year))
+                    ->sum('amount');
+
+                $requisitionsMonth = (float) Requisition::where('project_id', $this->projectFilter)
+                    ->where('status', 'aprobada')
+                    ->whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)
+                    ->with('items')
+                    ->get()
+                    ->sum(fn($req) => $req->total);
+
+                $monthTotal = $directMonth + $distributedMonth + $requisitionsMonth;
+            } else {
+                $directMonth = (float) Expense::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)
+                    ->sum('amount');
+
+                $requisitionsMonth = (float) Requisition::where('status', 'aprobada')
+                    ->whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)
+                    ->with('items')
+                    ->get()
+                    ->sum(fn($req) => $req->total);
+
+                $monthTotal = $directMonth + $requisitionsMonth;
             }
+
             $monthlyData[] = [
                 'month' => $date->translatedFormat('M Y'),
                 'short' => $date->translatedFormat('M'),
-                'total' => (float) $query->sum('amount'),
+                'total' => $monthTotal,
             ];
         }
 
-        // Top 5 proyectos por gasto
-        $topProjects = Project::select('projects.*')
-            ->selectRaw('(SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE expenses.project_id = projects.id AND expenses.date >= ?) as total_spent', [$dateFrom])
-            ->orderByDesc('total_spent')
-            ->take(5)
-            ->get();
+        // Top 5 proyectos por gasto (Directo + Distribuido + Requisiciones Aprobadas)
+        $topProjects = Project::all()
+            ->map(function ($proj) use ($dateFrom) {
+                $proj->total_spent = $proj->getSpentInPeriod($dateFrom);
+                return $proj;
+            })
+            ->sortByDesc('total_spent')
+            ->take(5);
 
         // Presupuesto vs Gasto por proyecto
         $budgetComparison = Project::where('status', 'activo')
             ->get()
-            ->map(fn ($p) => [
+            ->map(fn($p) => [
                 'name' => $p->name,
                 'budget' => (float) $p->budget,
                 'spent' => (float) $p->total_expenses,
@@ -111,11 +211,18 @@ class ReportIndex extends Component
             ]);
 
         return compact(
-            'totalExpenses', 'expenseCount', 'avgExpense',
-            'totalProjects', 'activeProjects', 'totalSuppliers',
-            'requisitionsApproved', 'requisitionsPending',
-            'expenseByCategory', 'monthlyData',
-            'topProjects', 'budgetComparison'
+            'totalExpenses',
+            'expenseCount',
+            'avgExpense',
+            'totalProjects',
+            'activeProjects',
+            'totalSuppliers',
+            'requisitionsApproved',
+            'requisitionsPending',
+            'expenseByCategory',
+            'monthlyData',
+            'topProjects',
+            'budgetComparison'
         );
     }
 

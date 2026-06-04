@@ -123,7 +123,7 @@
                     <div class="flex flex-col items-center max-w-lg mx-auto text-center py-4">
                         {{-- Ícono premium --}}
                         <div
-                            class="w-12 h-12 rounded-xl bg-surface-hover text-danger flex items-center justify-center mb-4 shrink-0">
+                            class="w-12 h-12 rounded-xl bg-danger-light text-danger flex items-center justify-center mb-4 shrink-0">
                             <i data-lucide="alert-triangle" class="w-6 h-6" wire:ignore></i>
                         </div>
 
@@ -252,18 +252,18 @@
 
 
             <div class="card mb-6">
-                <div class="card-header">
-                    <div class="card-title">
-                        <span>Productos</span>
-                        <span class="badge badge-secondary ml-1">{{ count($items) }}
-                            {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-h2 text-text-primary">Productos</h2>
+                        @if(count($items) > 0)
+                            <span class="badge badge-secondary">{{ count($items) }}
+                                {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
+                        @endif
                     </div>
-                    <div class="flex items-center gap-4">
-                        <button type="button" wire:click="addItem" class="btn-secondary">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            Agregar
-                        </button>
-                    </div>
+                    <button type="button" wire:click="addItem" class="btn-secondary">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Agregar
+                    </button>
                 </div>
 
                 @error('items') <p class="mb-3 text-xs-fluid text-danger">{{ $message }}</p> @enderror
@@ -611,13 +611,9 @@
                         </x-totals-summary>
                     </div>
                 @else
-                    <div class="text-center py-10 border-2 border-dashed border-border rounded-xl">
-                        <div class="w-10 h-10 rounded-xl bg-surface-hover flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="package-open" class="w-5 h-5 text-text-muted"></i>
-                        </div>
-                        <p class="text-small font-medium text-text-primary mb-0.5">Sin productos detectados</p>
-                        <p class="text-xs-fluid text-text-muted">Agrégalos manualmente con el botón Agregar.</p>
-                    </div>
+                    <x-empty-state icon="package-open" title="Sin productos detectados"
+                        message="Agrégalos manualmente con el botón Agregar."
+                        class="border border-dashed border-border rounded-xl py-10" />
                 @endif
             </div>
 

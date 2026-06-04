@@ -8,7 +8,7 @@
         <div class="flex items-center gap-2">
             <button
                 wire:click="markAllAsRead"
-                class="btn btn-secondary"
+                class="btn-secondary"
                 {{ $this->notifications->whereNull('read_at')->isEmpty() ? 'disabled' : '' }}
             >
                 <i data-lucide="check-double" class="w-4 h-4"></i>
@@ -17,7 +17,7 @@
             <button
                 wire:click="deleteAll"
                 wire:confirm="¿Estás seguro de eliminar todas las notificaciones? Esta acción no se puede deshacer."
-                class="btn btn-secondary text-danger hover:bg-surface-hover hover:border-danger/50"
+                class="btn-secondary text-danger hover:bg-danger-light hover:border-danger/50"
             >
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                 <span>Eliminar todas</span>
@@ -67,11 +67,11 @@
                     @php
                         $data = $notification->data;
                         $colorClasses = [
-                            'primary' => 'bg-surface-hover text-primary-600',
-                            'success' => 'bg-surface-hover text-emerald-600',
-                            'warning' => 'bg-surface-hover text-amber-600',
-                            'danger'  => 'bg-surface-hover text-danger',
-                        ][$data['color'] ?? 'primary'] ?? 'bg-surface-hover text-primary-600';
+                            'primary' => 'bg-primary-50 text-primary-600',
+                            'success' => 'bg-success-light text-success',
+                            'warning' => 'bg-warning-light text-warning',
+                            'danger'  => 'bg-danger-light text-danger',
+                        ][$data['color'] ?? 'primary'] ?? 'bg-primary-50 text-primary-600';
 
                         $isUnread = is_null($notification->read_at);
                     @endphp

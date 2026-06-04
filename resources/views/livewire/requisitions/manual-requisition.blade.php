@@ -43,8 +43,8 @@
         </div>
 
         {{-- 2. Productos --}}
-        <div class="card p-0 overflow-hidden">
-            <div class="px-6 py-5 flex items-center justify-between">
+        <div class="card mb-6">
+            <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h2 class="text-h2 text-text-primary">Productos</h2>
                     @if(count($items) > 0)
@@ -59,7 +59,7 @@
             </div>
 
             {{-- Search Product --}}
-            <div class="px-6 pb-4" x-data>
+            <div class="mb-4" x-data>
                 <div class="relative">
                     <div class="relative">
                         <i data-lucide="search"
@@ -109,7 +109,7 @@
 
             {{-- Items Table --}}
             @if(count($items) > 0)
-                <div class="table-embedded border-t-0 border-x-0 rounded-none md:!overflow-visible">
+                <div class="table-embedded md:!overflow-visible">
                     <table>
                         <thead>
                             <tr>
@@ -189,7 +189,7 @@
                     $ivaTotal = round($subtotalTotal * 0.16, 2);
                     $grandTotal = $subtotalTotal + $ivaTotal;
                 @endphp
-                <div class="flex justify-end px-6 py-5">
+                <div class="flex justify-end mt-4">
                     <x-totals-summary>
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Subtotal s/IVA</span>
@@ -209,14 +209,9 @@
                     </x-totals-summary>
                 </div>
             @else
-                <div class="text-center py-12 mx-6 mb-6 border-2 border-dashed border-border rounded-xl">
-                    <div class="w-12 h-12 rounded-xl bg-surface-hover flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="package-plus" class="w-6 h-6 text-text-muted"></i>
-                    </div>
-                    <p class="text-body font-medium text-text-primary mb-1">Sin productos</p>
-                    <p class="text-small text-text-muted">Busca un producto del catálogo arriba o agrega un concepto manual.
-                    </p>
-                </div>
+                <x-empty-state icon="package-plus" title="Sin productos"
+                    message="Busca un producto del catálogo arriba o agrega un concepto manual."
+                    class="border border-dashed border-border rounded-xl py-10" />
             @endif
         </div>
 

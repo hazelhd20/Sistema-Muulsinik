@@ -32,8 +32,8 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon bg-emerald-50">
-                <i data-lucide="trending-up" class="w-[18px] h-[18px] text-emerald-600"></i>
+            <div class="stat-icon bg-success-light">
+                <i data-lucide="trending-up" class="w-[18px] h-[18px] text-success"></i>
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none truncate tabular-nums">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
@@ -42,8 +42,8 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon bg-amber-50">
-                <i data-lucide="clock" class="w-[18px] h-[18px] text-amber-600"></i>
+            <div class="stat-icon bg-warning-light">
+                <i data-lucide="clock" class="w-[18px] h-[18px] text-warning"></i>
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $pendingRequisitions }}</p>
@@ -52,8 +52,8 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon bg-sky-50">
-                <i data-lucide="truck" class="w-[18px] h-[18px] text-sky-600"></i>
+            <div class="stat-icon bg-danger-light">
+                <i data-lucide="truck" class="w-[18px] h-[18px] text-danger"></i>
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $totalSuppliers }}</p>
@@ -107,8 +107,8 @@
 
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-emerald-50 flex items-center justify-center">
-                            <i data-lucide="wallet" class="w-3 h-3 text-emerald-600"></i>
+                        <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
+                            <i data-lucide="wallet" class="w-3 h-3 text-warning"></i>
                         </div>
                         <span class="text-small text-text-secondary">Gasto total</span>
                     </div>
@@ -117,8 +117,8 @@
 
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-sky-50 flex items-center justify-center">
-                            <i data-lucide="users" class="w-3 h-3 text-sky-600"></i>
+                        <div class="w-5 h-5 rounded bg-danger-light flex items-center justify-center">
+                            <i data-lucide="users" class="w-3 h-3 text-danger"></i>
                         </div>
                         <span class="text-small text-text-secondary">Proveedores</span>
                     </div>
@@ -127,8 +127,8 @@
 
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-emerald-50 flex items-center justify-center">
-                            <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i>
+                        <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
+                            <i data-lucide="check-circle" class="w-3 h-3 text-success"></i>
                         </div>
                         <span class="text-small text-text-secondary">Req. aprobadas</span>
                     </div>

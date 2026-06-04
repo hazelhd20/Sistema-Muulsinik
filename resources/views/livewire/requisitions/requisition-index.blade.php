@@ -67,7 +67,7 @@
         x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="bg-surface-hover border border-border rounded-xl p-4">
+        <div class="card !p-4">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 <div class="flex items-center gap-2 shrink-0">
                     <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
@@ -110,8 +110,8 @@
                         </thead>
                         <tbody>
                             @foreach($requisitions as $req)
-                                <tr class="group cursor-pointer hover:bg-surface-hover" wire:click=""
-                                    onclick="Livewire.navigate('{{ route('requisiciones.show', ['id' => $req->id]) }}')">
+                                <tr class="group cursor-pointer hover:bg-surface-hover"
+                                    x-on:click="Livewire.navigate('{{ route('requisiciones.show', ['id' => $req->id]) }}')">
                                     <td class="font-medium whitespace-nowrap">
                                         {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
@@ -133,7 +133,7 @@
                                     <td>
                                         <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                                     </td>
-                                    <td onclick="event.stopPropagation()">
+                                    <td @click.stop>
                                         <div class="flex items-center justify-end gap-1">
                                             @if($req->quotations->isNotEmpty())
                                                 @php
@@ -159,7 +159,7 @@
                                             @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
                                                 <button wire:click="approve({{ $req->id }})"
                                                     wire:confirm="¿Aprobar esta requisición?"
-                                                    class="btn-icon-primary bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                                    class="btn-icon-success bg-success-light text-success hover:bg-success-light/80"
                                                     title="Aprobar" aria-label="Aprobar">
                                                     <i data-lucide="check" class="w-4 h-4"></i>
                                                 </button>
@@ -181,14 +181,14 @@
                                                     </a>
                                                     @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
                                                         <button wire:click="openRejectModal({{ $req->id }})"
-                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-danger-light w-full text-left">
                                                             <i data-lucide="x" class="w-4 h-4"></i> Rechazar
                                                         </button>
                                                     @endif
                                                     @if(in_array($req->status, ['borrador', 'rechazada']))
                                                         <button wire:click="deleteRequisition({{ $req->id }})"
                                                             wire:confirm="¿Eliminar esta requisición?"
-                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-red-50 w-full text-left">
+                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-danger-light w-full text-left">
                                                             <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
                                                         </button>
                                                     @endif

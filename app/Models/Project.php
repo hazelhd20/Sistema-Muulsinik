@@ -33,12 +33,40 @@ class Project extends Model
         return $this->hasMany(ExpenseAllocation::class);
     }
 
-    /** Gasto total acumulado del proyecto (Directo + Distribuido). */
+    /** Gasto total acumulado del proyecto (Directo + Distribuido + Requisiciones Aprobadas). */
     public function getTotalExpensesAttribute(): float
     {
         $direct = (float) $this->expenses()->sum('amount');
         $distributed = (float) $this->expenseAllocations()->sum('amount');
-        return $direct + $distributed;
+        
+        $requisitions = (float) $this->requisitions()
+            ->where('status', 'aprobada')
+            ->with('items')
+            ->get()
+            ->sum(fn($req) => $req->total);
+
+        return $direct + $distributed + $requisitions;
+    }
+
+    /** Gasto total del proyecto en un período específico (Directo + Distribuido + Requisiciones Aprobadas). */
+    public function getSpentInPeriod(\Carbon\Carbon $dateFrom): float
+    {
+        $direct = (float) $this->expenses()
+            ->where('date', '>=', $dateFrom)
+            ->sum('amount');
+
+        $distributed = (float) $this->expenseAllocations()
+            ->whereHas('expense', fn($q) => $q->where('date', '>=', $dateFrom))
+            ->sum('amount');
+
+        $requisitions = (float) $this->requisitions()
+            ->where('status', 'aprobada')
+            ->where('created_at', '>=', $dateFrom)
+            ->with('items')
+            ->get()
+            ->sum(fn($req) => $req->total);
+
+        return $direct + $distributed + $requisitions;
     }
 
     /** Porcentaje del presupuesto consumido. */
