@@ -80,7 +80,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/categorias', \App\Livewire\Products\CategoryIndex::class)->name('categorias.index');
 
     // Configuración
-    Route::get('/configuracion', SettingsIndex::class)->name('settings.index');
+    Route::get('/configuracion', function () {
+        return redirect()->route('dashboard')->with('open_settings', true);
+    })->name('settings.index');
 
     // Notificaciones
     Route::get('/notificaciones', NotificationIndex::class)->name('notifications.index');

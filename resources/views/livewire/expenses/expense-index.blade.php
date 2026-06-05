@@ -155,11 +155,11 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col relative">
-                        <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center justify-between mb-1.5">
                             <label class="label mb-0">Proyecto *</label>
                             <div class="flex items-center gap-1.5">
                                 <input type="checkbox" wire:model.live="isDistributed" id="isDistributed"
-                                    class="rounded border-border text-primary-600 focus:ring-primary-500 w-3 h-3">
+                                    class="rounded border-border accent-primary-600 focus:ring-primary-500 w-3 h-3">
                                 <label for="isDistributed"
                                     class="text-[10px] uppercase font-bold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
                                     (Activos)</label>
@@ -172,7 +172,7 @@
                                     placeholder="Seleccionar..." />
                             </div>
                             <div x-show="distributed"
-                                class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed"
+                                class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
                                 style="display: none;">
                                 <i data-lucide="split" class="w-4 h-4 mr-2"></i> Gasto distribuido
                             </div>

@@ -388,6 +388,7 @@ input[type="search"]::-webkit-search-results-decoration {
         letter-spacing: 0.015em;
         white-space: nowrap;
         border: 1px solid transparent;
+        transition: background-color 120ms, border-color 120ms, color 120ms, box-shadow 120ms;
     }
 
     .badge-primary {
@@ -1067,5 +1068,17 @@ input[type="search"]::-webkit-search-results-decoration {
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+    }
+}
+
+/* ── Accessibility: Respect users who prefer reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

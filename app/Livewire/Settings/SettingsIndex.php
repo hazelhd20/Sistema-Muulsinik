@@ -11,8 +11,20 @@ class SettingsIndex extends Component
 {
     use WithFileUploads;
 
+    public bool $isOpen = false;
+
     // Tab activa
     public string $activeTab = 'empresa';
+
+    protected $listeners = [
+        'open-settings' => 'open',
+    ];
+
+    public function open(): void
+    {
+        $this->loadSettings();
+        $this->isOpen = true;
+    }
 
     // Datos de Empresa
     public string $company_name = '';
@@ -143,7 +155,6 @@ class SettingsIndex extends Component
 
     public function render()
     {
-        return view('livewire.settings.settings-index')
-            ->layout('components.layouts.app', ['title' => 'Configuración']);
+        return view('livewire.settings.settings-index');
     }
 }

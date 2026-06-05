@@ -72,7 +72,7 @@
         x-ref="trigger"
         type="button"
         @click="toggle()"
-        class="input flex items-center justify-between text-left w-full h-full"
+        class="input flex items-center justify-between text-left w-full h-[38px]"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
         <div class="flex items-center gap-2 truncate {{ $textClass }}">

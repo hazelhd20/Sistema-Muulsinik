@@ -28,13 +28,13 @@
         get iconData() {
             const ext = (this.fileExt || '').toLowerCase();
             const map = {
-                jpg:  { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
-                jpeg: { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
-                png:  { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
-                svg:  { icon: 'image',            color: 'text-text-secondary', bg: 'bg-surface-hover' },
-                pdf:  { icon: 'file-text',        color: 'text-danger',         bg: 'bg-surface-hover' },
-                xlsx: { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-surface-hover' },
-                xls:  { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-surface-hover' },
+                jpg:  { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
+                jpeg: { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
+                png:  { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
+                svg:  { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
+                pdf:  { icon: 'file-text',        color: 'text-danger',         bg: 'bg-danger-light' },
+                xlsx: { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-primary-50' },
+                xls:  { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-primary-50' },
             };
             return map[ext] || { icon: 'file', color: 'text-text-secondary', bg: 'bg-surface-hover' };
         },
@@ -139,12 +139,13 @@
                         @foreach($formats as $fmt)
                             @php
                                 $fmtColors = match(strtoupper($fmt)) {
-                                    'PDF'          => 'text-danger',
-                                    'XLSX', 'XLS'  => 'text-primary-600',
-                                    default        => 'text-text-secondary',
+                                    'PDF'          => 'bg-danger-light text-danger',
+                                    'XLSX', 'XLS'  => 'bg-primary-50 text-primary-600',
+                                    'JPG', 'PNG', 'JPEG' => 'bg-info-light text-info',
+                                    default        => 'bg-surface-hover text-text-secondary',
                                 };
                             @endphp
-                            <span class="px-3 py-1 rounded-lg bg-surface-hover {{ $fmtColors }} text-xs-fluid font-medium">{{ strtoupper($fmt) }}</span>
+                            <span class="px-3 py-1 rounded-lg {{ $fmtColors }} text-xs-fluid font-medium">{{ strtoupper($fmt) }}</span>
                         @endforeach
                     </div>
                 @endif

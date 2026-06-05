@@ -77,15 +77,7 @@
                     </button>
                 @endif
 
-                {{-- Botón de Simulación para Pruebas y Verificaciones --}}
-                <div class="mt-6 pt-6 border-t border-border flex flex-col items-center gap-2">
-                    <p class="text-xs-fluid text-text-muted">¿Deseas verificar la interfaz sin procesar un archivo?</p>
-                    <button type="button" wire:click="loadMockDataForTesting"
-                        class="px-4 py-2 rounded-xl bg-surface-hover hover:bg-surface-hover/80 text-text-primary text-xs-fluid font-medium flex items-center gap-1.5 transition">
-                        <i data-lucide="beaker" class="w-4 h-4 text-primary-600"></i>
-                        Simular datos de prueba (Paso 3)
-                    </button>
-                </div>
+
             </div>
         </div>
     @endif

@@ -54,7 +54,7 @@
         {{-- Remember --}}
         <div class="flex items-center gap-2">
             <input wire:model="remember" type="checkbox" id="remember"
-                class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer">
+                class="w-4 h-4 rounded border-gray-300 accent-primary-600 focus:ring-primary-500 cursor-pointer">
             <label for="remember" class="text-body text-text-secondary cursor-pointer">Recordarme</label>
         </div>
 

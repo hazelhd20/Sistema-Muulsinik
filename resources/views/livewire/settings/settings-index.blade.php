@@ -1,19 +1,25 @@
-<div x-data="{ tab: @entangle('activeTab') }">
+<x-modal show="isOpen" title="Configuración del Sistema" maxWidth="5xl">
+    <div x-data="{ tab: @entangle('activeTab') }" class="flex flex-col md:flex-row h-[580px] max-h-[70vh] overflow-hidden">
+        {{-- Sidebar Interno --}}
+        <div class="w-full md:w-56 border-b md:border-b-0 md:border-r border-border bg-surface-hover/20 p-4 shrink-0 flex flex-col justify-between">
+            <nav class="space-y-1">
+                <button type="button" @click="tab = 'empresa'" 
+                        :class="tab === 'empresa' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-text-secondary hover:bg-surface-hover'"
+                        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-body transition-all duration-150 text-left cursor-pointer">
+                    <i data-lucide="building-2" class="w-4 h-4 shrink-0"></i>
+                    <span>Empresa</span>
+                </button>
+                <button type="button" @click="tab = 'documentos'" 
+                        :class="tab === 'documentos' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-text-secondary hover:bg-surface-hover'"
+                        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-body transition-all duration-150 text-left cursor-pointer">
+                    <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
+                    <span>Documentos</span>
+                </button>
+            </nav>
+        </div>
 
-    {{-- Header --}}
-    <x-page-header subtitle="Sistema" title="Configuración" />
-
-    {{-- Tabs --}}
-    <nav class="tab-nav">
-        <button @click="tab = 'empresa'" :class="tab === 'empresa' ? 'active' : ''" class="tab-btn">
-            <i data-lucide="building-2" class="w-4 h-4"></i>
-            Empresa
-        </button>
-        <button @click="tab = 'documentos'" :class="tab === 'documentos' ? 'active' : ''" class="tab-btn">
-            <i data-lucide="file-text" class="w-4 h-4"></i>
-            Documentos
-        </button>
-    </nav>
+        {{-- Contenido --}}
+        <div class="flex-1 p-6 overflow-y-auto h-full space-y-6">
 
     {{-- ══ Tab: Empresa ══ --}}
     <div x-show="tab === 'empresa'" x-transition:enter="transition ease-out duration-150"
@@ -22,7 +28,7 @@
         <form wire:submit="saveEmpresa">
 
             {{-- Card: Identidad --}}
-            <div class="card mb-4">
+            <div class="mb-6">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Identidad de la empresa</h2>
@@ -122,7 +128,7 @@
         <form wire:submit="saveDocumentos">
 
             {{-- Card: Numeración --}}
-            <div class="card mb-4">
+            <div class="mb-6">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Numeración de documentos</h2>
@@ -163,7 +169,7 @@
             </div>
 
             {{-- Card: Moneda --}}
-            <div class="card mb-4">
+            <div class="mb-6">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Formato de moneda</h2>
@@ -200,7 +206,7 @@
             </div>
 
             {{-- Card: Términos --}}
-            <div class="card mb-4">
+            <div class="mb-6">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Términos y condiciones</h2>
@@ -229,4 +235,6 @@
         </form>
     </div>
 
-</div>
+        </div>
+    </div>
+</x-modal>

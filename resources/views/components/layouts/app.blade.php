@@ -66,27 +66,27 @@
 
                 <p class="nav-section-label">Principal</p>
 
-                <a href="{{ url('/dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
+                <a href="{{ url('/dashboard') }}" wire:navigate class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
                     <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
                     <span>Dashboard</span>
                 </a>
 
                 @if(auth()->user()->hasPermission('proyectos.ver'))
-                    <a href="{{ url('/proyectos') }}" class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
+                    <a href="{{ url('/proyectos') }}" wire:navigate class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
                         <i data-lucide="hard-hat" class="w-4 h-4 shrink-0"></i>
                         <span>Proyectos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('gastos.ver'))
-                    <a href="{{ url('/gastos') }}" class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
+                    <a href="{{ url('/gastos') }}" wire:navigate class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
                         <i data-lucide="wallet" class="w-4 h-4 shrink-0"></i>
                         <span>Gastos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('requisiciones.ver'))
-                    <a href="{{ url('/requisiciones') }}"
+                    <a href="{{ url('/requisiciones') }}" wire:navigate
                         class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
                         <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0"></i>
                         <span>Requisiciones</span>
@@ -94,7 +94,7 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
-                    <a href="{{ route('cotizador.index') }}"
+                    <a href="{{ route('cotizador.index') }}" wire:navigate
                         class="nav-link {{ request()->routeIs('cotizador.*') ? 'active' : '' }}">
                         <i data-lucide="calculator" class="w-4 h-4 shrink-0"></i>
                         <span>Cotizador</span>
@@ -104,7 +104,7 @@
                 <p class="nav-section-label mt-4">Administración</p>
 
                 @if(auth()->user()->hasPermission('usuarios.ver'))
-                    <a href="{{ url('/usuarios') }}"
+                    <a href="{{ url('/usuarios') }}" wire:navigate
                         class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
                         <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
                         <span>Usuarios</span>
@@ -112,7 +112,7 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('proveedores.ver'))
-                    <a href="{{ url('/proveedores') }}"
+                    <a href="{{ url('/proveedores') }}" wire:navigate
                         class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
                         <i data-lucide="truck" class="w-4 h-4 shrink-0"></i>
                         <span>Proveedores</span>
@@ -120,7 +120,7 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('reportes.ver'))
-                    <a href="{{ url('/reportes') }}" class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
+                    <a href="{{ url('/reportes') }}" wire:navigate class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i>
                         <span>Reportes</span>
                     </a>
@@ -129,18 +129,18 @@
                 <p class="nav-section-label mt-4">Catálogos</p>
 
                 @if(auth()->user()->hasPermission('productos.ver'))
-                    <a href="{{ url('/productos') }}" class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
+                    <a href="{{ url('/productos') }}" wire:navigate class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
                         <i data-lucide="package" class="w-4 h-4 shrink-0"></i>
                         <span>Productos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('catalogos.ver'))
-                    <a href="{{ url('/medidas') }}" class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
+                    <a href="{{ url('/medidas') }}" wire:navigate class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
                         <i data-lucide="ruler" class="w-4 h-4 shrink-0"></i>
                         <span>Medidas</span>
                     </a>
-                    <a href="{{ url('/categorias') }}" class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
+                    <a href="{{ url('/categorias') }}" wire:navigate class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
                         <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
                         <span>Categorías</span>
                     </a>
@@ -167,10 +167,10 @@
                     </div>
                 </div>
 
-                <a href="{{ url('/configuracion') }}" class="nav-link">
+                <button x-data x-on:click="$dispatch('open-settings')" class="nav-link w-full text-left cursor-pointer">
                     <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
                     <span>Configuración</span>
-                </a>
+                </button>
 
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
@@ -240,6 +240,12 @@
 
         </div>
     </div>
+
+    <livewire:settings.settings-index />
+
+    @if(session('open_settings') || request()->query('settings') === 'true')
+        <div x-data x-init="$nextTick(() => $dispatch('open-settings'))"></div>
+    @endif
 
     @livewireScripts
     <script>

@@ -101,16 +101,12 @@
                                     </td>
                                     <td>
                                         <button wire:click="toggleActive({{ $user->id }})"
-                                            class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs-fluid font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
-                                                    {{ $user->active
-                        ? 'bg-surface-main text-emerald-600 border-border hover:border-emerald-500/50 hover:bg-surface-hover'
-                        : 'bg-surface-main text-danger border-border hover:border-danger/50 hover:bg-surface-hover' }}"
+                                            class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
+                                                    {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
+                                                    @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-85 cursor-pointer @else cursor-default opacity-90 @endif"
                                             title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
-                                            @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled
-                                            @endif>
-
-                                            <span
-                                                class="w-1.5 h-1.5 rounded-full {{ $user->active ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                                            @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
+                                            <span class="badge-dot"></span>
                                             {{ $user->active ? 'Activo' : 'Inactivo' }}
                                         </button>
                                     </td>
@@ -172,7 +168,7 @@
                 <div class="flex items-center mt-2">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" wire:model="active"
-                            class="rounded border-border text-primary-600 focus:ring-primary-500"
+                            class="rounded border-border accent-primary-600 focus:ring-primary-500"
                             @if(auth()->id() === $editingId) disabled @endif>
                         <span class="text-sm font-medium text-text-primary">Usuario activo</span>
                     </label>
