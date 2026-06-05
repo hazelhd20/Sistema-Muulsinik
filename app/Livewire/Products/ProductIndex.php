@@ -33,6 +33,11 @@ class ProductIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedCategoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->sortField = 'canonical_name';

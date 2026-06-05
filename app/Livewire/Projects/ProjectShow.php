@@ -12,23 +12,25 @@ class ProjectShow extends Component
 {
     use EnforcesPermissions;
 
-    public Project $project;
+    public int $projectId;
 
     public function mount(int $id): void
     {
-        $this->project = Project::with([
-            'requisitions.items',
-            'requisitions.vendor',
-            'requisitions.creator',
-            'expenses.user',
-            'expenseAllocations.expense',
-        ])->findOrFail($id);
+        $this->projectId = $id;
     }
 
     #[Layout('components.layouts.app')]
     #[Title('Detalle de Proyecto')]
     public function render()
     {
-        return view('livewire.projects.project-show');
+        $project = Project::with([
+            'requisitions.items',
+            'requisitions.vendor',
+            'requisitions.creator',
+            'expenses.user',
+            'expenseAllocations.expense',
+        ])->findOrFail($this->projectId);
+
+        return view('livewire.projects.project-show', compact('project'));
     }
 }

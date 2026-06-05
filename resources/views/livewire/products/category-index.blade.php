@@ -14,7 +14,7 @@
         {{-- Search: compact width --}}
         <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input type="search" wire:model.live.debounce.50ms="search" class="input pl-10 pr-10 w-full"
+            <input type="search" wire:model.live.debounce.300ms="search" class="input pl-10 pr-10 w-full"
                 placeholder="Buscar categoría..." @focus="focused = true" @blur="focused = false">
             <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
@@ -35,41 +35,73 @@
     </div>
 
     {{-- Table --}}
-    <div class="table-container">
-        @if($categories->isNotEmpty())
-            <table>
-                <thead>
-                    <tr>
-                        <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($categories as $category)
-                        <tr wire:key="category-row-{{ $category->id }}">
-                            <td class="font-medium text-text-primary">
-                                {{ $category->name }}
-                            </td>
-                            <td class="actions">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button wire:click="openEditModal({{ $category->id }})" class="btn-icon-primary"
-                                        title="Editar categoría">
-                                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </button>
-                                    <button wire:click="delete({{ $category->id }})"
-                                        wire:confirm="¿Seguro que deseas eliminar esta categoría?" class="btn-icon-danger"
-                                        title="Eliminar categoría">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
+            <div class="table-container">
+                @if($categories->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($categories as $category)
+                                <tr wire:key="category-row-{{ $category->id }}">
+                                    <td class="font-medium text-text-primary">
+                                        {{ $category->name }}
+                                    </td>
+                                    <td class="actions">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button wire:click="openEditModal({{ $category->id }})" class="btn-icon-primary"
+                                                title="Editar categoría">
+                                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                            </button>
+                                            <button wire:click="delete({{ $category->id }})"
+                                                wire:confirm="¿Seguro que deseas eliminar esta categoría?" class="btn-icon-danger"
+                                                title="Eliminar categoría">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="layers" title="No se encontraron categorías." />
+                @endif
+            </div>
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th class="actions">Acciones</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <x-empty-state icon="layers" title="No se encontraron categorías." />
-        @endif
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 5; $i++)
+                            <tr>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-48"></div>
+                                </td>
+                                <td class="actions justify-end flex gap-1">
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="mt-4">{{ $categories->links() }}</div>

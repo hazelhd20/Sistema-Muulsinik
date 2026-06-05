@@ -45,6 +45,16 @@ class ExpenseIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedProjectFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedCategoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatedPeriodFilter(): void
     {
         $this->resetPage();

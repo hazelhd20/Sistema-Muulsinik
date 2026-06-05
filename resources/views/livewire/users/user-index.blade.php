@@ -1,3 +1,4 @@
+
 <div x-data="{ showFilters: false }">
     {{-- Header --}}
     <x-page-header subtitle="Administración" title="Usuarios">
@@ -16,7 +17,7 @@
         {{-- Search: compact width instead of full flex --}}
         <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar por nombre o correo..."
+            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar por nombre o correo..."
                 class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
             <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
@@ -65,76 +66,122 @@
     </div>
 
     {{-- Users Table --}}
-    <div class="table-container">
-        @if($users->isNotEmpty())
-            <table>
-                <thead>
-                    <tr>
-                        <x-sortable-header field="name" label="Usuario" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <x-sortable-header field="email" label="Correo Electrónico" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <x-sortable-header field="role_id" label="Rol" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <x-sortable-header field="active" label="Estado" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($users as $user)
-                                <tr>
-                                    <td>
-                                        <div class="flex flex-col">
-                                            <span class="text-sm font-semibold text-text-primary">{{ $user->name }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="text-sm text-text-secondary">{{ $user->email }}</span>
-                                    </td>
-                                    <td>
-                                        @if($user->role)
-                                            <x-dynamic-badge :value="$user->role->name" />
-                                        @else
-                                            <span class="text-text-muted">—</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <button wire:click="toggleActive({{ $user->id }})"
-                                            class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
-                                                    {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
-                                                    @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-85 cursor-pointer @else cursor-default opacity-90 @endif"
-                                            title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
-                                            @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
-                                            <span class="badge-dot"></span>
-                                            {{ $user->active ? 'Activo' : 'Inactivo' }}
-                                        </button>
-                                    </td>
-                                    <td class="actions">
-                                        <div class="flex items-center justify-end gap-1">
-                                            @if(auth()->user()->hasPermission('usuarios.editar'))
-                                                <button wire:click="openEditModal({{ $user->id }})" class="btn-icon-primary" title="Editar">
-                                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, roleFilter, previousPage, nextPage, gotoPage" class="w-full">
+            <div class="table-container">
+                @if($users->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <x-sortable-header field="name" label="Usuario" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="email" label="Correo Electrónico" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="role_id" label="Rol" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="active" label="Estado" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($users as $user)
+                                        <tr>
+                                            <td>
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-semibold text-text-primary">{{ $user->name }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="text-sm text-text-secondary">{{ $user->email }}</span>
+                                            </td>
+                                            <td>
+                                                @if($user->role)
+                                                    <x-dynamic-badge :value="$user->role->name" />
+                                                @else
+                                                    <span class="text-text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <button wire:click="toggleActive({{ $user->id }})"
+                                                    class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
+                                                            {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
+                                                            @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-85 cursor-pointer @else cursor-default opacity-90 @endif"
+                                                    title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
+                                                    @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
+                                                    <span class="badge-dot"></span>
+                                                    {{ $user->active ? 'Activo' : 'Inactivo' }}
                                                 </button>
-                                            @endif
+                                            </td>
+                                            <td class="actions">
+                                                <div class="flex items-center justify-end gap-1">
+                                                    @if(auth()->user()->hasPermission('usuarios.editar'))
+                                                        <button wire:click="openEditModal({{ $user->id }})" class="btn-icon-primary" title="Editar">
+                                                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                                                        </button>
+                                                    @endif
 
-                                            @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                <button wire:click="deleteUser({{ $user->id }})"
-                                                    wire:confirm="¿Estás seguro de que deseas eliminar este usuario? Esta acción es irreversible."
-                                                    class="btn-icon-danger" title="Eliminar">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <x-empty-state icon="users" title="No se encontraron usuarios"
-                message="No hay usuarios registrados con los filtros actuales." />
-        @endif
+                                                    @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                                        <button wire:click="deleteUser({{ $user->id }})"
+                                                            wire:confirm="¿Estás seguro de que deseas eliminar este usuario? Esta acción es irreversible."
+                                                            class="btn-icon-danger" title="Eliminar">
+                                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="users" title="No se encontraron usuarios"
+                        message="No hay usuarios registrados con los filtros actuales." />
+                @endif
+            </div>
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Correo Electrónico</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="actions">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 5; $i++)
+                            <tr>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-32"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-48"></div>
+                                </td>
+                                <td>
+                                    <div class="h-5 skeleton rounded-full w-24"></div>
+                                </td>
+                                <td>
+                                    <div class="h-6 skeleton rounded-full w-20"></div>
+                                </td>
+                                <td class="actions">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="mt-4">

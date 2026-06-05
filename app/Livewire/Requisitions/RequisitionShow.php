@@ -9,17 +9,19 @@ use App\Models\Requisition;
 
 class RequisitionShow extends Component
 {
-    public Requisition $requisition;
+    public int $requisitionId;
 
     public function mount($id)
     {
-        $this->requisition = Requisition::with(['project', 'creator', 'vendor', 'items.product', 'items.measure'])->findOrFail($id);
+        $this->requisitionId = $id;
     }
 
     #[Layout('components.layouts.app')]
     #[Title('Detalle de Requisición')]
     public function render()
     {
-        return view('livewire.requisitions.requisition-show');
+        $requisition = Requisition::with(['project', 'creator', 'vendor', 'items.product', 'items.measure'])->findOrFail($this->requisitionId);
+
+        return view('livewire.requisitions.requisition-show', compact('requisition'));
     }
 }

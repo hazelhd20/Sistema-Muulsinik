@@ -34,6 +34,11 @@ class UserIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedRoleFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function mount()
     {
         if (!auth()->user()->hasPermission('usuarios.ver')) {

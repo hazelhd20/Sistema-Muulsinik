@@ -14,7 +14,7 @@
         {{-- Search: compact width --}}
         <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input type="search" wire:model.live.debounce.50ms="search" class="input pl-10 pr-10 w-full"
+            <input type="search" wire:model.live.debounce.300ms="search" class="input pl-10 pr-10 w-full"
                 placeholder="Buscar medida..." @focus="focused = true" @blur="focused = false">
             <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
@@ -35,47 +35,85 @@
     </div>
 
     {{-- Table --}}
-    <div class="table-container">
-        @if($measures->isNotEmpty())
-            <table>
-                <thead>
-                    <tr>
-                        <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($measures as $measure)
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
+            <div class="table-container">
+                @if($measures->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($measures as $measure)
+                                <tr>
+                                    <td class="font-medium text-text-primary">{{ $measure->name }}</td>
+                                    <td>
+                                        @if($measure->abbreviation)
+                                            <span class="badge badge-secondary">{{ $measure->abbreviation }}</span>
+                                        @else
+                                            <span class="text-text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="actions">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button wire:click="openEditModal({{ $measure->id }})" class="btn-icon-primary"
+                                                title="Editar medida">
+                                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                            </button>
+                                            <button wire:click="delete({{ $measure->id }})"
+                                                wire:confirm="¿Seguro que deseas eliminar esta medida?" class="btn-icon-danger"
+                                                title="Eliminar medida">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="ruler" title="No se encontraron medidas." />
+                @endif
+            </div>
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
                         <tr>
-                            <td class="font-medium">{{ $measure->name }}</td>
-                            <td>
-                                @if($measure->abbreviation)
-                                    <span class="badge badge-secondary">{{ $measure->abbreviation }}</span>
-                                @else
-                                    <span class="text-text-muted">—</span>
-                                @endif
-                            </td>
-                            <td class="actions">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button wire:click="openEditModal({{ $measure->id }})" class="btn-icon-primary"
-                                        title="Editar medida">
-                                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </button>
-                                    <button wire:click="delete({{ $measure->id }})"
-                                        wire:confirm="¿Seguro que deseas eliminar esta medida?" class="btn-icon-danger"
-                                        title="Eliminar medida">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th>Nombre</th>
+                            <th>Abreviación</th>
+                            <th class="actions">Acciones</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <x-empty-state icon="ruler" title="No se encontraron medidas." />
-        @endif
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 5; $i++)
+                            <tr>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-48"></div>
+                                </td>
+                                <td>
+                                    <div class="h-5 skeleton rounded-full w-16"></div>
+                                </td>
+                                <td class="actions justify-end flex gap-1">
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="mt-4">{{ $measures->links() }}</div>
@@ -91,7 +129,8 @@
                     <input type="text" wire:model="abbreviation" class="input" placeholder="Ej. pza, m">
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
+                    <button type="button" wire:click="$set('showCreateModal', false)"
+                        class="btn-secondary">Cancelar</button>
                     <x-submit-button target="save">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Medida' }}
                     </x-submit-button>

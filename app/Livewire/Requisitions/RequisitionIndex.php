@@ -35,6 +35,16 @@ class RequisitionIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedProjectFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatedPeriodFilter(): void
     {
         $this->resetPage();

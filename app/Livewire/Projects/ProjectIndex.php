@@ -33,6 +33,11 @@ class ProjectIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function openCreateModal(): void
     {
         $this->resetForm();

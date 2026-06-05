@@ -18,18 +18,16 @@ class Dashboard extends Component
     {
         $totalProjects = Project::count();
         $activeProjects = Project::where('status', 'activo')->count();
-        $requisitionsTotalAllTime = (float) Requisition::where('status', 'aprobada')
-            ->with('items')
-            ->get()
-            ->sum(fn($req) => $req->total);
+        $requisitionsTotalAllTime = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            ->where('requisitions.status', 'aprobada')
+            ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
         $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
 
-        $requisitionsTotalThisMonth = (float) Requisition::where('status', 'aprobada')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->with('items')
-            ->get()
-            ->sum(fn($req) => $req->total);
+        $requisitionsTotalThisMonth = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            ->where('requisitions.status', 'aprobada')
+            ->whereMonth('requisitions.created_at', now()->month)
+            ->whereYear('requisitions.created_at', now()->year)
+            ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
         $monthExpenses = (float) Expense::whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount') + $requisitionsTotalThisMonth;
@@ -51,12 +49,11 @@ class Dashboard extends Component
                 ->whereYear('date', $date->year)
                 ->sum('amount');
                 
-            $requisitions = (float) Requisition::where('status', 'aprobada')
-                ->whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year)
-                ->with('items')
-                ->get()
-                ->sum(fn($req) => $req->total);
+            $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                ->where('requisitions.status', 'aprobada')
+                ->whereMonth('requisitions.created_at', $date->month)
+                ->whereYear('requisitions.created_at', $date->year)
+                ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
             $monthlyExpenses[] = [
                 'month' => $date->translatedFormat('M'),

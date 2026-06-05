@@ -16,7 +16,7 @@
         {{-- Search: compact width --}}
         <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar gasto..."
+            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar gasto..."
                 class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
             <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
@@ -75,63 +75,113 @@
 
 
     {{-- Table --}}
-    <div class="table-container">
-        @if($expenses->isNotEmpty())
-            <table>
-                <thead>
-                    <tr>
-                        <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
-                        <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($expenses as $expense)
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
+            <div class="table-container">
+                @if($expenses->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($expenses as $expense)
+                                <tr>
+                                    <td>
+                                        <p class="font-medium text-text-primary">{{ $expense->concept }}</p>
+                                        <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
+                                    </td>
+                                    <td>
+                                        @if($expense->is_distributed)
+                                            <span class="badge badge-primary" title="Prorrateado entre proyectos activos">
+                                                <i data-lucide="split" class="w-3 h-3 mr-1 inline-block"></i> Distribuido
+                                            </span>
+                                        @else
+                                            <span class="text-body text-text-secondary">{{ $expense->project->name ?? '—' }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
+                                    </td>
+                                    <td class="text-body text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
+                                    <td class="numeric font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
+                                    <td class="actions">
+                                        <div class="flex items-center justify-end gap-1">
+                                            @if($expense->receipt_file)
+                                                <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank"
+                                                    class="btn-icon-primary" title="Ver comprobante">
+                                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                                </a>
+                                            @endif
+                                            <button wire:click="deleteExpense({{ $expense->id }})"
+                                                wire:confirm="¿Deseas eliminar este gasto? Esta acción no se puede deshacer."
+                                                class="btn-icon-danger">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="receipt" title="No hay gastos registrados"
+                        message="Registra un gasto para comenzar a llevar el control." />
+                @endif
+            </div>
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
                         <tr>
-                            <td>
-                                <p class="font-medium">{{ $expense->concept }}</p>
-                                <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
-                            </td>
-                            <td>
-                                @if($expense->is_distributed)
-                                    <span class="badge badge-primary" title="Prorrateado entre proyectos activos">
-                                        <i data-lucide="split" class="w-3 h-3 mr-1 inline-block"></i> Distribuido
-                                    </span>
-                                @else
-                                    <span class="text-body">{{ $expense->project->name ?? '—' }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
-                            </td>
-                            <td class="text-body text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
-                            <td class="numeric font-semibold">${{ number_format($expense->amount, 2, '.', ',') }}</td>
-                            <td class="actions">
-                                <div class="flex items-center justify-end gap-1">
-                                    @if($expense->receipt_file)
-                                        <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank"
-                                            class="btn-icon-primary" title="Ver comprobante">
-                                            <i data-lucide="file-text" class="w-4 h-4"></i>
-                                        </a>
-                                    @endif
-                                    <button wire:click="deleteExpense({{ $expense->id }})"
-                                        wire:confirm="¿Deseas eliminar este gasto? Esta acción no se puede deshacer."
-                                        class="btn-icon-danger">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th>Concepto</th>
+                            <th>Proyecto</th>
+                            <th>Categoría</th>
+                            <th>Fecha</th>
+                            <th class="numeric">Monto</th>
+                            <th class="actions">Acciones</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <x-empty-state icon="receipt" title="No hay gastos registrados"
-                message="Registra un gasto para comenzar a llevar el control." />
-        @endif
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 5; $i++)
+                            <tr>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-48 mb-1.5"></div>
+                                    <div class="h-3 skeleton rounded w-32"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-36"></div>
+                                </td>
+                                <td>
+                                    <div class="h-5 skeleton rounded-full w-24"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-20"></div>
+                                </td>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-20 ml-auto"></div>
+                                </td>
+                                <td class="actions">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="mt-4">{{ $expenses->links() }}</div>

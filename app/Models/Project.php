@@ -33,19 +33,24 @@ class Project extends Model
         return $this->hasMany(ExpenseAllocation::class);
     }
 
+    protected ?float $totalExpensesCache = null;
+
     /** Gasto total acumulado del proyecto (Directo + Distribuido + Requisiciones Aprobadas). */
     public function getTotalExpensesAttribute(): float
     {
+        if ($this->totalExpensesCache !== null) {
+            return $this->totalExpensesCache;
+        }
+
         $direct = (float) $this->expenses()->sum('amount');
         $distributed = (float) $this->expenseAllocations()->sum('amount');
         
-        $requisitions = (float) $this->requisitions()
-            ->where('status', 'aprobada')
-            ->with('items')
-            ->get()
-            ->sum(fn($req) => $req->total);
+        $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            ->where('requisitions.project_id', $this->id)
+            ->where('requisitions.status', 'aprobada')
+            ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
-        return $direct + $distributed + $requisitions;
+        return $this->totalExpensesCache = $direct + $distributed + $requisitions;
     }
 
     /** Gasto total del proyecto en un período específico (Directo + Distribuido + Requisiciones Aprobadas). */
@@ -59,12 +64,11 @@ class Project extends Model
             ->whereHas('expense', fn($q) => $q->where('date', '>=', $dateFrom))
             ->sum('amount');
 
-        $requisitions = (float) $this->requisitions()
-            ->where('status', 'aprobada')
-            ->where('created_at', '>=', $dateFrom)
-            ->with('items')
-            ->get()
-            ->sum(fn($req) => $req->total);
+        $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            ->where('requisitions.project_id', $this->id)
+            ->where('requisitions.status', 'aprobada')
+            ->where('requisitions.created_at', '>=', $dateFrom)
+            ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
         return $direct + $distributed + $requisitions;
     }

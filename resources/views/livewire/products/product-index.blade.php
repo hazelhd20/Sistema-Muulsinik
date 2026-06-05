@@ -14,7 +14,7 @@
         {{-- Search: compact width instead of full flex --}}
         <div class="relative w-full sm:w-72" x-data="{ focused: false }">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.50ms="search" type="search" placeholder="Buscar producto..."
+            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar producto..."
                 class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
             <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
@@ -63,66 +63,109 @@
     </div>
 
     {{-- Products table --}}
-    <div class="table-container">
-        @if($products->isNotEmpty())
-            <table>
-                <thead>
-                    <tr>
-                        <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <x-sortable-header field="category_id" label="Categoría" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <x-sortable-header field="measure_id" label="Unidad" :sortField="$sortField"
-                            :sortDirection="$sortDirection" />
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($products as $product)
+    <div class="relative min-h-[200px]">
+        <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="w-full">
+            <div class="table-container">
+                @if($products->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="category_id" label="Categoría" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="measure_id" label="Unidad" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($products as $product)
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
+                                            @if($product->description)
+                                                <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($product->category)
+                                            <x-dynamic-badge :value="$product->category->name" />
+                                        @else
+                                            <span class="text-text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-body text-text-secondary">
+                                        @if($product->measure && $product->measure->abbreviation)
+                                            <span class="badge badge-secondary">{{ $product->measure->abbreviation }}</span>
+                                        @else
+                                            <span class="text-text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="actions">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary"
+                                                title="Editar producto">
+                                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                            </button>
+                                            <button wire:click="deleteProduct({{ $product->id }})"
+                                                wire:confirm="¿Eliminar este producto?" class="btn-icon-danger"
+                                                title="Eliminar producto">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <x-empty-state icon="package" title="No hay productos en el catálogo"
+                        message="Agrega productos para gestionar tu inventario." />
+                @endif
+            </div>
+        </div>
+
+        {{-- Skeleton Loader --}}
+        <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
+            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
+            <div class="table-container">
+                <table>
+                    <thead>
                         <tr>
-                            <td>
-                                <div>
-                                    <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
-                                    @if($product->description)
-                                        <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
-                                    @endif
-                                </div>
-                            </td>
-                            <td>
-                                @if($product->category)
-                                    <x-dynamic-badge :value="$product->category->name" />
-                                @else
-                                    <span class="text-text-muted">—</span>
-                                @endif
-                            </td>
-                            <td class="text-body text-text-secondary">
-                                @if($product->measure && $product->measure->abbreviation)
-                                    <span class="badge badge-secondary">{{ $product->measure->abbreviation }}</span>
-                                @else
-                                    <span class="text-text-muted">—</span>
-                                @endif
-                            </td>
-                            <td class="actions">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary"
-                                        title="Editar producto">
-                                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </button>
-                                    <button wire:click="deleteProduct({{ $product->id }})"
-                                        wire:confirm="¿Eliminar este producto?" class="btn-icon-danger"
-                                        title="Eliminar producto">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Unidad</th>
+                            <th class="actions">Acciones</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <x-empty-state icon="package" title="No hay productos en el catálogo"
-                message="Agrega productos para gestionar tu inventario." />
-        @endif
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 5; $i++)
+                            <tr>
+                                <td>
+                                    <div class="h-4 skeleton rounded w-48 mb-1"></div>
+                                    <div class="h-3 skeleton rounded w-32"></div>
+                                </td>
+                                <td>
+                                    <div class="h-5 skeleton rounded-full w-24"></div>
+                                </td>
+                                <td>
+                                    <div class="h-5 skeleton rounded-full w-16"></div>
+                                </td>
+                                <td class="actions">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="mt-4">{{ $products->links() }}</div>

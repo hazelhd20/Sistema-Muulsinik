@@ -12,7 +12,7 @@
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
         {{-- Search: compact width --}}
-        <x-search-input wire:model.live.debounce.50ms="search" placeholder="Buscar proyecto o cliente..." />
+        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
 
         {{-- Filters Toggle Button with counter badge --}}
         <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"

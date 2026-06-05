@@ -64,12 +64,11 @@ class ReportIndex extends Component
                 ->whereHas('expense', fn($q) => $q->where('date', '>=', $dateFrom))
                 ->sum('amount');
 
-            $requisitions = (float) Requisition::where('project_id', $this->projectFilter)
-                ->where('status', 'aprobada')
-                ->where('created_at', '>=', $dateFrom)
-                ->with('items')
-                ->get()
-                ->sum(fn($req) => $req->total);
+            $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                ->where('requisitions.project_id', $this->projectFilter)
+                ->where('requisitions.status', 'aprobada')
+                ->where('requisitions.created_at', '>=', $dateFrom)
+                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
             $totalExpenses = $direct + $distributed + $requisitions;
 
@@ -80,11 +79,10 @@ class ReportIndex extends Component
         } else {
             $direct = (float) Expense::where('date', '>=', $dateFrom)->sum('amount');
 
-            $requisitions = (float) Requisition::where('status', 'aprobada')
-                ->where('created_at', '>=', $dateFrom)
-                ->with('items')
-                ->get()
-                ->sum(fn($req) => $req->total);
+            $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                ->where('requisitions.status', 'aprobada')
+                ->where('requisitions.created_at', '>=', $dateFrom)
+                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
             $totalExpenses = $direct + $requisitions;
 
@@ -160,13 +158,12 @@ class ReportIndex extends Component
                     ->whereHas('expense', fn($q) => $q->whereMonth('date', $date->month)->whereYear('date', $date->year))
                     ->sum('amount');
 
-                $requisitionsMonth = (float) Requisition::where('project_id', $this->projectFilter)
-                    ->where('status', 'aprobada')
-                    ->whereMonth('created_at', $date->month)
-                    ->whereYear('created_at', $date->year)
-                    ->with('items')
-                    ->get()
-                    ->sum(fn($req) => $req->total);
+                $requisitionsMonth = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                    ->where('requisitions.project_id', $this->projectFilter)
+                    ->where('requisitions.status', 'aprobada')
+                    ->whereMonth('requisitions.created_at', $date->month)
+                    ->whereYear('requisitions.created_at', $date->year)
+                    ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
                 $monthTotal = $directMonth + $distributedMonth + $requisitionsMonth;
             } else {
@@ -174,12 +171,11 @@ class ReportIndex extends Component
                     ->whereYear('date', $date->year)
                     ->sum('amount');
 
-                $requisitionsMonth = (float) Requisition::where('status', 'aprobada')
-                    ->whereMonth('created_at', $date->month)
-                    ->whereYear('created_at', $date->year)
-                    ->with('items')
-                    ->get()
-                    ->sum(fn($req) => $req->total);
+                $requisitionsMonth = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                    ->where('requisitions.status', 'aprobada')
+                    ->whereMonth('requisitions.created_at', $date->month)
+                    ->whereYear('requisitions.created_at', $date->year)
+                    ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
                 $monthTotal = $directMonth + $requisitionsMonth;
             }
@@ -324,11 +320,34 @@ class ReportIndex extends Component
         $categoryLabels = $this->getCategoryLabels();
         $projects = Project::orderBy('name')->get();
 
-        // Cargar los datos según la pestaña activa para rendimiento
-        $overviewData = $this->getOverviewData($dateFrom);
-        $supplierData = $this->getSupplierData($dateFrom);
-        $vendorData = $this->getVendorData($dateFrom);
-        $productData = $this->getProductData($dateFrom);
+        // Cargar los datos según la pestaña activa para rendimiento (Lazy Loading)
+        $overviewData = [
+            'totalExpenses' => 0.0,
+            'expenseCount' => 0,
+            'avgExpense' => 0.0,
+            'totalProjects' => 0,
+            'activeProjects' => 0,
+            'totalSuppliers' => 0,
+            'requisitionsApproved' => 0,
+            'requisitionsPending' => 0,
+            'expenseByCategory' => collect(),
+            'monthlyData' => [],
+            'topProjects' => collect(),
+            'budgetComparison' => collect(),
+        ];
+        $supplierData = ['topSuppliers' => collect()];
+        $vendorData = ['topVendors' => collect()];
+        $productData = ['topProducts' => collect(), 'productsByCategory' => collect()];
+
+        if ($this->activeTab === 'overview') {
+            $overviewData = $this->getOverviewData($dateFrom);
+        } elseif ($this->activeTab === 'suppliers') {
+            $supplierData = $this->getSupplierData($dateFrom);
+        } elseif ($this->activeTab === 'vendors') {
+            $vendorData = $this->getVendorData($dateFrom);
+        } elseif ($this->activeTab === 'products') {
+            $productData = $this->getProductData($dateFrom);
+        }
 
         return view('livewire.reports.report-index', array_merge(
             $overviewData,
