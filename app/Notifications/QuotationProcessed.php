@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Models\Document;
 use App\Models\Quotation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
@@ -12,8 +11,7 @@ class QuotationProcessed extends Notification
     use Queueable;
 
     public function __construct(
-        public Document $document,
-        public ?Quotation $quotation = null,
+        public Quotation $quotation,
         public bool $success = true,
         public ?string $errorMessage = null
     ) {}
@@ -29,26 +27,26 @@ class QuotationProcessed extends Notification
             return [
                 'type' => 'quotation_processed',
                 'title' => 'Cotización procesada exitosamente',
-                'message' => "El archivo '{$this->document->original_name}' ha sido procesado y convertido en requisición",
+                'message' => "El archivo '{$this->quotation->original_filename}' ha sido procesado",
                 'icon' => 'file-check',
                 'color' => 'success',
                 'action_url' => url("/requisiciones"),
-                'action_text' => 'Ver requisición',
-                'document_id' => $this->document->id,
-                'document_name' => $this->document->original_name,
+                'action_text' => 'Ver',
+                'quotation_id' => $this->quotation->id,
+                'quotation_filename' => $this->quotation->original_filename,
             ];
         }
 
         return [
             'type' => 'quotation_failed',
             'title' => 'Error al procesar cotización',
-            'message' => $this->errorMessage ?? "No se pudo procesar '{$this->document->original_name}'. Requiere revisión manual.",
+            'message' => $this->errorMessage ?? "No se pudo procesar '{$this->quotation->original_filename}'. Requiere revisión manual.",
             'icon' => 'file-x',
             'color' => 'danger',
             'action_url' => url("/requisiciones/subir-cotizacion"),
             'action_text' => 'Reintentar',
-            'document_id' => $this->document->id,
-            'document_name' => $this->document->original_name,
+            'quotation_id' => $this->quotation->id,
+            'quotation_filename' => $this->quotation->original_filename,
         ];
     }
 }

@@ -70,9 +70,18 @@ class RequisitionIndex extends Component
                 'approved_by' => $user->id,
             ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada automáticamente.']);
+            
+            if ($req->creator && $req->creator->id !== $user->id) {
+                $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'borrador', 'aprobada', $user));
+                $this->dispatch('notification-received');
+            }
         } else {
             $req->update(['status' => 'pendiente']);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición enviada a aprobación.']);
+            
+            $approvers = \App\Models\User::all()->filter(fn($u) => $u->hasPermission('requisiciones.aprobar') || $u->hasPermission('*'));
+            \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\RequisitionPendingApproval($req));
+            $this->dispatch('notification-received');
         }
     }
 
@@ -94,6 +103,11 @@ class RequisitionIndex extends Component
             'approved_by' => auth()->id(),
         ]);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada.']);
+        
+        if ($req->creator) {
+            $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'pendiente', 'aprobada', auth()->user()));
+            $this->dispatch('notification-received');
+        }
     }
 
     /** RF-REQ-09: Abrir modal de rechazo (Pendiente → Rechazada). */
@@ -128,6 +142,11 @@ class RequisitionIndex extends Component
         $this->rejectingId = null;
         $this->rejectionComment = '';
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición rechazada.']);
+        
+        if ($req->creator) {
+            $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'pendiente', 'rechazada', auth()->user()));
+            $this->dispatch('notification-received');
+        }
     }
 
     public function deleteRequisition(int $id): void

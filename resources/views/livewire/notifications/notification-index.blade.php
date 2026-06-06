@@ -54,15 +54,7 @@
         <div wire:loading.class="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll, markAsRead, markAsUnread, delete" class="w-full">
             <div class="card p-0">
                 @if($this->notifications->isEmpty())
-                    <x-empty-state icon="bell-off" title="No hay notificaciones">
-                        @if($filter === 'unread')
-                            No tienes notificaciones sin leer.
-                        @elseif($filter === 'read')
-                            No tienes notificaciones leídas.
-                        @else
-                            Las notificaciones aparecerán aquí cuando ocurran eventos importantes en el sistema.
-                        @endif
-                    </x-empty-state>
+                    <x-empty-state icon="bell-off" title="No hay notificaciones" />
                 @else
                     <div class="divide-y divide-border">
                         @foreach($this->notifications as $notification)

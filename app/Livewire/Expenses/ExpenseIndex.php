@@ -143,12 +143,28 @@ class ExpenseIndex extends Component
     {
         $percent = $project->budget_used_percent;
 
+        $severity = null;
+        $message = null;
+
         if ($percent >= 100) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => "⚠️ ALERTA: El proyecto \"{$project->name}\" ha superado el 100% del presupuesto asignado."]);
+            $severity = 'danger';
+            $message = "⚠️ ALERTA: El proyecto \"{$project->name}\" ha superado el 100% del presupuesto asignado.";
         } elseif ($percent >= 90) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => "⚠️ PRECAUCIÓN: El proyecto \"{$project->name}\" ha alcanzado el 90% del presupuesto."]);
+            $severity = 'warning';
+            $message = "⚠️ PRECAUCIÓN: El proyecto \"{$project->name}\" ha alcanzado el 90% del presupuesto.";
         } elseif ($percent >= 70) {
-            $this->dispatch('toast', ['icon' => 'info', 'message' => "📊 AVISO: El proyecto \"{$project->name}\" ha alcanzado el 70% del presupuesto."]);
+            $severity = 'info';
+            $message = "📊 AVISO: El proyecto \"{$project->name}\" ha alcanzado el 70% del presupuesto.";
+        }
+
+        if ($severity) {
+            $this->dispatch('toast', ['icon' => $severity === 'danger' ? 'error' : ($severity === 'info' ? 'info' : 'warning'), 'message' => $message]);
+
+            if ($percent >= 80) { // Database alert threshold defined in BudgetAlert
+                $admins = \App\Models\User::all()->filter(fn($u) => $u->hasPermission('gastos.ver') || $u->hasPermission('*'));
+                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\BudgetAlert($project, $percent, $percent >= 100 ? 'danger' : 'warning'));
+                $this->dispatch('notification-received');
+            }
         }
     }
 

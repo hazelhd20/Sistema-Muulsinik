@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\QuotationProcessed;
 
 /**
  * RF-REQ-04 — Procesamiento asíncrono de cotizaciones.
@@ -59,6 +60,10 @@ class ProcessQuotationJob implements ShouldQueue
                 'processed_at' => now(),
             ]);
 
+            if ($quotation->uploader) {
+                $quotation->uploader->notify(new QuotationProcessed($quotation, true));
+            }
+
             Log::info("Quotation #{$this->quotationId} procesada exitosamente.", [
                 'items_found' => count($result['items'] ?? []),
             ]);
@@ -68,6 +73,10 @@ class ProcessQuotationJob implements ShouldQueue
                 'status'        => 'failed',
                 'error_message' => $e->getMessage(),
             ]);
+
+            if ($quotation->uploader) {
+                $quotation->uploader->notify(new QuotationProcessed($quotation, false, $e->getMessage()));
+            }
 
             Log::error("Error al procesar cotización #{$this->quotationId}: {$e->getMessage()}");
 
