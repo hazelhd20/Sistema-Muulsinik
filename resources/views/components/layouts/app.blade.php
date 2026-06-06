@@ -252,6 +252,16 @@
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
         document.addEventListener('livewire:navigated', () => lucide.createIcons());
         document.addEventListener('livewire:init', () => {
+            // Prevenir el modal de error de Livewire al expirar la sesión (419) o no estar autenticado (401)
+            Livewire.hook('request', ({ fail }) => {
+                fail(({ status, preventDefault }) => {
+                    if (status === 419 || status === 401) {
+                        preventDefault();
+                        window.location.reload(); // Recargar redirigirá al login gracias al middleware auth
+                    }
+                });
+            });
+
             Livewire.hook('commit', ({ succeed }) => {
                 succeed(() => {
                     setTimeout(() => lucide.createIcons(), 10);

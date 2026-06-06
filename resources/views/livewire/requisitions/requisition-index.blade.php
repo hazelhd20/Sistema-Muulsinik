@@ -1,4 +1,5 @@
 <div x-data="{
+    activeTab: 'todas',
     showPreviewModal: false,
     previewUrl: null,
     previewType: null,
@@ -29,6 +30,28 @@
         </x-slot:actions>
     </x-page-header>
 
+    {{-- Tabs de Navegación --}}
+    <div class="mb-6 border-b border-border">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button @click="activeTab = 'todas'"
+                :class="activeTab === 'todas' ? 'border-primary-500 text-primary-600' : 'border-transparent text-text-muted hover:border-border hover:text-text-primary'"
+                class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors">
+                <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                Requisiciones
+            </button>
+            <button @click="activeTab = 'borradores'"
+                :class="activeTab === 'borradores' ? 'border-primary-500 text-primary-600' : 'border-transparent text-text-muted hover:border-border hover:text-text-primary'"
+                class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors">
+                <i data-lucide="file-edit" class="w-4 h-4"></i>
+                Borradores y Procesos
+                @if($pendingQuotations->count() > 0)
+                    <span class="bg-primary-100 text-primary-600 py-0.5 px-2 rounded-full text-xs-fluid font-bold ml-1">{{ $pendingQuotations->count() }}</span>
+                @endif
+            </button>
+        </nav>
+    </div>
+
+    <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-filters">
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
         {{-- Search: compact width --}}
@@ -82,7 +105,60 @@
             </div>
         </div>
     </div>
+    </div>
 
+    <div x-show="activeTab === 'borradores'" x-cloak wire:key="tab-borradores">
+    {{-- Pending Quotations Area (Background Processing & Drafts) --}}
+    @if($pendingQuotations->isNotEmpty())
+        <div class="space-y-3" wire:poll.10s>
+            @foreach($pendingQuotations as $pq)
+                <div wire:key="pending-quotation-{{ $pq->id }}" class="flex items-center justify-between p-4 rounded-xl border bg-surface-card border-border hover:border-primary-300 transition-colors shadow-sm">
+                    <div class="flex items-center gap-3">
+                        @if($pq->isProcessing() || $pq->status === 'pending')
+                            <div class="w-10 h-10 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 shadow-sm">
+                                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                            </div>
+                            <div>
+                                <p class="text-small font-semibold text-text-primary">Procesando cotización en segundo plano</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $pq->original_filename }} &bull; {{ $pq->created_at->diffForHumans() }}</p>
+                            </div>
+                        @elseif($pq->isCompleted())
+                            <div class="w-10 h-10 rounded-full bg-success-light text-success flex items-center justify-center shrink-0 shadow-sm">
+                                <i data-lucide="file-edit" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-small font-semibold text-text-primary">Borrador de Requisición listo</p>
+                                <p class="text-xs-fluid text-text-muted">Procesado de: {{ $pq->original_filename }} &bull; {{ $pq->created_at->diffForHumans() }}</p>
+                            </div>
+                        @else
+                            <div class="w-10 h-10 rounded-full bg-danger-light text-danger flex items-center justify-center shrink-0 shadow-sm">
+                                <i data-lucide="file-x" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-small font-semibold text-text-primary">Error al extraer datos</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $pq->original_filename }} &bull; {{ $pq->created_at->diffForHumans() }}</p>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" wire:click="dismissQuotation({{ $pq->id }})" wire:confirm="¿Descartar este borrador permanentemente?" class="btn-icon text-text-muted hover:text-danger hover:bg-danger-50 transition-colors" title="Descartar">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <a href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}" wire:navigate class="btn-secondary text-small">
+                            {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar y Continuar' }}
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <x-empty-state icon="check-square" title="No hay borradores pendientes"
+            message="Todas tus cotizaciones han sido procesadas o enviadas a aprobación." />
+    @endif
+    </div>
+
+    <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
     {{-- Requisitions Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden"
@@ -110,7 +186,7 @@
                         </thead>
                         <tbody>
                             @foreach($requisitions as $req)
-                                <tr class="group cursor-pointer hover:bg-surface-hover"
+                                <tr wire:key="requisition-row-{{ $req->id }}" class="group cursor-pointer hover:bg-surface-hover"
                                     x-on:click="Livewire.navigate('{{ route('requisiciones.show', ['id' => $req->id]) }}')">
                                     <td class="font-medium whitespace-nowrap">
                                         {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
@@ -266,6 +342,7 @@
     </div>
 
     <div class="mt-4">{{ $requisitions->links() }}</div>
+    </div>
 
 
 

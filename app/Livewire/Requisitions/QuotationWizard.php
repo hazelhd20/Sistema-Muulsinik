@@ -17,6 +17,7 @@ use App\Services\TaxNormalizerService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -36,6 +37,7 @@ class QuotationWizard extends Component
 
     /* ── Paso 1: Upload ──────────────────────────────── */
     public $file;
+    #[Url(as: 'id')]
     public ?int $quotationId = null;
 
     /* ── Paso 2: Processing status ───────────────────── */
@@ -58,11 +60,66 @@ class QuotationWizard extends Component
     public array $supplierMatch = [];
     public array $vendorMatch = [];
 
+    public function updated($property, $value): void
+    {
+        // Solo autoguardar si estamos en el paso 3
+        if ($this->step === 3) {
+            $this->autoSaveDraft();
+        }
+    }
+
+    public function autoSaveDraft(): void
+    {
+        if ($this->quotationId) {
+            $quotation = Quotation::find($this->quotationId);
+            if ($quotation) {
+                $quotation->update([
+                    'draft_state' => [
+                        'projectId' => $this->projectId,
+                        'supplierName' => $this->supplierName,
+                        'supplierId' => $this->supplierId,
+                        'storeName' => $this->storeName,
+                        'vendorName' => $this->vendorName,
+                        'annotations' => $this->annotations,
+                        'date' => $this->date,
+                        'items' => $this->items,
+                        'supplierMatch' => $this->supplierMatch,
+                        'vendorMatch' => $this->vendorMatch,
+                    ]
+                ]);
+            }
+        }
+    }
+
 
 
     public function mount(): void
     {
         $this->date = now()->format('Y-m-d');
+        
+        if ($this->quotationId) {
+            $quotation = Quotation::find($this->quotationId);
+            if ($quotation) {
+                $this->processingStatus = $quotation->status;
+                if ($quotation->isCompleted()) {
+                    if (!empty($quotation->draft_state)) {
+                        $this->loadFromDraftState($quotation->draft_state);
+                        $this->rawText = $quotation->raw_text ?? '';
+                        $this->step = 3;
+                    } else {
+                        $this->loadParsedData($quotation);
+                        $this->step = 3;
+                    }
+                } elseif ($quotation->isProcessing() || $quotation->status === 'pending') {
+                    $this->step = 2;
+                } elseif ($quotation->isFailed()) {
+                    $this->errorMessage = $quotation->error_message;
+                    $this->step = 2;
+                }
+            } else {
+                $this->quotationId = null;
+            }
+        }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -228,6 +285,23 @@ class QuotationWizard extends Component
     /* ═══════════════════════════════════════════════════
      *  PASO 3 — Formulario editable
      * ═══════════════════════════════════════════════════ */
+
+    /**
+     * Carga los datos desde un estado de borrador guardado previamente.
+     */
+    private function loadFromDraftState(array $state): void
+    {
+        $this->projectId = $state['projectId'] ?? '';
+        $this->supplierName = $state['supplierName'] ?? '';
+        $this->supplierId = $state['supplierId'] ?? '';
+        $this->storeName = $state['storeName'] ?? '';
+        $this->vendorName = $state['vendorName'] ?? '';
+        $this->annotations = $state['annotations'] ?? '';
+        $this->date = $state['date'] ?? now()->format('Y-m-d');
+        $this->items = $state['items'] ?? [];
+        $this->supplierMatch = $state['supplierMatch'] ?? [];
+        $this->vendorMatch = $state['vendorMatch'] ?? [];
+    }
 
     /**
      * Carga los datos extraídos del Quotation al formulario editable.

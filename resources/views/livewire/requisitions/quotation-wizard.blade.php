@@ -107,8 +107,15 @@
 
                     <p class="text-xs-fluid text-text-muted mt-4 flex items-center justify-center gap-1.5">
                         <i data-lucide="info" class="w-3 h-3 shrink-0"></i>
-                        No cierres esta página, el resultado aparecerá automáticamente.
+                        Puedes esperar aquí o navegar a otra página. Te notificaremos cuando termine.
                     </p>
+
+                    <div class="mt-6 flex justify-center">
+                        <a href="{{ route('requisiciones.index') }}" wire:navigate class="btn-secondary text-small">
+                            <i data-lucide="arrow-left" class="w-4 h-4 text-text-muted"></i>
+                            Ir a Requisiciones
+                        </a>
+                    </div>
 
                 @elseif($processingStatus === 'failed')
                     {{-- Error state --}}

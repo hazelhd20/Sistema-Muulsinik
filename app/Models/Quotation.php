@@ -10,13 +10,14 @@ class Quotation extends Model
     protected $fillable = [
         'requisition_id', 'supplier_id', 'project_id',
         'file_path', 'file_type', 'original_filename',
-        'status', 'raw_text', 'raw_parsed_data', 'is_orphan',
+        'status', 'raw_text', 'raw_parsed_data', 'draft_state', 'is_orphan',
         'error_message', 'uploaded_by', 'processed_at',
     ];
 
     protected $casts = [
         'processed_at'    => 'datetime',
         'raw_parsed_data' => 'array',
+        'draft_state'     => 'array',
         'is_orphan'       => 'boolean',
     ];
 
