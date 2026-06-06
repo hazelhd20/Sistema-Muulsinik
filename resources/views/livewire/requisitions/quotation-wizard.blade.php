@@ -17,10 +17,9 @@
     {{-- ═══════ WIZARD HEADER ═══════ --}}
     <x-page-header subtitle="Requisiciones" title="Subir Cotización">
         <x-slot:actions>
-            <a href="{{ route('requisiciones.index') }}" class="btn-secondary" wire:navigate>
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
                 Volver
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -60,21 +59,12 @@
 
                 {{-- Process Button --}}
                 @if($file && !$errors->has('file'))
-                    <button wire:key="process-btn" x-data="{ visible: true }" x-show="visible"
-                        @file-removed.window="visible = false"
-                        x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })" type="button"
-                        wire:click="processUpload" wire:loading.attr="disabled" wire:target="processUpload"
-                        class="btn-primary relative w-full mt-6 py-3 text-body">
-                        <span wire:loading.class="opacity-0" wire:target="processUpload"
-                            class="flex items-center justify-center gap-2 transition-opacity">
-                            <i data-lucide="scan-line" class="w-5 h-5" wire:ignore></i>
-                            Procesar Cotización
-                        </span>
-                        <span wire:loading wire:target="processUpload"
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                            <span class="spinner spinner-sm"></span>
-                        </span>
-                    </button>
+                    <x-button wire:key="process-btn" x-data="{ visible: true }" x-show="visible"
+                        @file-removed.window="visible = false" type="button"
+                        wire:click="processUpload" wire:loading.attr="disabled" target="processUpload"
+                        variant="primary" class="w-full mt-6 py-3 text-body" icon="scan-line">
+                        Procesar Cotización
+                    </x-button>
                 @endif
 
 
@@ -111,10 +101,9 @@
                     </p>
 
                     <div class="mt-6 flex justify-center">
-                        <a href="{{ route('requisiciones.index') }}" wire:navigate class="btn-secondary text-small">
-                            <i data-lucide="arrow-left" class="w-4 h-4 text-text-muted"></i>
+                        <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" class="text-small" wire:navigate>
                             Ir a Requisiciones
-                        </a>
+                        </x-button>
                     </div>
 
                 @elseif($processingStatus === 'failed')
@@ -139,19 +128,15 @@
 
                         {{-- Botones de acción --}}
                         <div class="flex flex-col sm:flex-row w-full gap-2.5 justify-center">
-                            <button wire:click="retryProcessing" class="btn-primary group text-small">
-                                <i data-lucide="refresh-cw"
-                                    class="w-4 h-4 transition-transform group-hover:rotate-180 duration-500"></i>
+                            <x-button wire:click="retryProcessing" variant="primary" class="group text-small" icon="refresh-cw" iconClass="transition-transform group-hover:rotate-180 duration-500">
                                 Reintentar
-                            </button>
-                            <button wire:click="continueManually" class="btn-secondary text-small">
-                                <i data-lucide="edit-3" class="w-4 h-4 text-text-muted"></i>
+                            </x-button>
+                            <x-button wire:click="continueManually" variant="secondary" icon="edit-3" class="text-small">
                                 Llenar manualmente
-                            </button>
-                            <button wire:click="resetWizard" class="btn-secondary text-small">
-                                <i data-lucide="file-up" class="w-4 h-4 text-text-muted"></i>
+                            </x-button>
+                            <x-button wire:click="resetWizard" variant="secondary" icon="file-up" class="text-small">
                                 Cambiar archivo
-                            </button>
+                            </x-button>
                         </div>
                     </div>
                 @endif
@@ -174,12 +159,11 @@
                         $quotation = $quotationId ? \App\Models\Quotation::find($quotationId) : null;
                     @endphp
                     @if($quotation)
-                        <button type="button"
+                        <x-button type="button"
                             @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')"
-                            class="btn-secondary">
-                            <i data-lucide="file-search" class="w-4 h-4"></i>
+                            variant="secondary" icon="file-search">
                             Ver documento
-                        </button>
+                        </x-button>
                     @endif
                 </div>
 
@@ -259,13 +243,12 @@
                                 {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
                         @endif
                     </div>
-                    <button type="button" wire:click="addItem" class="btn-secondary">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    <x-button wire:click="addItem" variant="secondary" icon="plus">
                         Agregar
-                    </button>
+                    </x-button>
                 </div>
 
-                @error('items') <p class="mb-3 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                @error('items') <x-alert type="danger" message="{{ $message }}" class="mb-4" /> @enderror
 
 
                 @if(count($items) > 0)
@@ -544,10 +527,7 @@
 
                                         {{-- Delete --}}
                                         <td class="text-center pb-4">
-                                            <button type="button" wire:click="removeItem({{ $i }})"
-                                                class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                            </button>
+                                            <x-button type="button" wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </td>
                                     </tr>
                                 @endforeach
@@ -618,7 +598,7 @@
 
             {{-- Actions --}}
             <div class="flex justify-end pt-6">
-                <x-submit-button target="saveRequisition">Guardar Requisición</x-submit-button>
+                <x-button type="submit" variant="primary" target="saveRequisition">Guardar Requisición</x-button>
             </div>
         </form>
     @endif

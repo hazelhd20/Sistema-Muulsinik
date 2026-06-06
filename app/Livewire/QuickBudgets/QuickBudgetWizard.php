@@ -204,7 +204,7 @@ class QuickBudgetWizard extends Component
             }
         });
 
-        session()->flash('toast', ['icon' => 'success', 'message' => 'Cotización guardada exitosamente.']);
+        session()->flash('success', 'Cotización guardada exitosamente.');
         return $this->redirect(route('cotizador.index'), navigate: true);
     }
 

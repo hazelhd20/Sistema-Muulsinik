@@ -2,10 +2,9 @@
     {{-- Header --}}
     <x-page-header subtitle="Control financiero" title="Gastos">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Registrar Gasto
-            </button>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -25,9 +24,8 @@
         </div>
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
-            :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.projectFilter || $wire.categoryFilter || $wire.periodFilter }">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.projectFilter || $wire.categoryFilter || $wire.periodFilter }">
             Filtros
             @php
                 $activeCount = ($projectFilter ? 1 : 0) + ($categoryFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
@@ -36,7 +34,7 @@
                 <span
                     class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
             @endif
-        </button>
+        </x-button>
 
         <div class="flex-1"></div>
 
@@ -114,16 +112,12 @@
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
                                             @if($expense->receipt_file)
-                                                <a href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank"
-                                                    class="btn-icon-primary" title="Ver comprobante">
-                                                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                                                </a>
+                                                <x-button href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank"
+                                                    variant="icon-primary" title="Ver comprobante" icon="file-text" />
                                             @endif
-                                            <button wire:click="deleteExpense({{ $expense->id }})"
+                                            <x-button wire:click="deleteExpense({{ $expense->id }})"
                                                 wire:confirm="¿Deseas eliminar este gasto? Esta acción no se puede deshacer."
-                                                class="btn-icon-danger">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                                variant="icon-danger" icon="trash-2" />
                                         </div>
                                     </td>
                                 </tr>
@@ -216,18 +210,19 @@
                             </div>
                         </div>
 
-                        <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
-                            <div x-show="!distributed">
-                                <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
-                                    placeholder="Seleccionar..." />
+                        <x-form-field :error="$errors->first('projectId')">
+                            <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
+                                <div x-show="!distributed">
+                                    <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
+                                        placeholder="Seleccionar..." />
+                                </div>
+                                <div x-show="distributed"
+                                    class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
+                                    style="display: none;">
+                                    <i data-lucide="split" class="w-4 h-4 mr-2"></i> Gasto distribuido
+                                </div>
                             </div>
-                            <div x-show="distributed"
-                                class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
-                                style="display: none;">
-                                <i data-lucide="split" class="w-4 h-4 mr-2"></i> Gasto distribuido
-                            </div>
-                        </div>
-                        @error('projectId') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
+                        </x-form-field>
                     </div>
                     <x-form-field label="Categoría" required error="{{ $errors->first('category') }}">
                         <x-custom-select wire:model="category" :options="$categories" placeholder="Seleccionar..." />
@@ -239,10 +234,10 @@
                 </x-form-field>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
-                    <x-submit-button target="createExpense">
+                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="createExpense">
                         Registrar Gasto
-                    </x-submit-button>
+                    </x-button>
                 </div>
             </form>
         </x-modal>

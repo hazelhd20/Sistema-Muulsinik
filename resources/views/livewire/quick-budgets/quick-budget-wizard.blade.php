@@ -1,9 +1,9 @@
 <div>
     <x-page-header subtitle="Cotizador" :title="$budgetId ? 'Editar Cotización' : 'Nueva Cotización'">
         <x-slot:actions>
-            <a href="{{ route('cotizador.index') }}" wire:navigate class="btn-secondary">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
-            </a>
+            <x-button href="{{ route('cotizador.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
+                Volver
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -45,9 +45,9 @@
                             {{ count($items) === 1 ? 'concepto' : 'conceptos' }}</span>
                     @endif
                 </div>
-                <button type="button" wire:click="addManualItem" class="btn-secondary">
-                    <i data-lucide="plus" class="w-4 h-4"></i> Concepto Manual
-                </button>
+                <x-button wire:click="addManualItem" variant="secondary" icon="plus">
+                    Concepto Manual
+                </x-button>
             </div>
 
             {{-- Search Product --}}
@@ -151,10 +151,7 @@
                                         ${{ number_format($item['line_total'], 2) }}
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <button type="button" wire:click="removeItem({{ $index }})"
-                                            class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                        </button>
+                                        <x-button type="button" wire:click="removeItem({{ $index }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </td>
                                 </tr>
                             @endforeach
@@ -195,7 +192,7 @@
 
         {{-- Footer --}}
         <div class="flex justify-end pt-6">
-            <x-submit-button target="save">Guardar Presupuesto</x-submit-button>
+            <x-button type="submit" variant="primary" target="save">Guardar Presupuesto</x-button>
         </div>
     </div>
 </div>

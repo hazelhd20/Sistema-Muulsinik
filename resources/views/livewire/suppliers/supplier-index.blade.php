@@ -2,10 +2,9 @@
     {{-- Header --}}
     <x-page-header subtitle="Red de suministro" title="Proveedores">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nuevo Proveedor
-            </button>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -87,20 +86,14 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-1">
-                                            <button wire:click="viewVendors({{ $supplier->id }})" class="btn-icon"
-                                                title="Ver vendedores" aria-label="Ver vendedores">
-                                                <i data-lucide="users" class="w-4 h-4"></i>
-                                            </button>
-                                            <button wire:click="openEditSupplierModal({{ $supplier->id }})"
-                                                class="btn-icon-primary" title="Editar proveedor" aria-label="Editar proveedor">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </button>
-                                            <button wire:click="deleteSupplier({{ $supplier->id }})"
+                                            <x-button wire:click="viewVendors({{ $supplier->id }})" variant="icon" icon="users"
+                                                title="Ver vendedores" aria-label="Ver vendedores" />
+                                            <x-button wire:click="openEditSupplierModal({{ $supplier->id }})"
+                                                variant="icon-primary" icon="pencil" title="Editar proveedor" aria-label="Editar proveedor" />
+                                            <x-button wire:click="deleteSupplier({{ $supplier->id }})"
                                                 wire:confirm="¿Eliminar este proveedor y todos sus vendedores?"
-                                                class="btn-icon-danger" title="Eliminar proveedor"
-                                                aria-label="Eliminar proveedor">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                                variant="icon-danger" icon="trash-2" title="Eliminar proveedor"
+                                                aria-label="Eliminar proveedor" />
                                         </div>
                                     </td>
                                 </tr>
@@ -169,7 +162,7 @@
                     <div class="col-span-2">
                         <x-form-field label="Nombre comercial" required error="{{ $errors->first('tradeName') }}">
                             <input wire:model="tradeName" type="text"
-                                class="input @error('tradeName') input-error @enderror"
+                                class="input"
                                 placeholder="Ej. Materiales del Sureste">
                         </x-form-field>
                     </div>
@@ -189,11 +182,10 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)"
-                        class="btn-secondary">Cancelar</button>
-                    <x-submit-button target="saveSupplier">
+                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="saveSupplier">
                         {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
-                    </x-submit-button>
+                    </x-button>
                 </div>
             </form>
         </x-modal>
@@ -221,13 +213,9 @@
                                 </p>
                             </div>
                             <div class="flex items-center gap-1">
-                                <button wire:click="openEditVendor({{ $vendor->id }})" class="btn-icon-primary" title="Editar">
-                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
-                                    class="btn-icon-danger" title="Eliminar">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                </button>
+                                <x-button wire:click="openEditVendor({{ $vendor->id }})" variant="icon-primary" icon="edit-2" title="Editar" />
+                                <x-button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
+                                    variant="icon-danger" icon="trash-2" title="Eliminar" />
                             </div>
                         </div>
                     @empty
@@ -239,7 +227,7 @@
                 @if($showAddVendor)
                     <form wire:submit="saveVendor" class="space-y-3 p-4 rounded-lg border border-border bg-surface-main">
                         <x-form-field error="{{ $errors->first('vendorName') }}">
-                            <input wire:model="vendorName" type="text" class="input @error('vendorName') input-error @enderror"
+                            <input wire:model="vendorName" type="text" class="input"
                                 placeholder="Nombre del vendedor *">
                         </x-form-field>
                         <div class="grid grid-cols-2 gap-3">
@@ -247,17 +235,16 @@
                             <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
                         </div>
                         <div class="flex gap-2">
-                            <x-submit-button target="saveVendor" class="text-xs-fluid">
+                            <x-button type="submit" variant="primary" target="saveVendor" class="text-xs-fluid">
                                 {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
-                            </x-submit-button>
-                            <button type="button" wire:click="$set('showAddVendor', false)"
-                                class="btn-secondary text-xs-fluid">Cancelar</button>
+                            </x-button>
+                            <x-button wire:click="$set('showAddVendor', false)" variant="secondary" class="text-xs-fluid">Cancelar</x-button>
                         </div>
                     </form>
                 @else
-                    <button wire:click="$set('showAddVendor', true)" class="btn-secondary w-full">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i>Agregar Vendedor
-                    </button>
+                    <x-button wire:click="$set('showAddVendor', true)" variant="secondary" icon="user-plus" class="w-full">
+                        Agregar Vendedor
+                    </x-button>
                 @endif
             </div>
         </x-modal>

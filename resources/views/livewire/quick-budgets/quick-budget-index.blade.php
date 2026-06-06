@@ -1,10 +1,9 @@
 <div>
     <x-page-header subtitle="Trabajos menores" title="Cotizador Rápido">
         <x-slot:actions>
-            <a href="{{ route('cotizador.wizard') }}" wire:navigate class="btn-primary">
-                <i data-lucide="calculator" class="w-4 h-4"></i>
+            <x-button href="{{ route('cotizador.wizard') }}" variant="primary" icon="calculator" wire:navigate>
                 Nueva Cotización
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -51,15 +50,10 @@
                                         ${{ number_format($budget->grand_total, 2, '.', ',') }}</td>
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
-                                            <a href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}" wire:navigate
-                                                class="btn-icon-primary" title="Editar cotización">
-                                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                            </a>
-                                            <button wire:click="deleteBudget({{ $budget->id }})"
-                                                wire:confirm="¿Deseas eliminar esta cotización?" class="btn-icon-danger"
-                                                title="Eliminar">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                            <x-button href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}" variant="icon-primary" icon="edit-2" title="Editar cotización" wire:navigate />
+                                            <x-button wire:click="deleteBudget({{ $budget->id }})"
+                                                wire:confirm="¿Deseas eliminar esta cotización?" variant="icon-danger" icon="trash-2"
+                                                title="Eliminar" />
                                         </div>
                                     </td>
                                 </tr>

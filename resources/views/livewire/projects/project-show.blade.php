@@ -5,10 +5,9 @@
         title="{{ $project->name }}"
     >
         <x-slot:actions>
-            <a href="{{ route('proyectos.index') }}" class="btn-secondary" wire:navigate>
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <x-button href="{{ route('proyectos.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
                 Volver
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -193,13 +192,11 @@
                                     />
                                 </td>
                                 <td class="text-right">
-                                    <a href="{{ route('requisiciones.show', $requisition->id) }}"
-                                       class="btn-icon"
+                                    <x-button href="{{ route('requisiciones.show', $requisition->id) }}"
+                                       variant="icon" icon="eye"
                                        title="Ver detalle"
                                        aria-label="Ver detalle de {{ $requisition->number ?? $requisition->id }}"
-                                       wire:navigate>
-                                        <i data-lucide="eye" class="w-4 h-4"></i>
-                                    </a>
+                                       wire:navigate />
                                 </td>
                             </tr>
                         @empty

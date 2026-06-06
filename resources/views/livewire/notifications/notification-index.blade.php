@@ -6,22 +6,23 @@
             <p class="text-body text-text-secondary mt-1">Historial de todas tus notificaciones</p>
         </div>
         <div class="flex items-center gap-2">
-            <button
+            <x-button
                 wire:click="markAllAsRead"
-                class="btn-secondary"
+                variant="secondary"
+                icon="check-double"
                 {{ $this->notifications->whereNull('read_at')->isEmpty() ? 'disabled' : '' }}
             >
-                <i data-lucide="check-double" class="w-4 h-4"></i>
-                <span>Marcar todas como leídas</span>
-            </button>
-            <button
+                Marcar todas como leídas
+            </x-button>
+            <x-button
                 wire:click="deleteAll"
                 wire:confirm="¿Estás seguro de eliminar todas las notificaciones? Esta acción no se puede deshacer."
-                class="btn-secondary text-danger hover:bg-danger-light hover:border-danger/50"
+                variant="secondary"
+                icon="trash-2"
+                class="text-danger hover:bg-danger-light hover:border-danger/50"
             >
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                <span>Eliminar todas</span>
-            </button>
+                Eliminar todas
+            </x-button>
         </div>
     </div>
 

@@ -2,14 +2,12 @@
     {{-- Header --}}
     <x-page-header subtitle="Requisiciones" title="Detalle de Requisición">
         <x-slot:actions>
-            <a href="{{ route('requisiciones.index') }}" class="btn-secondary" wire:navigate>
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
                 Volver
-            </a>
-            <a href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" class="btn-secondary">
-                <i data-lucide="printer" class="w-4 h-4"></i>
+            </x-button>
+            <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary" icon="printer">
                 Imprimir
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 

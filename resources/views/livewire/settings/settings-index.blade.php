@@ -65,10 +65,9 @@
                         <p class="section-row-label">Nombre de la empresa <span class="text-danger">*</span></p>
                         <p class="section-row-desc">Razón social completa.</p>
                     </div>
-                    <div>
+                    <x-form-field :error="$errors->first('company_name')">
                         <input type="text" wire:model="company_name" class="input" placeholder="Constructora Muulsinik S.A. de C.V.">
-                        @error('company_name') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
                 {{-- RFC --}}
@@ -77,10 +76,9 @@
                         <p class="section-row-label">RFC</p>
                         <p class="section-row-desc">Registro Federal de Contribuyentes.</p>
                     </div>
-                    <div>
+                    <x-form-field :error="$errors->first('company_rfc')">
                         <input type="text" wire:model="company_rfc" class="input" placeholder="ABC123456ABC1" style="font-family: ui-monospace, monospace; letter-spacing: 0.05em;">
-                        @error('company_rfc') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
                 {{-- Dirección --}}
@@ -89,10 +87,9 @@
                         <p class="section-row-label">Dirección fiscal</p>
                         <p class="section-row-desc">Calle, número, colonia, municipio, código postal.</p>
                     </div>
-                    <div>
+                    <x-form-field :error="$errors->first('company_address')">
                         <textarea wire:model="company_address" rows="2" class="input" placeholder="Calle 60 Norte #123, Col. Centro, Mérida, Yuc. C.P. 97000"></textarea>
-                        @error('company_address') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
                 {{-- Contacto --}}
@@ -114,7 +111,7 @@
 
             {{-- Footer action --}}
             <div class="flex justify-end">
-                <x-submit-button target="saveEmpresa" icon="check">Guardar cambios</x-submit-button>
+                <x-button type="submit" variant="primary" target="saveEmpresa" icon="check">Guardar cambios</x-button>
             </div>
 
         </form>
@@ -142,7 +139,7 @@
                         <p class="section-row-label">Prefijo de requisiciones</p>
                         <p class="section-row-desc">Texto fijo que precede al número. Ej: <span class="font-mono text-text-primary">REQ-</span></p>
                     </div>
-                    <div>
+                    <x-form-field :error="$errors->first('req_prefix')">
                         <input type="text" wire:model="req_prefix" class="input" placeholder="REQ-"
                                style="font-family: ui-monospace, monospace; letter-spacing: 0.05em;">
                         @if($req_prefix && $req_next_number)
@@ -151,8 +148,7 @@
                                 <span class="font-mono font-medium text-text-primary">{{ $req_prefix }}{{ str_pad($req_next_number, 4, '0', STR_PAD_LEFT) }}</span>
                             </p>
                         @endif
-                        @error('req_prefix') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
 
                 {{-- Siguiente número --}}
@@ -161,10 +157,9 @@
                         <p class="section-row-label">Siguiente número</p>
                         <p class="section-row-desc">Se incrementa automáticamente con cada requisición creada.</p>
                     </div>
-                    <div>
+                    <x-form-field :error="$errors->first('req_next_number')">
                         <input type="number" wire:model="req_next_number" class="input" min="1">
-                        @error('req_next_number') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
             </div>
 
@@ -219,17 +214,16 @@
                         <p class="section-row-label">Contenido</p>
                         <p class="section-row-desc">Puede incluir vigencia, condiciones de pago, garantías, etc.</p>
                     </div>
-                    <div>
+                    <x-form-field :error="$errors->first('terms_conditions')">
                         <textarea wire:model="terms_conditions" rows="5" class="input"
                                   placeholder="Precios sujetos a cambio sin previo aviso. Vigencia de cotización: 15 días naturales…"></textarea>
-                        @error('terms_conditions') <p class="mt-1 text-xs-fluid text-danger">{{ $message }}</p> @enderror
-                    </div>
+                    </x-form-field>
                 </div>
             </div>
 
             {{-- Footer action --}}
             <div class="flex justify-end">
-                <x-submit-button target="saveDocumentos" icon="check">Guardar cambios</x-submit-button>
+                <x-button type="submit" variant="primary" target="saveDocumentos" icon="check">Guardar cambios</x-button>
             </div>
 
         </form>

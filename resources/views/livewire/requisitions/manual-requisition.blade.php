@@ -2,10 +2,9 @@
     {{-- Page Header --}}
     <x-page-header subtitle="Requisiciones" title="Nueva Requisición Manual">
         <x-slot:actions>
-            <a href="{{ route('requisiciones.index') }}" class="btn-secondary" wire:navigate>
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
                 Volver
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -52,10 +51,9 @@
                             {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
                     @endif
                 </div>
-                <button type="button" wire:click="addManualItem" class="btn-secondary">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
+                <x-button wire:click="addManualItem" variant="secondary" icon="plus">
                     Concepto Manual
-                </button>
+                </x-button>
             </div>
 
             {{-- Search Product --}}
@@ -172,10 +170,7 @@
                                         ${{ number_format($total, 2, '.', ',') }}
                                     </td>
                                     <td class="text-center pb-4">
-                                        <button type="button" wire:click="removeItem({{ $i }})"
-                                            class="btn-icon-danger mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                        </button>
+                                        <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </td>
                                 </tr>
                             @endforeach
@@ -217,7 +212,7 @@
 
         {{-- Footer --}}
         <div class="flex justify-end pt-6">
-            <x-submit-button target="createRequisition">Crear Requisición</x-submit-button>
+            <x-button type="submit" variant="primary" target="createRequisition">Crear Requisición</x-button>
         </div>
     </form>
 </div>

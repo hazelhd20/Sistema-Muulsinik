@@ -2,10 +2,9 @@
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Categorías">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nueva Categoría
-            </button>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -54,15 +53,10 @@
                                     </td>
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
-                                            <button wire:click="openEditModal({{ $category->id }})" class="btn-icon-primary"
-                                                title="Editar categoría">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </button>
-                                            <button wire:click="delete({{ $category->id }})"
-                                                wire:confirm="¿Seguro que deseas eliminar esta categoría?" class="btn-icon-danger"
-                                                title="Eliminar categoría">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                            <x-button wire:click="openEditModal({{ $category->id }})" variant="icon-primary" icon="pencil" title="Editar categoría" />
+                                            <x-button wire:click="delete({{ $category->id }})"
+                                                wire:confirm="¿Seguro que deseas eliminar esta categoría?" variant="icon-danger" icon="trash-2"
+                                                title="Eliminar categoría" />
                                         </div>
                                     </td>
                                 </tr>
@@ -114,10 +108,10 @@
                     <input type="text" wire:model="name" class="input" placeholder="Ej. Eléctrico, Plomería">
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)" class="btn-secondary">Cancelar</button>
-                    <x-submit-button target="save">
+                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="save">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Categoría' }}
-                    </x-submit-button>
+                    </x-button>
                 </div>
             </form>
         </x-modal>

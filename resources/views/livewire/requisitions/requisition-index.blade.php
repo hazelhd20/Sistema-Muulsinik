@@ -19,14 +19,12 @@
     {{-- Header --}}
     <x-page-header subtitle="Compras" title="Requisiciones">
         <x-slot:actions>
-            <a href="{{ route('requisiciones.manual') }}" class="btn-secondary" wire:navigate>
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button href="{{ route('requisiciones.manual') }}" variant="secondary" icon="plus" wire:navigate>
                 Nueva Manual
-            </a>
-            <a href="{{ route('requisiciones.upload') }}" class="btn-primary">
-                <i data-lucide="scan-line" class="w-4 h-4"></i>
+            </x-button>
+            <x-button href="{{ route('requisiciones.upload') }}" variant="primary" icon="scan-line">
                 Subir Cotización
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -58,9 +56,8 @@
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar requisición..." />
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
-            :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter || $wire.projectFilter || $wire.periodFilter }">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter || $wire.projectFilter || $wire.periodFilter }">
             Filtros
             @php
                 $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
@@ -69,7 +66,7 @@
                 <span
                     class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
             @endif
-        </button>
+        </x-button>
 
         <div class="flex-1"></div>
 
@@ -141,13 +138,11 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" wire:click="dismissQuotation({{ $pq->id }})" wire:confirm="¿Descartar este borrador permanentemente?" class="btn-icon text-text-muted hover:text-danger hover:bg-danger-50 transition-colors" title="Descartar">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                        <a href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}" wire:navigate class="btn-secondary text-small">
+                        <x-button wire:click="dismissQuotation({{ $pq->id }})" wire:confirm="¿Descartar este borrador permanentemente?" variant="icon" icon="trash-2" class="text-text-muted hover:text-danger hover:bg-danger-50 transition-colors" title="Descartar" />
+                        <x-button href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}" variant="secondary" class="text-small" wire:navigate>
                             {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar y Continuar' }}
                             <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
-                        </a>
+                        </x-button>
                     </div>
                 </div>
             @endforeach
@@ -217,36 +212,28 @@
                                                     $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
                                                     $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
                                                 @endphp
-                                                <button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
-                                                    class="btn-icon-primary" title="Ver cotización adjunta"
-                                                    aria-label="Ver cotización adjunta">
-                                                    <i data-lucide="file-search" class="w-4 h-4"></i>
-                                                </button>
+                                                <x-button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
+                                                    variant="icon-primary" icon="file-search" title="Ver cotización adjunta"
+                                                    aria-label="Ver cotización adjunta" />
                                             @endif
 
                                             @if($req->status === 'borrador')
-                                                <button wire:click="submitForApproval({{ $req->id }})"
-                                                    wire:confirm="¿Enviar esta requisición a aprobación?" class="btn-icon-primary"
-                                                    title="Enviar a aprobación" aria-label="Enviar a aprobación">
-                                                    <i data-lucide="send" class="w-4 h-4"></i>
-                                                </button>
+                                                <x-button wire:click="submitForApproval({{ $req->id }})"
+                                                    wire:confirm="¿Enviar esta requisición a aprobación?" variant="icon-primary" icon="send"
+                                                    title="Enviar a aprobación" aria-label="Enviar a aprobación" />
                                             @endif
 
                                             @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                <button wire:click="approve({{ $req->id }})"
+                                                <x-button wire:click="approve({{ $req->id }})"
                                                     wire:confirm="¿Aprobar esta requisición?"
-                                                    class="btn-icon-success bg-success-light text-success hover:bg-success-light/80"
-                                                    title="Aprobar" aria-label="Aprobar">
-                                                    <i data-lucide="check" class="w-4 h-4"></i>
-                                                </button>
+                                                    variant="icon-success" class="bg-success-light text-success hover:bg-success-light/80"
+                                                    icon="check" title="Aprobar" aria-label="Aprobar" />
                                             @endif
 
                                             {{-- Kebab Menu for secondary actions --}}
                                             <div x-data="{ openMenu: false }" class="relative">
-                                                <button @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                                    class="btn-icon" aria-label="Más opciones" title="Más opciones">
-                                                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                                                </button>
+                                                <x-button @click="openMenu = !openMenu" @click.away="openMenu = false"
+                                                    variant="icon" icon="more-vertical" aria-label="Más opciones" title="Más opciones" />
                                                 <div x-show="openMenu" x-transition
                                                     class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1"
                                                     style="display:none;">
@@ -356,11 +343,10 @@
                         placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showRejectModal', false)"
-                        class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-danger">
+                    <x-button wire:click="$set('showRejectModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="danger">
                         Confirmar Rechazo
-                    </button>
+                    </x-button>
                 </div>
             </form>
         </x-modal>

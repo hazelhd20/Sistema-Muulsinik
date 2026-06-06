@@ -2,10 +2,9 @@
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Medidas">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nueva Medida
-            </button>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -62,15 +61,10 @@
                                     </td>
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
-                                            <button wire:click="openEditModal({{ $measure->id }})" class="btn-icon-primary"
-                                                title="Editar medida">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </button>
-                                            <button wire:click="delete({{ $measure->id }})"
-                                                wire:confirm="¿Seguro que deseas eliminar esta medida?" class="btn-icon-danger"
-                                                title="Eliminar medida">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                            <x-button wire:click="openEditModal({{ $measure->id }})" variant="icon-primary" icon="pencil" title="Editar medida" />
+                                            <x-button wire:click="delete({{ $measure->id }})"
+                                                wire:confirm="¿Seguro que deseas eliminar esta medida?" variant="icon-danger" icon="trash-2"
+                                                title="Eliminar medida" />
                                         </div>
                                     </td>
                                 </tr>
@@ -129,11 +123,10 @@
                     <input type="text" wire:model="abbreviation" class="input" placeholder="Ej. pza, m">
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)"
-                        class="btn-secondary">Cancelar</button>
-                    <x-submit-button target="save">
+                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="save">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Medida' }}
-                    </x-submit-button>
+                    </x-button>
                 </div>
             </form>
         </x-modal>

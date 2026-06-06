@@ -2,10 +2,9 @@
     {{-- Header --}}
     <x-page-header subtitle="Gestión" title="Proyectos">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nuevo Proyecto
-            </button>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -15,14 +14,13 @@
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
-            :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter }">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter }">
             Filtros
             @if($statusFilter)
                 <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">1</span>
             @endif
-        </button>
+        </x-button>
 
         <div class="flex-1"></div>
 
@@ -119,20 +117,14 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-1">
-                                            <a href="{{ route('proyectos.show', $project->id) }}" class="btn-icon"
-                                                title="Ver detalle" aria-label="Ver detalle" wire:navigate>
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
-                                            <button wire:click="openEditModal({{ $project->id }})" class="btn-icon-primary"
-                                                title="Editar proyecto" aria-label="Editar proyecto">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </button>
-                                            <button wire:click="deleteProject({{ $project->id }})"
+                                            <x-button href="{{ route('proyectos.show', $project->id) }}" variant="icon" icon="eye"
+                                                title="Ver detalle" aria-label="Ver detalle" wire:navigate />
+                                            <x-button wire:click="openEditModal({{ $project->id }})" variant="icon-primary" icon="pencil"
+                                                title="Editar proyecto" aria-label="Editar proyecto" />
+                                            <x-button wire:click="deleteProject({{ $project->id }})"
                                                 wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
-                                                class="btn-icon-danger" title="Eliminar proyecto"
-                                                aria-label="Eliminar proyecto">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                                variant="icon-danger" icon="trash-2" title="Eliminar proyecto"
+                                                aria-label="Eliminar proyecto" />
                                         </div>
                                     </td>
                                 </tr>
@@ -205,12 +197,12 @@
         <x-modal show="showModal" :title="$editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'">
             <form wire:submit="saveProject" class="p-5 space-y-4">
                 <x-form-field label="Nombre del proyecto" required error="{{ $errors->first('name') }}">
-                    <input wire:model="name" type="text" class="input @error('name') input-error @enderror"
+                    <input wire:model="name" type="text" class="input"
                         placeholder="Ej. Residencial Los Álamos">
                 </x-form-field>
 
                 <x-form-field label="Descripción" error="{{ $errors->first('description') }}">
-                    <textarea wire:model="description" class="input @error('description') input-error @enderror" rows="3"
+                    <textarea wire:model="description" class="input" rows="3"
                         placeholder="Descripción breve del proyecto..."></textarea>
                 </x-form-field>
 
@@ -220,7 +212,7 @@
                     </x-form-field>
                     <x-form-field label="Presupuesto" required error="{{ $errors->first('budget') }}">
                         <input wire:model="budget" type="number" step="0.01"
-                            class="input @error('budget') input-error @enderror" placeholder="0.00">
+                            class="input" placeholder="0.00">
                     </x-form-field>
                 </div>
 
@@ -229,7 +221,7 @@
                         <input wire:model="startDate" type="date" class="input">
                     </x-form-field>
                     <x-form-field label="Fecha estimada de término" error="{{ $errors->first('endDate') }}">
-                        <input wire:model="endDate" type="date" class="input @error('endDate') input-error @enderror">
+                        <input wire:model="endDate" type="date" class="input">
                     </x-form-field>
                 </div>
 
@@ -240,9 +232,8 @@
                 @endif
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showModal', false)" class="btn-secondary">Cancelar</button>
-                    <x-submit-button
-                        target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-submit-button>
+                    <x-button wire:click="$set('showModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-button>
                 </div>
             </form>
         </x-modal>

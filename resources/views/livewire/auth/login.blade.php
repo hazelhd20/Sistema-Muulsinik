@@ -8,19 +8,13 @@
 
     {{-- Global error --}}
     @if($errorMessage)
-        <div class="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-small flex items-center gap-2">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-            </svg>
-            <span>{{ $errorMessage }}</span>
-        </div>
+        <x-alert type="danger" :message="$errorMessage" />
     @endif
 
     <form wire:submit="authenticate" class="space-y-4">
 
         {{-- Email --}}
-        <div>
-            <label for="login-email" class="label">Correo electrónico</label>
+        <x-form-field label="Correo electrónico" :error="$errors->first('email')">
             <input
                 wire:model="email"
                 type="email"
@@ -30,14 +24,10 @@
                 autofocus
                 autocomplete="email"
             >
-            @error('email')
-                <p class="mt-1.5 text-xs-fluid text-danger">{{ $message }}</p>
-            @enderror
-        </div>
+        </x-form-field>
 
         {{-- Password --}}
-        <div>
-            <label for="login-password" class="label">Contraseña</label>
+        <x-form-field label="Contraseña" :error="$errors->first('password')">
             <input
                 wire:model="password"
                 type="password"
@@ -46,10 +36,7 @@
                 placeholder="••••••••"
                 autocomplete="current-password"
             >
-            @error('password')
-                <p class="mt-1.5 text-xs-fluid text-danger">{{ $message }}</p>
-            @enderror
-        </div>
+        </x-form-field>
 
         {{-- Remember --}}
         <div class="flex items-center gap-2">
@@ -59,18 +46,9 @@
         </div>
 
         {{-- Submit --}}
-        <button type="submit" class="btn-primary w-full h-9 relative" wire:loading.attr="disabled">
-            <span wire:loading.class="opacity-0" wire:target="authenticate" class="transition-opacity">
-                Iniciar Sesión
-            </span>
-            <span wire:loading wire:target="authenticate"
-                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-            </span>
-        </button>
+        <x-button type="submit" variant="primary" target="authenticate" class="w-full h-9">
+            Iniciar Sesión
+        </x-button>
 
     </form>
 

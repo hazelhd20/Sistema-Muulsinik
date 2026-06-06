@@ -7,14 +7,12 @@
             <span class="text-text-secondary font-normal">aquí está el resumen de hoy.</span>
         </x-slot:heading>
         <x-slot:actions>
-            <a href="{{ url('/requisiciones') }}" class="btn-secondary">
-                <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
+            <x-button href="{{ url('/requisiciones') }}" variant="secondary" icon="clipboard-list">
                 Requisiciones
-            </a>
-            <a href="{{ url('/gastos') }}" class="btn-primary">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </x-button>
+            <x-button href="{{ url('/gastos') }}" variant="primary" icon="plus">
                 Nuevo gasto
-            </a>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 

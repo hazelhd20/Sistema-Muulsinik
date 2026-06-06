@@ -4,10 +4,9 @@
     <x-page-header subtitle="Administración" title="Usuarios">
         <x-slot:actions>
             @if(auth()->user()->hasPermission('usuarios.crear'))
-                <button wire:click="openCreateModal" class="btn-primary">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
+                <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                     Nuevo Usuario
-                </button>
+                </x-button>
             @endif
         </x-slot:actions>
     </x-page-header>
@@ -26,14 +25,13 @@
         </div>
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
-            :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.roleFilter }">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.roleFilter }">
             Filtros
             @if($roleFilter)
                 <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">1</span>
             @endif
-        </button>
+        </x-button>
 
         <div class="flex-1"></div>
 
@@ -116,17 +114,13 @@
                                             <td class="actions">
                                                 <div class="flex items-center justify-end gap-1">
                                                     @if(auth()->user()->hasPermission('usuarios.editar'))
-                                                        <button wire:click="openEditModal({{ $user->id }})" class="btn-icon-primary" title="Editar">
-                                                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                                                        </button>
+                                                        <x-button wire:click="openEditModal({{ $user->id }})" variant="icon-primary" title="Editar" icon="pencil" />
                                                     @endif
 
                                                     @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                        <button wire:click="deleteUser({{ $user->id }})"
+                                                        <x-button wire:click="deleteUser({{ $user->id }})"
                                                             wire:confirm="¿Estás seguro de que deseas eliminar este usuario? Esta acción es irreversible."
-                                                            class="btn-icon-danger" title="Eliminar">
-                                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                        </button>
+                                                            variant="icon-danger" title="Eliminar" icon="trash-2" />
                                                     @endif
                                                 </div>
                                             </td>
@@ -225,9 +219,8 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showModal', false)" class="btn-secondary">Cancelar</button>
-                    <x-submit-button
-                        target="saveUser">{{ $editingId ? 'Guardar Cambios' : 'Crear Usuario' }}</x-submit-button>
+                    <x-button wire:click="$set('showModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="saveUser">{{ $editingId ? 'Guardar Cambios' : 'Crear Usuario' }}</x-button>
                 </div>
             </form>
         </x-modal>

@@ -2,10 +2,9 @@
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Productos">
         <x-slot:actions>
-            <button wire:click="openCreateModal" class="btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nuevo Producto
-            </button>
+            </x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -23,14 +22,13 @@
         </div>
 
         {{-- Filters Toggle Button with counter badge --}}
-        <button @click="showFilters = !showFilters" type="button" class="btn-secondary shrink-0"
-            :class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.categoryFilter }">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.categoryFilter }">
             Filtros
             @if($categoryFilter)
                 <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">1</span>
             @endif
-        </button>
+        </x-button>
 
         <div class="flex-1"></div>
 
@@ -106,15 +104,10 @@
                                     </td>
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
-                                            <button wire:click="openEditModal({{ $product->id }})" class="btn-icon-primary"
-                                                title="Editar producto">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </button>
-                                            <button wire:click="deleteProduct({{ $product->id }})"
-                                                wire:confirm="¿Eliminar este producto?" class="btn-icon-danger"
-                                                title="Eliminar producto">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
+                                            <x-button wire:click="openEditModal({{ $product->id }})" variant="icon-primary" icon="pencil" title="Editar producto" />
+                                            <x-button wire:click="deleteProduct({{ $product->id }})"
+                                                wire:confirm="¿Eliminar este producto?" variant="icon-danger" icon="trash-2"
+                                                title="Eliminar producto" />
                                         </div>
                                     </td>
                                 </tr>
@@ -191,11 +184,10 @@
                         placeholder="Descripción técnica opcional..."></textarea>
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <button type="button" wire:click="$set('showCreateModal', false)"
-                        class="btn-secondary">Cancelar</button>
-                    <x-submit-button target="saveProduct">
+                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button type="submit" variant="primary" target="saveProduct">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}
-                    </x-submit-button>
+                    </x-button>
                 </div>
             </form>
         </x-modal>

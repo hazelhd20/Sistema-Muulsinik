@@ -25,9 +25,9 @@
                 <div class="flex flex-col items-center justify-center h-full text-text-muted gap-3">
                     <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
                     <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
-                    <a :href="previewUrl" target="_blank" class="btn-secondary text-small mt-2">
-                        <i data-lucide="download" class="w-4 h-4"></i> Descargar
-                    </a>
+                    <x-button x-bind:href="previewUrl" target="_blank" variant="secondary" icon="download" class="mt-2 text-small">
+                        Descargar
+                    </x-button>
                 </div>
             </template>
         </div>
