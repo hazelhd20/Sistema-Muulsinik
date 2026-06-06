@@ -84,11 +84,11 @@
                         @for($i = 0; $i < 5; $i++)
                             <tr>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-48"></div>
+                                    <x-skeleton class="h-4  rounded w-48" />
                                 </td>
                                 <td class="actions justify-end flex gap-1">
-                                    <div class="w-8 h-8 skeleton rounded"></div>
-                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <x-skeleton class="w-8 h-8  rounded" />
+                                    <x-skeleton class="w-8 h-8  rounded" />
                                 </td>
                             </tr>
                         @endfor

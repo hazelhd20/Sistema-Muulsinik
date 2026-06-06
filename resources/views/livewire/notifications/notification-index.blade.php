@@ -158,25 +158,25 @@
                 @for($i = 0; $i < 4; $i++)
                     <div class="flex gap-4 px-5 py-4">
                         {{-- Icon --}}
-                        <div class="w-11 h-11 rounded-xl skeleton shrink-0"></div>
+                        <x-skeleton class="w-11 h-11 rounded-xl  shrink-0" />
 
                         {{-- Content --}}
                         <div class="min-w-0 flex-1">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="w-full">
-                                    <div class="h-4 skeleton rounded w-48 mb-2"></div>
-                                    <div class="h-3.5 skeleton rounded w-3/4"></div>
+                                    <x-skeleton class="h-4  rounded w-48 mb-2" />
+                                    <x-skeleton class="h-3.5  rounded w-3/4" />
                                 </div>
-                                <div class="h-3 skeleton rounded w-16 shrink-0"></div>
+                                <x-skeleton class="h-3  rounded w-16 shrink-0" />
                             </div>
 
                             {{-- Actions --}}
                             <div class="flex items-center gap-3 mt-4">
-                                <div class="h-3.5 skeleton rounded w-16"></div>
+                                <x-skeleton class="h-3.5  rounded w-16" />
                                 <div class="h-3 w-px bg-border"></div>
-                                <div class="h-3.5 skeleton rounded w-28"></div>
+                                <x-skeleton class="h-3.5  rounded w-28" />
                                 <div class="h-3 w-px bg-border"></div>
-                                <div class="h-3.5 skeleton rounded w-12"></div>
+                                <x-skeleton class="h-3.5  rounded w-12" />
                             </div>
                         </div>
                     </div>

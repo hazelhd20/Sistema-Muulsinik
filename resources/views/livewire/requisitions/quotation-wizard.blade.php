@@ -239,8 +239,8 @@
                     <div class="flex items-center gap-2">
                         <h2 class="text-h2 text-text-primary">Productos</h2>
                         @if(count($items) > 0)
-                            <span class="badge badge-secondary">{{ count($items) }}
-                                {{ count($items) === 1 ? 'producto' : 'productos' }}</span>
+                            <x-badge variant="secondary">{{ count($items) }}</x-badge>
+                                {{ count($items) === 1 ? 'producto' : 'productos' }}
                         @endif
                     </div>
                     <x-button wire:click="addItem" variant="secondary" icon="plus">

@@ -53,7 +53,7 @@
         <div class="card p-0 overflow-hidden">
             <div class="px-6 py-5 flex items-center gap-2">
                 <h2 class="text-h2 text-text-primary">Productos Solicitados</h2>
-                <span class="badge badge-secondary">{{ $requisition->items->count() }}</span>
+                <x-badge variant="secondary">{{ $requisition->items->count() }}</x-badge>
             </div>
             <div class="table-embedded border-t-0 border-x-0 rounded-none">
                 <table>

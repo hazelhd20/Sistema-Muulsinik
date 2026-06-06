@@ -86,25 +86,25 @@
                         @for($i = 0; $i < 5; $i++)
                             <tr>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-40 mb-1"></div>
-                                    <div class="h-3 skeleton rounded w-28"></div>
+                                    <x-skeleton class="h-4  rounded w-40 mb-1" />
+                                    <x-skeleton class="h-3  rounded w-28" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-24"></div>
+                                    <x-skeleton class="h-4  rounded w-24" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-20"></div>
+                                    <x-skeleton class="h-4  rounded w-20" />
                                 </td>
                                 <td class="text-center">
-                                    <div class="h-4 skeleton rounded w-8 mx-auto"></div>
+                                    <x-skeleton class="h-4  rounded w-8 mx-auto" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-16 ml-auto"></div>
+                                    <x-skeleton class="h-4  rounded w-16 ml-auto" />
                                 </td>
                                 <td class="actions">
                                     <div class="flex items-center justify-end gap-1">
-                                        <div class="w-8 h-8 skeleton rounded"></div>
-                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                        <x-skeleton class="w-8 h-8  rounded" />
+                                        <x-skeleton class="w-8 h-8  rounded" />
                                     </div>
                                 </td>
                             </tr>

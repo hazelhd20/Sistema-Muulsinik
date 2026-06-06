@@ -196,11 +196,11 @@
                     @for($i=0; $i<3; $i++)
                     <tr>
                         <td>
-                            <div class="h-4 skeleton rounded w-3/4 mb-1"></div>
-                            <div class="h-3 skeleton rounded w-1/2"></div>
+                            <x-skeleton class="h-4  rounded w-3/4 mb-1" />
+                            <x-skeleton class="h-3  rounded w-1/2" />
                         </td>
-                        <td><div class="h-6 skeleton rounded-full w-20"></div></td>
-                        <td class="text-right"><div class="h-4 skeleton rounded w-16 ml-auto"></div></td>
+                        <td><x-skeleton class="h-6  rounded-full w-20" /></td>
+                        <td class="text-right"><x-skeleton class="h-4  rounded w-16 ml-auto" /></td>
                     </tr>
                     @endfor
                 </tbody>
@@ -261,11 +261,11 @@
                     @for($i=0; $i<3; $i++)
                     <tr>
                         <td>
-                            <div class="h-4 skeleton rounded w-1/2 mb-1"></div>
-                            <div class="h-3 skeleton rounded w-3/4"></div>
+                            <x-skeleton class="h-4  rounded w-1/2 mb-1" />
+                            <x-skeleton class="h-3  rounded w-3/4" />
                         </td>
-                        <td><div class="h-6 skeleton rounded-full w-20"></div></td>
-                        <td><div class="h-4 skeleton rounded w-2/3"></div></td>
+                        <td><x-skeleton class="h-6  rounded-full w-20" /></td>
+                        <td><x-skeleton class="h-4  rounded w-2/3" /></td>
                     </tr>
                     @endfor
                 </tbody>

@@ -41,8 +41,8 @@
                 <div class="flex items-center gap-2">
                     <h2 class="text-h2 text-text-primary">Conceptos y Materiales</h2>
                     @if(count($items) > 0)
-                        <span class="badge badge-secondary">{{ count($items) }}
-                            {{ count($items) === 1 ? 'concepto' : 'conceptos' }}</span>
+                        <x-badge variant="secondary">{{ count($items) }}</x-badge>
+                        <span class="text-small text-text-muted">{{ count($items) === 1 ? 'concepto' : 'conceptos' }}</span>
                     @endif
                 </div>
                 <x-button wire:click="addManualItem" variant="secondary" icon="plus">
@@ -80,7 +80,7 @@
                                                 <div class="flex items-center gap-2 mt-0.5">
                                                     <span
                                                         class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
-                                                    <span class="badge badge-secondary">{{ $product['measure_abbr'] }}</span>
+                                                    <x-badge variant="secondary">{{ $product['measure_abbr'] }}</x-badge>
                                                 </div>
                                             </div>
                                             @if($product['last_price'] > 0)

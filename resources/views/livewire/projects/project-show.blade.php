@@ -146,7 +146,7 @@
         <div class="card p-0 overflow-hidden">
             <div class="px-6 py-4 flex items-center gap-2 border-b border-border">
                 <h2 class="text-h2 text-text-primary">Requisiciones</h2>
-                <span class="badge badge-secondary">{{ $project->requisitions->count() }}</span>
+                <x-badge variant="secondary">{{ $project->requisitions->count() }}</x-badge>
             </div>
 
             <div class="table-embedded border-t-0 border-x-0 rounded-none">
@@ -220,7 +220,7 @@
         <div class="card p-0 overflow-hidden">
             <div class="px-6 py-4 flex items-center gap-2 border-b border-border">
                 <h2 class="text-h2 text-text-primary">Gastos Directos</h2>
-                <span class="badge badge-secondary">{{ $project->expenses->count() }}</span>
+                <x-badge variant="secondary">{{ $project->expenses->count() }}</x-badge>
             </div>
 
             <div class="table-embedded border-t-0 border-x-0 rounded-none">

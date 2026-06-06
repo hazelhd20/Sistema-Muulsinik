@@ -54,7 +54,7 @@
                                     <td class="font-medium text-text-primary">{{ $measure->name }}</td>
                                     <td>
                                         @if($measure->abbreviation)
-                                            <span class="badge badge-secondary">{{ $measure->abbreviation }}</span>
+                                            <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
                                         @else
                                             <span class="text-text-muted">—</span>
                                         @endif
@@ -93,14 +93,14 @@
                         @for($i = 0; $i < 5; $i++)
                             <tr>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-48"></div>
+                                    <x-skeleton class="h-4  rounded w-48" />
                                 </td>
                                 <td>
-                                    <div class="h-5 skeleton rounded-full w-16"></div>
+                                    <x-skeleton class="h-5  rounded-full w-16" />
                                 </td>
                                 <td class="actions justify-end flex gap-1">
-                                    <div class="w-8 h-8 skeleton rounded"></div>
-                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <x-skeleton class="w-8 h-8  rounded" />
+                                    <x-skeleton class="w-8 h-8  rounded" />
                                 </td>
                             </tr>
                         @endfor

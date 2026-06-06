@@ -97,9 +97,7 @@
                                     </td>
                                     <td>
                                         @if($expense->is_distributed)
-                                            <span class="badge badge-primary" title="Prorrateado entre proyectos activos">
-                                                <i data-lucide="split" class="w-3 h-3 mr-1 inline-block"></i> Distribuido
-                                            </span>
+                                            <x-badge variant="primary" icon="split">Distribuido</x-badge>
                                         @else
                                             <span class="text-body text-text-secondary">{{ $expense->project->name ?? '—' }}</span>
                                         @endif
@@ -150,24 +148,24 @@
                         @for($i = 0; $i < 5; $i++)
                             <tr>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-48 mb-1.5"></div>
-                                    <div class="h-3 skeleton rounded w-32"></div>
+                                    <x-skeleton class="h-4  rounded w-48 mb-1.5" />
+                                    <x-skeleton class="h-3  rounded w-32" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-36"></div>
+                                    <x-skeleton class="h-4  rounded w-36" />
                                 </td>
                                 <td>
-                                    <div class="h-5 skeleton rounded-full w-24"></div>
+                                    <x-skeleton class="h-5  rounded-full w-24" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-20"></div>
+                                    <x-skeleton class="h-4  rounded w-20" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-20 ml-auto"></div>
+                                    <x-skeleton class="h-4  rounded w-20 ml-auto" />
                                 </td>
                                 <td class="actions">
                                     <div class="flex items-center justify-end gap-1">
-                                        <div class="w-8 h-8 skeleton rounded"></div>
+                                        <x-skeleton class="w-8 h-8  rounded" />
                                     </div>
                                 </td>
                             </tr>

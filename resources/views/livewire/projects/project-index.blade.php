@@ -158,28 +158,28 @@
                         @for($i = 0; $i < 6; $i++)
                             <tr>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-32"></div>
+                                    <x-skeleton class="h-4  rounded w-32" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-24"></div>
+                                    <x-skeleton class="h-4  rounded w-24" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-20"></div>
+                                    <x-skeleton class="h-4  rounded w-20" />
                                 </td>
                                 <td>
-                                    <div class="h-4 skeleton rounded w-20 mb-1"></div>
-                                    <div class="h-3 skeleton rounded w-16"></div>
+                                    <x-skeleton class="h-4  rounded w-20 mb-1" />
+                                    <x-skeleton class="h-3  rounded w-16" />
                                 </td>
                                 <td>
-                                    <div class="h-3 skeleton rounded w-8 mb-1.5"></div>
-                                    <div class="w-full h-1.5 skeleton rounded-full"></div>
+                                    <x-skeleton class="h-3  rounded w-8 mb-1.5" />
+                                    <x-skeleton class="w-full h-1.5  rounded-full" />
                                 </td>
                                 <td>
-                                    <div class="h-6 skeleton rounded-full w-20"></div>
+                                    <x-skeleton class="h-6  rounded-full w-20" />
                                 </td>
                                 <td class="text-right flex justify-end gap-1">
-                                    <div class="w-8 h-8 skeleton rounded"></div>
-                                    <div class="w-8 h-8 skeleton rounded"></div>
+                                    <x-skeleton class="w-8 h-8  rounded" />
+                                    <x-skeleton class="w-8 h-8  rounded" />
                                 </td>
                             </tr>
                         @endfor

@@ -483,7 +483,7 @@
                                         <td>
                                             <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
                                             @if($product->measure_abbr)
-                                                <span class="badge badge-secondary text-[10px]">{{ $product->measure_abbr }}</span>
+                                                <x-badge variant="secondary" class="text-[10px]">{{ $product->measure_abbr }}</x-badge>
                                             @endif
                                         </td>
                                         <td>
