@@ -6,7 +6,6 @@
         search: '',
         value: '',
         options: {{ json_encode($options) }},
-        dropStyle: {},
         get selectedLabel() {
             if (this.value === '' || this.value === null) return '{{ $placeholder }}';
             return this.options[this.value] || '{{ $placeholder }}';
@@ -24,27 +23,9 @@
             }
             return filtered;
         },
-        reposition() {
-            const rect = this.$refs.trigger.getBoundingClientRect();
-            const maxH = 256;
-            const spaceBelow = window.innerHeight - rect.bottom - 8;
-            const openUp = spaceBelow < maxH && rect.top > spaceBelow;
-            this.dropStyle = {
-                position: 'fixed',
-                left: rect.left + 'px',
-                minWidth: rect.width + 'px',
-                width: 'max-content',
-                maxWidth: 'min(400px, 90vw)',
-                maxHeight: Math.min(maxH, openUp ? rect.top - 8 : spaceBelow) + 'px',
-                ...(openUp
-                    ? { bottom: (window.innerHeight - rect.top + 4) + 'px', top: 'auto' }
-                    : { top: (rect.bottom + 4) + 'px', bottom: 'auto' }),
-            };
-        },
         toggle() {
             this.open = !this.open;
             if (this.open) {
-                this.reposition();
                 if (Object.keys(this.options).length >= {{ $minSearch }}) {
                     this.$nextTick(() => this.$refs.searchInput.focus());
                 }
@@ -53,22 +34,12 @@
         close() {
             this.open = false;
             this.search = '';
-        },
-        _scrollHandler: null,
-        init() {
-            this._scrollHandler = () => { if (this.open) this.reposition(); };
-            document.addEventListener('scroll', this._scrollHandler, true);
-        },
-        destroy() {
-            if (this._scrollHandler) document.removeEventListener('scroll', this._scrollHandler, true);
         }
     }"
     x-modelable="value"
     {!! $attributes->whereStartsWith('wire:model') !!}
     {!! $attributes->whereStartsWith('x-model') !!}
     class="relative {{ $attributes->except(['wire:model', 'wire:model.live', 'wire:model.defer', 'wire:model.blur', 'x-model'])->get('class') }}"
-    @click.outside="close()"
-    @resize.window="if(open) reposition()"
 >
     <!-- Trigger -->
     <button
@@ -87,19 +58,22 @@
         </svg>
     </button>
 
-    <!-- Dropdown (fixed position — escapes overflow containers / modals) -->
-    <div
-        x-show="open"
-        x-transition:enter="transition-premium"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition-premium"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
-        :style="dropStyle"
-        class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col"
-        style="display: none;"
-    >
+    <!-- Dropdown (Teleported) -->
+    <template x-teleport="body">
+        <div
+            x-show="open"
+            @click.outside="if (! $refs.trigger.contains($event.target)) close()"
+            x-anchor.bottom-start.offset.4="$refs.trigger"
+            x-transition:enter="transition-premium"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition-premium"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            :style="{ minWidth: $refs.trigger?.offsetWidth + 'px' }"
+            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] overflow-hidden"
+            style="display: none;"
+        >
         <!-- Search Input -->
         <div x-show="Object.keys(options).length >= {{ $minSearch }}" class="p-2 border-b border-border sticky top-0 bg-surface-card z-10">
             <div class="relative">
@@ -145,5 +119,6 @@
                 No se encontraron resultados
             </div>
         </div>
-    </div>
+        </div>
+    </template>
 </div>

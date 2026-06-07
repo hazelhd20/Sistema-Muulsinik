@@ -9,29 +9,29 @@
     </x-page-header>
 
     {{-- Filters Bar --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search: compact width --}}
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
 
-        {{-- Filters Toggle Button with counter badge --}}
-        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
-            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter }">
-            Filtros
-            @if($statusFilter)
-                <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">1</span>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {{-- Clear button: only when filters active --}}
+            @if($search || $statusFilter)
+                <button wire:click="$set('search', ''); $set('statusFilter', '');" type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors cursor-pointer">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    Limpiar
+                </button>
             @endif
-        </x-button>
 
-        <div class="flex-1"></div>
-
-        {{-- Clear button: only when filters active --}}
-        @if($search || $statusFilter)
-            <button wire:click="$set('search', ''); $set('statusFilter', '');" type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
-                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                Limpiar
-            </button>
-        @endif
+            {{-- Filters Toggle Button with counter badge --}}
+            <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+                x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter }">
+                Filtros
+                @if($statusFilter)
+                    <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">1</span>
+                @endif
+            </x-button>
+        </div>
     </div>
 
     {{-- Expandable Filters Panel --}}

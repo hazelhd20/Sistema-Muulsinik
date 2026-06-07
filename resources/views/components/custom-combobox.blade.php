@@ -5,7 +5,6 @@
         open: false,
         value: @entangle($attributes->wire('model')).live,
         options: {{ json_encode($options) }},
-        dropStyle: {},
         activeIndex: -1,
         get normalizedOptions() {
             if (Array.isArray(this.options)) {
@@ -60,27 +59,9 @@
             if (index === -1) return text;
             return text.substring(0, index) + '<strong class=\'font-bold text-primary-600\'>' + text.substring(index, index + searchLower.length) + '</strong>' + text.substring(index + searchLower.length);
         },
-        reposition() {
-            const rect = this.$refs.input.getBoundingClientRect();
-            const maxH = 200;
-            const spaceBelow = window.innerHeight - rect.bottom - 8;
-            const openUp = spaceBelow < maxH && rect.top > spaceBelow;
-            this.dropStyle = {
-                position: 'fixed',
-                left: rect.left + 'px',
-                minWidth: rect.width + 'px',
-                width: 'max-content',
-                maxWidth: 'min(400px, 90vw)',
-                maxHeight: Math.min(maxH, openUp ? rect.top - 8 : spaceBelow) + 'px',
-                ...(openUp
-                    ? { bottom: (window.innerHeight - rect.top + 4) + 'px', top: 'auto' }
-                    : { top: (rect.bottom + 4) + 'px', bottom: 'auto' }),
-            };
-        },
         openDropdown() {
             this.open = true;
             this.activeIndex = -1;
-            this.$nextTick(() => this.reposition());
         },
         closeDropdown() {
             this.open = false;
@@ -134,19 +115,9 @@
                     }
                 }
             });
-        },
-        _scrollHandler: null,
-        init() {
-            this._scrollHandler = () => { if (this.open) this.reposition(); };
-            document.addEventListener('scroll', this._scrollHandler, true);
-        },
-        destroy() {
-            if (this._scrollHandler) document.removeEventListener('scroll', this._scrollHandler, true);
         }
     }"
     class="relative {{ $attributes->get('class') }}"
-    @click.outside="closeDropdown()"
-    @resize.window="if(open) reposition()"
 >
     <!-- Input -->
     <div class="relative w-full">
@@ -178,18 +149,21 @@
     </div>
 
     <!-- Dropdown -->
-    <div
-        x-show="open"
-        x-transition:enter="transition-premium"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition-premium"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
-        :style="dropStyle"
-        class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg overflow-y-auto flex flex-col"
-        style="display: none;"
-    >
+    <template x-teleport="body">
+        <div
+            x-show="open"
+            @click.outside="if (! $refs.input.contains($event.target)) closeDropdown()"
+            x-anchor.bottom-start.offset.4="$refs.input"
+            x-transition:enter="transition-premium"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition-premium"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            :style="{ minWidth: $refs.input?.offsetWidth + 'px' }"
+            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] max-h-64 overflow-y-auto"
+            style="display: none;"
+        >
         <div class="py-1" x-ref="listbox">
             <template x-if="filteredOptions.length > 0">
                 <template x-for="(opt, index) in filteredOptions" :key="index">
@@ -212,5 +186,6 @@
                 </div>
             </template>
         </div>
-    </div>
+        </div>
+    </template>
 </div>

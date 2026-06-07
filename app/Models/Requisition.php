@@ -6,6 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $project_id
+ * @property int|null $vendor_id
+ * @property string|null $number
+ * @property string|null $annotations
+ * @property string $status
+ * @property int $created_by
+ * @property int|null $approved_by
+ * @property string|null $rejection_comment
+ * @property \Carbon\Carbon|null $date
+ * @property-read float $subtotal
+ * @property-read float $tax_amount
+ * @property-read float $total
+ */
 class Requisition extends Model
 {
     protected $fillable = [

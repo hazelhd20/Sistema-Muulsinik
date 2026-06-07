@@ -1,4 +1,7 @@
-@props(['activeCount' => 0])
+@props([
+    'activeCount' => 0,
+    'align' => 'right'
+])
 
 <div x-data="{ open: false }" x-init="$watch('open', value => { if (value) $dispatch('filters-opened'); })" @click.outside="open = false" @close.stop="open = false" class="relative inline-block text-left z-30">
     <div @click="open = !open">
@@ -18,7 +21,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-        class="absolute left-0 mt-2 w-80 sm:w-[26rem] rounded-xl bg-surface-card shadow-xl border border-border focus:outline-none overflow-hidden"
+        class="absolute {{ $align === 'right' ? 'right-0' : 'left-0' }} mt-2 w-80 sm:w-[26rem] rounded-xl bg-surface-card shadow-xl border border-border focus:outline-none overflow-hidden"
         style="display: none;"
         @keydown.escape.window="open = false">
         

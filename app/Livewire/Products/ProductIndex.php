@@ -150,7 +150,7 @@ class ProductIndex extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
-        $suppliers = \App\Models\Supplier::orderBy('trade_name')->get();
+        $suppliers = Supplier::orderBy('trade_name')->get();
         $measures = \App\Models\Measure::orderBy('name')->pluck('name', 'id')->toArray();
         $categories = Category::orderBy('name')->pluck('name', 'id')->toArray();
 

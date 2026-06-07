@@ -4,7 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $description
+ * @property string|null $client
+ * @property float $budget
+ * @property \Carbon\Carbon|null $start_date
+ * @property \Carbon\Carbon|null $end_date
+ * @property string $status
+ * @property-read float $total_expenses
+ * @property-read float $budget_used_percent
+ */
 class Project extends Model
 {
     protected $fillable = [
