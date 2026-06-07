@@ -90,4 +90,59 @@ class LivewireIndexViewsTest extends TestCase
         Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
             ->assertStatus(200);
     }
+
+    public function test_requisitions_can_be_approved_in_bulk()
+    {
+        $user = User::first();
+        $this->actingAs($user);
+
+        $project = \App\Models\Project::create([
+            'name' => 'Proyecto Test',
+            'status' => 'activo'
+        ]);
+
+        $req1 = \App\Models\Requisition::create([
+            'project_id' => $project->id,
+            'status' => 'pendiente',
+            'created_by' => $user->id,
+            'date' => now()
+        ]);
+        $req2 = \App\Models\Requisition::create([
+            'project_id' => $project->id,
+            'status' => 'pendiente',
+            'created_by' => $user->id,
+            'date' => now()
+        ]);
+
+        Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
+            ->set('selectedRows', [(string) $req1->id, (string) $req2->id])
+            ->call('approveSelected')
+            ->assertSet('selectedRows', []);
+
+        $this->assertEquals('aprobada', $req1->fresh()->status);
+        $this->assertEquals('aprobada', $req2->fresh()->status);
+    }
+
+    public function test_requisitions_can_be_exported()
+    {
+        $user = User::first();
+        $this->actingAs($user);
+
+        $project = \App\Models\Project::create([
+            'name' => 'Proyecto Test',
+            'status' => 'activo'
+        ]);
+
+        $req = \App\Models\Requisition::create([
+            'project_id' => $project->id,
+            'status' => 'borrador',
+            'created_by' => $user->id,
+            'date' => now()
+        ]);
+
+        Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
+            ->set('selectedRows', [(string) $req->id])
+            ->call('exportSelected')
+            ->assertFileDownloaded();
+    }
 }

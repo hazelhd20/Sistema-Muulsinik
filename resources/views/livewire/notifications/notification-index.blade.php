@@ -10,7 +10,7 @@
                 wire:click="markAllAsRead"
                 variant="secondary"
                 icon="check-double"
-                {{ $this->notifications->whereNull('read_at')->isEmpty() ? 'disabled' : '' }}
+                :disabled="$this->notifications->whereNull('read_at')->isEmpty()"
             >
                 Marcar todas como leídas
             </x-button>

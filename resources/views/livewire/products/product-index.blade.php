@@ -104,6 +104,7 @@
                                     </td>
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
+                                            <x-button @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" variant="icon" icon="eye" title="Ver detalles" />
                                             <x-button wire:click="openEditModal({{ $product->id }})" variant="icon-primary" icon="pencil" title="Editar producto" />
                                             <x-button wire:click="deleteProduct({{ $product->id }})"
                                                 wire:confirm="¿Eliminar este producto?" variant="icon-danger" icon="trash-2"
@@ -192,5 +193,7 @@
             </form>
         </x-modal>
     @endif
+
+    <livewire:products.product-detail-drawer />
 
 </div>

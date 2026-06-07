@@ -11,6 +11,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Livewire\Concerns\WithSorting;
+use Livewire\Attributes\On;
 
 class ProductIndex extends Component
 {
@@ -42,6 +43,12 @@ class ProductIndex extends Component
     {
         $this->sortField = 'canonical_name';
         $this->sortDirection = 'asc';
+    }
+
+    #[On('edit-product')]
+    public function handleEditProduct(int $id): void
+    {
+        $this->openEditModal($id);
     }
 
     public function openCreateModal(): void

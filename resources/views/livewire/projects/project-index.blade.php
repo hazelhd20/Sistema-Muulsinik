@@ -117,8 +117,8 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-1">
-                                            <x-button href="{{ route('proyectos.show', $project->id) }}" variant="icon" icon="eye"
-                                                title="Ver detalle" aria-label="Ver detalle" wire:navigate />
+                                            <x-button @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" variant="icon" icon="eye"
+                                                title="Ver detalle" aria-label="Ver detalle" />
                                             <x-button wire:click="openEditModal({{ $project->id }})" variant="icon-primary" icon="pencil"
                                                 title="Editar proyecto" aria-label="Editar proyecto" />
                                             <x-button wire:click="deleteProject({{ $project->id }})"
@@ -238,4 +238,6 @@
             </form>
         </x-modal>
     @endif
+
+    <livewire:projects.project-detail-drawer />
 </div>

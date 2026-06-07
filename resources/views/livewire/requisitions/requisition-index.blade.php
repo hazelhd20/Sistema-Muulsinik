@@ -43,6 +43,17 @@
         this.filterPeriod = '';
         this.applyFilters();
     },
+    selectedRows: @entangle('selectedRows'),
+    get allSelected() {
+        return this.selectedRows.length > 0 && this.selectedRows.length === {{ $requisitions->count() }};
+    },
+    toggleAll() {
+        if (this.allSelected) {
+            this.selectedRows = [];
+        } else {
+            this.selectedRows = [{{ $requisitions->pluck('id')->join(',') }}].map(String);
+        }
+    },
     init() {
         this.initFilters();
     }
@@ -157,19 +168,7 @@
 
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
     {{-- Requisitions Table --}}
-    <div x-data="{ 
-        selectedRows: @entangle('selectedRows'),
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === {{ $requisitions->count() }};
-        },
-        toggleAll() {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = [{{ $requisitions->pluck('id')->join(',') }}].map(String);
-            }
-        }
-    }" class="relative min-h-[200px]">
+    <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden"
             wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
             class="w-full">
@@ -236,7 +235,7 @@
                                                 </x-slot>
 
                                                 <x-slot name="content">
-                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.show', ['id' => $req->id]) }}" wire:navigate>
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })">
                                                         <i data-lucide="eye" class="w-4 h-4"></i> Ver detalles
                                                     </x-dropdown-link>
 
@@ -358,12 +357,14 @@
 
     {{-- Reject Modal (RF-REQ-09: comentario obligatorio) --}}
     @if($showRejectModal)
-        <x-modal show="showRejectModal" title="Rechazar Requisición" subtitle="Indica el motivo del rechazo (obligatorio)"
+        <x-modal show="showRejectModal" 
+            :title="$isBulkReject ? 'Rechazar Requisiciones Seleccionadas' : 'Rechazar Requisición'" 
+            :subtitle="$isBulkReject ? 'Indica el motivo del rechazo para todas las requisiciones seleccionadas (obligatorio)' : 'Indica el motivo del rechazo (obligatorio)'"
             maxWidth="md">
             <form wire:submit="confirmReject" class="p-5 space-y-4">
                 <x-form-field label="Motivo del rechazo" required error="{{ $errors->first('rejectionComment') }}">
                     <textarea wire:model="rejectionComment" class="input" rows="3"
-                        placeholder="Explica por qué esta requisición fue rechazada..."></textarea>
+                        placeholder="Explica por qué esta(s) requisición(es) fue(ron) rechazada(s)..."></textarea>
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showRejectModal', false)" variant="secondary">Cancelar</x-button>
@@ -374,6 +375,56 @@
             </form>
         </x-modal>
     @endif
+
+    {{-- Bulk Actions Bar --}}
+    <div 
+        x-show="selectedRows.length > 0"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-10"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-10"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-slate-100 px-6 py-3.5 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-6 min-w-[320px] md:min-w-[450px]"
+        style="display: none;"
+    >
+        <div class="flex items-center gap-2 border-r border-slate-800 pr-4 shrink-0">
+            <span class="w-2 h-2 rounded-full bg-primary-300 animate-pulse"></span>
+            <span class="text-sm font-semibold text-white">
+                <span x-text="selectedRows.length"></span> seleccionados
+            </span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
+            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                <button type="button" wire:click="approveSelected" wire:confirm="¿Aprobar todas las requisiciones seleccionadas que estén pendientes?" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer shrink-0">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                    Aprobar
+                </button>
+                <button type="button" wire:click="openBulkRejectModal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition-colors cursor-pointer shrink-0">
+                    <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                    Rechazar
+                </button>
+            @endif
+
+            <button type="button" wire:click="exportSelected" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer shrink-0">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                Exportar
+            </button>
+
+            <button type="button" wire:click="deleteSelected" wire:confirm="¿Eliminar permanentemente las requisiciones seleccionadas que estén en borrador o rechazadas?" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer shrink-0">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                Eliminar
+            </button>
+        </div>
+
+        <button type="button" @click="selectedRows = []" class="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-800 cursor-pointer" title="Deseleccionar todo">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+
+    {{-- Drawer de Detalle Rápido --}}
+    <livewire:requisitions.requisition-detail-drawer />
 
     {{-- ═══════ PREVIEW MODAL ═══════ --}}
     <x-preview-modal />

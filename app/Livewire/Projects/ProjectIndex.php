@@ -10,6 +10,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Livewire\Concerns\WithSorting;
 
+use Livewire\Attributes\On;
+
 class ProjectIndex extends Component
 {
     use WithPagination, EnforcesPermissions, WithSorting;
@@ -42,6 +44,12 @@ class ProjectIndex extends Component
     {
         $this->resetForm();
         $this->showModal = true;
+    }
+
+    #[On('edit-project')]
+    public function handleEditProject(int $id): void
+    {
+        $this->openEditModal($id);
     }
 
     public function openEditModal(int $projectId): void
