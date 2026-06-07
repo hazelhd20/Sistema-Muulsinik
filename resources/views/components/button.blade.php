@@ -3,6 +3,7 @@
     'type' => 'button',
     'href' => null,
     'icon' => null,
+    'iconRight' => null,
     'target' => null, // para wire:target
 ])
 
@@ -30,6 +31,9 @@
         @if(!$isIconButton || $slot->isNotEmpty())
             {{ $slot }}
         @endif
+        @if($iconRight)
+            <i data-lucide="{{ $iconRight }}" class="{{ $iconClass }}"></i>
+        @endif
     </a>
 @else
     <button type="{{ $type }}" {{ $attributes->merge(['class' => $baseClasses]) }} 
@@ -45,6 +49,10 @@
         
         @if(!$isIconButton || $slot->isNotEmpty())
             {{ $slot }}
+        @endif
+
+        @if($iconRight)
+            <i data-lucide="{{ $iconRight }}" class="{{ $iconClass }}"></i>
         @endif
 
         @if($target)

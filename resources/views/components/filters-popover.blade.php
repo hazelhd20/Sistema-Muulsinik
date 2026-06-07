@@ -5,7 +5,7 @@
 
 <div x-data="{ open: false }" x-init="$watch('open', value => { if (value) $dispatch('filters-opened'); })" @click.outside="open = false" @close.stop="open = false" class="relative inline-block text-left z-30">
     <div @click="open = !open">
-        <x-button type="button" variant="secondary" icon="sliders-horizontal" class="shrink-0"
+        <x-button type="button" variant="secondary" icon="filter" class="shrink-0"
             x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': {{ $activeCount }} > 0 || open }">
             Filtros
             @if($activeCount > 0)

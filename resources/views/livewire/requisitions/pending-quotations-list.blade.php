@@ -32,9 +32,8 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <x-button wire:click="dismissQuotation({{ $pq->id }})" wire:confirm="¿Descartar este borrador permanentemente?" variant="icon" icon="trash-2" class="text-text-muted hover:text-danger hover:bg-danger-50 transition-colors" title="Descartar" />
-                        <x-button href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}" variant="secondary" class="text-small" wire:navigate>
+                        <x-button href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}" variant="secondary" class="text-small" iconRight="arrow-right" wire:navigate>
                             {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar y Continuar' }}
-                            <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
                         </x-button>
                     </div>
                 </div>

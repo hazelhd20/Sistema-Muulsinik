@@ -235,8 +235,8 @@
                                                 </x-slot>
 
                                                 <x-slot name="content">
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })">
-                                                        <i data-lucide="eye" class="w-4 h-4"></i> Ver detalles
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">
+                                                        Ver detalles
                                                     </x-dropdown-link>
 
                                                     @if($req->quotations->isNotEmpty())
@@ -245,36 +245,36 @@
                                                             $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
                                                             $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
                                                         @endphp
-                                                        <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')">
-                                                            <i data-lucide="file-search" class="w-4 h-4"></i> Ver cotización
+                                                        <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" icon="file-search">
+                                                            Ver cotización
                                                         </x-dropdown-link>
                                                     @endif
 
-                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank">
-                                                        <i data-lucide="file-down" class="w-4 h-4"></i> Descargar PDF
+                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">
+                                                        Descargar PDF
                                                     </x-dropdown-link>
 
                                                     @if($req->status === 'borrador')
                                                         <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" wire:click="submitForApproval({{ $req->id }})" wire:confirm="¿Enviar esta requisición a aprobación?">
-                                                            <i data-lucide="send" class="w-4 h-4"></i> Solicitar aprobación
+                                                        <x-dropdown-link as="button" wire:click="submitForApproval({{ $req->id }})" wire:confirm="¿Enviar esta requisición a aprobación?" icon="send">
+                                                            Solicitar aprobación
                                                         </x-dropdown-link>
                                                     @endif
 
                                                     @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
                                                         <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?">
-                                                            <i data-lucide="check-circle" class="w-4 h-4 text-success"></i> <span class="text-success">Aprobar</span>
+                                                        <x-dropdown-link as="button" wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?" icon="check-circle" success="true">
+                                                            Aprobar
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true">
-                                                            <i data-lucide="x-circle" class="w-4 h-4"></i> Rechazar
+                                                        <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">
+                                                            Rechazar
                                                         </x-dropdown-link>
                                                     @endif
 
                                                     @if(in_array($req->status, ['borrador', 'rechazada']))
                                                         <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición permanentemente?" danger="true">
-                                                            <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
+                                                        <x-dropdown-link as="button" wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición permanentemente?" danger="true" icon="trash-2">
+                                                            Eliminar
                                                         </x-dropdown-link>
                                                     @endif
                                                 </x-slot>
