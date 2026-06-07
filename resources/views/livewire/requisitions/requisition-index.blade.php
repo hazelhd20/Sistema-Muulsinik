@@ -14,6 +14,37 @@
         this.previewUrl = url;
         this.previewType = mimeType;
         this.showPreviewModal = true;
+    },
+    filterStatus: '',
+    filterProject: '',
+    filterCreator: '',
+    filterVendor: '',
+    filterPeriod: '',
+    initFilters() {
+        this.filterStatus = $wire.statusFilter || '';
+        this.filterProject = $wire.projectFilter || '';
+        this.filterCreator = $wire.creatorFilter || '';
+        this.filterVendor = $wire.vendorFilter || '';
+        this.filterPeriod = $wire.periodFilter || '';
+    },
+    applyFilters() {
+        $wire.set('statusFilter', this.filterStatus, false);
+        $wire.set('projectFilter', this.filterProject, false);
+        $wire.set('creatorFilter', this.filterCreator, false);
+        $wire.set('vendorFilter', this.filterVendor, false);
+        $wire.set('periodFilter', this.filterPeriod, false);
+        $wire.$refresh();
+    },
+    clearFilters() {
+        this.filterStatus = '';
+        this.filterProject = '';
+        this.filterCreator = '';
+        this.filterVendor = '';
+        this.filterPeriod = '';
+        this.applyFilters();
+    },
+    init() {
+        this.initFilters();
     }
 }">
     {{-- Header --}}
@@ -50,120 +81,109 @@
     </div>
 
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-filters">
+    @php
+        $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
+    @endphp
+
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
         {{-- Search: compact width --}}
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar requisición..." />
 
-        {{-- Filters Toggle Button with counter badge --}}
-        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
-            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.statusFilter || $wire.projectFilter || $wire.periodFilter }">
-            Filtros
-            @php
-                $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
+        {{-- Filters Popover --}}
+        <x-filters-popover :activeCount="$activeCount" @filters-opened="initFilters()">
+            <x-form-field label="Estado">
+                <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" placeholder="Todos los estados" />
+            </x-form-field>
+
+            <x-form-field label="Proyecto">
+                <x-custom-select x-model="filterProject" :options="$projects->pluck('name', 'id')->toArray()" placeholder="Todos los proyectos" />
+            </x-form-field>
+
+            <x-form-field label="Creador">
+                <x-custom-select x-model="filterCreator" :options="$creators->pluck('name', 'id')->toArray()" placeholder="Todos los creadores" />
+            </x-form-field>
+
+            <x-form-field label="Proveedor">
+                <x-custom-select x-model="filterVendor" :options="$vendors->pluck('trade_name', 'id')->toArray()" placeholder="Todos los proveedores" />
+            </x-form-field>
+
+            <x-form-field label="Período">
+                <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
+            </x-form-field>
+
+            <x-slot name="footer">
+                <button type="button" @click="clearFilters(); open = false" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar todo
+                </button>
+                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                    Aplicar Filtros
+                </x-button>
+            </x-slot>
+        </x-filters-popover>
+    </div>
+
+    {{-- Active Chips Row --}}
+    @if($activeCount > 0)
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+        @if($statusFilter)
+            @php 
+                $statusNames = ['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada'];
             @endphp
-            @if($activeCount > 0)
-                <span
-                    class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">{{ $activeCount }}</span>
-            @endif
-        </x-button>
-
-        <div class="flex-1"></div>
-
-        {{-- Clear button: only when filters active --}}
-        @if($search || $statusFilter || $projectFilter || $periodFilter)
-            <button
-                wire:click="$set('search', ''); $set('statusFilter', ''); $set('projectFilter', ''); $set('periodFilter', '');"
-                type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
-                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                Limpiar
-            </button>
+            <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
+        @endif
+        @if($projectFilter)
+            <x-filter-chip label="Proyecto" :value="$projects->firstWhere('id', $projectFilter)?->name ?? 'Desconocido'" wire:click="$set('projectFilter', '')" />
+        @endif
+        @if($creatorFilter)
+            <x-filter-chip label="Creador" :value="$creators->firstWhere('id', $creatorFilter)?->name ?? 'Desconocido'" wire:click="$set('creatorFilter', '')" />
+        @endif
+        @if($vendorFilter)
+            <x-filter-chip label="Proveedor" :value="$vendors->firstWhere('id', $vendorFilter)?->trade_name ?? 'Desconocido'" wire:click="$set('vendorFilter', '')" />
+        @endif
+        @if($periodFilter)
+            @php
+                $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
+            @endphp
+            <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter" wire:click="$set('periodFilter', '')" />
         @endif
     </div>
-
-    {{-- Expandable Filters Panel --}}
-    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !p-4">
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
-                <div class="flex items-center gap-2 shrink-0">
-                    <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
-                    <span class="text-small font-medium text-text-secondary">Filtrar por:</span>
-                </div>
-                <x-custom-select wire:model.live="statusFilter" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" placeholder="Todos los estados"
-                    class="w-full sm:w-40" />
-                <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
-                    placeholder="Todos los proyectos" class="w-full sm:w-48" />
-                <x-custom-select wire:model.live="periodFilter" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
-                    placeholder="Todos los períodos" class="w-full sm:w-44" />
-            </div>
-        </div>
-    </div>
+    @endif
     </div>
 
     <div x-show="activeTab === 'borradores'" x-cloak wire:key="tab-borradores">
-    {{-- Pending Quotations Area (Background Processing & Drafts) --}}
-    @if($pendingQuotations->isNotEmpty())
-        <div class="space-y-3" wire:poll.10s>
-            @foreach($pendingQuotations as $pq)
-                <div wire:key="pending-quotation-{{ $pq->id }}" class="flex items-center justify-between p-4 rounded-xl border bg-surface-card border-border hover:border-primary-300 transition-colors shadow-sm">
-                    <div class="flex items-center gap-3">
-                        @if($pq->isProcessing() || $pq->status === 'pending')
-                            <div class="w-10 h-10 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 shadow-sm">
-                                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
-                            </div>
-                            <div>
-                                <p class="text-small font-semibold text-text-primary">Procesando cotización en segundo plano</p>
-                                <p class="text-xs-fluid text-text-muted">{{ $pq->original_filename }} &bull; {{ $pq->created_at->diffForHumans() }}</p>
-                            </div>
-                        @elseif($pq->isCompleted())
-                            <div class="w-10 h-10 rounded-full bg-success-light text-success flex items-center justify-center shrink-0 shadow-sm">
-                                <i data-lucide="file-edit" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <p class="text-small font-semibold text-text-primary">Borrador de Requisición listo</p>
-                                <p class="text-xs-fluid text-text-muted">Procesado de: {{ $pq->original_filename }} &bull; {{ $pq->created_at->diffForHumans() }}</p>
-                            </div>
-                        @else
-                            <div class="w-10 h-10 rounded-full bg-danger-light text-danger flex items-center justify-center shrink-0 shadow-sm">
-                                <i data-lucide="file-x" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <p class="text-small font-semibold text-text-primary">Error al extraer datos</p>
-                                <p class="text-xs-fluid text-text-muted">{{ $pq->original_filename }} &bull; {{ $pq->created_at->diffForHumans() }}</p>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <x-button wire:click="dismissQuotation({{ $pq->id }})" wire:confirm="¿Descartar este borrador permanentemente?" variant="icon" icon="trash-2" class="text-text-muted hover:text-danger hover:bg-danger-50 transition-colors" title="Descartar" />
-                        <x-button href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}" variant="secondary" class="text-small" wire:navigate>
-                            {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar y Continuar' }}
-                            <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
-                        </x-button>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    @else
-        <x-empty-state icon="check-square" title="No hay borradores pendientes"
-            message="Todas tus cotizaciones han sido procesadas o enviadas a aprobación." />
-    @endif
+        <livewire:requisitions.pending-quotations-list />
     </div>
 
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
     {{-- Requisitions Table --}}
-    <div class="relative min-h-[200px]">
+    <div x-data="{ 
+        selectedRows: @entangle('selectedRows'),
+        get allSelected() {
+            return this.selectedRows.length > 0 && this.selectedRows.length === {{ $requisitions->count() }};
+        },
+        toggleAll() {
+            if (this.allSelected) {
+                this.selectedRows = [];
+            } else {
+                this.selectedRows = [{{ $requisitions->pluck('id')->join(',') }}].map(String);
+            }
+        }
+    }" class="relative min-h-[200px]">
         <div wire:loading.class="hidden"
             wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
             class="w-full">
             <div class="table-container">
                 @if($requisitions->isNotEmpty())
                     <table>
-                        <thead>
+                        <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
+                                <th class="w-10 pl-4 pr-2 text-center">
+                                    <x-table-checkbox 
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll()"
+                                    />
+                                </th>
                                 <x-sortable-header field="number" label="Folio" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
@@ -175,14 +195,18 @@
                                 <x-sortable-header field="total" label="Total" :sortField="$sortField"
                                     :sortDirection="$sortDirection" align="right" />
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th class="text-right">Acciones</th>
+                                    :sortDirection="$sortDirection" class="w-1 whitespace-nowrap" />
+                                <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($requisitions as $req)
-                                <tr wire:key="requisition-row-{{ $req->id }}" class="group cursor-pointer hover:bg-surface-hover"
-                                    x-on:click="Livewire.navigate('{{ route('requisiciones.show', ['id' => $req->id]) }}')">
+                                <tr wire:key="requisition-row-{{ $req->id }}" 
+                                    class="group hover:bg-gray-50/80 transition-colors duration-150"
+                                    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
+                                    <td class="pl-4 pr-2 text-center" @click.stop>
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
+                                    </td>
                                     <td class="font-medium whitespace-nowrap">
                                         {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
@@ -201,62 +225,61 @@
                                     <td class="text-right font-semibold tabular-nums text-text-primary">
                                         ${{ number_format($req->total, 2, '.', ',') }}
                                     </td>
-                                    <td>
+                                    <td class="w-1 whitespace-nowrap py-3">
                                         <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                                     </td>
-                                    <td @click.stop>
-                                        <div class="flex items-center justify-end gap-1">
-                                            @if($req->quotations->isNotEmpty())
-                                                @php
-                                                    $firstQuot = $req->quotations->first();
-                                                    $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                                    $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                                @endphp
-                                                <x-button type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
-                                                    variant="icon-primary" icon="file-search" title="Ver cotización adjunta"
-                                                    aria-label="Ver cotización adjunta" />
-                                            @endif
+                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                        <div class="flex items-center justify-end">
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                </x-slot>
 
-                                            @if($req->status === 'borrador')
-                                                <x-button wire:click="submitForApproval({{ $req->id }})"
-                                                    wire:confirm="¿Enviar esta requisición a aprobación?" variant="icon-primary" icon="send"
-                                                    title="Enviar a aprobación" aria-label="Enviar a aprobación" />
-                                            @endif
+                                                <x-slot name="content">
+                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.show', ['id' => $req->id]) }}" wire:navigate>
+                                                        <i data-lucide="eye" class="w-4 h-4"></i> Ver detalles
+                                                    </x-dropdown-link>
 
-                                            @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                <x-button wire:click="approve({{ $req->id }})"
-                                                    wire:confirm="¿Aprobar esta requisición?"
-                                                    variant="icon-success" class="bg-success-light text-success hover:bg-success-light/80"
-                                                    icon="check" title="Aprobar" aria-label="Aprobar" />
-                                            @endif
+                                                    @if($req->quotations->isNotEmpty())
+                                                        @php
+                                                            $firstQuot = $req->quotations->first();
+                                                            $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                                            $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                                                        @endphp
+                                                        <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')">
+                                                            <i data-lucide="file-search" class="w-4 h-4"></i> Ver cotización
+                                                        </x-dropdown-link>
+                                                    @endif
 
-                                            {{-- Kebab Menu for secondary actions --}}
-                                            <div x-data="{ openMenu: false }" class="relative">
-                                                <x-button @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                                    variant="icon" icon="more-vertical" aria-label="Más opciones" title="Más opciones" />
-                                                <div x-show="openMenu" x-transition
-                                                    class="absolute right-0 top-full mt-1 w-44 bg-surface-card border border-border rounded-lg shadow-lg z-20 py-1"
-                                                    style="display:none;">
-                                                    <a href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank"
-                                                        class="flex items-center gap-2 px-3 py-2 text-small text-text-primary hover:bg-surface-hover w-full text-left">
-                                                        <i data-lucide="file-down" class="w-4 h-4 text-text-muted"></i>
-                                                        Descargar PDF
-                                                    </a>
+                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank">
+                                                        <i data-lucide="file-down" class="w-4 h-4"></i> Descargar PDF
+                                                    </x-dropdown-link>
+
+                                                    @if($req->status === 'borrador')
+                                                        <div class="border-t border-border my-1"></div>
+                                                        <x-dropdown-link as="button" wire:click="submitForApproval({{ $req->id }})" wire:confirm="¿Enviar esta requisición a aprobación?">
+                                                            <i data-lucide="send" class="w-4 h-4"></i> Solicitar aprobación
+                                                        </x-dropdown-link>
+                                                    @endif
+
                                                     @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                        <button wire:click="openRejectModal({{ $req->id }})"
-                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-danger-light w-full text-left">
-                                                            <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                                                        </button>
+                                                        <div class="border-t border-border my-1"></div>
+                                                        <x-dropdown-link as="button" wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?">
+                                                            <i data-lucide="check-circle" class="w-4 h-4 text-success"></i> <span class="text-success">Aprobar</span>
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true">
+                                                            <i data-lucide="x-circle" class="w-4 h-4"></i> Rechazar
+                                                        </x-dropdown-link>
                                                     @endif
+
                                                     @if(in_array($req->status, ['borrador', 'rechazada']))
-                                                        <button wire:click="deleteRequisition({{ $req->id }})"
-                                                            wire:confirm="¿Eliminar esta requisición?"
-                                                            class="flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-danger-light w-full text-left">
+                                                        <div class="border-t border-border my-1"></div>
+                                                        <x-dropdown-link as="button" wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición permanentemente?" danger="true">
                                                             <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
-                                                        </button>
+                                                        </x-dropdown-link>
                                                     @endif
-                                                </div>
-                                            </div>
+                                                </x-slot>
+                                            </x-dropdown>
                                         </div>
                                     </td>
                                 </tr>

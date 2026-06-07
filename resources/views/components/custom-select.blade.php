@@ -4,7 +4,7 @@
     x-data="{
         open: false,
         search: '',
-        value: @entangle($attributes->wire('model')).live,
+        value: '',
         options: {{ json_encode($options) }},
         dropStyle: {},
         get selectedLabel() {
@@ -63,7 +63,10 @@
             if (this._scrollHandler) document.removeEventListener('scroll', this._scrollHandler, true);
         }
     }"
-    class="relative {{ $attributes->get('class') }}"
+    x-modelable="value"
+    {!! $attributes->whereStartsWith('wire:model') !!}
+    {!! $attributes->whereStartsWith('x-model') !!}
+    class="relative {{ $attributes->except(['wire:model', 'wire:model.live', 'wire:model.defer', 'wire:model.blur', 'x-model'])->get('class') }}"
     @click.outside="close()"
     @resize.window="if(open) reposition()"
 >

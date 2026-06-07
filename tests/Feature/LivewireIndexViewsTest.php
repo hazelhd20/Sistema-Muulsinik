@@ -81,4 +81,13 @@ class LivewireIndexViewsTest extends TestCase
         Livewire::test(\App\Livewire\Notifications\NotificationIndex::class)
             ->assertStatus(200);
     }
+
+    public function test_requisition_index_renders()
+    {
+        $user = User::first();
+        $this->actingAs($user);
+
+        Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
+            ->assertStatus(200);
+    }
 }

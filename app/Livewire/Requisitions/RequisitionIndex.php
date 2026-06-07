@@ -11,6 +11,7 @@ use App\Models\Supplier;
 use App\Services\RequisitionItemResolverService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Livewire\Concerns\WithSorting;
@@ -24,6 +25,23 @@ class RequisitionIndex extends Component
     public string $statusFilter = '';
     public string $projectFilter = '';
     public string $periodFilter = '';
+    public string $creatorFilter = '';
+    public string $vendorFilter = '';
+
+    // Selección masiva (Sprint 1)
+    public array $selectedRows = [];
+    public bool $selectAll = false;
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            // FIXME: Para Sprint 3 (Acciones masivas), esto debe usar la query filtrada.
+            // Por ahora, selecciona los IDs de la vista actual como prueba de concepto.
+            $this->selectedRows = Requisition::pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedRows = [];
+        }
+    }
 
     // Rechazo con comentario obligatorio (RF-REQ-09)
     public bool $showRejectModal = false;
@@ -46,6 +64,16 @@ class RequisitionIndex extends Component
     }
 
     public function updatedPeriodFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedCreatorFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedVendorFilter(): void
     {
         $this->resetPage();
     }
@@ -155,15 +183,10 @@ class RequisitionIndex extends Component
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición eliminada.']);
     }
 
-
-
-    public function dismissQuotation(int $quotationId): void
+    #[On('quotation-dismissed')]
+    public function refreshCount(): void
     {
-        $quotation = \App\Models\Quotation::find($quotationId);
-        if ($quotation) {
-            $quotation->update(['is_orphan' => true]);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Borrador descartado.']);
-        }
+        // Triggers re-rendering to update the tab count
     }
 
     #[Layout('components.layouts.app')]
@@ -174,6 +197,8 @@ class RequisitionIndex extends Component
             ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->creatorFilter, fn($q) => $q->where('created_by', $this->creatorFilter))
+            ->when($this->vendorFilter, fn($q) => $q->where('vendor_id', $this->vendorFilter))
             ->when($this->periodFilter, function ($q) {
                 match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
@@ -187,6 +212,8 @@ class RequisitionIndex extends Component
             ->paginate(10);
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();
+        $creators = \App\Models\User::orderBy('name')->get();
+        $vendors = Supplier::orderBy('trade_name')->get();
         
         $pendingQuotations = \App\Models\Quotation::whereNull('requisition_id')
             ->where('is_orphan', false)
@@ -203,6 +230,8 @@ class RequisitionIndex extends Component
         return view('livewire.requisitions.requisition-index', compact(
             'requisitions',
             'projects',
+            'creators',
+            'vendors',
             'pendingQuotations'
         ));
     }
