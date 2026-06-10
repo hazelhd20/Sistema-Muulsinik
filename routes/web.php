@@ -3,21 +3,27 @@
 use App\Http\Controllers\RequisitionPdfController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
-
 use App\Livewire\Expenses\ExpenseIndex;
+use App\Livewire\Measures\MeasureIndex;
+use App\Livewire\Notifications\NotificationIndex;
+use App\Livewire\Products\CategoryIndex;
 use App\Livewire\Products\ProductIndex;
 use App\Livewire\Projects\ProjectIndex;
 use App\Livewire\Projects\ProjectShow;
+use App\Livewire\QuickBudgets\QuickBudgetIndex;
+use App\Livewire\QuickBudgets\QuickBudgetWizard;
 use App\Livewire\Reports\ReportIndex;
 use App\Livewire\Requisitions\ManualRequisition;
 use App\Livewire\Requisitions\QuotationWizard;
 use App\Livewire\Requisitions\RequisitionIndex;
+use App\Livewire\Requisitions\RequisitionShow;
 use App\Livewire\Suppliers\SupplierIndex;
-use App\Livewire\Settings\SettingsIndex;
 use App\Livewire\Users\UserIndex;
-use App\Livewire\Notifications\NotificationIndex;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+
 /*
 |--------------------------------------------------------------------------
 | Rutas Web — Muulsinik ERP v1
@@ -26,13 +32,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 // --- Rutas públicas ---
-Route::get('/', fn() => redirect('/login'));
+Route::get('/', fn () => redirect('/login'));
 Route::get('/login', Login::class)->name('login')->middleware('guest');
 
 Route::post('/logout', function () {
     Auth::logout();
     session()->invalidate();
     session()->regenerateToken();
+
     return redirect('/login');
 })->name('logout');
 
@@ -52,7 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/requisiciones', RequisitionIndex::class)->name('requisiciones.index');
     Route::get('/requisiciones/manual', ManualRequisition::class)->name('requisiciones.manual');
     Route::get('/requisiciones/subir-cotizacion', QuotationWizard::class)->name('requisiciones.upload');
-    Route::get('/requisiciones/{id}', \App\Livewire\Requisitions\RequisitionShow::class)->name('requisiciones.show');
+    Route::get('/requisiciones/{id}', RequisitionShow::class)->name('requisiciones.show');
     Route::get('/requisiciones/{id}/pdf', [RequisitionPdfController::class, 'download'])->name('requisiciones.pdf');
 
     // Proveedores (RF-PROV)
@@ -67,17 +74,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/reportes', ReportIndex::class)->name('reportes.index');
 
     // Cotizador (Trabajos Menores)
-    Route::get('/cotizador', \App\Livewire\QuickBudgets\QuickBudgetIndex::class)->name('cotizador.index');
-    Route::get('/cotizador/wizard/{id?}', \App\Livewire\QuickBudgets\QuickBudgetWizard::class)->name('cotizador.wizard');
+    Route::get('/cotizador', QuickBudgetIndex::class)->name('cotizador.index');
+    Route::get('/cotizador/wizard/{id?}', QuickBudgetWizard::class)->name('cotizador.wizard');
 
     // Catálogo de Productos (RF-REQ-05)
     Route::get('/productos', ProductIndex::class)->name('productos.index');
 
     // Catálogo de Medidas
-    Route::get('/medidas', \App\Livewire\Measures\MeasureIndex::class)->name('medidas.index');
+    Route::get('/medidas', MeasureIndex::class)->name('medidas.index');
 
     // Catálogo de Categorías
-    Route::get('/categorias', \App\Livewire\Products\CategoryIndex::class)->name('categorias.index');
+    Route::get('/categorias', CategoryIndex::class)->name('categorias.index');
 
     // Configuración
     Route::get('/configuracion', function () {
@@ -88,19 +95,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/notificaciones', NotificationIndex::class)->name('notifications.index');
 
     // Previsualización de archivos
-    Route::get('/preview-file', function (\Illuminate\Http\Request $request) {
+    Route::get('/preview-file', function (Request $request) {
         $path = $request->query('path');
         $disk = $request->query('disk', 'local');
 
-        if (!in_array($disk, ['local', 'public']) || !$path || str_contains($path, '..') || !\Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
+        if (! in_array($disk, ['local', 'public']) || ! $path || str_contains($path, '..') || ! Storage::disk($disk)->exists($path)) {
             abort(404);
         }
 
-        $mime = \Illuminate\Support\Facades\Storage::disk($disk)->mimeType($path);
+        $mime = Storage::disk($disk)->mimeType($path);
 
-        return response()->file(\Illuminate\Support\Facades\Storage::disk($disk)->path($path), [
+        return response()->file(Storage::disk($disk)->path($path), [
             'Content-Type' => $mime,
-            'Content-Disposition' => 'inline; filename="' . basename($path) . '"'
+            'Content-Disposition' => 'inline; filename="'.basename($path).'"',
         ]);
     })->name('file.preview');
 });

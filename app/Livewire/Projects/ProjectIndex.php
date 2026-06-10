@@ -3,31 +3,42 @@
 namespace App\Livewire\Projects;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithSorting;
+use App\Models\Expense;
 use App\Models\Project;
+use App\Models\Quotation;
+use App\Models\Requisition;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
-
-use Livewire\Attributes\On;
 
 class ProjectIndex extends Component
 {
-    use WithPagination, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
     // Campos del formulario (creación y edición comparten las mismas propiedades)
     public string $name = '';
+
     public string $description = '';
+
     public string $client = '';
+
     public string $budget = '';
+
     public string $startDate = '';
+
     public string $endDate = '';
+
     public string $status = 'activo';
 
     public function updatedSearch(): void
@@ -69,8 +80,10 @@ class ProjectIndex extends Component
     public function saveProject(): void
     {
         if ($this->editingId) {
-            if ($this->denyUnless('proyectos.editar', 'No tienes permiso para editar proyectos.')) return;
-            
+            if ($this->denyUnless('proyectos.editar', 'No tienes permiso para editar proyectos.')) {
+                return;
+            }
+
             $this->validate([
                 'name' => 'required|min:3|max:255',
                 'description' => 'nullable|max:1000',
@@ -92,8 +105,10 @@ class ProjectIndex extends Component
             ]);
             $message = 'Proyecto actualizado correctamente.';
         } else {
-            if ($this->denyUnless('proyectos.crear', 'No tienes permiso para crear proyectos.')) return;
-            
+            if ($this->denyUnless('proyectos.crear', 'No tienes permiso para crear proyectos.')) {
+                return;
+            }
+
             $this->validate([
                 'name' => 'required|min:3|max:255',
                 'description' => 'nullable|max:1000',
@@ -122,17 +137,19 @@ class ProjectIndex extends Component
 
     public function deleteProject(int $projectId): void
     {
-        if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.'))
+        if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.')) {
             return;
+        }
 
         $project = Project::findOrFail($projectId);
 
-        $hasDependencies = \App\Models\Requisition::where('project_id', $projectId)->exists() ||
-            \App\Models\Expense::where('project_id', $projectId)->exists() ||
-            \App\Models\Quotation::where('project_id', $projectId)->exists();
+        $hasDependencies = Requisition::where('project_id', $projectId)->exists() ||
+            Expense::where('project_id', $projectId)->exists() ||
+            Quotation::where('project_id', $projectId)->exists();
 
         if ($hasDependencies) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proyecto tiene requisiciones, cotizaciones o gastos asociados.']);
+
             return;
         }
 
@@ -157,9 +174,9 @@ class ProjectIndex extends Component
     public function render()
     {
         $projects = Project::query()
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")
+            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('client', 'like', "%{$this->search}%"))
-            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(12);
 

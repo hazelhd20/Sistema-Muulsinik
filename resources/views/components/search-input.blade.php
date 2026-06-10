@@ -20,7 +20,13 @@
         }
      }">
 
-    {{-- Lupa SVG nativa (No parpadea) --}}
+    {{-- 
+        NOTA ARQUITECTÓNICA: Lupa SVG nativa (No parpadea)
+        Se utiliza un SVG inline en lugar de `<i data-lucide="search">` o un componente `<x-icon>` 
+        porque este input suele estar en la parte superior del DOM (header/filtros) y es altamente visible. 
+        Si dependemos de la inicialización asíncrona de `lucide.createIcons()` en el cliente, 
+        el icono puede causar un parpadeo visual (FOUC) molesto.
+    --}}
     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

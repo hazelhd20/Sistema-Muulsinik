@@ -164,7 +164,7 @@
                         <p class="text-xs-fluid font-semibold text-text-primary truncate leading-tight">
                             {{ auth()->user()->name ?? 'Usuario' }}
                         </p>
-                        <p class="text-xs-fluid text-text-muted truncate leading-tight" style="font-size: 0.625rem;">
+                        <p class="text-xs-fluid text-text-muted truncate leading-tight">
                             {{ auth()->user()->role->name ?? 'Sin rol' }}
                         </p>
                     </div>
@@ -190,7 +190,7 @@
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition-opacity duration-150" x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" @click="mobileSidebarOpen = false"
-            class="fixed inset-0 z-45 bg-black/20 backdrop-blur-[2px] lg:hidden" style="display: none;"></div>
+            class="fixed inset-0 z-45 bg-black/20 backdrop-blur-[2px] lg:hidden" x-cloak></div>
 
         {{-- ══════════════════════════════════════
         MAIN CONTENT AREA
@@ -251,8 +251,7 @@
 
     @livewireScripts
     <script>
-        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
-        document.addEventListener('livewire:navigated', () => lucide.createIcons());
+        // No redundant createIcons here, it's handled in app.js
         document.addEventListener('livewire:init', () => {
             // Prevenir el modal de error de Livewire al expirar la sesión (419) o no estar autenticado (401)
             Livewire.hook('request', ({ fail }) => {
@@ -261,12 +260,6 @@
                         preventDefault();
                         window.location.reload(); // Recargar redirigirá al login gracias al middleware auth
                     }
-                });
-            });
-
-            Livewire.hook('commit', ({ succeed }) => {
-                succeed(() => {
-                    setTimeout(() => lucide.createIcons(), 10);
                 });
             });
         });

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
 
 class Measure extends Model
@@ -11,9 +12,25 @@ class Measure extends Model
     protected static function booted()
     {
         static::saving(function ($measure) {
-            if ($measure->isDirty('name') && !empty($measure->name)) {
-                $measure->name = app(\App\Services\DataNormalizerService::class)->normalizeTitleCase($measure->name);
+            if ($measure->isDirty('name') && ! empty($measure->name)) {
+                $measure->name = app(DataNormalizerService::class)->normalizeTitleCase($measure->name);
             }
         });
+    }
+
+    /**
+     * Retorna la lista de unidades de medida ordenadas por nombre.
+     */
+    public static function getOptions()
+    {
+        return static::orderBy('name')->get();
+    }
+
+    /**
+     * Retorna la lista de unidades de medida en formato array (id => name).
+     */
+    public static function getOptionsArray(): array
+    {
+        return static::orderBy('name')->pluck('name', 'id')->toArray();
     }
 }

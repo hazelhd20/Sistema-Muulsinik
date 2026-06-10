@@ -3,28 +3,36 @@
 namespace App\Livewire\Products;
 
 use App\Livewire\Concerns\EnforcesPermissions;
-use App\Models\Product;
-use App\Models\Supplier;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Category;
+use App\Models\Measure;
+use App\Models\Product;
+use App\Models\RequisitionItem;
+use App\Models\Supplier;
+use App\Services\DataNormalizerService;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
-use Livewire\Attributes\On;
 
 class ProductIndex extends Component
 {
-    use WithPagination, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting;
 
     public string $search = '';
+
     public string $categoryFilter = '';
+
     public bool $showCreateModal = false;
 
     // Campos del producto
     public string $canonicalName = '';
+
     public string $measureId = '';
+
     public string $description = '';
+
     public string $categoryId = '';
 
     public ?int $editingId = null;
@@ -71,25 +79,28 @@ class ProductIndex extends Component
 
     public function saveProduct(): void
     {
-        if ($this->denyUnless('productos.crear', 'No tienes permiso para guardar productos.')) return;
+        if ($this->denyUnless('productos.crear', 'No tienes permiso para guardar productos.')) {
+            return;
+        }
 
         $this->validate([
-            'canonicalName' => 'required|min:2|max:255|unique:products,canonical_name,' . $this->editingId,
+            'canonicalName' => 'required|min:2|max:255|unique:products,canonical_name,'.$this->editingId,
             'measureId' => 'required|exists:measures,id',
             'description' => 'nullable|max:500',
             'categoryId' => 'required|exists:categories,id',
         ]);
 
         // Verificar duplicado por normalized_name (evita "Cemento Gris" vs "CEMENTO GRIS")
-        $normalizer = app(\App\Services\DataNormalizerService::class);
+        $normalizer = app(DataNormalizerService::class);
         $normalizedName = $normalizer->normalizeText($this->canonicalName);
 
         $existingByNormalized = Product::where('normalized_name', $normalizedName)
-            ->when($this->editingId, fn($q) => $q->where('id', '!=', $this->editingId))
+            ->when($this->editingId, fn ($q) => $q->where('id', '!=', $this->editingId))
             ->first();
 
         if ($existingByNormalized) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un producto similar: "' . $existingByNormalized->canonical_name . '". Usa el catálogo existente.']);
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un producto similar: "'.$existingByNormalized->canonical_name.'". Usa el catálogo existente.']);
+
             return;
         }
 
@@ -117,12 +128,15 @@ class ProductIndex extends Component
 
     public function deleteProduct(int $productId): void
     {
-        if ($this->denyUnless('productos.eliminar', 'No tienes permiso para eliminar productos.')) return;
+        if ($this->denyUnless('productos.eliminar', 'No tienes permiso para eliminar productos.')) {
+            return;
+        }
 
         $product = Product::findOrFail($productId);
 
-        if (\App\Models\RequisitionItem::where('product_id', $productId)->exists()) {
+        if (RequisitionItem::where('product_id', $productId)->exists()) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el producto está siendo utilizado en una requisición.']);
+
             return;
         }
 
@@ -145,13 +159,13 @@ class ProductIndex extends Component
     {
         $products = Product::query()
             ->with(['category', 'measure'])
-            ->when($this->search, fn($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
-            ->when($this->categoryFilter, fn($q) => $q->where('category_id', $this->categoryFilter))
+            ->when($this->search, fn ($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
+            ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         $suppliers = Supplier::orderBy('trade_name')->get();
-        $measures = \App\Models\Measure::orderBy('name')->pluck('name', 'id')->toArray();
+        $measures = Measure::getOptionsArray();
         $categories = Category::orderBy('name')->pluck('name', 'id')->toArray();
 
         return view('livewire.products.product-index', compact(

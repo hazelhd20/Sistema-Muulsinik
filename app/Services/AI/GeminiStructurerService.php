@@ -2,6 +2,8 @@
 
 namespace App\Services\AI;
 
+use App\Models\Category;
+use App\Models\Measure;
 use Gemini\Data\Blob;
 use Gemini\Enums\MimeType;
 use Gemini\Laravel\Facades\Gemini;
@@ -27,7 +29,7 @@ class GeminiStructurerService
      */
     public function isAvailable(): bool
     {
-        return !empty(config('gemini.api_key'));
+        return ! empty(config('gemini.api_key'));
     }
 
     /**
@@ -62,12 +64,13 @@ class GeminiStructurerService
      */
     public function structureFromFile(string $filePath): ?array
     {
-        if (!$this->isAvailable()) {
+        if (! $this->isAvailable()) {
             return null;
         }
 
-        if (!file_exists($filePath) || !is_readable($filePath)) {
+        if (! file_exists($filePath) || ! is_readable($filePath)) {
             Log::warning('Gemini Vision: Archivo no accesible.', ['path' => $filePath]);
+
             return null;
         }
 
@@ -77,6 +80,7 @@ class GeminiStructurerService
                 'path' => $filePath,
                 'detected_mime' => mime_content_type($filePath),
             ]);
+
             return null;
         }
 
@@ -138,7 +142,7 @@ class GeminiStructurerService
      */
     public function structureRawText(string $rawText): ?array
     {
-        if (!$this->isAvailable() || empty(trim($rawText))) {
+        if (! $this->isAvailable() || empty(trim($rawText))) {
             return null;
         }
 
@@ -234,15 +238,13 @@ class GeminiStructurerService
         $categoriesList = Cache::remember(
             'extraction:categories',
             3600,
-            fn() =>
-            \App\Models\Category::pluck('name')->implode(', ')
+            fn () => Category::pluck('name')->implode(', ')
         );
 
         $unitsList = Cache::remember(
             'extraction:units',
             3600,
-            fn() =>
-            \App\Models\Measure::pluck('abbreviation')->unique()->implode(', ')
+            fn () => Measure::pluck('abbreviation')->unique()->implode(', ')
         );
 
         return <<<RULES
@@ -383,10 +385,11 @@ class GeminiStructurerService
 
         $data = json_decode($cleaned, true);
 
-        if (!is_array($data) || !isset($data['items'])) {
+        if (! is_array($data) || ! isset($data['items'])) {
             Log::warning('Gemini AI: Respuesta JSON inválida o sin items.', [
                 'response' => mb_substr($responseText, 0, 500),
             ]);
+
             return null;
         }
 
@@ -498,7 +501,7 @@ class GeminiStructurerService
             }
             Log::info('Gemini AI: Corrección automática de tax_amount (era mayor al subtotal, posible Total).', [
                 'original_tax_amount' => $taxAmount,
-                'new_line_total' => $lineTotal
+                'new_line_total' => $lineTotal,
             ]);
             $taxAmount = null;
         }
@@ -601,6 +604,7 @@ class GeminiStructurerService
                 'quantity' => $qty,
                 'line_subtotal' => $lineSubtotal,
             ]);
+
             return $corrected;
         }
 

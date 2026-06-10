@@ -31,7 +31,7 @@ class DiscountNormalizerService
      * Recibe los datos crudos del parser (con items) y devuelve los datos
      * con campos de descuento resueltos y unit_price ajustado al precio neto.
      *
-     * @param  array $parsedData Datos crudos del parser
+     * @param  array  $parsedData  Datos crudos del parser
      * @return array Datos con descuentos normalizados
      */
     public function normalize(array $parsedData): array
@@ -39,7 +39,7 @@ class DiscountNormalizerService
         $items = $parsedData['items'] ?? [];
 
         $normalizedItems = array_map(
-            fn(array $item) => $this->normalizeItem($item),
+            fn (array $item) => $this->normalizeItem($item),
             $items,
         );
 
@@ -54,7 +54,7 @@ class DiscountNormalizerService
      * Aplica las reglas de prioridad (R4, R5, R6, R7, R9) para resolver
      * el porcentaje de descuento y ajustar el unit_price al precio neto.
      *
-     * @param  array $item Datos del ítem extraídos por la IA
+     * @param  array  $item  Datos del ítem extraídos por la IA
      * @return array Ítem con campos de descuento resueltos
      */
     private function normalizeItem(array $item): array
@@ -67,8 +67,9 @@ class DiscountNormalizerService
         $lineSubtotal = isset($item['line_subtotal']) ? (float) $item['line_subtotal'] : null;
 
         // Si no hay ningún indicador de descuento, retornar sin cambios
-        if (!$this->hasAnyDiscountData($discountPercent, $discountAmount, $unitPriceWithDiscount, $unitPrice)) {
+        if (! $this->hasAnyDiscountData($discountPercent, $discountAmount, $unitPriceWithDiscount, $unitPrice)) {
             $item['discount_percent'] = null;
+
             return $item;
         }
 
@@ -116,6 +117,7 @@ class DiscountNormalizerService
 
         // Sin descuento identificable
         $item['discount_percent'] = null;
+
         return $item;
     }
 
@@ -139,6 +141,7 @@ class DiscountNormalizerService
                 'unit_price' => $originalPrice,
             ]);
             $item['discount_percent'] = null;
+
             return $item;
         }
 
@@ -175,11 +178,12 @@ class DiscountNormalizerService
         // El precio descontado no puede ser mayor o igual al original
         if ($discountedPrice >= $originalPrice) {
             $item['discount_percent'] = null;
+
             return $item;
         }
 
         $discountAmount = round($originalPrice - $discountedPrice, 2);
-        
+
         // Si ya hay un porcentaje explícito en el ítem, lo preservamos
         $explicitPercent = isset($item['discount_percent']) ? (float) $item['discount_percent'] : null;
         if ($explicitPercent !== null && $explicitPercent > 0) {
@@ -217,6 +221,7 @@ class DiscountNormalizerService
                 'discount_amount' => $discountAmount,
             ]);
             $item['discount_percent'] = null;
+
             return $item;
         }
 

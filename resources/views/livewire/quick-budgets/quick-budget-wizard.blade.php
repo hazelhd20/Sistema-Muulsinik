@@ -133,7 +133,7 @@
                                         <div class="relative">
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity"
                                                 step="0.01"
-                                                class="input h-8 text-small px-2 pr-8 text-right bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
+                                                class="input h-8 text-small px-2 pr-8 text-center bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
                                             <span
                                                 class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
                                         </div>

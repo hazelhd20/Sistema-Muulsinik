@@ -1,24 +1,29 @@
 <?php
 
+use App\Models\Quotation;
+use App\Models\User;
+use App\Notifications\QuotationProcessed;
+use Illuminate\Contracts\Console\Kernel;
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-$user = \App\Models\User::first();
+$user = User::first();
 if ($user) {
     echo "Sending notification to user {$user->id}...\n";
     try {
-        $quotation = \App\Models\Quotation::first();
+        $quotation = Quotation::first();
         if ($quotation) {
-            $user->notify(new \App\Notifications\QuotationProcessed($quotation, true));
+            $user->notify(new QuotationProcessed($quotation, true));
             echo "Notification sent.\n";
-            echo "Notifications count: " . \DB::table('notifications')->count() . "\n";
+            echo 'Notifications count: '.DB::table('notifications')->count()."\n";
         } else {
             echo "No quotation found to test with.\n";
         }
-    } catch (\Exception $e) {
-        echo "Error: " . $e->getMessage() . "\n";
+    } catch (Exception $e) {
+        echo 'Error: '.$e->getMessage()."\n";
     }
 } else {
     echo "No users found.\n";

@@ -3,34 +3,47 @@
 namespace App\Livewire\Suppliers;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithSorting;
+use App\Models\Quotation;
+use App\Models\RequisitionItem;
 use App\Models\Supplier;
 use App\Models\Vendor;
+use App\Services\DataNormalizerService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class SupplierIndex extends Component
 {
-    use WithPagination, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting;
 
     public string $search = '';
+
     public bool $showCreateModal = false;
+
     public bool $showVendorsModal = false;
+
     public ?int $viewingSupplierId = null;
 
     // Campos proveedor
     public string $tradeName = '';
+
     public string $legalName = '';
+
     public string $rfc = '';
+
     public string $category = '';
+
     public string $notes = '';
 
     // Campos vendedor
     public bool $showAddVendor = false;
+
     public string $vendorName = '';
+
     public string $vendorPhone = '';
+
     public string $vendorEmail = '';
 
     public ?int $editingSupplierId = null;
@@ -61,8 +74,9 @@ class SupplierIndex extends Component
 
     public function saveSupplier(): void
     {
-        if ($this->denyUnless('proveedores.crear', 'No tienes permiso para guardar proveedores.'))
+        if ($this->denyUnless('proveedores.crear', 'No tienes permiso para guardar proveedores.')) {
             return;
+        }
 
         $this->validate([
             'tradeName' => 'required|min:2|max:255',
@@ -73,15 +87,16 @@ class SupplierIndex extends Component
         ]);
 
         // Verificar duplicado por normalized_name (evita "CEMEX S.A." vs "Cemex SA")
-        $normalizer = app(\App\Services\DataNormalizerService::class);
+        $normalizer = app(DataNormalizerService::class);
         $normalizedName = $normalizer->normalizeSupplierName($this->tradeName);
 
         $existingByNormalized = Supplier::where('normalized_name', $normalizedName)
-            ->when($this->editingSupplierId, fn($q) => $q->where('id', '!=', $this->editingSupplierId))
+            ->when($this->editingSupplierId, fn ($q) => $q->where('id', '!=', $this->editingSupplierId))
             ->first();
 
         if ($existingByNormalized) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un proveedor similar: "' . $existingByNormalized->trade_name . '". Verifica el catálogo.']);
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un proveedor similar: "'.$existingByNormalized->trade_name.'". Verifica el catálogo.']);
+
             return;
         }
 
@@ -134,8 +149,9 @@ class SupplierIndex extends Component
 
     public function saveVendor(): void
     {
-        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para guardar vendedores.'))
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para guardar vendedores.')) {
             return;
+        }
 
         $this->validate([
             'vendorName' => 'required|min:2|max:255',
@@ -169,24 +185,27 @@ class SupplierIndex extends Component
 
     public function deleteVendor(int $vendorId): void
     {
-        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para eliminar vendedores.'))
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para eliminar vendedores.')) {
             return;
+        }
 
         Vendor::findOrFail($vendorId)->delete();
     }
 
     public function deleteSupplier(int $supplierId): void
     {
-        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.'))
+        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.')) {
             return;
+        }
 
         $supplier = Supplier::findOrFail($supplierId);
 
-        $isUsed = \App\Models\RequisitionItem::where('supplier_id', $supplierId)->exists() ||
-            \App\Models\Quotation::where('supplier_id', $supplierId)->exists();
+        $isUsed = RequisitionItem::where('supplier_id', $supplierId)->exists() ||
+            Quotation::where('supplier_id', $supplierId)->exists();
 
         if ($isUsed) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proveedor está siendo utilizado en requisiciones o cotizaciones.']);
+
             return;
         }
 
@@ -209,7 +228,7 @@ class SupplierIndex extends Component
     public function render()
     {
         $suppliers = Supplier::withCount('vendors')
-            ->when($this->search, fn($q) => $q->where('trade_name', 'like', "%{$this->search}%")
+            ->when($this->search, fn ($q) => $q->where('trade_name', 'like', "%{$this->search}%")
                 ->orWhere('rfc', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(12);

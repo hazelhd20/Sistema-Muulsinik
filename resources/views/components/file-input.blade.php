@@ -86,7 +86,6 @@
             this.$dispatch('file-removed');
         },
         init() {
-            this.$nextTick(() => { if (window.lucide) lucide.createIcons({ root: this.$el }); });
             @if($wireModel)
                 if (this.$wire) {
                     this.$watch('$wire.{{ $wireModel }}', (value) => {

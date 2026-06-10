@@ -3,13 +3,15 @@
 namespace App\Livewire\Products;
 
 use App\Models\Product;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class ProductDetailDrawer extends Component
 {
     public bool $showDetailDrawer = false;
+
     public ?int $showingDetailId = null;
+
     public ?Product $detailProduct = null;
 
     #[On('open-product-detail')]

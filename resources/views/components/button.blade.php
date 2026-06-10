@@ -13,11 +13,13 @@
         'secondary' => 'btn-secondary relative',
         'success' => 'btn-success relative',
         'danger' => 'btn-danger relative',
+        'warning' => 'btn-warning relative',
         'icon' => 'btn-icon relative',
         'icon-primary' => 'btn-icon-primary relative',
         'icon-secondary' => 'btn-icon-secondary relative',
         'icon-danger' => 'btn-icon-danger relative',
         'icon-success' => 'btn-icon-success relative',
+        'icon-warning' => 'btn-icon-warning relative',
         default => 'btn-primary relative',
     };
 
@@ -28,13 +30,13 @@
 @if($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $baseClasses]) }}>
         @if($icon)
-            <i data-lucide="{{ $icon }}" class="{{ $iconClass }}"></i>
+            <x-icon :name="$icon" class="{{ $iconClass }}" />
         @endif
         @if(!$isIconButton || $slot->isNotEmpty())
             {{ $slot }}
         @endif
         @if($iconRight)
-            <i data-lucide="{{ $iconRight }}" class="{{ $iconClass }}"></i>
+            <x-icon :name="$iconRight" class="{{ $iconClass }}" />
         @endif
     </a>
 @else
@@ -46,7 +48,7 @@
         @endif
 
         @if($icon)
-            <i data-lucide="{{ $icon }}" class="{{ $iconClass }}"></i>
+            <x-icon :name="$icon" class="{{ $iconClass }}" />
         @endif
 
         @if(!$isIconButton || $slot->isNotEmpty())
@@ -54,7 +56,7 @@
         @endif
 
         @if($iconRight)
-            <i data-lucide="{{ $iconRight }}" class="{{ $iconClass }}"></i>
+            <x-icon :name="$iconRight" class="{{ $iconClass }}" />
         @endif
 
         @if($target)

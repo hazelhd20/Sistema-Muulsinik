@@ -82,7 +82,7 @@
     @confirm-action.window="open($event.detail)"
     x-show="show"
     x-cloak
-    x-trap.noscroll="show"
+    x-trap.noscroll.inert="show"
     @keydown.escape.window="close()"
     class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6"
     role="dialog"
@@ -131,7 +131,7 @@
 
                 {{-- Título + descripción --}}
                 <div class="min-w-0 flex-1 pt-0.5">
-                    <h2 class="text-h3 font-semibold text-text-primary leading-snug"
+                    <h2 class="text-h3 text-text-primary leading-snug"
                         x-text="title"></h2>
                     <p class="text-small text-text-muted mt-1 leading-relaxed"
                        x-show="description"

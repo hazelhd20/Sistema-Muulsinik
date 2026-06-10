@@ -3,6 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -11,22 +12,27 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class UserIndex extends Component
 {
-    use WithPagination, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting;
 
     public string $search = '';
+
     public string $roleFilter = '';
 
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public string $name = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $role_id = '';
+
     public bool $active = true;
 
     public function updatedSearch(): void
@@ -41,23 +47,25 @@ class UserIndex extends Component
 
     public function mount()
     {
-        if (!auth()->user()->hasPermission('usuarios.ver')) {
+        if (! auth()->user()->hasPermission('usuarios.ver')) {
             abort(403, 'No tienes permiso para ver usuarios.');
         }
     }
 
     public function openCreateModal(): void
     {
-        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.'))
+        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.')) {
             return;
+        }
         $this->resetForm();
         $this->showModal = true;
     }
 
     public function openEditModal(int $id): void
     {
-        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.')) {
             return;
+        }
         $user = User::findOrFail($id);
         $this->editingId = $user->id;
         $this->name = $user->name;
@@ -79,8 +87,9 @@ class UserIndex extends Component
 
     private function createUser(): void
     {
-        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.'))
+        if ($this->denyUnless('usuarios.crear', 'No tienes permiso para crear usuarios.')) {
             return;
+        }
 
         $this->validate([
             'name' => 'required|string|max:255',
@@ -105,8 +114,9 @@ class UserIndex extends Component
 
     private function updateUser(): void
     {
-        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.')) {
             return;
+        }
 
         $this->validate([
             'name' => 'required|string|max:255',
@@ -124,7 +134,7 @@ class UserIndex extends Component
             'active' => $this->active,
         ];
 
-        if (!empty($this->password)) {
+        if (! empty($this->password)) {
             $data['password'] = Hash::make($this->password);
         }
 
@@ -137,11 +147,13 @@ class UserIndex extends Component
 
     public function deleteUser(int $id): void
     {
-        if ($this->denyUnless('usuarios.eliminar', 'No tienes permiso para eliminar usuarios.'))
+        if ($this->denyUnless('usuarios.eliminar', 'No tienes permiso para eliminar usuarios.')) {
             return;
+        }
 
         if (auth()->id() === $id) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No puedes eliminar tu propio usuario.']);
+
             return;
         }
 
@@ -151,16 +163,18 @@ class UserIndex extends Component
 
     public function toggleActive(int $id): void
     {
-        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.'))
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para editar usuarios.')) {
             return;
+        }
 
         if (auth()->id() === $id) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No puedes desactivar tu propio usuario.']);
+
             return;
         }
 
         $user = User::findOrFail($id);
-        $user->update(['active' => !$user->active]);
+        $user->update(['active' => ! $user->active]);
 
         $status = $user->active ? 'activado' : 'desactivado';
         $this->dispatch('toast', ['icon' => 'success', 'message' => "Usuario {$status} correctamente."]);
@@ -182,9 +196,9 @@ class UserIndex extends Component
     public function render()
     {
         $users = User::with('role')
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")
+            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%"))
-            ->when($this->roleFilter, fn($q) => $q->where('role_id', $this->roleFilter))
+            ->when($this->roleFilter, fn ($q) => $q->where('role_id', $this->roleFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 

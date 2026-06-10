@@ -99,7 +99,7 @@
                                             <x-button @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" variant="icon" icon="eye" title="Ver detalles" />
                                             <x-button wire:click="openEditModal({{ $product->id }})" variant="icon-primary" icon="pencil" title="Editar producto" />
                                             <x-button wire:click="deleteProduct({{ $product->id }})"
-                                                wire:confirm="¿Eliminar este producto?" variant="icon-danger" icon="trash-2"
+                                                wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2"
                                                 title="Eliminar producto" />
                                         </div>
                                     </td>
@@ -135,10 +135,10 @@
                                     <x-skeleton class="h-3  rounded w-32" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-5  rounded-full w-24" />
+                                    <x-skeleton class="h-5  rounded w-24" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-5  rounded-full w-16" />
+                                    <x-skeleton class="h-5  rounded w-16" />
                                 </td>
                                 <td class="actions">
                                     <div class="flex items-center justify-end gap-1">

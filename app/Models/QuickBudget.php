@@ -12,7 +12,7 @@ class QuickBudget extends Model
         'title', 'description', 'client',
         'subtotal', 'tax_amount', 'total',
         'margin_percent', 'grand_total',
-        'status', 'created_by'
+        'status', 'created_by',
     ];
 
     protected $casts = [

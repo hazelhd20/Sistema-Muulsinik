@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Measure;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Vendor;
-use Illuminate\Support\Str;
 
 /**
  * Servicio centralizado de normalización de datos.
@@ -34,19 +34,19 @@ class DataNormalizerService
      */
     private const UNIT_MAP = [
         // Pieza
-        'pieza'  => 'pza', 'piezas' => 'pza', 'pz'     => 'pza',
-        'pza'    => 'pza', 'pzas'   => 'pza', 'pzs'    => 'pza',
-        'und'    => 'pza', 'unidad' => 'pza', 'unidades' => 'pza',
-        'u'      => 'pza', 'pc'     => 'pza', 'pcs'    => 'pza',
+        'pieza' => 'pza', 'piezas' => 'pza', 'pz' => 'pza',
+        'pza' => 'pza', 'pzas' => 'pza', 'pzs' => 'pza',
+        'und' => 'pza', 'unidad' => 'pza', 'unidades' => 'pza',
+        'u' => 'pza', 'pc' => 'pza', 'pcs' => 'pza',
 
         // Metro lineal
-        'metro'  => 'm', 'metros' => 'm', 'mt'  => 'm',
-        'mts'    => 'm', 'ml'     => 'm', 'm'   => 'm',
+        'metro' => 'm', 'metros' => 'm', 'mt' => 'm',
+        'mts' => 'm', 'ml' => 'm', 'm' => 'm',
 
         // Metro cuadrado
-        'metro cuadrado'  => 'm2', 'metros cuadrados' => 'm2',
-        'm2'              => 'm2', 'mt2'              => 'm2',
-        'mts2'            => 'm2', 'm²'               => 'm2',
+        'metro cuadrado' => 'm2', 'metros cuadrados' => 'm2',
+        'm2' => 'm2', 'mt2' => 'm2',
+        'mts2' => 'm2', 'm²' => 'm2',
 
         // Metro cúbico
         'metro cubico' => 'm3', 'metro cúbico' => 'm3',
@@ -55,28 +55,28 @@ class DataNormalizerService
 
         // Kilogramo
         'kilogramo' => 'kg', 'kilogramos' => 'kg', 'kgs' => 'kg',
-        'kilo'      => 'kg', 'kilos'      => 'kg', 'kg'  => 'kg',
+        'kilo' => 'kg', 'kilos' => 'kg', 'kg' => 'kg',
 
         // Litro
-        'litro'  => 'lt', 'litros' => 'lt', 'l'   => 'lt',
-        'lts'    => 'lt', 'lt'     => 'lt',
+        'litro' => 'lt', 'litros' => 'lt', 'l' => 'lt',
+        'lts' => 'lt', 'lt' => 'lt',
 
         // Bulto
-        'bulto'  => 'bulto', 'bultos' => 'bulto', 'bto' => 'bulto',
-        'btos'   => 'bulto',
+        'bulto' => 'bulto', 'bultos' => 'bulto', 'bto' => 'bulto',
+        'btos' => 'bulto',
 
         // Rollo
-        'rollo'  => 'rollo', 'rollos' => 'rollo', 'rll' => 'rollo',
+        'rollo' => 'rollo', 'rollos' => 'rollo', 'rll' => 'rollo',
 
         // Caja
-        'caja'   => 'caja', 'cajas' => 'caja',
+        'caja' => 'caja', 'cajas' => 'caja',
 
         // Paquete
         'paquete' => 'paquete', 'paquetes' => 'paquete', 'paq' => 'paquete',
 
         // Tonelada
-        'tonelada'  => 'ton', 'toneladas' => 'ton', 'ton' => 'ton',
-        'tons'      => 'ton',
+        'tonelada' => 'ton', 'toneladas' => 'ton', 'ton' => 'ton',
+        'tons' => 'ton',
 
         // Cubo
         'cubo' => 'cubo', 'cubos' => 'cubo',
@@ -86,7 +86,7 @@ class DataNormalizerService
 
         // Galón
         'galon' => 'galon', 'galón' => 'galon', 'galones' => 'galon',
-        'gal'   => 'galon',
+        'gal' => 'galon',
 
         // Servicio
         'servicio' => 'servicio', 'servicios' => 'servicio', 'srv' => 'servicio',
@@ -185,8 +185,8 @@ class DataNormalizerService
      * Elimina puntos, espacios extra y busca en el mapeo exhaustivo.
      * Si no encuentra coincidencia, devuelve el valor limpio tal cual.
      *
-     * @param  string $rawUnit  Unidad tal como vino del OCR/IA ("PZA.", "metros", "m²")
-     * @return string           Forma canónica ("pza", "m", "m2")
+     * @param  string  $rawUnit  Unidad tal como vino del OCR/IA ("PZA.", "metros", "m²")
+     * @return string Forma canónica ("pza", "m", "m2")
      */
     public function normalizeUnit(string $rawUnit): string
     {
@@ -206,9 +206,9 @@ class DataNormalizerService
      * 2. Hint proporcionado por la IA ($aiHint) — útil para unidades nuevas
      * 3. Fallback: ucfirst de la abreviatura
      *
-     * @param  string      $canonicalUnit  Unidad canónica (e.g., "pza", "m2", "jg")
-     * @param  string|null $aiHint         Nombre sugerido por la IA (e.g., "Juego")
-     * @return string                      Nombre completo (e.g., "Pieza", "Juego")
+     * @param  string  $canonicalUnit  Unidad canónica (e.g., "pza", "m2", "jg")
+     * @param  string|null  $aiHint  Nombre sugerido por la IA (e.g., "Juego")
+     * @return string Nombre completo (e.g., "Pieza", "Juego")
      */
     public function getUnitName(string $canonicalUnit, ?string $aiHint = null): string
     {
@@ -218,7 +218,7 @@ class DataNormalizerService
         }
 
         // 2. Hint de la IA: cubre unidades nuevas no mapeadas (jg → Juego, bls → Bolsa)
-        if (!empty($aiHint)) {
+        if (! empty($aiHint)) {
             return mb_convert_case(trim($aiHint), MB_CASE_TITLE, 'UTF-8');
         }
 
@@ -233,8 +233,8 @@ class DataNormalizerService
      * comparar dos strings que representan lo mismo pero se escriben diferente.
      * NO modifica el significado, solo la representación.
      *
-     * @param  string $text  Texto crudo
-     * @return string        Texto normalizado (lowercase, sin acentos, sin puntuación extra)
+     * @param  string  $text  Texto crudo
+     * @return string Texto normalizado (lowercase, sin acentos, sin puntuación extra)
      */
     public function normalizeText(string $text): string
     {
@@ -263,8 +263,8 @@ class DataNormalizerService
      * "Materiales Pérez"     → "materiales perez"
      * "MAT. PEREZ SA DE CV"  → "mat perez"
      *
-     * @param  string $rawName  Nombre tal como vino del documento
-     * @return string           Nombre limpio para comparación
+     * @param  string  $rawName  Nombre tal como vino del documento
+     * @return string Nombre limpio para comparación
      */
     public function normalizeSupplierName(string $rawName): string
     {
@@ -272,13 +272,13 @@ class DataNormalizerService
 
         // Quitar sufijos legales (del más largo al más corto para evitar matcheos parciales)
         foreach (self::LEGAL_SUFFIXES as $suffix) {
-            $text = rtrim(preg_replace('/' . preg_quote($suffix, '/') . '\s*$/i', '', $text));
+            $text = rtrim(preg_replace('/'.preg_quote($suffix, '/').'\s*$/i', '', $text));
         }
 
         // Quitar prefijos comerciales genéricos que no aportan identidad
         $normalized = $this->normalizeText($text);
         foreach (self::BUSINESS_PREFIXES as $prefix) {
-            if (str_starts_with($normalized, $prefix . ' ')) {
+            if (str_starts_with($normalized, $prefix.' ')) {
                 $stripped = trim(substr($normalized, strlen($prefix) + 1));
                 // Solo quitar si queda algo sustancial (≥ 3 chars)
                 if (mb_strlen($stripped) >= 3) {
@@ -293,9 +293,6 @@ class DataNormalizerService
 
     /**
      * Normaliza un nombre de vendedor (persona).
-     *
-     * @param  string $rawName
-     * @return string
      */
     public function normalizeVendorName(string $rawName): string
     {
@@ -314,9 +311,9 @@ class DataNormalizerService
      * 2. Match por tokens clave significativos
      * 3. Fuzzy match sobre candidatos filtrados
      *
-     * @param  string $rawName  Nombre crudo del proveedor (del OCR/IA)
+     * @param  string  $rawName  Nombre crudo del proveedor (del OCR/IA)
      * @return array{match: Supplier, confidence: float, source: string}|null
-     *         null si no se encuentra ningún candidato razonable.
+     *                                                                        null si no se encuentra ningún candidato razonable.
      */
     public function findMatchingSupplier(string $rawName): ?array
     {
@@ -330,9 +327,9 @@ class DataNormalizerService
         $supplier = Supplier::where('normalized_name', $normalized)->first();
         if ($supplier) {
             return [
-                'match'      => $supplier,
+                'match' => $supplier,
                 'confidence' => 1.0,
-                'source'     => 'exact',
+                'source' => 'exact',
             ];
         }
 
@@ -350,7 +347,7 @@ class DataNormalizerService
 
         // Fallback: si no hay candidatos con todos los tokens, buscar con el más largo
         if ($candidates->isEmpty() && count($tokens) > 1) {
-            $longestToken = collect($tokens)->sortByDesc(fn($t) => mb_strlen($t))->first();
+            $longestToken = collect($tokens)->sortByDesc(fn ($t) => mb_strlen($t))->first();
             $candidates = Supplier::where('normalized_name', 'LIKE', "%{$longestToken}%")
                 ->limit(30)
                 ->get();
@@ -363,10 +360,9 @@ class DataNormalizerService
     /**
      * Busca una categoría existente que coincida con el nombre crudo.
      *
-     * @param  string $rawName  Nombre de la categoría (del OCR/IA)
-     * @return \App\Models\Category|null
+     * @param  string  $rawName  Nombre de la categoría (del OCR/IA)
      */
-    public function findMatchingCategory(string $rawName): ?\App\Models\Category
+    public function findMatchingCategory(string $rawName): ?Category
     {
         if (empty(trim($rawName))) {
             return null;
@@ -376,7 +372,7 @@ class DataNormalizerService
 
         // 1. Match exacto: buscar directamente comparando nombres normalizados
         //    (evita REGEXP_REPLACE que no está disponible en MySQL < 8.0)
-        $categories = \App\Models\Category::limit(100)->get();  // categorías son pocas
+        $categories = Category::limit(100)->get();  // categorías son pocas
 
         foreach ($categories as $candidate) {
             if ($this->normalizeText($candidate->name) === $normalized) {
@@ -387,7 +383,7 @@ class DataNormalizerService
         // 2. Fuzzy match: solo sobre candidatos con prefijo común (máx 30)
         $prefix = substr($normalized, 0, 3);
         if (strlen($prefix) >= 2) {
-            $candidates = \App\Models\Category::where('name', 'like', '%' . $prefix . '%')
+            $candidates = Category::where('name', 'like', '%'.$prefix.'%')
                 ->limit(30)
                 ->get();
 
@@ -420,8 +416,8 @@ class DataNormalizerService
      * Busca dentro del scope del proveedor indicado.
      * Usa la misma estrategia de 3 fases que findMatchingSupplier.
      *
-     * @param  string $rawName    Nombre crudo del vendedor (del OCR/IA)
-     * @param  int|null $supplierId  ID del proveedor para filtrar
+     * @param  string  $rawName  Nombre crudo del vendedor (del OCR/IA)
+     * @param  int|null  $supplierId  ID del proveedor para filtrar
      * @return array{match: Vendor, confidence: float, source: string}|null
      */
     public function findMatchingVendor(string $rawName, ?int $supplierId = null): ?array
@@ -443,9 +439,9 @@ class DataNormalizerService
         foreach ($allVendors as $vendor) {
             if ($this->normalizeVendorName($vendor->name) === $normalized) {
                 return [
-                    'match'      => $vendor,
+                    'match' => $vendor,
                     'confidence' => 1.0,
-                    'source'     => 'exact',
+                    'source' => 'exact',
                 ];
             }
         }
@@ -455,7 +451,7 @@ class DataNormalizerService
             $allVendors,
             $normalized,
             0.70,
-            fn($v) => $this->normalizeVendorName($v->name)
+            fn ($v) => $this->normalizeVendorName($v->name)
         );
     }
 
@@ -464,7 +460,7 @@ class DataNormalizerService
      *
      * Aplica primero el UNIT_MAP determinista, luego busca en BD.
      *
-     * @param  string $rawUnit  Unidad tal como vino del OCR/IA
+     * @param  string  $rawUnit  Unidad tal como vino del OCR/IA
      * @return array{match: Measure, confidence: float, source: string, canonical: string}|null
      */
     public function findMatchingMeasure(string $rawUnit): ?array
@@ -479,10 +475,10 @@ class DataNormalizerService
         $measure = Measure::where('abbreviation', $canonical)->first();
         if ($measure) {
             return [
-                'match'      => $measure,
+                'match' => $measure,
                 'confidence' => 1.0,
-                'source'     => 'exact',
-                'canonical'  => $canonical,
+                'source' => 'exact',
+                'canonical' => $canonical,
             ];
         }
 
@@ -491,10 +487,10 @@ class DataNormalizerService
         $measure = Measure::whereRaw('LOWER(name) = ?', [mb_strtolower($canonicalName)])->first();
         if ($measure) {
             return [
-                'match'      => $measure,
+                'match' => $measure,
                 'confidence' => 0.95,
-                'source'     => 'name_match',
-                'canonical'  => $canonical,
+                'source' => 'name_match',
+                'canonical' => $canonical,
             ];
         }
 
@@ -515,7 +511,7 @@ class DataNormalizerService
      * Principio: la IA es inconsistente limpiando códigos, así que
      * nuestro matching siempre normaliza ambos lados de la comparación.
      *
-     * @param  string $rawName  Nombre del producto (del OCR/IA)
+     * @param  string  $rawName  Nombre del producto (del OCR/IA)
      * @return array{match: Product, confidence: float, source: string}|null
      */
     public function findMatchingProduct(string $rawName): ?array
@@ -525,15 +521,15 @@ class DataNormalizerService
         }
 
         $normalized = $this->normalizeText($rawName);
-        $cleanName  = $this->stripProductCodes($normalized);
+        $cleanName = $this->stripProductCodes($normalized);
 
         // Fase 1a: Match exacto directo (nombre tal cual vs BD)
         $product = Product::where('normalized_name', $normalized)->first();
         if ($product) {
             return [
-                'match'      => $product,
+                'match' => $product,
                 'confidence' => 1.0,
-                'source'     => 'exact',
+                'source' => 'exact',
             ];
         }
 
@@ -543,9 +539,9 @@ class DataNormalizerService
             $product = Product::where('normalized_name', $cleanName)->first();
             if ($product) {
                 return [
-                    'match'      => $product,
+                    'match' => $product,
                     'confidence' => 0.98,
-                    'source'     => 'exact_cleaned',
+                    'source' => 'exact_cleaned',
                 ];
             }
         }
@@ -563,9 +559,9 @@ class DataNormalizerService
             );
             if ($candidateClean === $cleanName) {
                 return [
-                    'match'      => $candidate,
+                    'match' => $candidate,
                     'confidence' => 0.95,
-                    'source'     => 'exact_stripped',
+                    'source' => 'exact_stripped',
                 ];
             }
         }
@@ -584,7 +580,7 @@ class DataNormalizerService
 
         // Fallback: si no hay candidatos con todos los tokens, buscar con los 2 más largos
         if ($candidates->isEmpty() && count($tokens) > 1) {
-            $topTokens = collect($tokens)->sortByDesc(fn($t) => mb_strlen($t))->take(2)->values();
+            $topTokens = collect($tokens)->sortByDesc(fn ($t) => mb_strlen($t))->take(2)->values();
             $query = Product::query();
             foreach ($topTokens as $token) {
                 $query->where('normalized_name', 'LIKE', "%{$token}%");
@@ -598,7 +594,7 @@ class DataNormalizerService
             $candidates,
             $cleanName,
             0.70,
-            fn($p) => $this->stripProductCodes(
+            fn ($p) => $this->stripProductCodes(
                 $p->normalized_name ?? $this->normalizeText($p->canonical_name)
             )
         );
@@ -614,31 +610,31 @@ class DataNormalizerService
      *
      * NO busca coincidencias en BD (eso es Capa 2, invocado aparte).
      *
-     * @param  array $items  Lista de ítems del parser
-     * @return array         Ítems con unidades y nombres normalizados
+     * @param  array  $items  Lista de ítems del parser
+     * @return array Ítems con unidades y nombres normalizados
      */
     public function normalizeItems(array $items): array
     {
         return array_map(function (array $item) {
             // Normalizar unidad
-            if (!empty($item['unit'])) {
+            if (! empty($item['unit'])) {
                 $item['unit'] = $this->normalizeUnit($item['unit']);
             }
 
             // Propagar unit_name de la IA para unidades nuevas no mapeadas
             // Se preserva tal cual para usarse como hint en getUnitName()
-            if (!empty($item['unit_name'])) {
+            if (! empty($item['unit_name'])) {
                 $item['unit_name'] = mb_convert_case(trim($item['unit_name']), MB_CASE_TITLE, 'UTF-8');
             }
 
             // Limpiar nombre: normalización determinista de producto
             // Esto absorbe las inconsistencias de la IA al quitar/dejar códigos SKU
-            if (!empty($item['name'])) {
+            if (! empty($item['name'])) {
                 $item['name'] = $this->normalizeProductName($item['name']);
             }
 
             // Limpiar categoría: Mayúscula al inicio de cada palabra
-            if (!empty($item['category'])) {
+            if (! empty($item['category'])) {
                 $item['category'] = $this->normalizeTitleCase($item['category']);
             }
 
@@ -648,9 +644,6 @@ class DataNormalizerService
 
     /**
      * Normaliza un texto a Title Case (Mayúscula al inicio de cada palabra).
-     *
-     * @param  string $text
-     * @return string
      */
     public function normalizeTitleCase(string $text): string
     {
@@ -663,9 +656,9 @@ class DataNormalizerService
         foreach ($words as $i => $word) {
             $lower = mb_strtolower($word, 'UTF-8');
             // Primera palabra siempre en mayúscula; partículas en minúscula salvo al inicio
-            if ($i === 0 || !in_array($lower, $lowercase)) {
+            if ($i === 0 || ! in_array($lower, $lowercase)) {
                 $result[] = mb_strtoupper(mb_substr($word, 0, 1, 'UTF-8'), 'UTF-8')
-                    . mb_strtolower(mb_substr($word, 1, null, 'UTF-8'), 'UTF-8');
+                    .mb_strtolower(mb_substr($word, 1, null, 'UTF-8'), 'UTF-8');
             } else {
                 $result[] = $lower;
             }
@@ -684,8 +677,8 @@ class DataNormalizerService
      * Filtra stopwords y palabras cortas para quedarse con
      * los tokens que realmente identifican la entidad.
      *
-     * @param  string $normalized  Texto ya normalizado
-     * @return array<string>       Tokens significativos (mín 3 chars)
+     * @param  string  $normalized  Texto ya normalizado
+     * @return array<string> Tokens significativos (mín 3 chars)
      */
     private function extractKeyTokens(string $normalized): array
     {
@@ -694,7 +687,7 @@ class DataNormalizerService
 
         return array_values(array_filter(
             $tokens,
-            fn(string $t) => mb_strlen($t) >= 3 && !in_array($t, $stopwords)
+            fn (string $t) => mb_strlen($t) >= 3 && ! in_array($t, $stopwords)
         ));
     }
 
@@ -704,10 +697,10 @@ class DataNormalizerService
      * Método reutilizable por todos los findMatching* para evitar
      * duplicar la lógica de selección del mejor candidato.
      *
-     * @param  iterable  $candidates   Colección de modelos candidatos
-     * @param  string    $normalized   Texto normalizado a comparar
-     * @param  float     $threshold    Umbral mínimo de similitud (0.0 - 1.0)
-     * @param  callable|null $extractor Función para extraer el nombre normalizado del modelo
+     * @param  iterable  $candidates  Colección de modelos candidatos
+     * @param  string  $normalized  Texto normalizado a comparar
+     * @param  float  $threshold  Umbral mínimo de similitud (0.0 - 1.0)
+     * @param  callable|null  $extractor  Función para extraer el nombre normalizado del modelo
      * @return array{match: mixed, confidence: float, source: string}|null
      */
     private function bestFuzzyMatch(
@@ -734,9 +727,9 @@ class DataNormalizerService
 
         if ($bestMatch !== null && $bestScore >= $threshold) {
             return [
-                'match'      => $bestMatch,
+                'match' => $bestMatch,
                 'confidence' => round($bestScore, 2),
-                'source'     => 'fuzzy_match',
+                'source' => 'fuzzy_match',
             ];
         }
 
@@ -751,7 +744,7 @@ class DataNormalizerService
      * 2. Coeficiente Jaccard de tokens significativos
      * 3. Bonus por contención (un nombre dentro de otro)
      *
-     * @return float  Valor entre 0.0 y 1.0
+     * @return float Valor entre 0.0 y 1.0
      */
     private function calculateSimilarity(string $a, string $b): float
     {
@@ -772,16 +765,16 @@ class DataNormalizerService
         $tokensB = array_filter(explode(' ', $b), fn (string $w) => mb_strlen($w) >= 3);
 
         $tokenFinal = 0.0;
-        if (!empty($tokensA) && !empty($tokensB)) {
+        if (! empty($tokensA) && ! empty($tokensB)) {
             $intersection = count(array_intersect($tokensA, $tokensB));
-            $union        = count(array_unique(array_merge($tokensA, $tokensB)));
-            $jaccard      = $union > 0 ? $intersection / $union : 0;
+            $union = count(array_unique(array_merge($tokensA, $tokensB)));
+            $jaccard = $union > 0 ? $intersection / $union : 0;
 
             // Subset bonus: si TODOS los tokens del más corto están en el más largo,
             // el score mínimo es alto — indica que uno es versión abreviada del otro.
             // Ej: "leticia dzul" tiene ["leticia","dzul"], ambos en ["leticia","alejandra","dzul","uh"]
             $shorter = count($tokensA) <= count($tokensB) ? $tokensA : $tokensB;
-            $longer  = count($tokensA) >  count($tokensB) ? $tokensA : $tokensB;
+            $longer = count($tokensA) > count($tokensB) ? $tokensA : $tokensB;
             $subsetRatio = count($shorter) > 0
                 ? count(array_intersect($shorter, $longer)) / count($shorter)
                 : 0;
@@ -797,7 +790,7 @@ class DataNormalizerService
         // Señal 3: Contención directa de subcadenas
         $containmentBonus = 0.0;
         $shorter = mb_strlen($a) <= mb_strlen($b) ? $a : $b;
-        $longer  = mb_strlen($a) >  mb_strlen($b) ? $a : $b;
+        $longer = mb_strlen($a) > mb_strlen($b) ? $a : $b;
         if (mb_strlen($shorter) >= 3 && str_contains($longer, $shorter)) {
             // Un nombre es subcadena completa del otro → match muy probable
             $containmentBonus = 0.85;
@@ -805,8 +798,9 @@ class DataNormalizerService
 
         // Combinación: tomar el mejor indicador entre las 3 señales
         // Token analysis y containment son más confiables que character-level
-        if (!empty($tokensA) && !empty($tokensB)) {
+        if (! empty($tokensA) && ! empty($tokensB)) {
             $combined = ($tokenFinal * 0.55) + ($charScore * 0.45);
+
             return max($combined, $containmentBonus);
         }
 
@@ -827,8 +821,8 @@ class DataNormalizerService
      *   "Varilla 3/8 x 12m VC-38"    → "VARILLA 3/8 X 12M"
      *   "BLOCK 15X20X40"             → "BLOCK 15X20X40" (sin cambio)
      *
-     * @param  string $rawName  Nombre crudo del producto
-     * @return string           Nombre limpio, en MAYÚSCULAS, sin códigos SKU
+     * @param  string  $rawName  Nombre crudo del producto
+     * @return string Nombre limpio, en MAYÚSCULAS, sin códigos SKU
      */
     public function normalizeProductName(string $rawName): string
     {
@@ -862,8 +856,8 @@ class DataNormalizerService
      * Regla de oro: en caso de duda, CONSERVAR el token.
      * Es mejor dejar un código en el nombre que eliminar una medida real.
      *
-     * @param  string $name  Nombre del producto (ya en mayúsculas)
-     * @return string        Nombre limpio de códigos
+     * @param  string  $name  Nombre del producto (ya en mayúsculas)
+     * @return string Nombre limpio de códigos
      */
     private function stripProductCodes(string $name): string
     {
@@ -883,21 +877,22 @@ class DataNormalizerService
         //   Pulgadas:     1/2", 3/8", 6"
 
         $measurePattern = '/'
-            . '\d+X\d+(?:X\d+)?'           // Dimensiones: 15X20X40, 4X8
-            . '|\d+\/\d+(?:\s*(?:"|PULG))?' // Fracciones con/sin pulgadas: 3/8, 1/2", 3/4 PULG
-            . '|\d+(?:\.\d+)?\s*(?:KG|MM|CM|LT|LTS|M[23]?|OZ|GAL|PULG|PLG|TON|GR|ML|\")'  // Número+unidad: 50KG, 100MM
-            . '|CAL\.?\s*\d+'               // Calibre: CAL 14, CAL. 12
-            . '|CALIBRE\s*\d+'              // CALIBRE 10
-            . '|DIAM\.?\s*\d+'              // Diámetro: DIAM 4, DIAM. 100
-            . '|NO\.?\s*\d+'               // Número: NO. 5, NO 3
-            . '|#\d{1,3}(?!\d)'             // Calibre con #: #4, #10 (máx 3 dígitos)
-            . '/i';
+            .'\d+X\d+(?:X\d+)?'           // Dimensiones: 15X20X40, 4X8
+            .'|\d+\/\d+(?:\s*(?:"|PULG))?' // Fracciones con/sin pulgadas: 3/8, 1/2", 3/4 PULG
+            .'|\d+(?:\.\d+)?\s*(?:KG|MM|CM|LT|LTS|M[23]?|OZ|GAL|PULG|PLG|TON|GR|ML|\")'  // Número+unidad: 50KG, 100MM
+            .'|CAL\.?\s*\d+'               // Calibre: CAL 14, CAL. 12
+            .'|CALIBRE\s*\d+'              // CALIBRE 10
+            .'|DIAM\.?\s*\d+'              // Diámetro: DIAM 4, DIAM. 100
+            .'|NO\.?\s*\d+'               // Número: NO. 5, NO 3
+            .'|#\d{1,3}(?!\d)'             // Calibre con #: #4, #10 (máx 3 dígitos)
+            .'/i';
 
         // Extraer y marcar todas las medidas para protegerlas
         $protectedTokens = [];
         $nameWithPlaceholders = preg_replace_callback($measurePattern, function ($match) use (&$protectedTokens) {
             $index = count($protectedTokens);
             $protectedTokens[] = $match[0];
+
             return "__MEASURE_{$index}__";
         }, $name);
 
@@ -920,12 +915,13 @@ class DataNormalizerService
             $content = trim($match[1]);
             // Si el contenido del paréntesis tiene un placeholder de medida, conservarlo
             if (str_contains($content, '__MEASURE_')) {
-                return ' ' . $content . ' ';
+                return ' '.$content.' ';
             }
             // Si parece una medida (tiene número + unidad), conservar
             if (preg_match('/\d+\s*(?:KG|MM|CM|LT|OZ|M|GAL|PULG)/i', $content)) {
-                return ' ' . $content . ' ';
+                return ' '.$content.' ';
             }
+
             // Eliminar — probablemente es código o info irrelevante
             return ' ';
         }, $cleaned);

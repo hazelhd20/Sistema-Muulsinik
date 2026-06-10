@@ -1,15 +1,18 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+use App\Services\AI\GeminiStructurerService;
+use Illuminate\Contracts\Console\Kernel;
 
-$app = require_once __DIR__ . '/bootstrap/app.php';
-$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+require __DIR__.'/vendor/autoload.php';
 
-$gemini = app(\App\Services\AI\GeminiStructurerService::class);
+$app = require_once __DIR__.'/bootstrap/app.php';
+$app->make(Kernel::class)->bootstrap();
 
-echo "Gemini available: " . ($gemini->isAvailable() ? 'YES' : 'NO') . PHP_EOL;
+$gemini = app(GeminiStructurerService::class);
 
-$testText = <<<TEXT
+echo 'Gemini available: '.($gemini->isAvailable() ? 'YES' : 'NO').PHP_EOL;
+
+$testText = <<<'TEXT'
 MATERIALES EL CONSTRUCTOR S.A. DE C.V.
 Sucursal Centro
 Cotización #4521
@@ -21,19 +24,19 @@ Cotización #4521
 5. ARENA-RIO Arena de rio cribada    5 m3   $450.00
 TEXT;
 
-echo "\n=== Enviando texto a Gemini AI... ===" . PHP_EOL;
+echo "\n=== Enviando texto a Gemini AI... ===".PHP_EOL;
 
 $result = $gemini->structureRawText($testText);
 
 if ($result === null) {
-    echo "ERROR: Gemini retornó null (falló o no disponible)" . PHP_EOL;
-    echo "Revisa los logs en storage/logs/laravel.log" . PHP_EOL;
+    echo 'ERROR: Gemini retornó null (falló o no disponible)'.PHP_EOL;
+    echo 'Revisa los logs en storage/logs/laravel.log'.PHP_EOL;
 } else {
-    echo "\n✅ Gemini respondió exitosamente!" . PHP_EOL;
-    echo "Proveedor detectado: " . ($result['supplier'] ?? 'N/A') . PHP_EOL;
-    echo "Tienda: " . ($result['store'] ?? 'N/A') . PHP_EOL;
-    echo "\nProductos extraídos:" . PHP_EOL;
+    echo "\n✅ Gemini respondió exitosamente!".PHP_EOL;
+    echo 'Proveedor detectado: '.($result['supplier'] ?? 'N/A').PHP_EOL;
+    echo 'Tienda: '.($result['store'] ?? 'N/A').PHP_EOL;
+    echo "\nProductos extraídos:".PHP_EOL;
     foreach ($result['items'] as $i => $item) {
-        echo "  " . ($i + 1) . ". \"{$item['name']}\" — Cant: {$item['quantity']} {$item['unit']} @ \${$item['unit_price']}" . PHP_EOL;
+        echo '  '.($i + 1).". \"{$item['name']}\" — Cant: {$item['quantity']} {$item['unit']} @ \${$item['unit_price']}".PHP_EOL;
     }
 }

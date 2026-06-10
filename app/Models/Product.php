@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -13,8 +13,8 @@ class Product extends Model
     protected static function booted()
     {
         static::saving(function ($product) {
-            if ($product->isDirty('canonical_name') && !empty($product->canonical_name)) {
-                $normalizer = app(\App\Services\DataNormalizerService::class);
+            if ($product->isDirty('canonical_name') && ! empty($product->canonical_name)) {
+                $normalizer = app(DataNormalizerService::class);
                 // normalizeProductName() aplica: MAYÚSCULAS + limpieza de códigos SKU + protección de medidas
                 $product->canonical_name = $normalizer->normalizeProductName($product->canonical_name);
                 $product->normalized_name = $normalizer->normalizeText($product->canonical_name);

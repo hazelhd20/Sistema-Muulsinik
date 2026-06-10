@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Quotation;
+use App\Notifications\QuotationProcessed;
 use App\Services\DocumentParsers\DocumentParserFactory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,7 +12,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use App\Notifications\QuotationProcessed;
 
 /**
  * RF-REQ-04 — Procesamiento asíncrono de cotizaciones.
@@ -26,6 +26,7 @@ class ProcessQuotationJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 120;
 
     public function __construct(
@@ -40,22 +41,22 @@ class ProcessQuotationJob implements ShouldQueue
         $quotation->update(['status' => 'processing']);
 
         try {
-            $filePath  = Storage::disk('local')->path($quotation->file_path);
+            $filePath = Storage::disk('local')->path($quotation->file_path);
             $extension = pathinfo($quotation->original_filename, PATHINFO_EXTENSION);
-            $mimeType  = $quotation->file_type ?? mime_content_type($filePath);
+            $mimeType = $quotation->file_type ?? mime_content_type($filePath);
 
             // Resolver parser (la Factory no importa aquí si es async o no,
             // ya estamos dentro del Job)
             $resolution = $factory->resolve($filePath, $mimeType, $extension);
-            $parser     = $resolution['parser'];
+            $parser = $resolution['parser'];
 
             // Ejecutar extracción
             $result = $parser->parse($filePath);
 
             // Guardar resultados en el registro
             $quotation->update([
-                'status'       => 'completed',
-                'raw_text'     => $result['raw_text'] ?? null,
+                'status' => 'completed',
+                'raw_text' => $result['raw_text'] ?? null,
                 'raw_parsed_data' => $result,
                 'processed_at' => now(),
             ]);
@@ -70,7 +71,7 @@ class ProcessQuotationJob implements ShouldQueue
 
         } catch (\Throwable $e) {
             $quotation->update([
-                'status'        => 'failed',
+                'status' => 'failed',
                 'error_message' => $e->getMessage(),
             ]);
 

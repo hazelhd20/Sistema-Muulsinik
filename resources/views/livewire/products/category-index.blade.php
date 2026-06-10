@@ -55,7 +55,7 @@
                                         <div class="flex items-center justify-end gap-1">
                                             <x-button wire:click="openEditModal({{ $category->id }})" variant="icon-primary" icon="pencil" title="Editar categoría" />
                                             <x-button wire:click="delete({{ $category->id }})"
-                                                wire:confirm="¿Seguro que deseas eliminar esta categoría?" variant="icon-danger" icon="trash-2"
+                                                wire:confirm="¿Eliminar esta categoría? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2"
                                                 title="Eliminar categoría" />
                                         </div>
                                     </td>

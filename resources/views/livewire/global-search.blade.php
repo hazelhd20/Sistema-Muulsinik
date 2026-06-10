@@ -62,16 +62,7 @@
                         <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Requisiciones</span>
                     </div>
                     @foreach($results['requisitions'] as $item)
-                        <a href="{{ $item['url'] }}" wire:navigate class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-hover transition-colors group">
-                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-primary-600"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{{ $item['title'] }}</p>
-                                <p class="text-xs-fluid text-text-muted truncate">{{ $item['subtitle'] }}</p>
-                            </div>
-                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        </a>
+                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="primary" />
                     @endforeach
                 </div>
             @endif
@@ -83,16 +74,7 @@
                         <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Proveedores</span>
                     </div>
                     @foreach($results['suppliers'] as $item)
-                        <a href="{{ $item['url'] }}" wire:navigate class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-hover transition-colors group">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-emerald-600"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{{ $item['title'] }}</p>
-                                <p class="text-xs-fluid text-text-muted truncate">{{ $item['subtitle'] }}</p>
-                            </div>
-                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        </a>
+                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="success" />
                     @endforeach
                 </div>
             @endif
@@ -104,16 +86,7 @@
                         <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Proyectos</span>
                     </div>
                     @foreach($results['projects'] as $item)
-                        <a href="{{ $item['url'] }}" wire:navigate class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-hover transition-colors group">
-                            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-amber-600"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{{ $item['title'] }}</p>
-                                <p class="text-xs-fluid text-text-muted truncate">{{ $item['subtitle'] }}</p>
-                            </div>
-                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        </a>
+                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="warning" />
                     @endforeach
                 </div>
             @endif
@@ -125,16 +98,7 @@
                         <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Productos</span>
                     </div>
                     @foreach($results['products'] as $item)
-                        <a href="{{ $item['url'] }}" wire:navigate class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-hover transition-colors group">
-                            <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-sky-600"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{{ $item['title'] }}</p>
-                                <p class="text-xs-fluid text-text-muted truncate">{{ $item['subtitle'] }}</p>
-                            </div>
-                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        </a>
+                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="info" />
                     @endforeach
                 </div>
             @endif
@@ -144,8 +108,6 @@
         @if($hasAnyResults)
             <div class="px-4 py-2 bg-surface-hover border-t border-border flex items-center justify-between">
                 <div class="flex items-center gap-3 text-xs-fluid text-text-muted">
-                    <span><kbd class="px-1 py-0.5 bg-surface-card rounded border border-border">↑↓</kbd> navegar</span>
-                    <span><kbd class="px-1 py-0.5 bg-surface-card rounded border border-border">↵</kbd> seleccionar</span>
                     <span><kbd class="px-1 py-0.5 bg-surface-card rounded border border-border">esc</kbd> cerrar</span>
                 </div>
             </div>
@@ -164,7 +126,7 @@
         <div
             x-show="open"
             x-transition
-            class="fixed inset-0 z-50 bg-surface-main"
+            class="fixed inset-0 z-[60] bg-surface-main"
             style="display: none;"
         >
             <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
@@ -203,13 +165,7 @@
                             <span class="text-xs-fluid font-semibold text-text-muted uppercase">Requisiciones</span>
                         </div>
                         @foreach($results['requisitions'] as $item)
-                            <a href="{{ $item['url'] }}" wire:navigate @click="open = false" class="flex items-center gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-primary-600"></i>
-                                <div>
-                                    <p class="text-small font-medium text-text-primary">{{ $item['title'] }}</p>
-                                    <p class="text-xs-fluid text-text-muted">{{ $item['subtitle'] }}</p>
-                                </div>
-                            </a>
+                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="primary" :isMobile="true" />
                         @endforeach
                     </div>
                 @endif
@@ -220,13 +176,7 @@
                             <span class="text-xs-fluid font-semibold text-text-muted uppercase">Proveedores</span>
                         </div>
                         @foreach($results['suppliers'] as $item)
-                            <a href="{{ $item['url'] }}" wire:navigate @click="open = false" class="flex items-center gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-emerald-600"></i>
-                                <div>
-                                    <p class="text-small font-medium text-text-primary">{{ $item['title'] }}</p>
-                                    <p class="text-xs-fluid text-text-muted">{{ $item['subtitle'] }}</p>
-                                </div>
-                            </a>
+                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="success" :isMobile="true" />
                         @endforeach
                     </div>
                 @endif
@@ -237,13 +187,7 @@
                             <span class="text-xs-fluid font-semibold text-text-muted uppercase">Proyectos</span>
                         </div>
                         @foreach($results['projects'] as $item)
-                            <a href="{{ $item['url'] }}" wire:navigate @click="open = false" class="flex items-center gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-amber-600"></i>
-                                <div>
-                                    <p class="text-small font-medium text-text-primary">{{ $item['title'] }}</p>
-                                    <p class="text-xs-fluid text-text-muted">{{ $item['subtitle'] }}</p>
-                                </div>
-                            </a>
+                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="warning" :isMobile="true" />
                         @endforeach
                     </div>
                 @endif
@@ -254,13 +198,7 @@
                             <span class="text-xs-fluid font-semibold text-text-muted uppercase">Productos</span>
                         </div>
                         @foreach($results['products'] as $item)
-                            <a href="{{ $item['url'] }}" wire:navigate @click="open = false" class="flex items-center gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4 text-sky-600"></i>
-                                <div>
-                                    <p class="text-small font-medium text-text-primary">{{ $item['title'] }}</p>
-                                    <p class="text-xs-fluid text-text-muted">{{ $item['subtitle'] }}</p>
-                                </div>
-                            </a>
+                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="info" :isMobile="true" />
                         @endforeach
                     </div>
                 @endif

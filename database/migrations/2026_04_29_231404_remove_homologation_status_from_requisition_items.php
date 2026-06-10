@@ -26,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('requisition_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('requisition_items', 'homologation_status')) {
+            if (! Schema::hasColumn('requisition_items', 'homologation_status')) {
                 $table->string('homologation_status')->default('pending')->after('supplier_id');
             }
         });

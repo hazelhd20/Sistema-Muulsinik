@@ -29,12 +29,12 @@ class RequisitionPdfController extends Controller
         if ($companyLogo && Storage::disk('public')->exists($companyLogo)) {
             $logoPath = Storage::disk('public')->path($companyLogo);
             $mimeType = mime_content_type($logoPath);
-            $logoData = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($logoPath));
+            $logoData = 'data:'.$mimeType.';base64,'.base64_encode(file_get_contents($logoPath));
         } else {
             // Fallback al logo SVG por defecto
             $logoPath = public_path('images/logo_muulsinik.svg');
             $logoData = file_exists($logoPath)
-                ? 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath))
+                ? 'data:image/svg+xml;base64,'.base64_encode(file_get_contents($logoPath))
                 : null;
         }
 
@@ -59,7 +59,7 @@ class RequisitionPdfController extends Controller
             ->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
         $reqPrefix = Setting::get('req_prefix', 'REQ-');
-        $filename = $reqPrefix . ($requisition->number ?? $requisition->id) . '.pdf';
+        $filename = $reqPrefix.($requisition->number ?? $requisition->id).'.pdf';
 
         return $pdf->stream($filename);
     }

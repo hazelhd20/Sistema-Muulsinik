@@ -64,7 +64,7 @@
             x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': {{ $activeCount }} > 0 || open }">
             Filtros
             @if($activeCount > 0)
-                <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full leading-none">{{ $activeCount }}</span>
+                <span class="count-badge ml-1.5">{{ $activeCount }}</span>
             @endif
         </x-button>
     </div>

@@ -35,7 +35,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('expense_allocations');
-        
+
         Schema::table('expenses', function (Blueprint $table) {
             $table->dropColumn('is_distributed');
             // Reverting to non-nullable might fail if there are nulls, so we're careful.

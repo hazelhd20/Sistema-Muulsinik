@@ -3,10 +3,12 @@
 namespace App\Livewire\Reports;
 
 use App\Models\Expense;
+use App\Models\ExpenseAllocation;
 use App\Models\Project;
 use App\Models\Requisition;
 use App\Models\RequisitionItem;
 use App\Models\Supplier;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -15,17 +17,20 @@ use Livewire\Component;
 class ReportIndex extends Component
 {
     public string $period = 'month';
+
     public string $projectFilter = '';
+
     public string $activeTab = 'overview';
 
     public function updatedPeriod(): void
     { /* triggers re-render */
     }
+
     public function updatedProjectFilter(): void
     { /* triggers re-render */
     }
 
-    private function getDateFrom(): \Carbon\Carbon
+    private function getDateFrom(): Carbon
     {
         return match ($this->period) {
             'week' => now()->subWeek(),
@@ -52,7 +57,7 @@ class ReportIndex extends Component
 
     /** Datos para la pestaña de Resumen General */
     /** Datos para la pestaña de Resumen General */
-    private function getOverviewData(\Carbon\Carbon $dateFrom): array
+    private function getOverviewData(Carbon $dateFrom): array
     {
         // 1. Calcular el total de gastos del período (Directos + Requisiciones Aprobadas + Distribuidos si hay proyecto)
         if ($this->projectFilter) {
@@ -60,11 +65,11 @@ class ReportIndex extends Component
                 ->where('date', '>=', $dateFrom)
                 ->sum('amount');
 
-            $distributed = (float) \App\Models\ExpenseAllocation::where('project_id', $this->projectFilter)
-                ->whereHas('expense', fn($q) => $q->where('date', '>=', $dateFrom))
+            $distributed = (float) ExpenseAllocation::where('project_id', $this->projectFilter)
+                ->whereHas('expense', fn ($q) => $q->where('date', '>=', $dateFrom))
                 ->sum('amount');
 
-            $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                 ->where('requisitions.project_id', $this->projectFilter)
                 ->where('requisitions.status', 'aprobada')
                 ->where('requisitions.created_at', '>=', $dateFrom)
@@ -79,7 +84,7 @@ class ReportIndex extends Component
         } else {
             $direct = (float) Expense::where('date', '>=', $dateFrom)->sum('amount');
 
-            $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                 ->where('requisitions.status', 'aprobada')
                 ->where('requisitions.created_at', '>=', $dateFrom)
                 ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
@@ -97,10 +102,10 @@ class ReportIndex extends Component
 
         $requisitionsApproved = Requisition::where('status', 'aprobada')
             ->where('created_at', '>=', $dateFrom)
-            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
             ->count();
         $requisitionsPending = Requisition::where('status', 'pendiente')
-            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
             ->count();
 
         // Gastos por categoría
@@ -113,7 +118,7 @@ class ReportIndex extends Component
                 ->get();
 
             // Gastos distribuidos (prorrateados) asignados al proyecto
-            $allocatedExpenses = \App\Models\ExpenseAllocation::select('expenses.category', DB::raw('SUM(expense_allocations.amount) as total'))
+            $allocatedExpenses = ExpenseAllocation::select('expenses.category', DB::raw('SUM(expense_allocations.amount) as total'))
                 ->join('expenses', 'expenses.id', '=', 'expense_allocations.expense_id')
                 ->where('expense_allocations.project_id', $this->projectFilter)
                 ->where('expenses.date', '>=', $dateFrom)
@@ -154,11 +159,11 @@ class ReportIndex extends Component
                     ->whereYear('date', $date->year)
                     ->sum('amount');
 
-                $distributedMonth = (float) \App\Models\ExpenseAllocation::where('project_id', $this->projectFilter)
-                    ->whereHas('expense', fn($q) => $q->whereMonth('date', $date->month)->whereYear('date', $date->year))
+                $distributedMonth = (float) ExpenseAllocation::where('project_id', $this->projectFilter)
+                    ->whereHas('expense', fn ($q) => $q->whereMonth('date', $date->month)->whereYear('date', $date->year))
                     ->sum('amount');
 
-                $requisitionsMonth = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                $requisitionsMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                     ->where('requisitions.project_id', $this->projectFilter)
                     ->where('requisitions.status', 'aprobada')
                     ->whereMonth('requisitions.created_at', $date->month)
@@ -171,7 +176,7 @@ class ReportIndex extends Component
                     ->whereYear('date', $date->year)
                     ->sum('amount');
 
-                $requisitionsMonth = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                $requisitionsMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                     ->where('requisitions.status', 'aprobada')
                     ->whereMonth('requisitions.created_at', $date->month)
                     ->whereYear('requisitions.created_at', $date->year)
@@ -191,6 +196,7 @@ class ReportIndex extends Component
         $topProjects = Project::all()
             ->map(function ($proj) use ($dateFrom) {
                 $proj->total_spent = $proj->getSpentInPeriod($dateFrom);
+
                 return $proj;
             })
             ->sortByDesc('total_spent')
@@ -199,7 +205,7 @@ class ReportIndex extends Component
         // Presupuesto vs Gasto por proyecto
         $budgetComparison = Project::where('status', 'activo')
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'name' => $p->name,
                 'budget' => (float) $p->budget,
                 'spent' => (float) $p->total_expenses,
@@ -223,7 +229,7 @@ class ReportIndex extends Component
     }
 
     /** Datos para la pestaña de Compras por Proveedor */
-    private function getSupplierData(\Carbon\Carbon $dateFrom): array
+    private function getSupplierData(Carbon $dateFrom): array
     {
         // Top proveedores por monto total de requisiciones aprobadas
         $topSuppliers = Supplier::select('suppliers.id', 'suppliers.trade_name', 'suppliers.category')
@@ -235,7 +241,7 @@ class ReportIndex extends Component
             ->join('requisition_items', 'requisition_items.requisition_id', '=', 'requisitions.id')
             ->where('requisitions.status', 'aprobada')
             ->where('requisitions.created_at', '>=', $dateFrom)
-            ->when($this->projectFilter, fn($q) => $q->where('requisitions.project_id', $this->projectFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('requisitions.project_id', $this->projectFilter))
             ->groupBy('suppliers.id', 'suppliers.trade_name', 'suppliers.category')
             ->orderByDesc('total_amount')
             ->take(10)
@@ -245,7 +251,7 @@ class ReportIndex extends Component
     }
 
     /** Datos para la pestaña de Compras por Vendedor */
-    private function getVendorData(\Carbon\Carbon $dateFrom): array
+    private function getVendorData(Carbon $dateFrom): array
     {
         $topVendors = DB::table('vendors')
             ->select(
@@ -260,7 +266,7 @@ class ReportIndex extends Component
             ->join('requisition_items', 'requisition_items.requisition_id', '=', 'requisitions.id')
             ->where('requisitions.status', 'aprobada')
             ->where('requisitions.created_at', '>=', $dateFrom)
-            ->when($this->projectFilter, fn($q) => $q->where('requisitions.project_id', $this->projectFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('requisitions.project_id', $this->projectFilter))
             ->groupBy('vendors.id', 'vendors.name', 'suppliers.trade_name')
             ->orderByDesc('total_amount')
             ->take(10)
@@ -270,7 +276,7 @@ class ReportIndex extends Component
     }
 
     /** Datos para la pestaña de Productos Más Comprados */
-    private function getProductData(\Carbon\Carbon $dateFrom): array
+    private function getProductData(Carbon $dateFrom): array
     {
         $topProducts = DB::table('requisition_items')
             ->select(
@@ -289,7 +295,7 @@ class ReportIndex extends Component
             ->leftJoin('measures', 'measures.id', '=', 'requisition_items.measure_id')
             ->where('requisitions.status', 'aprobada')
             ->where('requisitions.created_at', '>=', $dateFrom)
-            ->when($this->projectFilter, fn($q) => $q->where('requisitions.project_id', $this->projectFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('requisitions.project_id', $this->projectFilter))
             ->groupBy('products.id', 'products.canonical_name', 'categories.name', 'measures.abbreviation')
             ->orderByDesc('total_amount')
             ->take(15)
@@ -304,7 +310,7 @@ class ReportIndex extends Component
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
             ->where('requisitions.status', 'aprobada')
             ->where('requisitions.created_at', '>=', $dateFrom)
-            ->when($this->projectFilter, fn($q) => $q->where('requisitions.project_id', $this->projectFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('requisitions.project_id', $this->projectFilter))
             ->groupBy('categories.name')
             ->orderByDesc('total_amount')
             ->get();

@@ -21,14 +21,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('requisition_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('requisition_items', 'line_subtotal')) {
+            if (! Schema::hasColumn('requisition_items', 'line_subtotal')) {
                 $table->decimal('line_subtotal', 14, 2)
                     ->nullable()
                     ->after('tax_source')
                     ->comment('Subtotal de línea del proveedor (qty × P.U. sin IVA)');
             }
 
-            if (!Schema::hasColumn('requisition_items', 'line_total')) {
+            if (! Schema::hasColumn('requisition_items', 'line_total')) {
                 $table->decimal('line_total', 14, 2)
                     ->nullable()
                     ->after('line_subtotal')

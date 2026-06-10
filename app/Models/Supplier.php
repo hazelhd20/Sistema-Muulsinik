@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -15,9 +16,9 @@ class Supplier extends Model
     protected static function booted()
     {
         static::saving(function ($supplier) {
-            if ($supplier->isDirty('trade_name') && !empty($supplier->trade_name)) {
-                $supplier->trade_name = app(\App\Services\DataNormalizerService::class)->normalizeTitleCase($supplier->trade_name);
-                $supplier->normalized_name = app(\App\Services\DataNormalizerService::class)->normalizeSupplierName($supplier->trade_name);
+            if ($supplier->isDirty('trade_name') && ! empty($supplier->trade_name)) {
+                $supplier->trade_name = app(DataNormalizerService::class)->normalizeTitleCase($supplier->trade_name);
+                $supplier->normalized_name = app(DataNormalizerService::class)->normalizeSupplierName($supplier->trade_name);
             }
         });
     }
@@ -30,5 +31,4 @@ class Supplier extends Model
     {
         return $this->hasMany(Vendor::class);
     }
-
 }

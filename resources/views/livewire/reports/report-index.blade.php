@@ -466,7 +466,7 @@
                                     <th>Producto</th>
                                     <th>Categoría</th>
                                     <th class="text-center">Veces</th>
-                                    <th class="text-right">Cant. Total</th>
+                                    <th class="text-center">Cant. Total</th>
                                     <th class="text-right">Precio Prom.</th>
                                     <th class="text-right">Monto Total</th>
                                 </tr>
@@ -494,7 +494,7 @@
                                             @endif
                                         </td>
                                         <td class="text-center text-body tabular-nums">{{ $product->times_purchased }}</td>
-                                        <td class="text-right text-body tabular-nums">
+                                        <td class="text-center text-body tabular-nums">
                                             {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}
                                         </td>
                                         <td class="text-right text-body text-text-secondary tabular-nums">

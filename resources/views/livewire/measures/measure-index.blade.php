@@ -63,7 +63,7 @@
                                         <div class="flex items-center justify-end gap-1">
                                             <x-button wire:click="openEditModal({{ $measure->id }})" variant="icon-primary" icon="pencil" title="Editar medida" />
                                             <x-button wire:click="delete({{ $measure->id }})"
-                                                wire:confirm="¿Seguro que deseas eliminar esta medida?" variant="icon-danger" icon="trash-2"
+                                                wire:confirm="¿Eliminar esta medida? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2"
                                                 title="Eliminar medida" />
                                         </div>
                                     </td>

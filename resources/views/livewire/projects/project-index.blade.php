@@ -122,7 +122,7 @@
                                             <x-button wire:click="openEditModal({{ $project->id }})" variant="icon-primary" icon="pencil"
                                                 title="Editar proyecto" aria-label="Editar proyecto" />
                                             <x-button wire:click="deleteProject({{ $project->id }})"
-                                                wire:confirm="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
+                                                wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse."
                                                 variant="icon-danger" icon="trash-2" title="Eliminar proyecto"
                                                 aria-label="Eliminar proyecto" />
                                         </div>
@@ -175,7 +175,7 @@
                                     <x-skeleton class="w-full h-1.5  rounded-full" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-6  rounded-full w-20" />
+                                    <x-skeleton class="h-6  rounded w-20" />
                                 </td>
                                 <td class="text-right flex justify-end gap-1">
                                     <x-skeleton class="w-8 h-8  rounded" />

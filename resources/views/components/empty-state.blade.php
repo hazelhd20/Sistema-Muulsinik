@@ -10,7 +10,9 @@
     @if($message)
         <p class="text-xs-fluid text-text-muted">{{ $message }}</p>
     @endif
-    @if($slot->isNotEmpty())
+    @if(isset($actions))
+        <div class="mt-4">{{ $actions }}</div>
+    @elseif($slot->isNotEmpty())
         <div class="mt-4">{{ $slot }}</div>
     @endif
 </div>

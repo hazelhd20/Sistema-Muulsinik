@@ -74,8 +74,7 @@
     {{-- ═══════ PASO 2: PROCESAMIENTO ═══════ --}}
     @if($step === 2)
         <div class="card max-w-lg mx-auto" @if($processingStatus === 'processing' || $processingStatus === 'pending')
-        wire:poll.2s="checkProcessingStatus" @endif x-data
-            x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
+        wire:poll.2s.visible="checkProcessingStatus" @endif x-data>
             <div class="p-8 text-center">
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Spinner premium con doble anillo --}}
@@ -156,8 +155,7 @@
 
     {{-- ═══════ PASO 3: FORMULARIO EDITABLE ═══════ --}}
     @if($step === 3)
-        <form wire:submit="saveRequisition" x-data
-            x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
+        <form wire:submit="saveRequisition" x-data>
 
 
 
@@ -395,20 +393,12 @@
 
                     {{-- Totales externos alineados a la derecha --}}
                     @php
-                        $subtotalSinIva = collect($items)->sum(fn($item) => $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)));
-                        $totalConIva = collect($items)->sum(fn($item) => $item['line_total'] ?? (($item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0))) + ($item['tax_amount'] ?? 0)));
-                        $totalIva = $totalConIva - $subtotalSinIva;
-                        $totalDescuento = collect($items)->sum(function ($item) {
-                            $original = (float) ($item['unit_price_original'] ?? 0);
-                            $net = (float) ($item['unit_price'] ?? 0);
-                            $qty = (float) ($item['quantity'] ?? 0);
-                            if ($original <= 0 || $net <= 0 || $original <= $net) {
-                                return 0;
-                            }
-                            return round(($original - $net) * $qty, 2);
-                        });
-                        $hasAnyDiscount = $totalDescuento > 0;
-                        $subtotalBruto = $hasAnyDiscount ? ($subtotalSinIva + $totalDescuento) : 0;
+                        $subtotalSinIva = $this->subtotalSinIva();
+                        $totalConIva = $this->totalConIva();
+                        $totalIva = $this->totalIva();
+                        $totalDescuento = $this->totalDescuento();
+                        $hasAnyDiscount = $this->hasAnyDiscount();
+                        $subtotalBruto = $this->subtotalBruto();
                     @endphp
                     <div class="flex justify-end mt-6">
                         <x-totals-summary>
@@ -419,12 +409,12 @@
                                         class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between gap-6">
-                                    <span class="text-small text-emerald-600 flex items-center gap-1">
+                                    <span class="text-small text-success flex items-center gap-1">
                                         <i data-lucide="tag" class="w-3.5 h-3.5" wire:ignore></i>
                                         Descuento total
                                     </span>
                                     <span
-                                        class="text-small font-semibold text-emerald-600 tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
+                                        class="text-small font-semibold text-success tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
                                 </div>
                             @endif
                             <div class="flex items-center justify-between gap-6">
@@ -436,7 +426,7 @@
                                 <span class="text-small text-text-muted">IVA (16%)</span>
                                 <span class="text-small font-medium text-text-muted tabular-nums">
                                     @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
-                                    @else <span class="text-amber-500">Pendiente</span>
+                                    @else <span class="text-warning">Pendiente</span>
                                     @endif
                                 </span>
                             </div>

@@ -1,15 +1,15 @@
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
+<div class="relative" x-data="{ open: false, id: $id('dropdown-menu') }" x-id="['dropdown-menu']" @close.stop="open = false" @dropdown-opened.window="if ($event.detail.id !== id) open = false">
     {{-- Botón de notificaciones (wire:ignore para prevenir parpadeo del icono de campana) --}}
-    <button @click="open = !open" wire:ignore
+    <button @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" x-ref="trigger" wire:ignore.self
         class="relative p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition"
         title="Notificaciones">
-        <i data-lucide="bell" class="w-[17px] h-[17px]"></i>
+        <i data-lucide="bell" class="w-4 h-4"></i>
 
-        {{-- Badge de notificaciones no leídas (fuera del ignore para poder actualizarse) --}}
+        {{-- Badge de notificaciones no leídas --}}
         <div class="absolute -top-0.5 -right-0.5" wire:key="unread-badge">
             @if($unreadCount > 0)
                 <span
-                    class="min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-[9px] font-bold text-white flex items-center justify-center shadow-sm leading-none">
+                    class="min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-xs-fluid font-bold text-white flex items-center justify-center shadow-sm leading-none">
                     {{ $unreadCount > 99 ? '99+' : $unreadCount }}
                 </span>
             @endif
@@ -17,15 +17,18 @@
     </button>
 
     {{-- Dropdown de notificaciones --}}
-    <div x-show="open"
-        x-transition:enter="transition-premium"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition-premium"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
-        class="absolute top-full right-0 mt-2 w-85 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-[100]"
-        style="display: none;">
+    <template x-teleport="body">
+        <div x-show="open" x-cloak
+            @click.outside="if (! $refs.trigger.contains($event.target)) open = false"
+            x-anchor.bottom-end.offset.4="$refs.trigger"
+            x-transition:enter="transition-premium"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition-premium"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="absolute z-[100] w-80 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden"
+            style="display: none;">
         {{-- Header --}}
         <div class="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-hover">
             <h3 class="text-small font-semibold text-text-primary">Notificaciones</h3>
@@ -102,7 +105,8 @@
             </div>
         @endif
     </div>
+    </template>
 
-    {{-- Polling cada 60 segundos para actualizar --}}
-    <div wire:poll.60s="loadNotifications"></div>
+    {{-- Polling cada 60 segundos (solo visible) para actualizar --}}
+    <div wire:poll.60s.visible="loadNotifications"></div>
 </div>

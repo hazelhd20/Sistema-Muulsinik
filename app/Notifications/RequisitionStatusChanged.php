@@ -57,7 +57,7 @@ class RequisitionStatusChanged extends Notification
             'message' => "{$actorName} cambió el estado de {$this->requisition->number} a {$statusLabels[$this->newStatus]}",
             'icon' => $iconMap[$this->newStatus] ?? 'info',
             'color' => $colorMap[$this->newStatus] ?? 'primary',
-            'action_url' => url("/requisiciones"),
+            'action_url' => url('/requisiciones'),
             'action_text' => 'Ver detalle',
             'requisition_id' => $this->requisition->id,
             'requisition_number' => $this->requisition->number,

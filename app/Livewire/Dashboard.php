@@ -5,7 +5,9 @@ namespace App\Livewire;
 use App\Models\Expense;
 use App\Models\Project;
 use App\Models\Requisition;
+use App\Models\RequisitionItem;
 use App\Models\Supplier;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -18,16 +20,16 @@ class Dashboard extends Component
     {
         $totalProjects = Project::count();
         $activeProjects = Project::where('status', 'activo')->count();
-        $requisitionsTotalAllTime = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+        $requisitionsTotalAllTime = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
             ->where('requisitions.status', 'aprobada')
-            ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
         $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
 
-        $requisitionsTotalThisMonth = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+        $requisitionsTotalThisMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
             ->where('requisitions.status', 'aprobada')
             ->whereMonth('requisitions.created_at', now()->month)
             ->whereYear('requisitions.created_at', now()->year)
-            ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
         $monthExpenses = (float) Expense::whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount') + $requisitionsTotalThisMonth;
@@ -44,16 +46,16 @@ class Dashboard extends Component
         $monthlyExpenses = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            
+
             $direct = (float) Expense::whereMonth('date', $date->month)
                 ->whereYear('date', $date->year)
                 ->sum('amount');
-                
-            $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+
+            $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                 ->where('requisitions.status', 'aprobada')
                 ->whereMonth('requisitions.created_at', $date->month)
                 ->whereYear('requisitions.created_at', $date->year)
-                ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
             $monthlyExpenses[] = [
                 'month' => $date->translatedFormat('M'),

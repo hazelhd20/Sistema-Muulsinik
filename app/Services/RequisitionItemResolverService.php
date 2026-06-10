@@ -19,15 +19,14 @@ class RequisitionItemResolverService
 {
     public function __construct(
         private DataNormalizerService $normalizer
-    ) {
-    }
+    ) {}
 
     /**
      * Resolver o crear un proveedor por nombre
      */
     public function resolveSupplier(?string $supplierId, ?string $supplierName): ?int
     {
-        if (!empty($supplierId)) {
+        if (! empty($supplierId)) {
             return (int) $supplierId;
         }
 
@@ -43,6 +42,7 @@ class RequisitionItemResolverService
         }
 
         $newSupplier = Supplier::create(['trade_name' => $supplierName]);
+
         return $newSupplier->id;
     }
 
@@ -72,14 +72,14 @@ class RequisitionItemResolverService
     /**
      * Precargar medidas existentes para lookups O(1)
      *
-     * @param array $items Array de items con campo 'unit'
+     * @param  array  $items  Array de items con campo 'unit'
      */
     public function preloadMeasures(array $items): Collection
     {
         $unitKeys = [];
 
         foreach ($items as $item) {
-            if (!empty($item['unit'])) {
+            if (! empty($item['unit'])) {
                 $normalizedUnit = $this->normalizer->normalizeUnit($item['unit']);
                 $unitKeys[] = $normalizedUnit;
                 $unitKeys[] = mb_strtolower($item['unit']);
@@ -92,20 +92,20 @@ class RequisitionItemResolverService
 
         return Measure::whereIn('abbreviation', array_unique($unitKeys))
             ->get()
-            ->keyBy(fn($m) => $m->abbreviation);
+            ->keyBy(fn ($m) => $m->abbreviation);
     }
 
     /**
      * Precargar productos existentes para lookups O(1)
      *
-     * @param array $items Array de items con campo 'name'
+     * @param  array  $items  Array de items con campo 'name'
      */
     public function preloadProducts(array $items): Collection
     {
         $normalizedNames = [];
 
         foreach ($items as $index => $item) {
-            if (!empty($item['name'])) {
+            if (! empty($item['name'])) {
                 $normalizedNames[$index] = $this->normalizer->normalizeText($item['name']);
             }
         }
@@ -134,7 +134,7 @@ class RequisitionItemResolverService
         $normalizedUnit = $this->normalizer->normalizeUnit($unit);
         $measure = $existingMeasures->get($normalizedUnit);
 
-        if (!$measure) {
+        if (! $measure) {
             $measure = Measure::create([
                 'name' => $this->normalizer->getUnitName($normalizedUnit, $aiUnitName),
                 'abbreviation' => $normalizedUnit,
@@ -150,7 +150,7 @@ class RequisitionItemResolverService
      */
     public function resolveCategory(?string $categoryId, ?string $categoryName): ?int
     {
-        if (!empty($categoryId)) {
+        if (! empty($categoryId)) {
             return (int) $categoryId;
         }
 
@@ -165,7 +165,7 @@ class RequisitionItemResolverService
         }
 
         $newCategory = Category::create([
-            'name' => mb_convert_case($categoryName, MB_CASE_TITLE, "UTF-8")
+            'name' => mb_convert_case($categoryName, MB_CASE_TITLE, 'UTF-8'),
         ]);
 
         return $newCategory->id;
@@ -280,7 +280,7 @@ class RequisitionItemResolverService
 
         // Si se especificó un vendor_id directo en la data (ej. desde requisición manual),
         // priorizarlo y sincronizar su supplier_id si no se ha resuelto aún.
-        if (empty($finalVendorId) && !empty($requisitionData['vendor_id'])) {
+        if (empty($finalVendorId) && ! empty($requisitionData['vendor_id'])) {
             $finalVendorId = (int) $requisitionData['vendor_id'];
             if (empty($finalSupplierId)) {
                 $vendor = Vendor::find($finalVendorId);
@@ -301,10 +301,16 @@ class RequisitionItemResolverService
         ]);
 
         // Procesar y guardar items
-        if (!empty($items)) {
+        if (! empty($items)) {
             $itemsData = $this->processItems($items, $requisition->id, $finalSupplierId);
             RequisitionItem::insert($itemsData);
         }
+
+        $requisition->activities()->create([
+            'user_id' => $requisitionData['created_by'],
+            'action' => 'created',
+            'description' => 'Requisición creada.',
+        ]);
 
         return $requisition;
     }

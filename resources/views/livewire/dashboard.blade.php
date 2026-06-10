@@ -45,7 +45,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $pendingRequisitions }}</p>
-                <p class="text-xs-fluid text-text-muted mt-0.5">Req. pendientes</p>
+                <p class="text-xs-fluid text-text-muted mt-0.5">Requisiciones pendientes</p>
             </div>
         </div>
 
@@ -65,10 +65,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
         {{-- Gráfica de gastos --}}
-        <div class="lg:col-span-2 card">
+        <div class="lg:col-span-2 card p-6">
             <div class="flex items-start justify-between mb-4">
                 <div>
-                    <h2 class="text-small font-semibold text-text-primary">Gastos Mensuales</h2>
+                    <h2 class="card-title">Gastos Mensuales</h2>
                     <p class="text-xs-fluid text-text-muted mt-0.5">Últimos 6 meses</p>
                 </div>
                 <span class="inline-flex items-center gap-1 text-xs-fluid font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
@@ -82,9 +82,9 @@
         </div>
 
         {{-- Métricas operativas --}}
-        <div class="card flex flex-col">
+        <div class="card p-6 flex flex-col">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-small font-semibold text-text-primary">Métricas</h2>
+                <h2 class="card-title">Métricas</h2>
                 <a href="{{ url('/reportes') }}"
                     class="link-more">
                     Ver reportes
@@ -128,7 +128,7 @@
                         <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
                             <i data-lucide="check-circle" class="w-3 h-3 text-success"></i>
                         </div>
-                        <span class="text-small text-text-secondary">Req. aprobadas</span>
+                        <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
                     </div>
                     <span class="text-small font-semibold text-text-primary tabular-nums">
                         {{ $approvedRequisitions }}
@@ -145,7 +145,7 @@
         {{-- Proyectos recientes --}}
         <div class="table-container">
             <div class="px-4 py-3 flex items-center justify-between border-b border-border">
-                <h2 class="text-small font-semibold text-text-primary">Proyectos Recientes</h2>
+                <h2 class="card-title">Proyectos Recientes</h2>
                 <a href="{{ url('/proyectos') }}"
                     class="link-more">
                     Ver todos
@@ -162,7 +162,7 @@
                 </thead>
                 <tbody>
                     @forelse($recentProjects as $project)
-                        <tr wire:click="" onclick="Livewire.navigate('{{ url('/proyectos') }}')" class="cursor-pointer hover:bg-surface-hover">
+                        <tr @click="Livewire.navigate('{{ url('/proyectos') }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
                                 <p class="text-xs-fluid text-text-muted">{{ $project->client ?? '—' }}</p>
@@ -210,7 +210,7 @@
         {{-- Requisiciones recientes --}}
         <div class="table-container">
             <div class="px-4 py-3 flex items-center justify-between border-b border-border">
-                <h2 class="text-small font-semibold text-text-primary">Requisiciones Recientes</h2>
+                <h2 class="card-title">Requisiciones Recientes</h2>
                 <a href="{{ url('/requisiciones') }}"
                     class="link-more">
                     Ver todas
@@ -227,7 +227,7 @@
                 </thead>
                 <tbody>
                     @forelse($recentRequisitions as $req)
-                        <tr wire:click="" onclick="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')" class="cursor-pointer hover:bg-surface-hover">
+                        <tr @click="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">
                                     {{ $req->number ?? 'REQ-' . $req->id }}
@@ -278,6 +278,16 @@
 <script>
     Alpine.data('chartComponent', () => ({
         initChart() {
+            if (typeof Chart === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                script.onload = () => this.renderChart();
+                document.head.appendChild(script);
+            } else {
+                this.renderChart();
+            }
+        },
+        renderChart() {
             const ctx = document.getElementById('monthly-expenses-chart');
             if (!ctx) return;
 
@@ -288,6 +298,10 @@
                 data: {
                     labels: data.map(d => d.month),
                     datasets: [{
+                        // Paleta mapeada a design tokens:
+                        // rgba(2,48,200,X) = var(--color-primary-600) con opacidad X
+                        // '#0F1117'        = var(--color-text-primary)
+                        // '#9299A8'        = var(--color-text-muted)
                         label: 'Gastos',
                         data: data.map(d => d.total),
                         backgroundColor: (ctx) => {

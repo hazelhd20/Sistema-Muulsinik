@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Requisition;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -28,7 +27,7 @@ class RequisitionPendingApproval extends Notification
             'message' => "La requisición {$this->requisition->number} requiere tu aprobación",
             'icon' => 'clipboard-list',
             'color' => 'primary',
-            'action_url' => url("/requisiciones"),
+            'action_url' => url('/requisiciones'),
             'action_text' => 'Ver requisiciones',
             'requisition_id' => $this->requisition->id,
             'requisition_number' => $this->requisition->number,

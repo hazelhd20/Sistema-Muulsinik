@@ -91,6 +91,13 @@
                 <div class="relative flex-1 overflow-y-auto px-6 py-6 sm:px-6">
                     {{ $slot }}
                 </div>
+
+                {{-- Footer sticky (opcional) --}}
+                @if(isset($footer))
+                    <div class="shrink-0 px-6 py-4 border-t border-border bg-surface-card">
+                        {{ $footer }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

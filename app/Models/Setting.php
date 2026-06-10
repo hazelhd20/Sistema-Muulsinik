@@ -19,11 +19,11 @@ class Setting extends Model
     public static function get(string $key, mixed $default = null): mixed
     {
         $cacheKey = "setting_{$key}";
-        
+
         return Cache::remember($cacheKey, 3600, function () use ($key, $default) {
             $setting = self::where('key', $key)->first();
-            
-            if (!$setting) {
+
+            if (! $setting) {
                 return $default;
             }
 
@@ -37,7 +37,7 @@ class Setting extends Model
     public static function set(string $key, mixed $value, string $type = 'string'): void
     {
         $setting = self::where('key', $key)->first();
-        
+
         if ($setting) {
             $setting->update(['value' => $value, 'type' => $type]);
         }

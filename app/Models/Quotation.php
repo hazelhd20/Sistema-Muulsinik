@@ -15,10 +15,10 @@ class Quotation extends Model
     ];
 
     protected $casts = [
-        'processed_at'    => 'datetime',
+        'processed_at' => 'datetime',
         'raw_parsed_data' => 'array',
-        'draft_state'     => 'array',
-        'is_orphan'       => 'boolean',
+        'draft_state' => 'array',
+        'is_orphan' => 'boolean',
     ];
 
     /* ── Relaciones ────────────────────────────────────── */

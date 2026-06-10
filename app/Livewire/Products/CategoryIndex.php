@@ -3,21 +3,24 @@
 namespace App\Livewire\Products;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Category;
+use App\Models\Product;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class CategoryIndex extends Component
 {
-    use WithPagination, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting;
 
     public string $search = '';
 
     public string $name = '';
+
     public ?int $editingId = null;
+
     public bool $showCreateModal = false;
 
     protected $rules = [
@@ -51,10 +54,12 @@ class CategoryIndex extends Component
 
     public function save(): void
     {
-        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
 
         $this->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $this->editingId,
+            'name' => 'required|string|max:255|unique:categories,name,'.$this->editingId,
         ]);
 
         if ($this->editingId) {
@@ -74,14 +79,17 @@ class CategoryIndex extends Component
 
     public function delete(int $id): void
     {
-        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
 
         $category = Category::findOrFail($id);
 
-        $isUsed = \App\Models\Product::where('category_id', $category->id)->exists();
+        $isUsed = Product::where('category_id', $category->id)->exists();
 
         if ($isUsed) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: la categoría está en uso por productos.']);
+
             return;
         }
 
@@ -93,7 +101,7 @@ class CategoryIndex extends Component
     #[Title('Catálogo de Categorías')]
     public function render()
     {
-        $categories = Category::where('name', 'like', '%' . $this->search . '%')
+        $categories = Category::where('name', 'like', '%'.$this->search.'%')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 

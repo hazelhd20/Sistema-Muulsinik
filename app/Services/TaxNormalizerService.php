@@ -34,7 +34,7 @@ class TaxNormalizerService
      * + campos fiscales (tax_amount como IVA de línea, tax_source,
      * unit_price_original, line_subtotal, line_total).
      *
-     * @param  array $parsedData Datos crudos del parser
+     * @param  array  $parsedData  Datos crudos del parser
      * @return array Datos con campos fiscales resueltos
      */
     public function normalize(array $parsedData): array
@@ -43,7 +43,7 @@ class TaxNormalizerService
         $items = $parsedData['items'] ?? [];
 
         $normalizedItems = array_map(
-            fn(array $item) => $this->normalizeItem($item, $taxInfo),
+            fn (array $item) => $this->normalizeItem($item, $taxInfo),
             $items,
         );
 
@@ -59,9 +59,9 @@ class TaxNormalizerService
      * Se usa desde el QuotationWizard cuando Gemini no pudo detectar
      * la inclusión de IVA y el usuario lo confirma vía toggle.
      *
-     * @param  float $originalPrice  Precio tal como vino en la cotización (unitario)
-     * @param  float $quantity       Cantidad del ítem
-     * @param  bool  $includesTax    true = el precio YA incluye IVA
+     * @param  float  $originalPrice  Precio tal como vino en la cotización (unitario)
+     * @param  float  $quantity  Cantidad del ítem
+     * @param  bool  $includesTax  true = el precio YA incluye IVA
      * @return array{unit_price: float, tax_amount: float, tax_source: string, line_subtotal: float, line_total: float}
      */
     public function resolveForUserChoice(float $originalPrice, float $quantity, bool $includesTax): array
@@ -114,7 +114,7 @@ class TaxNormalizerService
         $taxDetected = $taxInfo['tax_detected'] ?? false;
 
         // Guardar siempre el precio original para trazabilidad si no se ha establecido antes
-        if (!isset($item['unit_price_original'])) {
+        if (! isset($item['unit_price_original'])) {
             $item['unit_price_original'] = $rawPrice;
         }
 

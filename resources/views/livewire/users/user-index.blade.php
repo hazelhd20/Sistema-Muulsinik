@@ -13,55 +13,25 @@
 
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
-        {{-- Search: compact width instead of full flex --}}
-        <div class="relative w-full sm:w-72" x-data="{ focused: false }">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Buscar por nombre o correo..."
-                class="input pl-10 pr-10 w-full" @focus="focused = true" @blur="focused = false">
-            <button x-show="$wire.search" x-transition @click="$wire.search = ''" type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-            </button>
-        </div>
+        {{-- Search --}}
+        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o correo..." />
 
-        {{-- Filters Toggle Button with counter badge --}}
-        <x-button @click="showFilters = !showFilters" variant="secondary" icon="sliders-horizontal" class="shrink-0"
-            x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': showFilters || $wire.roleFilter }">
-            Filtros
-            @if($roleFilter)
-                <span class="ml-1.5 px-1.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full">1</span>
-            @endif
-        </x-button>
+        {{-- Filters Popover --}}
+        @php
+            $activeCount = $roleFilter ? 1 : 0;
+        @endphp
+        <x-filters-popover :activeCount="$activeCount" :columns="1">
+            <x-form-field label="Rol">
+                <x-custom-select wire:model.live="roleFilter" :options="$roles->pluck('name', 'id')->toArray()" placeholder="Todos los roles" />
+                <p class="text-xs-fluid text-text-muted mt-1.5">Selecciona un rol para filtrar la lista</p>
+            </x-form-field>
 
-        <div class="flex-1"></div>
-
-        {{-- Clear button: only when filters active --}}
-        @if($search || $roleFilter)
-            <button wire:click="$set('search', ''); $set('roleFilter', '');" type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
-                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                Limpiar
-            </button>
-        @endif
-    </div>
-
-    {{-- Expandable Filters Panel --}}
-    <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 -translate-y-2" class="mb-6">
-        <div class="card !p-4">
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
-                    <span class="text-small font-medium text-text-secondary">Filtrar por:</span>
-                </div>
-                <x-custom-select wire:model.live="roleFilter" :options="$roles->pluck('name', 'id')->toArray()"
-                    placeholder="Todos los roles" class="w-full sm:w-56" />
-                <p class="text-xs-fluid text-text-muted">Selecciona un rol para filtrar la lista de usuarios</p>
-            </div>
-        </div>
-    </div>
+            <x-slot name="footer">
+                <button type="button" wire:click="$set('roleFilter', '');" @click="open = false" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar filtros
+                </button>
+            </x-slot>
+        </x-filters-popover>
 
     {{-- Users Table --}}
     <div class="relative min-h-[200px]">
@@ -87,11 +57,11 @@
                                         <tr>
                                             <td>
                                                 <div class="flex flex-col">
-                                                    <span class="text-sm font-semibold text-text-primary">{{ $user->name }}</span>
+                                                    <span class="text-small font-semibold text-text-primary">{{ $user->name }}</span>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="text-sm text-text-secondary">{{ $user->email }}</span>
+                                                <span class="text-small text-text-secondary">{{ $user->email }}</span>
                                             </td>
                                             <td>
                                                 @if($user->role)
@@ -104,8 +74,9 @@
                                                 <button wire:click="toggleActive({{ $user->id }})"
                                                     class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
                                                             {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
-                                                            @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-85 cursor-pointer @else cursor-default opacity-90 @endif"
+                                                            @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-80 cursor-pointer @else cursor-not-allowed opacity-50 @endif"
                                                     title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
+                                                    aria-pressed="{{ $user->active ? 'true' : 'false' }}"
                                                     @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
                                                     <span class="badge-dot"></span>
                                                     {{ $user->active ? 'Activo' : 'Inactivo' }}
@@ -119,7 +90,7 @@
 
                                                     @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
                                                         <x-button wire:click="deleteUser({{ $user->id }})"
-                                                            wire:confirm="¿Estás seguro de que deseas eliminar este usuario? Esta acción es irreversible."
+                                                            wire:confirm="¿Eliminar este usuario? Esta acción no puede deshacerse."
                                                             variant="icon-danger" title="Eliminar" icon="trash-2" />
                                                     @endif
                                                 </div>
@@ -129,8 +100,20 @@
                         </tbody>
                     </table>
                 @else
-                    <x-empty-state icon="users" title="No se encontraron usuarios"
-                        message="No hay usuarios registrados con los filtros actuales." />
+                    <x-empty-state
+                        icon="{{ ($search || $roleFilter) ? 'search-x' : 'users' }}"
+                        title="{{ ($search || $roleFilter) ? 'Sin resultados' : 'Aún no hay usuarios' }}"
+                        message="{{ ($search || $roleFilter) ? 'No se encontraron usuarios con los filtros aplicados.' : 'Crea el primer usuario del sistema.' }}">
+                        @if($search || $roleFilter)
+                            <x-slot:actions>
+                                <x-button
+                                    wire:click="$set('search', ''); $set('roleFilter', '');"
+                                    variant="secondary" icon="rotate-ccw">
+                                    Limpiar filtros
+                                </x-button>
+                            </x-slot:actions>
+                        @endif
+                    </x-empty-state>
                 @endif
             </div>
         </div>
@@ -159,10 +142,10 @@
                                     <x-skeleton class="h-4  rounded w-48" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-5  rounded-full w-24" />
+                                    <x-skeleton class="h-5  rounded w-24" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-6  rounded-full w-20" />
+                                    <x-skeleton class="h-6  rounded w-20" />
                                 </td>
                                 <td class="actions">
                                     <div class="flex items-center justify-end gap-1">
@@ -211,10 +194,10 @@
                         <input type="checkbox" wire:model="active"
                             class="rounded border-border accent-primary-600 focus:ring-primary-500"
                             @if(auth()->id() === $editingId) disabled @endif>
-                        <span class="text-sm font-medium text-text-primary">Usuario activo</span>
+                        <span class="text-small font-medium text-text-primary">Usuario activo</span>
                     </label>
                     @if(auth()->id() === $editingId)
-                        <span class="text-xs text-text-muted ml-2">(No puedes desactivar tu propia cuenta)</span>
+                        <span class="text-xs-fluid text-text-muted ml-2">(No puedes desactivar tu propia cuenta)</span>
                     @endif
                 </div>
 

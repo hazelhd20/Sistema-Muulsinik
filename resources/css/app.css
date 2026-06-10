@@ -8,7 +8,7 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
-@source inline('border-amber-400 border-emerald-400 border-primary-400 opacity-0');
+@source inline('border-amber-400 border-emerald-400 border-primary-400 opacity-0 bg-primary-50 text-primary-700 border-primary-200/50 bg-purple-50 text-purple-700 border-purple-200/50 bg-indigo-50 text-indigo-700 border-indigo-200/50 bg-cyan-50 text-cyan-700 border-cyan-200/50 bg-emerald-50 text-emerald-700 border-emerald-200/50 bg-violet-50 text-violet-700 border-violet-200/50 bg-sky-50 text-sky-700 border-sky-200/50 bg-amber-50 text-amber-700 border-amber-200/50');
 
 /*
  * Design System — Muulsinik ERP  ·  Industrial Premium Minimal
@@ -59,7 +59,7 @@
     /* Text */
     --color-text-primary: #0f1117;
     --color-text-secondary: #52596b;
-    --color-text-muted: #64748b;
+    --color-text-muted: #475569;
 
     /* Border */
     --color-border: #e2e8f0;
@@ -89,6 +89,18 @@
     --color-info-active: #075985;
     --color-info-light: #f0f9ff;
     --color-info-border: #bae6fd;
+
+    /* ── Colores de categoría de entidades (Global Search, iconos) ── */
+    /* Requisiciones → primary (ya existe) */
+    /* Proveedores → success (verde = dinero) */
+    --color-cat-supplier: var(--color-success);
+    --color-cat-supplier-light: var(--color-success-light);
+    /* Proyectos → warning (ámbar = obra) */
+    --color-cat-project: var(--color-warning);
+    --color-cat-project-light: var(--color-warning-light);
+    /* Productos/Catálogo → info (azul cielo = catálogo) */
+    --color-cat-product: var(--color-info);
+    --color-cat-product-light: var(--color-info-light);
 
     --color-border-light: #f1f5f9;
     --color-surface-th: #f8fafc;
@@ -121,6 +133,15 @@
         0 20px 25px -5px rgba(15, 17, 23, 0.08),
         0 8px 10px -6px rgba(15, 17, 23, 0.04);
     --shadow-2xl: 0 25px 50px -12px rgba(15, 17, 23, 0.12);
+
+    /* ── Z-index Stack ── */
+    --z-topbar: 35;
+    --z-sidebar: 50;
+    --z-bulk-bar: 50;
+    --z-progress: 50;
+    --z-drawer: 60;
+    --z-modal: 70;
+    --z-dropdown: 100;
 
     /* ── Animations ── */
     --animate-scale-in: scale-in 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -249,7 +270,7 @@ input[type="search"]::-webkit-search-results-decoration {
     .card {
         background-color: var(--color-surface-card);
         border-radius: 0.625rem;
-        padding: 1.375rem;
+        padding: 0;
         border: 1px solid var(--color-border);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
@@ -304,7 +325,8 @@ input[type="search"]::-webkit-search-results-decoration {
         box-shadow: none;
     }
 
-    .btn-primary:disabled {
+    .btn-primary:disabled,
+    .btn-primary.disabled {
         opacity: 0.55;
         cursor: not-allowed;
         box-shadow: none;
@@ -344,6 +366,13 @@ input[type="search"]::-webkit-search-results-decoration {
         box-shadow: none;
     }
 
+    .btn-danger:disabled,
+    .btn-danger.disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
     /* ── Success Button ── */
     .btn-success {
         display: inline-flex;
@@ -378,7 +407,8 @@ input[type="search"]::-webkit-search-results-decoration {
         box-shadow: none;
     }
 
-    .btn-success:disabled {
+    .btn-success:disabled,
+    .btn-success.disabled {
         opacity: 0.55;
         cursor: not-allowed;
         box-shadow: none;
@@ -418,7 +448,8 @@ input[type="search"]::-webkit-search-results-decoration {
         box-shadow: none;
     }
 
-    .btn-warning:disabled {
+    .btn-warning:disabled,
+    .btn-warning.disabled {
         opacity: 0.55;
         cursor: not-allowed;
         box-shadow: none;
@@ -455,6 +486,13 @@ input[type="search"]::-webkit-search-results-decoration {
 
     .btn-secondary:active {
         background-color: #eef0f4;
+    }
+
+    .btn-secondary:disabled,
+    .btn-secondary.disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
     }
 
     /* ── Input ── */
@@ -586,6 +624,21 @@ input[type="search"]::-webkit-search-results-decoration {
         background-color: var(--color-danger-light);
         color: var(--color-danger-active);
         border-color: var(--color-danger-border);
+    }
+
+    /* Contador numérico compacto (filtros activos, tabs) */
+    .count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.125rem 0.375rem;
+        background-color: var(--color-primary-600);
+        color: #fff;
+        font-size: var(--font-size-xs);
+        font-weight: 700;
+        border-radius: 9999px;
+        line-height: 1;
+        min-width: 1.125rem;
     }
 
     /* ── Sidebar nav link ── */
@@ -776,7 +829,7 @@ input[type="search"]::-webkit-search-results-decoration {
         padding: 0 0.75rem;
         margin-top: 1.25rem;
         margin-bottom: 0.25rem;
-        font-size: 0.625rem;
+        font-size: var(--font-size-xs);
         font-weight: 700;
         color: var(--color-text-muted);
         text-transform: uppercase;
@@ -819,6 +872,10 @@ input[type="search"]::-webkit-search-results-decoration {
         100% {
             transform: translateX(100%);
         }
+    }
+
+    .progress-indeterminate {
+        animation: progress-indeterminate 1.5s linear infinite;
     }
 
     /* ── Pagination override ── */

@@ -1,12 +1,30 @@
 <div>
     {{-- Drawer de Detalle Rápido --}}
-    <x-drawer show="showDetailDrawer" title="Detalles de Requisición" maxWidth="xl">
-        @if($detailRequisition)
-            <div class="space-y-6">
-                {{-- Resumen principal --}}
+    <x-drawer show="showDetailDrawer" title="Detalles de Requisición" maxWidth="xl" x-on:open-requisition-detail.window="$wire.set('showDetailDrawer', true)">
+        {{-- Skeleton Loading --}}
+        <div wire:loading wire:target="showDetail" class="space-y-6">
+            <div class="flex items-start justify-between">
+                <div class="space-y-2 w-1/3">
+                    <div class="h-6 bg-surface-hover rounded animate-pulse"></div>
+                    <div class="h-4 bg-surface-hover rounded w-2/3 animate-pulse"></div>
+                </div>
+                <div class="h-6 bg-surface-hover rounded w-20 animate-pulse"></div>
+            </div>
+            <div class="h-24 bg-surface-hover rounded-xl animate-pulse"></div>
+            <div class="space-y-3">
+                <div class="h-5 bg-surface-hover rounded w-1/4 animate-pulse"></div>
+                <div class="h-16 bg-surface-hover rounded-lg animate-pulse"></div>
+                <div class="h-16 bg-surface-hover rounded-lg animate-pulse"></div>
+            </div>
+        </div>
+
+        <div wire:loading.remove wire:target="showDetail">
+            @if($detailRequisition)
+                <div class="space-y-6">
+                    {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 font-semibold text-text-primary">
+                        <h3 class="text-h3 text-text-primary">
                             {{ $detailRequisition->number ?? 'REQ-' . str_pad($detailRequisition->id, 5, '0', STR_PAD_LEFT) }}
                         </h3>
                         <p class="text-small text-text-muted mt-1">
@@ -103,63 +121,48 @@
                     </div>
                 </div>
 
-                {{-- Acciones del Drawer --}}
-                <div class="flex justify-end gap-3 pt-6 border-t border-border mt-auto">
-                    <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
-                        Ver Ficha Completa
-                    </x-button>
-
-                    @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                        <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle">
-                            Rechazar
-                        </x-button>
-                        <x-button
-                            @click="$dispatch('confirm-action', {
-                                title: 'Aprobar Requisición',
-                                description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                                confirmLabel: 'Aprobar',
-                                variant: 'success',
-                                action: 'approve',
-                                params: [{{ $detailRequisition->id }}]
-                            })"
-                            variant="success" icon="check-circle">
-                            Aprobar
-                        </x-button>
-                    @endif
+                {{-- (Acciones movidas al slot :footer del drawer) --}}
                 </div>
+            @endif
+        </div>
+        
+        @if($detailRequisition)
+        <x-slot:footer>
+            <div class="flex justify-end gap-3" wire:loading.remove wire:target="showDetail">
+                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
+                    Ver Ficha Completa
+                </x-button>
+
+                @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
+                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle">
+                        Rechazar
+                    </x-button>
+                    <x-button
+                        @click="$dispatch('confirm-action', {
+                            title: 'Aprobar Requisición',
+                            description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                            confirmLabel: 'Aprobar',
+                            variant: 'success',
+                            action: 'approve',
+                            params: [{{ $detailRequisition->id }}]
+                        })"
+                        variant="success" icon="check-circle">
+                        Aprobar
+                    </x-button>
+                @endif
             </div>
-        @else
-            <div class="flex items-center justify-center h-48">
+        </x-slot:footer>
+        @endif
+
+        @if(!$detailRequisition)
+            <div wire:loading.remove wire:target="showDetail" class="flex items-center justify-center h-48">
                 <span class="spinner spinner-lg text-primary-600"></span>
             </div>
         @endif
     </x-drawer>
 
-    {{-- Modal de Rechazo --}}
-    @if($showRejectModal)
-        <x-modal show="showRejectModal"
-            title="Rechazar Requisición"
-            subtitle="Indica el motivo del rechazo (obligatorio)"
-            maxWidth="md">
-            <form wire:submit="confirmReject" class="p-5 space-y-4">
-                <x-form-field label="Motivo del rechazo" required error="{{ $errors->first('rejectionComment') }}">
-                    <textarea wire:model="rejectionComment"
-                        class="input"
-                        rows="3"
-                        placeholder="Explica por qué esta requisición fue rechazada..."
-                        aria-required="true"></textarea>
-                </x-form-field>
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showRejectModal', false)" variant="secondary">
-                        Cancelar
-                    </x-button>
-                    <x-button type="submit" variant="danger" icon="x-circle">
-                        Confirmar Rechazo
-                    </x-button>
-                </div>
-            </form>
-        </x-modal>
-    @endif
+    {{-- Modal de Rechazo (extraído a partial compartido) --}}
+    @include('livewire.requisitions._reject-modal')
 
     {{-- Confirmación global para Aprobar --}}
     <x-confirm-modal />

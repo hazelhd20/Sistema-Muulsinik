@@ -17,6 +17,7 @@ class Login extends Component
     public string $password = '';
 
     public bool $remember = false;
+
     public string $errorMessage = '';
 
     public function authenticate(): void
@@ -30,8 +31,9 @@ class Login extends Component
             'active' => true,
         ];
 
-        if (!Auth::attempt($credentials, $this->remember)) {
+        if (! Auth::attempt($credentials, $this->remember)) {
             $this->errorMessage = 'Las credenciales proporcionadas no son correctas o la cuenta está desactivada.';
+
             return;
         }
 

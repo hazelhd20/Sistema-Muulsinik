@@ -66,7 +66,7 @@ class NotificationIndex extends Component
 
         $this->dispatch('toast', [
             'icon' => 'success',
-            'title' => 'Notificación eliminada'
+            'title' => 'Notificación eliminada',
         ]);
     }
 
@@ -75,7 +75,7 @@ class NotificationIndex extends Component
         auth()->user()?->unreadNotifications->markAsRead();
         $this->dispatch('toast', [
             'icon' => 'success',
-            'title' => 'Todas las notificaciones marcadas como leídas'
+            'title' => 'Todas las notificaciones marcadas como leídas',
         ]);
     }
 
@@ -84,7 +84,7 @@ class NotificationIndex extends Component
         auth()->user()?->notifications()->delete();
         $this->dispatch('toast', [
             'icon' => 'success',
-            'title' => 'Todas las notificaciones eliminadas'
+            'title' => 'Todas las notificaciones eliminadas',
         ]);
     }
 

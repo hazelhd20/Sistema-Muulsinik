@@ -9,7 +9,7 @@ class QuickBudgetItem extends Model
 {
     protected $fillable = [
         'quick_budget_id', 'product_id', 'concept',
-        'measure_id', 'quantity', 'unit_price', 'line_total'
+        'measure_id', 'quantity', 'unit_price', 'line_total',
     ];
 
     protected $casts = [

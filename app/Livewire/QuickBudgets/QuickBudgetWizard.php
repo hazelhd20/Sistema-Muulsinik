@@ -5,7 +5,6 @@ namespace App\Livewire\QuickBudgets;
 use App\Models\Product;
 use App\Models\QuickBudget;
 use App\Models\QuickBudgetItem;
-use App\Models\RequisitionItem;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -14,11 +13,14 @@ use Livewire\Component;
 class QuickBudgetWizard extends Component
 {
     public ?int $budgetId = null;
-    
+
     // Header
     public string $title = '';
+
     public string $description = '';
+
     public string $client = '';
+
     public float $marginPercent = 0;
 
     // Items list
@@ -26,6 +28,7 @@ class QuickBudgetWizard extends Component
 
     // Search for products
     public string $searchQuery = '';
+
     public array $searchResults = [];
 
     public function mount(?int $id = null)
@@ -57,6 +60,7 @@ class QuickBudgetWizard extends Component
     {
         if (strlen($this->searchQuery) < 2) {
             $this->searchResults = [];
+
             return;
         }
 
@@ -88,7 +92,9 @@ class QuickBudgetWizard extends Component
     public function addProduct($index)
     {
         $product = $this->searchResults[$index] ?? null;
-        if (!$product) return;
+        if (! $product) {
+            return;
+        }
 
         $this->items[] = [
             'id' => null,
@@ -156,6 +162,7 @@ class QuickBudgetWizard extends Component
     {
         $subtotal = $this->subtotal;
         $margin = $subtotal * ($this->marginPercent / 100);
+
         return round($subtotal + $margin, 2);
     }
 
@@ -205,6 +212,7 @@ class QuickBudgetWizard extends Component
         });
 
         session()->flash('success', 'Cotización guardada exitosamente.');
+
         return $this->redirect(route('cotizador.index'), navigate: true);
     }
 

@@ -23,7 +23,7 @@ return new class extends Migration
                     ->pluck('permission')
                     ->toArray();
 
-                if (!empty($perms)) {
+                if (! empty($perms)) {
                     DB::table('roles')
                         ->where('id', $role->id)
                         ->update(['permissions' => json_encode($perms)]);

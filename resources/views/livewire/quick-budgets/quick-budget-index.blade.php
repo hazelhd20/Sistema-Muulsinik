@@ -52,7 +52,7 @@
                                         <div class="flex items-center justify-end gap-1">
                                             <x-button href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}" variant="icon-primary" icon="edit-2" title="Editar cotización" wire:navigate />
                                             <x-button wire:click="deleteBudget({{ $budget->id }})"
-                                                wire:confirm="¿Deseas eliminar esta cotización?" variant="icon-danger" icon="trash-2"
+                                                wire:confirm="¿Eliminar esta cotización? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2"
                                                 title="Eliminar" />
                                         </div>
                                     </td>

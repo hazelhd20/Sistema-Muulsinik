@@ -3,18 +3,20 @@
 namespace App\Livewire\Requisitions;
 
 use App\Jobs\ProcessQuotationJob;
-use App\Models\Document;
+use App\Models\Category;
 use App\Models\Measure;
 use App\Models\Product;
+use App\Models\Project;
 use App\Models\Quotation;
-use App\Models\Requisition;
 use App\Models\Supplier;
+use App\Models\Vendor;
 use App\Services\DataNormalizerService;
 use App\Services\DiscountNormalizerService;
 use App\Services\DocumentParsers\DocumentParserFactory;
 use App\Services\RequisitionItemResolverService;
 use App\Services\TaxNormalizerService;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -37,27 +39,90 @@ class QuotationWizard extends Component
 
     /* ── Paso 1: Upload ──────────────────────────────── */
     public $file;
+
     #[Url(as: 'id')]
     public ?int $quotationId = null;
 
     /* ── Paso 2: Processing status ───────────────────── */
     public string $processingStatus = 'pending';
+
     public ?string $errorMessage = null;
 
     /* ── Paso 3: Formulario editable ─────────────────── */
     public $projectId = '';
+
     public string $supplierName = '';
+
     public $supplierId = '';
+
     public string $storeName = '';
+
     public string $vendorName = '';
+
     public string $annotations = '';
+
     public string $date = '';
+
     public array $items = [];
+
     public string $rawText = '';
 
+    #[Computed]
+    public function subtotalSinIva(): float
+    {
+        return collect($this->items)->sum(function ($item) {
+            $qty = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['unit_price'] ?? 0);
+            return $item['line_subtotal'] ?? round($qty * $price, 2);
+        });
+    }
+
+    #[Computed]
+    public function totalConIva(): float
+    {
+        return collect($this->items)->sum(function ($item) {
+            $qty = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['unit_price'] ?? 0);
+            $sub = $item['line_subtotal'] ?? round($qty * $price, 2);
+            return $item['line_total'] ?? round($sub + ($item['tax_amount'] ?? 0), 2);
+        });
+    }
+
+    #[Computed]
+    public function totalIva(): float
+    {
+        return $this->totalConIva() - $this->subtotalSinIva();
+    }
+
+    #[Computed]
+    public function totalDescuento(): float
+    {
+        return collect($this->items)->sum(function ($item) {
+            $original = (float) ($item['unit_price_original'] ?? 0);
+            $net = (float) ($item['unit_price'] ?? 0);
+            $qty = (float) ($item['quantity'] ?? 0);
+            if ($original <= 0 || $net <= 0 || $original <= $net) {
+                return 0;
+            }
+            return round(($original - $net) * $qty, 2);
+        });
+    }
+
+    #[Computed]
+    public function hasAnyDiscount(): bool
+    {
+        return $this->totalDescuento() > 0;
+    }
+
+    #[Computed]
+    public function subtotalBruto(): float
+    {
+        return $this->hasAnyDiscount() ? ($this->subtotalSinIva() + $this->totalDescuento()) : 0;
+    }
 
     /* ── Metadata de resolución (proveedor/vendedor) ──── */
     public array $supplierMatch = [];
+
     public array $vendorMatch = [];
 
     public function updated($property, $value): void
@@ -85,13 +150,11 @@ class QuotationWizard extends Component
                         'items' => $this->items,
                         'supplierMatch' => $this->supplierMatch,
                         'vendorMatch' => $this->vendorMatch,
-                    ]
+                    ],
                 ]);
             }
         }
     }
-
-
 
     public function mount(): void
     {
@@ -102,7 +165,7 @@ class QuotationWizard extends Component
             if ($quotation) {
                 $this->processingStatus = $quotation->status;
                 if ($quotation->isCompleted()) {
-                    if (!empty($quotation->draft_state)) {
+                    if (! empty($quotation->draft_state)) {
                         $this->loadFromDraftState($quotation->draft_state);
                         $this->rawText = $quotation->raw_text ?? '';
                         $this->step = 3;
@@ -128,7 +191,7 @@ class QuotationWizard extends Component
 
     public function updatedFile(): void
     {
-        if (!$this->file) {
+        if (! $this->file) {
             return;
         }
 
@@ -147,7 +210,7 @@ class QuotationWizard extends Component
                 'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
             ]);
 
-            if (!$this->file || !$this->file->exists()) {
+            if (! $this->file || ! $this->file->exists()) {
                 throw new \Exception('El archivo temporal ya no existe.');
             }
 
@@ -171,6 +234,7 @@ class QuotationWizard extends Component
             if (str_contains($e->getMessage(), 'Unable to retrieve') || str_contains($e->getMessage(), 'file_size')) {
                 $this->addError('file', 'El archivo temporal ha expirado o ya no es válido. Por favor, selecciónalo de nuevo.');
                 $this->file = null;
+
                 return;
             }
             throw $e;
@@ -223,12 +287,12 @@ class QuotationWizard extends Component
 
     public function checkProcessingStatus(): void
     {
-        if (!$this->quotationId) {
+        if (! $this->quotationId) {
             return;
         }
 
         $quotation = Quotation::find($this->quotationId);
-        if (!$quotation) {
+        if (! $quotation) {
             return;
         }
 
@@ -247,12 +311,12 @@ class QuotationWizard extends Component
      */
     public function retryProcessing(): void
     {
-        if (!$this->quotationId) {
+        if (! $this->quotationId) {
             return;
         }
 
         $quotation = Quotation::find($this->quotationId);
-        if (!$quotation) {
+        if (! $quotation) {
             return;
         }
 
@@ -323,15 +387,13 @@ class QuotationWizard extends Component
         // Normalizar datos (unidades, texto) vía DataNormalizerService
         $dataNormalizer = app(DataNormalizerService::class);
 
-        $this->supplierName = !empty($data['supplier']) ? $dataNormalizer->normalizeTitleCase($data['supplier']) : '';
-        $this->storeName = !empty($data['store']) ? $dataNormalizer->normalizeTitleCase($data['store']) : '';
-        $this->vendorName = !empty($data['seller']) ? $dataNormalizer->normalizeTitleCase($data['seller']) : '';
+        $this->supplierName = ! empty($data['supplier']) ? $dataNormalizer->normalizeTitleCase($data['supplier']) : '';
+        $this->storeName = ! empty($data['store']) ? $dataNormalizer->normalizeTitleCase($data['store']) : '';
+        $this->vendorName = ! empty($data['seller']) ? $dataNormalizer->normalizeTitleCase($data['seller']) : '';
         $this->rawText = $data['raw_text'] ?? '';
         $this->items = [];
         $this->supplierMatch = [];
         $this->vendorMatch = [];
-
-
 
         // Intentar asociar proveedor existente con fuzzy matching
         if ($this->supplierName) {
@@ -374,17 +436,17 @@ class QuotationWizard extends Component
         $normalizedItems = $dataNormalizer->normalizeItems($data['items'] ?? []);
 
         foreach ($normalizedItems as $item) {
-            $matchedCategory = !empty($item['category'])
+            $matchedCategory = ! empty($item['category'])
                 ? $dataNormalizer->findMatchingCategory($item['category'])
                 : null;
 
             // Resolver medida con fuzzy matching
-            $measureMatch = !empty($item['unit'])
+            $measureMatch = ! empty($item['unit'])
                 ? $dataNormalizer->findMatchingMeasure($item['unit'])
                 : null;
 
             // Resolver producto con fuzzy matching (reemplaza match exacto)
-            $productMatch = !empty($item['name'])
+            $productMatch = ! empty($item['name'])
                 ? $dataNormalizer->findMatchingProduct($item['name'])
                 : null;
 
@@ -414,7 +476,7 @@ class QuotationWizard extends Component
                 }
 
                 // Conflicto de unidad
-                if (!empty($item['unit']) && $existingProduct->measure_id) {
+                if (! empty($item['unit']) && $existingProduct->measure_id) {
                     $normalizedSuggestedUnit = $dataNormalizer->normalizeUnit($item['unit']);
                     $registeredUnit = $existingProduct->measure?->abbreviation;
                     if ($registeredUnit && $normalizedSuggestedUnit !== $registeredUnit) {
@@ -426,7 +488,7 @@ class QuotationWizard extends Component
                     }
                 }
 
-                if (!empty($conflictFields)) {
+                if (! empty($conflictFields)) {
                     $conflict = $conflictFields;
                 }
             }
@@ -492,18 +554,18 @@ class QuotationWizard extends Component
      * Solo se actualiza el campo que el usuario confirma; el conflicto se limpia
      * para que la alerta desaparezca de la fila.
      *
-     * @param  int    $index  Índice del ítem en $this->items
-     * @param  string $field  'category' | 'unit' | 'both'
+     * @param  int  $index  Índice del ítem en $this->items
+     * @param  string  $field  'category' | 'unit' | 'both'
      */
     public function resolveProductConflict(int $index, string $field): void
     {
         $item = $this->items[$index] ?? null;
-        if (!$item || empty($item['product_id']) || empty($item['conflict'])) {
+        if (! $item || empty($item['product_id']) || empty($item['conflict'])) {
             return;
         }
 
         $product = Product::find($item['product_id']);
-        if (!$product) {
+        if (! $product) {
             return;
         }
 
@@ -521,7 +583,7 @@ class QuotationWizard extends Component
             $normalizer = app(DataNormalizerService::class);
             $suggestedUnit = $conflict['unit']['suggested'];
             $measure = Measure::where('abbreviation', $suggestedUnit)->first();
-            if (!$measure) {
+            if (! $measure) {
                 // Usar unit_name del hint de la IA si está disponible
                 $aiUnitName = $item['_match']['measure']['unit_name'] ?? null;
                 $measure = Measure::create([
@@ -534,7 +596,7 @@ class QuotationWizard extends Component
             unset($this->items[$index]['conflict']['unit']);
         }
 
-        if (!empty($updates)) {
+        if (! empty($updates)) {
             $product->update($updates);
         }
 
@@ -551,12 +613,12 @@ class QuotationWizard extends Component
     public function confirmProductAssociation(int $index): void
     {
         $item = $this->items[$index] ?? null;
-        if (!$item || empty($item['product_id'])) {
+        if (! $item || empty($item['product_id'])) {
             return;
         }
 
         $product = Product::find($item['product_id']);
-        if (!$product) {
+        if (! $product) {
             return;
         }
 
@@ -584,7 +646,7 @@ class QuotationWizard extends Component
     public function rejectProductAssociation(int $index): void
     {
         $item = $this->items[$index] ?? null;
-        if (!$item) {
+        if (! $item) {
             return;
         }
 
@@ -624,13 +686,9 @@ class QuotationWizard extends Component
         }
     }
 
-    public function updatedProjectId(): void
-    {
-    }
+    public function updatedProjectId(): void {}
 
-    public function updatedDate(): void
-    {
-    }
+    public function updatedDate(): void {}
 
     public function updatedItems($value = null, $key = null): void
     {
@@ -664,6 +722,7 @@ class QuotationWizard extends Component
             $this->supplierId = '';
             $this->supplierMatch = [];
             $this->vendorMatch = [];
+
             return;
         }
 
@@ -786,13 +845,13 @@ class QuotationWizard extends Component
     public function loadMockDataForTesting(): void
     {
         // 1. Tomar un proyecto activo
-        $project = \App\Models\Project::where('status', 'activo')->first();
+        $project = Project::where('status', 'activo')->first();
         if ($project) {
             $this->projectId = $project->id;
         }
 
         // 2. Tomar categorías y unidades existentes en la base de datos
-        $categories = \App\Models\Category::limit(3)->get();
+        $categories = Category::limit(3)->get();
         $measures = Measure::limit(2)->get();
         $products = Product::limit(2)->get();
 
@@ -811,7 +870,7 @@ class QuotationWizard extends Component
             $prod1 = $products->first()->load(['category', 'measure']);
 
             // Sugerir categoría diferente
-            $otherCat = \App\Models\Category::where('id', '!=', $prod1->category_id)->first() ?? $categories->last();
+            $otherCat = Category::where('id', '!=', $prod1->category_id)->first() ?? $categories->last();
             // Sugerir unidad diferente
             $otherUnit = Measure::where('id', '!=', $prod1->measure_id)->first() ?? $measures->last();
 
@@ -846,7 +905,7 @@ class QuotationWizard extends Component
                 'line_total' => 783.00,
                 'discount_percent' => 10.0,
                 'product_id' => $prod1->id,
-                'conflict' => !empty($conflictFields) ? $conflictFields : null,
+                'conflict' => ! empty($conflictFields) ? $conflictFields : null,
                 'product_confirmed' => true,
                 '_match' => [
                     'product' => [
@@ -868,8 +927,8 @@ class QuotationWizard extends Component
                         'category_name' => $otherCat?->name ?? 'General',
                         'unit' => $otherUnit?->abbreviation ?? 'bulto',
                         'name' => $prod1->canonical_name,
-                    ]
-                ]
+                    ],
+                ],
             ];
         }
 
@@ -878,7 +937,7 @@ class QuotationWizard extends Component
             $prod2 = $products->skip(1)->first()->load(['category', 'measure']);
 
             $this->items[] = [
-                'name' => $prod2->canonical_name . ' Extra', // Nombre con agregado para simular coincidencia difusa
+                'name' => $prod2->canonical_name.' Extra', // Nombre con agregado para simular coincidencia difusa
                 'quantity' => 10,
                 'unit' => $prod2->measure?->abbreviation ?? 'pza',
                 'category_id' => $prod2->category_id,
@@ -912,9 +971,9 @@ class QuotationWizard extends Component
                         'category_id' => $prod2->category_id,
                         'category_name' => $prod2->category?->name ?? 'General',
                         'unit' => $prod2->measure?->abbreviation ?? 'pza',
-                        'name' => $prod2->canonical_name . ' Extra',
-                    ]
-                ]
+                        'name' => $prod2->canonical_name.' Extra',
+                    ],
+                ],
             ];
         } else {
             // Fallback si solo hay 1 o 0 productos en catálogo
@@ -954,8 +1013,8 @@ class QuotationWizard extends Component
                         'category_name' => $categories->first()?->name ?? 'Ferretería',
                         'unit' => 'pza',
                         'name' => 'Tubo Galvanizado 1" (Fuzzy Demo)',
-                    ]
-                ]
+                    ],
+                ],
             ];
         }
 
@@ -996,8 +1055,8 @@ class QuotationWizard extends Component
                     'category_name' => $categories->last()?->name ?? 'Construcción',
                     'unit' => 'kg',
                     'name' => 'Clavos de Acero 2" Nuevos',
-                ]
-            ]
+                ],
+            ],
         ];
 
         // Cambiar al paso 3 directamente
@@ -1008,14 +1067,14 @@ class QuotationWizard extends Component
     #[Title('Subir Cotización')]
     public function render()
     {
-        $projects = \App\Models\Project::where('status', 'activo')->orderBy('name')->get();
+        $projects = Project::where('status', 'activo')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('trade_name')->get();
-        $measures = Measure::orderBy('name')->get();
-        $categories = \App\Models\Category::orderBy('name')->get();
+        $measures = Measure::getOptions();
+        $categories = Category::orderBy('name')->get();
 
         $vendors = collect();
         if ($this->supplierId) {
-            $vendors = \App\Models\Vendor::where('supplier_id', $this->supplierId)->orderBy('name')->get();
+            $vendors = Vendor::where('supplier_id', $this->supplierId)->orderBy('name')->get();
         }
 
         // El modelo Quotation se carga aquí para evitar queries en la vista

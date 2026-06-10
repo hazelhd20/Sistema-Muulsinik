@@ -38,11 +38,6 @@
     </div>
 
     @livewireScripts
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
-    </script>
 </body>
 
 </html>

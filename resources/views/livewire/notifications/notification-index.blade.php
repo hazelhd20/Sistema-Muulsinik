@@ -22,7 +22,7 @@
             @if(!$this->notifications->isEmpty())
                 <x-button
                     wire:click="deleteAll"
-                    wire:confirm="¿Estás seguro de eliminar todas las notificaciones? Esta acción no se puede deshacer."
+                    wire:confirm="¿Eliminar todas las notificaciones? Esta acción no puede deshacerse."
                     variant="secondary"
                     class="text-danger hover:bg-danger-light hover:border-danger/50"
                 >
@@ -106,7 +106,7 @@
                                             </p>
                                         </div>
                                         <span class="text-xs-fluid text-text-muted shrink-0 whitespace-nowrap">
-                                            {{ $notification->created_at->diffForHumans() }}
+                                            {{ $notification->created_at->locale('es')->diffForHumans() }}
                                         </span>
                                     </div>
 

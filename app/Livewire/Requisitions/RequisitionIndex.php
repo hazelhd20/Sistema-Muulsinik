@@ -2,19 +2,21 @@
 
 namespace App\Livewire\Requisitions;
 
-use App\Models\Category;
-use App\Models\Measure;
-use App\Models\Product;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Project;
+use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\Supplier;
-use App\Services\RequisitionItemResolverService;
+use App\Models\User;
+use App\Notifications\RequisitionPendingApproval;
+use App\Notifications\RequisitionStatusChanged;
+use App\Services\RequisitionWorkflowService;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class RequisitionIndex extends Component
 {
@@ -22,10 +24,15 @@ class RequisitionIndex extends Component
     use WithSorting;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public string $projectFilter = '';
+
     public string $periodFilter = '';
+
     public string $creatorFilter = '';
+
     public string $vendorFilter = '';
 
     // Selección masiva
@@ -33,8 +40,11 @@ class RequisitionIndex extends Component
 
     // Rechazo con comentario obligatorio (RF-REQ-09)
     public bool $showRejectModal = false;
+
     public bool $isBulkReject = false;
+
     public ?int $rejectingId = null;
+
     public string $rejectionComment = '';
 
     #[On('requisition-updated')]
@@ -75,59 +85,34 @@ class RequisitionIndex extends Component
 
     /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente).
      *  Si el usuario es Administrador (permiso *), la requisición se aprueba automáticamente. */
-    public function submitForApproval(int $requisitionId): void
+    public function submitForApproval(int $requisitionId, RequisitionWorkflowService $workflowService): void
     {
         $req = Requisition::findOrFail($requisitionId);
-        if ($req->status !== 'borrador') {
-            return;
-        }
-
-        $user = auth()->user();
-        $isAdmin = in_array('*', $user->role?->permissions ?? [], true);
-
-        if ($isAdmin) {
-            $req->update([
-                'status' => 'aprobada',
-                'approved_by' => $user->id,
+        try {
+            $result = $workflowService->submitForApproval($req, auth()->user());
+            $this->dispatch('toast', [
+                'icon' => 'success',
+                'message' => $result['message'],
             ]);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada automáticamente.']);
-            
-            if ($req->creator && $req->creator->id !== $user->id) {
-                $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'borrador', 'aprobada', $user));
-                $this->dispatch('notification-received');
-            }
-        } else {
-            $req->update(['status' => 'pendiente']);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición enviada a aprobación.']);
-            
-            $approvers = \App\Models\User::all()->filter(fn($u) => $u->hasPermission('requisiciones.aprobar') || $u->hasPermission('*'));
-            \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\RequisitionPendingApproval($req));
             $this->dispatch('notification-received');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', [
+                'icon' => 'error',
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
     /** RF-REQ-09: Aprobar requisición (Pendiente → Aprobada). */
-    public function approve(int $requisitionId): void
+    public function approve(int $requisitionId, RequisitionWorkflowService $workflowService): void
     {
-        if (!auth()->user()->hasPermission('requisiciones.aprobar')) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
-            return;
-        }
-
         $req = Requisition::findOrFail($requisitionId);
-        if ($req->status !== 'pendiente') {
-            return;
-        }
-
-        $req->update([
-            'status' => 'aprobada',
-            'approved_by' => auth()->id(),
-        ]);
-        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada.']);
-        
-        if ($req->creator) {
-            $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'pendiente', 'aprobada', auth()->user()));
+        try {
+            $workflowService->approve($req, auth()->user());
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición aprobada.']);
             $this->dispatch('notification-received');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => $e->getMessage()]);
         }
     }
 
@@ -143,8 +128,9 @@ class RequisitionIndex extends Component
     /** Abrir modal de rechazo en lote. */
     public function openBulkRejectModal(): void
     {
-        if (!auth()->user()->hasPermission('requisiciones.aprobar') && !auth()->user()->hasPermission('*')) {
+        if (! auth()->user()->hasPermission('requisiciones.aprobar') && ! auth()->user()->hasPermission('*')) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
+
             return;
         }
 
@@ -155,6 +141,7 @@ class RequisitionIndex extends Component
 
         if (empty($pendingIds)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones pendientes seleccionadas para rechazar.']);
+
             return;
         }
 
@@ -165,17 +152,13 @@ class RequisitionIndex extends Component
     }
 
     /** RF-REQ-09: Rechazar con comentario obligatorio (individual o masivo). */
-    public function confirmReject(): void
+    public function confirmReject(RequisitionWorkflowService $workflowService): void
     {
-        if (!auth()->user()->hasPermission('requisiciones.aprobar') && !auth()->user()->hasPermission('*')) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
-            $this->showRejectModal = false;
-            return;
-        }
-
         $this->validate([
             'rejectionComment' => 'required|min:5|max:500',
         ]);
+
+        $user = auth()->user();
 
         if ($this->isBulkReject) {
             $pendingIds = Requisition::whereIn('id', $this->selectedRows)
@@ -184,34 +167,30 @@ class RequisitionIndex extends Component
                 ->toArray();
 
             $reqs = Requisition::whereIn('id', $pendingIds)->get();
+            $successCount = 0;
             foreach ($reqs as $req) {
-                $req->update([
-                    'status' => 'rechazada',
-                    'approved_by' => auth()->id(),
-                    'rejection_comment' => $this->rejectionComment,
-                ]);
-
-                if ($req->creator) {
-                    $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'pendiente', 'rechazada', auth()->user()));
+                try {
+                    $workflowService->reject($req, $user, $this->rejectionComment);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    // Si alguna falla, simplemente continuamos con las demás.
                 }
             }
 
-            $this->dispatch('notification-received');
-            $this->dispatch('toast', ['icon' => 'success', 'message' => count($pendingIds) . ' requisición(es) rechazada(s).']);
+            if ($successCount > 0) {
+                $this->dispatch('notification-received');
+                $this->dispatch('toast', ['icon' => 'success', 'message' => $successCount.' requisición(es) rechazada(s).']);
+            }
             $this->selectedRows = [];
         } else {
             $req = Requisition::findOrFail($this->rejectingId);
-            $req->update([
-                'status' => 'rechazada',
-                'approved_by' => auth()->id(),
-                'rejection_comment' => $this->rejectionComment,
-            ]);
-
-            if ($req->creator) {
-                $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'pendiente', 'rechazada', auth()->user()));
+            try {
+                $workflowService->reject($req, $user, $this->rejectionComment);
+                $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición rechazada.']);
                 $this->dispatch('notification-received');
+            } catch (\Exception $e) {
+                $this->dispatch('toast', ['icon' => 'error', 'message' => $e->getMessage()]);
             }
-            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición rechazada.']);
         }
 
         $this->showRejectModal = false;
@@ -227,12 +206,9 @@ class RequisitionIndex extends Component
     }
 
     /** Aprobación masiva de requisiciones seleccionadas en estado pendiente. */
-    public function approveSelected(): void
+    public function approveSelected(RequisitionWorkflowService $workflowService): void
     {
-        if (!auth()->user()->hasPermission('requisiciones.aprobar') && !auth()->user()->hasPermission('*')) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
-            return;
-        }
+        $user = auth()->user();
 
         $pendingIds = Requisition::whereIn('id', $this->selectedRows)
             ->where('status', 'pendiente')
@@ -241,23 +217,25 @@ class RequisitionIndex extends Component
 
         if (empty($pendingIds)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones pendientes seleccionadas para aprobar.']);
+
             return;
         }
 
         $reqs = Requisition::whereIn('id', $pendingIds)->get();
+        $successCount = 0;
         foreach ($reqs as $req) {
-            $req->update([
-                'status' => 'aprobada',
-                'approved_by' => auth()->id(),
-            ]);
-
-            if ($req->creator) {
-                $req->creator->notify(new \App\Notifications\RequisitionStatusChanged($req, 'pendiente', 'aprobada', auth()->user()));
+            try {
+                $workflowService->approve($req, $user);
+                $successCount++;
+            } catch (\Exception $e) {
+                // Si alguna falla, continuamos con las demás
             }
         }
 
-        $this->dispatch('notification-received');
-        $this->dispatch('toast', ['icon' => 'success', 'message' => count($pendingIds) . ' requisición(es) aprobada(s).']);
+        if ($successCount > 0) {
+            $this->dispatch('notification-received');
+            $this->dispatch('toast', ['icon' => 'success', 'message' => $successCount.' requisición(es) aprobada(s).']);
+        }
         $this->selectedRows = [];
     }
 
@@ -271,11 +249,12 @@ class RequisitionIndex extends Component
 
         if (empty($deletableIds)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones borradoras o rechazadas seleccionadas para eliminar.']);
+
             return;
         }
 
         Requisition::whereIn('id', $deletableIds)->delete();
-        $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletableIds) . ' requisición(es) eliminada(s).']);
+        $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletableIds).' requisición(es) eliminada(s).']);
         $this->selectedRows = [];
     }
 
@@ -284,6 +263,7 @@ class RequisitionIndex extends Component
     {
         if (empty($this->selectedRows)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
+
             return;
         }
 
@@ -292,31 +272,31 @@ class RequisitionIndex extends Component
             ->get();
 
         $headers = [
-            'Content-type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename=requisiciones_export_' . now()->format('Ymd_His') . '.csv',
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires'             => '0'
+            'Content-type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename=requisiciones_export_'.now()->format('Ymd_His').'.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
         $columns = ['Folio', 'Proyecto', 'Fecha', 'Creador', 'Proveedor', 'Total', 'Estado', 'Aprobado Por'];
 
-        $callback = function() use($requisitions, $columns) {
+        $callback = function () use ($requisitions, $columns) {
             $file = fopen('php://output', 'w');
             // Añadir BOM de UTF-8 para compatibilidad nativa con Excel en español
-            fputs($file, "\xEF\xBB\xBF");
+            fwrite($file, "\xEF\xBB\xBF");
             fputcsv($file, $columns);
 
             foreach ($requisitions as $req) {
                 fputcsv($file, [
-                    $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT),
+                    $req->number ?? 'REQ-'.str_pad($req->id, 5, '0', STR_PAD_LEFT),
                     $req->project->name ?? '—',
                     $req->date?->format('d/m/Y') ?? '—',
                     $req->creator->name ?? '—',
                     $req->vendor->name ?? '—',
                     $req->total,
                     ucfirst($req->status),
-                    $req->approver->name ?? '—'
+                    $req->approver->name ?? '—',
                 ]);
             }
 
@@ -324,7 +304,8 @@ class RequisitionIndex extends Component
         };
 
         $this->selectedRows = []; // Limpiar selección tras exportación
-        return response()->streamDownload($callback, 'requisiciones_export_' . now()->format('Ymd_His') . '.csv', $headers);
+
+        return response()->streamDownload($callback, 'requisiciones_export_'.now()->format('Ymd_His').'.csv', $headers);
     }
 
     #[On('quotation-dismissed')]
@@ -337,12 +318,12 @@ class RequisitionIndex extends Component
     #[Title('Requisiciones')]
     public function render()
     {
-        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'items', 'quotations'])
-            ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
-            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
-            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
-            ->when($this->creatorFilter, fn($q) => $q->where('created_by', $this->creatorFilter))
-            ->when($this->vendorFilter, fn($q) => $q->where('vendor_id', $this->vendorFilter))
+        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'quotations'])->withCount('items')
+            ->when($this->search, fn ($q) => $q->where(fn ($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
+            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+            ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->creatorFilter, fn ($q) => $q->where('created_by', $this->creatorFilter))
+            ->when($this->vendorFilter, fn ($q) => $q->where('vendor_id', $this->vendorFilter))
             ->when($this->periodFilter, function ($q) {
                 match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
@@ -356,17 +337,17 @@ class RequisitionIndex extends Component
             ->paginate(10);
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();
-        $creators = \App\Models\User::orderBy('name')->get();
+        $creators = User::orderBy('name')->get();
         $vendors = Supplier::orderBy('trade_name')->get();
-        
-        $pendingQuotations = \App\Models\Quotation::whereNull('requisition_id')
+
+        $pendingQuotations = Quotation::whereNull('requisition_id')
             ->where('is_orphan', false)
             ->where(function ($query) {
                 $query->whereIn('status', ['pending', 'processing'])
-                      ->orWhere(function ($q) {
-                          $q->whereIn('status', ['completed', 'failed'])
+                    ->orWhere(function ($q) {
+                        $q->whereIn('status', ['completed', 'failed'])
                             ->where('created_at', '>=', now()->subDays(7));
-                      });
+                    });
             })
             ->orderByDesc('created_at')
             ->get();

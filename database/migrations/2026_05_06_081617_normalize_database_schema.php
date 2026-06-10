@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -23,7 +23,7 @@ return new class extends Migration
         $roles = DB::table('roles')->get();
         $rolePermissionsData = [];
         foreach ($roles as $role) {
-            if (!empty($role->permissions)) {
+            if (! empty($role->permissions)) {
                 $perms = json_decode($role->permissions, true);
                 if (is_array($perms)) {
                     foreach ($perms as $perm) {
@@ -35,7 +35,7 @@ return new class extends Migration
                 }
             }
         }
-        if (!empty($rolePermissionsData)) {
+        if (! empty($rolePermissionsData)) {
             DB::table('role_permissions')->insert($rolePermissionsData);
         }
 
@@ -113,7 +113,7 @@ return new class extends Migration
         });
 
         $measures = DB::table('measures')->get()->keyBy('id');
-        
+
         $items = DB::table('requisition_items')->whereNotNull('measure_id')->get();
         foreach ($items as $item) {
             if (isset($measures[$item->measure_id])) {

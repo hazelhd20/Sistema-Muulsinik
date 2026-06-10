@@ -23,7 +23,7 @@ return new class extends Migration
         });
 
         // --- RequisitionItems: estado de homologación ---
-        if (!Schema::hasColumn('requisition_items', 'homologation_status')) {
+        if (! Schema::hasColumn('requisition_items', 'homologation_status')) {
             Schema::table('requisition_items', function (Blueprint $table) {
                 $table->string('homologation_status')->default('pending')->after('supplier_id');
             });

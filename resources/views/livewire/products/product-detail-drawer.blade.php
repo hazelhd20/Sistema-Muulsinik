@@ -6,7 +6,7 @@
                 {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 font-semibold text-text-primary">{{ $detailProduct->canonical_name }}</h3>
+                        <h3 class="text-h3 text-text-primary">{{ $detailProduct->canonical_name }}</h3>
                         <p class="text-sm text-text-muted mt-1">Registrado el {{ $detailProduct->created_at?->format('d/m/Y') }}</p>
                     </div>
                 </div>

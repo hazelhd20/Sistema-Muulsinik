@@ -6,7 +6,7 @@
                 {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 font-semibold text-text-primary">{{ $detailProject->name }}</h3>
+                        <h3 class="text-h3 text-text-primary">{{ $detailProject->name }}</h3>
                         <p class="text-sm text-text-muted mt-1">Cliente: {{ $detailProject->client ?? 'Sin cliente' }}</p>
                     </div>
                     <x-status-badge :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />

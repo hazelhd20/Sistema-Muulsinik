@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $created_by
  * @property int|null $approved_by
  * @property string|null $rejection_comment
- * @property \Carbon\Carbon|null $date
+ * @property Carbon|null $date
  * @property-read float $subtotal
  * @property-read float $tax_amount
  * @property-read float $total
@@ -53,7 +54,6 @@ class Requisition extends Model
         });
     }
 
-
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
@@ -84,16 +84,21 @@ class Requisition extends Model
         return $this->hasMany(Quotation::class);
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(RequisitionActivity::class)->latest();
+    }
+
     /** Subtotal estimado (sin IVA). Usa totales del proveedor cuando existen. */
     public function getSubtotalAttribute(): float
     {
-        return (float) $this->items->sum(fn($item) => $item->line_subtotal_computed);
+        return (float) $this->items->sum(fn ($item) => $item->line_subtotal_computed);
     }
 
     /** IVA total estimado. tax_amount ya es IVA de línea (total). */
     public function getTaxAmountAttribute(): float
     {
-        return (float) $this->items->sum(fn($item) => (float) ($item->tax_amount ?? 0));
+        return (float) $this->items->sum(fn ($item) => (float) ($item->tax_amount ?? 0));
     }
 
     /** Total estimado de la requisición (subtotal + IVA). Usa totales del proveedor cuando existen. */
@@ -101,10 +106,10 @@ class Requisition extends Model
     {
         // Si todos los ítems tienen line_total del proveedor, usar la suma directa
         // para evitar acumulación de errores de redondeo
-        $allHaveLineTotal = $this->items->every(fn($item) => $item->line_total !== null);
+        $allHaveLineTotal = $this->items->every(fn ($item) => $item->line_total !== null);
 
         if ($allHaveLineTotal) {
-            return (float) $this->items->sum(fn($item) => (float) $item->line_total);
+            return (float) $this->items->sum(fn ($item) => (float) $item->line_total);
         }
 
         return round($this->subtotal + $this->tax_amount, 2);

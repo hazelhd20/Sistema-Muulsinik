@@ -40,19 +40,19 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('quotations', function (Blueprint $table) {
-            if (!Schema::hasColumn('quotations', 'processing_status')) {
+            if (! Schema::hasColumn('quotations', 'processing_status')) {
                 $table->string('processing_status')->nullable();
             }
-            if (!Schema::hasColumn('quotations', 'extracted_data')) {
+            if (! Schema::hasColumn('quotations', 'extracted_data')) {
                 $table->json('extracted_data')->nullable();
             }
-            if (!Schema::hasColumn('quotations', 'processing_error')) {
+            if (! Schema::hasColumn('quotations', 'processing_error')) {
                 $table->text('processing_error')->nullable();
             }
         });
 
         Schema::table('requisitions', function (Blueprint $table) {
-            if (!Schema::hasColumn('requisitions', 'need_date')) {
+            if (! Schema::hasColumn('requisitions', 'need_date')) {
                 $table->date('need_date')->nullable();
             }
         });

@@ -3,31 +3,44 @@
 namespace App\Livewire\Expenses;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Expense;
+use App\Models\ExpenseAllocation;
 use App\Models\Project;
+use App\Models\User;
+use App\Notifications\BudgetAlert;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class ExpenseIndex extends Component
 {
-    use WithPagination, WithFileUploads, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithFileUploads, WithPagination, WithSorting;
 
     public string $search = '';
+
     public string $projectFilter = '';
+
     public string $categoryFilter = '';
+
     public string $periodFilter = '';
+
     public bool $showCreateModal = false;
 
     // Campos del formulario
     public string $concept = '';
+
     public string $amount = '';
+
     public string $date = '';
+
     public string $category = '';
+
     public $projectId = '';
+
     public $receiptFile = null;
 
     protected array $categories = [
@@ -77,7 +90,9 @@ class ExpenseIndex extends Component
 
     public function createExpense(): void
     {
-        if ($this->denyUnless('gastos.crear', 'No tienes permiso para registrar gastos.')) return;
+        if ($this->denyUnless('gastos.crear', 'No tienes permiso para registrar gastos.')) {
+            return;
+        }
 
         $this->validate([
             'concept' => 'required|min:3|max:255',
@@ -111,7 +126,7 @@ class ExpenseIndex extends Component
                 $amountPerProject = round($this->amount / $count, 2);
                 $percentage = round(100 / $count, 2);
                 foreach ($activeProjects as $project) {
-                    \App\Models\ExpenseAllocation::create([
+                    ExpenseAllocation::create([
                         'expense_id' => $expense->id,
                         'project_id' => $project->id,
                         'amount' => $amountPerProject,
@@ -132,7 +147,9 @@ class ExpenseIndex extends Component
 
     public function deleteExpense(int $expenseId): void
     {
-        if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) return;
+        if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) {
+            return;
+        }
 
         Expense::findOrFail($expenseId)->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto eliminado.']);
@@ -161,8 +178,8 @@ class ExpenseIndex extends Component
             $this->dispatch('toast', ['icon' => $severity === 'danger' ? 'error' : ($severity === 'info' ? 'info' : 'warning'), 'message' => $message]);
 
             if ($percent >= 80) { // Database alert threshold defined in BudgetAlert
-                $admins = \App\Models\User::all()->filter(fn($u) => $u->hasPermission('gastos.ver') || $u->hasPermission('*'));
-                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\BudgetAlert($project, $percent, $percent >= 100 ? 'danger' : 'warning'));
+                $admins = User::with('role')->get()->filter(fn ($u) => $u->hasPermission('gastos.ver') || $u->hasPermission('*'));
+                Notification::send($admins, new BudgetAlert($project, $percent, $percent >= 100 ? 'danger' : 'warning'));
                 $this->dispatch('notification-received');
             }
         }
@@ -189,11 +206,11 @@ class ExpenseIndex extends Component
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
             ->when($this->periodFilter, function ($q) {
                 match ($this->periodFilter) {
-                    'this_month'   => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
-                    'last_month'   => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
+                    'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
+                    'last_month' => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
                     'this_quarter' => $q->whereBetween('date', [now()->startOfQuarter(), now()->endOfQuarter()]),
-                    'this_year'    => $q->whereYear('date', now()->year),
-                    default        => null,
+                    'this_year' => $q->whereYear('date', now()->year),
+                    default => null,
                 };
             })
             ->orderBy($this->sortField, $this->sortDirection)

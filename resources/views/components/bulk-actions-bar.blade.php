@@ -10,12 +10,15 @@
     x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="opacity-100 translate-y-0"
     x-transition:leave-end="opacity-0 translate-y-10"
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-slate-100 px-6 py-3.5 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-6 min-w-[320px] md:min-w-[450px]"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-surface-card text-text-primary px-4 py-3 rounded-2xl shadow-xl border border-border flex items-center gap-4 min-w-[320px] max-w-[90vw]"
     style="display: none;"
 >
-    <div class="flex items-center gap-2 border-r border-slate-800 pr-4 shrink-0">
-        <span class="w-2 h-2 rounded-full bg-primary-300 animate-pulse"></span>
-        <span class="text-sm font-semibold text-white">
+    <div class="flex items-center gap-3 border-r border-border pr-4 shrink-0">
+        <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span>
+        </span>
+        <span class="text-sm font-semibold text-text-primary whitespace-nowrap">
             <span x-text="{{ $model }}.length"></span> seleccionados
         </span>
     </div>
@@ -24,7 +27,9 @@
         {{ $slot }}
     </div>
 
-    <button type="button" @click="{{ $model }} = []" class="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-800 cursor-pointer" title="Deseleccionar todo">
-        <i data-lucide="x" class="w-4 h-4"></i>
-    </button>
+    <div class="border-l border-border pl-2 shrink-0">
+        <button type="button" @click="{{ $model }} = []" class="text-text-muted hover:text-danger transition-colors p-1.5 rounded-lg hover:bg-danger/10 cursor-pointer flex items-center justify-center" title="Deseleccionar todo">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
 </div>

@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Measure;
 use App\Models\Product;
 use App\Models\Project;
-use App\Models\Supplier;
 use App\Models\Vendor;
 use App\Services\RequisitionItemResolverService;
 use Illuminate\Support\Facades\DB;
@@ -16,27 +15,23 @@ use Livewire\Component;
 
 class ManualRequisition extends Component
 {
-    public $reqProjectId = '';
-    public $reqVendorId = '';
-    public string $reqAnnotations = '';
-    public string $reqDate = '';
-
-    // Ítems temporales para la nueva requisición
-    public array $items = [];
+    public ManualRequisitionForm $form;
 
     // Search for products (pattern from QuickBudgetWizard)
     public string $searchQuery = '';
+
     public array $searchResults = [];
 
     public function mount()
     {
-        $this->reqDate = now()->format('Y-m-d');
+        $this->form->date = now()->format('Y-m-d');
     }
 
     public function updatedSearchQuery()
     {
         if (strlen($this->searchQuery) < 2) {
             $this->searchResults = [];
+
             return;
         }
 
@@ -71,17 +66,11 @@ class ManualRequisition extends Component
     public function addProduct(int $index): void
     {
         $product = $this->searchResults[$index] ?? null;
-        if (!$product) {
+        if (! $product) {
             return;
         }
 
-        $this->items[] = [
-            'name' => $product['name'],
-            'quantity' => 1,
-            'unit' => $product['unit'],
-            'unit_price' => $product['last_price'],
-            'category_id' => $product['category_id'],
-        ];
+        $this->form->addProduct($product);
 
         $this->searchQuery = '';
         $this->searchResults = [];
@@ -89,58 +78,34 @@ class ManualRequisition extends Component
 
     public function addManualItem(): void
     {
-        $this->items[] = [
-            'name' => '',
-            'quantity' => 1,
-            'unit' => 'pza',
-            'unit_price' => 0,
-            'category_id' => null,
-        ];
+        $this->form->addManualItem();
     }
 
     public function removeItem(int $index): void
     {
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
+        $this->form->removeItem($index);
     }
 
     public function createRequisition(): void
     {
-        $this->validate([
-            'reqProjectId' => 'required|exists:projects,id',
-            'reqVendorId' => 'nullable|exists:vendors,id',
-            'reqAnnotations' => 'nullable|max:500',
-            'reqDate' => 'required|date',
-        ]);
+        $error = $this->form->validateForm();
 
-        if (empty($this->items)) {
-            $this->dispatch('toast', ['icon' => 'error', 'message' => 'Agrega al menos un producto a la requisición.']);
+        if ($error) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => $error]);
             return;
-        }
-
-        // Validate items have names
-        foreach ($this->items as $i => $item) {
-            if (empty(trim($item['name'] ?? ''))) {
-                $this->dispatch('toast', ['icon' => 'error', 'message' => 'El producto en la fila ' . ($i + 1) . ' no tiene nombre.']);
-                return;
-            }
-            if (($item['quantity'] ?? 0) <= 0) {
-                $this->dispatch('toast', ['icon' => 'error', 'message' => 'La cantidad en la fila ' . ($i + 1) . ' debe ser mayor a 0.']);
-                return;
-            }
         }
 
         $resolver = app(RequisitionItemResolverService::class);
         $resolver->createRequisitionWithItems(
             [
-                'project_id' => $this->reqProjectId,
-                'vendor_id' => $this->reqVendorId ?: null,
-                'annotations' => $this->reqAnnotations,
+                'project_id' => $this->form->projectId,
+                'vendor_id' => $this->form->vendorId ?: null,
+                'annotations' => $this->form->annotations,
                 'status' => 'borrador',
                 'created_by' => auth()->id(),
-                'date' => $this->reqDate,
+                'date' => $this->form->date,
             ],
-            $this->items
+            $this->form->items
         );
 
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición creada como borrador.']);
@@ -151,20 +116,20 @@ class ManualRequisition extends Component
     #[Title('Nueva Requisición Manual')]
     public function render()
     {
-        $projects   = Project::where('status', 'activo')->orderBy('name')->get();
-        $vendors    = Vendor::orderBy('name')->get();
+        $projects = Project::where('status', 'activo')->orderBy('name')->get();
+        $vendors = Vendor::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
-        $measures   = Measure::orderBy('name')->get();
+        $measures = Measure::getOptions();
 
         // Totales calculados en el componente — la vista solo los consume
-        $subtotal = collect($this->items)->sum(
-            fn($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)
+        $subtotal = collect($this->form->items)->sum(
+            fn ($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)
         );
-        $iva   = round($subtotal * 0.16, 2);
+        $iva = round($subtotal * 0.16, 2);
         $totals = [
             'subtotal' => $subtotal,
-            'iva'      => $iva,
-            'total'    => round($subtotal + $iva, 2),
+            'iva' => $iva,
+            'total' => round($subtotal + $iva, 2),
         ];
 
         return view('livewire.requisitions.manual-requisition', compact(

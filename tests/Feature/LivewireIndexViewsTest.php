@@ -2,12 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Models\Role;
+use App\Livewire\Expenses\ExpenseIndex;
+use App\Livewire\Measures\MeasureIndex;
+use App\Livewire\Notifications\NotificationIndex;
+use App\Livewire\Products\CategoryIndex;
+use App\Livewire\Products\ProductIndex;
+use App\Livewire\QuickBudgets\QuickBudgetIndex;
+use App\Livewire\Requisitions\RequisitionIndex;
+use App\Livewire\Users\UserIndex;
+use App\Models\Project;
+use App\Models\Requisition;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
-use Database\Seeders\DatabaseSeeder;
 
 class LivewireIndexViewsTest extends TestCase
 {
@@ -24,7 +33,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Users\UserIndex::class)
+        Livewire::test(UserIndex::class)
             ->assertStatus(200);
     }
 
@@ -33,7 +42,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Products\ProductIndex::class)
+        Livewire::test(ProductIndex::class)
             ->assertStatus(200);
     }
 
@@ -42,7 +51,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Products\CategoryIndex::class)
+        Livewire::test(CategoryIndex::class)
             ->assertStatus(200);
     }
 
@@ -51,7 +60,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Measures\MeasureIndex::class)
+        Livewire::test(MeasureIndex::class)
             ->assertStatus(200);
     }
 
@@ -60,7 +69,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Expenses\ExpenseIndex::class)
+        Livewire::test(ExpenseIndex::class)
             ->assertStatus(200);
     }
 
@@ -69,7 +78,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\QuickBudgets\QuickBudgetIndex::class)
+        Livewire::test(QuickBudgetIndex::class)
             ->assertStatus(200);
     }
 
@@ -78,7 +87,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Notifications\NotificationIndex::class)
+        Livewire::test(NotificationIndex::class)
             ->assertStatus(200);
     }
 
@@ -87,7 +96,7 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
+        Livewire::test(RequisitionIndex::class)
             ->assertStatus(200);
     }
 
@@ -96,25 +105,25 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        $project = \App\Models\Project::create([
+        $project = Project::create([
             'name' => 'Proyecto Test',
-            'status' => 'activo'
+            'status' => 'activo',
         ]);
 
-        $req1 = \App\Models\Requisition::create([
+        $req1 = Requisition::create([
             'project_id' => $project->id,
             'status' => 'pendiente',
             'created_by' => $user->id,
-            'date' => now()
+            'date' => now(),
         ]);
-        $req2 = \App\Models\Requisition::create([
+        $req2 = Requisition::create([
             'project_id' => $project->id,
             'status' => 'pendiente',
             'created_by' => $user->id,
-            'date' => now()
+            'date' => now(),
         ]);
 
-        Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
+        Livewire::test(RequisitionIndex::class)
             ->set('selectedRows', [(string) $req1->id, (string) $req2->id])
             ->call('approveSelected')
             ->assertSet('selectedRows', []);
@@ -128,19 +137,19 @@ class LivewireIndexViewsTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
 
-        $project = \App\Models\Project::create([
+        $project = Project::create([
             'name' => 'Proyecto Test',
-            'status' => 'activo'
+            'status' => 'activo',
         ]);
 
-        $req = \App\Models\Requisition::create([
+        $req = Requisition::create([
             'project_id' => $project->id,
             'status' => 'borrador',
             'created_by' => $user->id,
-            'date' => now()
+            'date' => now(),
         ]);
 
-        Livewire::test(\App\Livewire\Requisitions\RequisitionIndex::class)
+        Livewire::test(RequisitionIndex::class)
             ->set('selectedRows', [(string) $req->id])
             ->call('exportSelected')
             ->assertFileDownloaded();

@@ -60,10 +60,10 @@ return new class extends Migration
                 ->implode(' | ');
 
             DB::table('products_fts')->insert([
-                'product_id'     => $product->id,
+                'product_id' => $product->id,
                 'canonical_name' => $product->canonical_name,
-                'aliases'        => $aliases,
-                'category'       => $product->category ?? '',
+                'aliases' => $aliases,
+                'category' => $product->category ?? '',
             ]);
         }
     }

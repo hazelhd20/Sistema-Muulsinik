@@ -13,8 +13,8 @@
         <div class="card p-6">
             <h2 class="text-h2 text-text-primary mb-4">Datos Generales</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <x-form-field label="Proyecto" required error="{{ $errors->first('reqProjectId') }}">
-                    <x-custom-select wire:model="reqProjectId" :options="$projects->pluck('name', 'id')->toArray()"
+                <x-form-field label="Proyecto" required error="{{ $errors->first('form.projectId') }}">
+                    <x-custom-select wire:model="form.projectId" :options="$projects->pluck('name', 'id')->toArray()"
                         placeholder="Seleccionar proyecto..." />
                 </x-form-field>
 
@@ -24,17 +24,17 @@
                         $vendorOptions[$vendor->id] = $vendor->name . ' (' . ($vendor->supplier->trade_name ?? 'Sin Proveedor') . ')';
                     }
                 @endphp
-                <x-form-field label="Vendedor" error="{{ $errors->first('reqVendorId') }}">
-                    <x-custom-select wire:model="reqVendorId" :options="$vendorOptions" placeholder="Vendedor..." />
+                <x-form-field label="Vendedor" error="{{ $errors->first('form.vendorId') }}">
+                    <x-custom-select wire:model="form.vendorId" :options="$vendorOptions" placeholder="Vendedor..." />
                 </x-form-field>
 
-                <x-form-field label="Fecha" required error="{{ $errors->first('reqDate') }}">
-                    <input wire:model="reqDate" type="date" class="input w-full">
+                <x-form-field label="Fecha" required error="{{ $errors->first('form.date') }}">
+                    <input wire:model="form.date" type="date" class="input w-full">
                 </x-form-field>
 
                 <div class="md:col-span-3">
-                    <x-form-field label="Anotaciones" error="{{ $errors->first('reqAnnotations') }}">
-                        <textarea wire:model="reqAnnotations" class="input w-full" rows="2"
+                    <x-form-field label="Anotaciones" error="{{ $errors->first('form.annotations') }}">
+                        <textarea wire:model="form.annotations" class="input w-full" rows="2"
                             placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                     </x-form-field>
                 </div>
@@ -42,13 +42,13 @@
         </div>
 
         {{-- 2. Productos --}}
-        <div class="card mb-6">
+        <div class="card p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h2 class="text-h2 text-text-primary">Productos</h2>
-                    @if(count($items) > 0)
-                        <x-badge variant="secondary">{{ count($items) }}</x-badge>
-                        <span class="text-small text-text-muted">{{ count($items) === 1 ? 'producto' : 'productos' }}</span>
+                    @if(count($form->items) > 0)
+                        <x-badge variant="secondary">{{ count($form->items) }}</x-badge>
+                        <span class="text-small text-text-muted">{{ count($form->items) === 1 ? 'producto' : 'productos' }}</span>
                     @endif
                 </div>
                 <x-button wire:click="addManualItem" variant="secondary" icon="plus">
@@ -72,20 +72,17 @@
 
                     {{-- Dropdown Results --}}
                     @if(!empty($searchResults))
-                        <div
-                            class="absolute z-10 mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
+                        <div class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
                             <ul class="max-h-60 overflow-y-auto py-1">
                                 @foreach($searchResults as $index => $product)
                                     <li>
                                         <button type="button" wire:click="addProduct({{ $index }})"
                                             class="w-full text-left px-4 py-2.5 hover:bg-surface-hover flex items-center justify-between group transition-colors">
                                             <div>
-                                                <p
-                                                    class="text-small font-medium text-text-primary group-hover:text-primary-600">
+                                                <p class="text-small font-medium text-text-primary group-hover:text-primary-600">
                                                     {{ $product['name'] }}</p>
                                                 <div class="flex items-center gap-2 mt-0.5">
-                                                    <span
-                                                        class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
+                                                    <span class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
                                                     <x-badge variant="secondary">{{ $product['measure_abbr'] }}</x-badge>
                                                 </div>
                                             </div>
@@ -101,12 +98,19 @@
                                 @endforeach
                             </ul>
                         </div>
+                    @elseif(strlen($searchQuery) >= 2 && empty($searchResults))
+                        <div class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in p-4 text-center">
+                            <p class="text-small text-text-muted">No se encontraron productos en el catálogo.</p>
+                            <p class="text-xs-fluid text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
+                                Da clic en "Concepto Manual" para agregarlo tú mismo.
+                            </p>
+                        </div>
                     @endif
                 </div>
             </div>
 
             {{-- Items Table --}}
-            @if(count($items) > 0)
+            @if(count($form->items) > 0)
                 <div class="table-embedded table-embedded-form">
                     <table>
                         <thead>
@@ -122,7 +126,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($items as $i => $item)
+                            @foreach($form->items as $i => $item)
                                 @php
                                     $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
                                     $iva = round($subtotal * 0.16, 2);
@@ -131,17 +135,17 @@
                                 <tr class="align-top hover:bg-surface-hover/30 transition-all duration-200 group"
                                     wire:key="item-row-{{ $i }}">
                                     <td class="pb-4">
-                                        <input wire:model.live.debounce.400ms="items.{{ $i }}.name" type="text"
+                                        <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
                                             class="input input-inline text-small w-full"
                                             placeholder="Nombre del producto">
                                     </td>
                                     <td class="pb-4">
-                                        <x-custom-select wire:model.live="items.{{ $i }}.category_id"
+                                        <x-custom-select wire:model.live="form.items.{{ $i }}.category_id"
                                             :options="$categories->pluck('name', 'id')->toArray()"
                                             placeholder="Sin categoría" />
                                     </td>
                                     <td class="pb-4">
-                                        <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
+                                        <input wire:model.live.debounce.400ms="form.items.{{ $i }}.quantity" type="number"
                                             step="0.01"
                                             class="input input-inline text-center tabular-nums text-small"
                                             placeholder="0">
@@ -152,11 +156,11 @@
                                                 ($m->abbreviation ?? $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')
                                             ])->toArray();
                                         @endphp
-                                        <x-custom-select wire:model.live="items.{{ $i }}.unit" :options="$measureOptions"
+                                        <x-custom-select wire:model.live="form.items.{{ $i }}.unit" :options="$measureOptions"
                                             placeholder="Unidad" />
                                     </td>
                                     <td class="pb-4">
-                                        <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
+                                        <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number"
                                             step="0.01"
                                             class="input input-inline text-right tabular-nums text-small"
                                             placeholder="0.00">

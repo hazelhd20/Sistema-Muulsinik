@@ -11,7 +11,20 @@
             </x-button>
 
             {{-- ── Workflow: Borrador → Pendiente (o Aprobada si admin) ── --}}
-            @if($requisition->status === 'borrador')
+            @if(auth()->user()->hasPermission('*') && $requisition->status === 'borrador')
+                <x-button
+                    @click="$dispatch('confirm-action', {
+                        title: 'Aprobar Requisición',
+                        description: 'Tienes permisos de administrador. La requisición se aprobará automáticamente.',
+                        confirmLabel: 'Aprobar ahora',
+                        variant: 'success',
+                        action: 'submitForApproval',
+                        params: []
+                    })"
+                    variant="success" icon="check-circle">
+                    Aprobar Requisición
+                </x-button>
+            @elseif($requisition->status === 'borrador')
                 <x-button
                     @click="$dispatch('confirm-action', {
                         title: 'Solicitar Aprobación',
@@ -24,28 +37,96 @@
                     variant="primary" icon="send">
                     Solicitar Aprobación
                 </x-button>
+            @elseif(in_array($requisition->status, ['pendiente', 'aprobada', 'rechazada']) && $requisition->created_by === auth()->id())
+                <x-button variant="primary" icon="send" disabled class="disabled" title="Documento ya procesado">
+                    Solicitar Aprobación
+                </x-button>
             @endif
 
             {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
-            @if($requisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle">
-                    Rechazar
-                </x-button>
-                <x-button
-                    @click="$dispatch('confirm-action', {
-                        title: 'Aprobar Requisición',
-                        description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                        confirmLabel: 'Aprobar',
-                        variant: 'success',
-                        action: 'approve',
-                        params: []
-                    })"
-                    variant="success" icon="check-circle">
-                    Aprobar
-                </x-button>
+            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                @if($requisition->status === 'pendiente')
+                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal">
+                        Rechazar
+                    </x-button>
+                    <x-button
+                        @click="$dispatch('confirm-action', {
+                            title: 'Aprobar Requisición',
+                            description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                            confirmLabel: 'Aprobar',
+                            variant: 'success',
+                            action: 'approve',
+                            params: []
+                        })"
+                        variant="success" icon="check-circle">
+                        Aprobar
+                    </x-button>
+                @elseif(in_array($requisition->status, ['aprobada', 'rechazada']))
+                    <x-button variant="secondary" icon="x-circle" disabled class="disabled" title="Documento ya procesado">
+                        Rechazar
+                    </x-button>
+                    <x-button variant="success" icon="check-circle" disabled class="disabled" title="Documento ya procesado">
+                        Aprobar
+                    </x-button>
+                @endif
             @endif
         </x-slot:actions>
     </x-page-header>
+
+    {{-- ─── Stepper de Workflow (E1) ─── --}}
+    <div class="card mb-6">
+        <div class="flex items-center justify-between px-2">
+            @php
+                $steps = [
+                    'borrador' => ['label' => 'Borrador', 'icon' => 'file-edit'],
+                    'pendiente' => ['label' => 'Pendiente', 'icon' => 'clock'],
+                    'aprobada' => ['label' => 'Aprobada', 'icon' => 'check-circle'],
+                ];
+                if ($requisition->status === 'rechazada') {
+                    $steps['aprobada'] = ['label' => 'Rechazada', 'icon' => 'x-circle'];
+                }
+
+                $currentStatus = $requisition->status;
+                $currentIndex = array_search($currentStatus, array_keys($steps));
+                if ($currentIndex === false) $currentIndex = 0;
+            @endphp
+
+            @foreach($steps as $key => $step)
+                @php
+                    $stepIndex = $loop->index;
+                    $isCompleted = $stepIndex < $currentIndex;
+                    $isCurrent = $stepIndex === $currentIndex;
+
+                    $colorClass = 'text-text-muted bg-surface-hover';
+                    $lineClass = 'bg-border';
+
+                    if ($isCompleted) {
+                        $colorClass = 'text-white bg-success';
+                        $lineClass = 'bg-success';
+                    } elseif ($isCurrent) {
+                        if ($key === 'rechazada') {
+                            $colorClass = 'text-white bg-danger';
+                        } elseif ($key === 'aprobada') {
+                            $colorClass = 'text-white bg-success';
+                        } else {
+                            $colorClass = 'text-primary-700 bg-primary-100 ring-4 ring-primary-50';
+                        }
+                    }
+                @endphp
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full transition-colors {{ $colorClass }}">
+                        <i data-lucide="{{ $step['icon'] }}" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-small font-medium hidden sm:inline-block {{ $isCurrent || $isCompleted ? 'text-text-primary' : 'text-text-muted' }}">
+                        {{ $step['label'] }}
+                    </span>
+                </div>
+                @if(!$loop->last)
+                    <div class="flex-1 h-0.5 mx-4 transition-colors {{ $lineClass }}"></div>
+                @endif
+            @endforeach
+        </div>
+    </div>
 
     {{-- ─── Banner de rechazo (visible solo cuando rechazada) ─── --}}
     @if($requisition->status === 'rechazada' && $requisition->rejection_comment)
@@ -53,9 +134,9 @@
             <i data-lucide="x-octagon" class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true"></i>
             <div class="min-w-0">
                 <p class="text-small font-semibold text-danger">Requisición rechazada</p>
-                <p class="text-small text-danger mt-0.5" style="opacity:.85">{{ $requisition->rejection_comment }}</p>
+                <p class="text-small text-danger mt-0.5 opacity-85">{{ $requisition->rejection_comment }}</p>
                 @if($requisition->approver)
-                    <p class="text-xs-fluid text-danger mt-1" style="opacity:.6">
+                    <p class="text-xs-fluid text-danger mt-1 opacity-60">
                         Por {{ $requisition->approver->name }}
                         @if($requisition->updated_at)
                             &middot; {{ $requisition->updated_at->locale('es')->diffForHumans() }}
@@ -128,7 +209,7 @@
                         <tr>
                             <th>Producto</th>
                             <th>Categoría</th>
-                            <th class="text-right">Cant.</th>
+                            <th class="text-center w-[10%]">Cant.</th>
                             <th class="text-right">Precio U.</th>
                             <th class="text-right">Total</th>
                         </tr>
@@ -146,7 +227,7 @@
                                         {{ $item->product?->category?->name ?? '—' }}
                                     </span>
                                 </td>
-                                <td class="text-right tabular-nums text-small">
+                                <td class="text-center tabular-nums text-small">
                                     {{ number_format($item->quantity, 2) }}
                                     {{ $item->measure?->abbreviation ?? '' }}
                                 </td>
@@ -205,31 +286,71 @@
         </div>
     </div>
 
-    {{-- ─── Modal de Rechazo (RF-REQ-09) ─── --}}
-    @if($showRejectModal)
-        <x-modal show="showRejectModal"
-            title="Rechazar Requisición"
-            subtitle="Indica el motivo del rechazo (obligatorio)"
-            maxWidth="md">
-            <form wire:submit="confirmReject" class="p-5 space-y-4">
-                <x-form-field label="Motivo del rechazo" required error="{{ $errors->first('rejectionComment') }}">
-                    <textarea wire:model="rejectionComment"
-                        class="input"
-                        rows="3"
-                        placeholder="Explica por qué esta requisición fue rechazada..."
-                        aria-required="true"></textarea>
-                </x-form-field>
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showRejectModal', false)" variant="secondary">
-                        Cancelar
-                    </x-button>
-                    <x-button type="submit" variant="danger" icon="x-circle">
-                        Confirmar Rechazo
-                    </x-button>
+    {{-- ─── Historial de Actividad (Audit Log) (H1) ─── --}}
+    @if($requisition->activities->isNotEmpty())
+        <div class="card mb-6">
+            <div class="px-6 py-4 border-b border-border flex items-center gap-3">
+                <i data-lucide="history" class="w-5 h-5 text-text-muted"></i>
+                <h2 class="text-h3 font-semibold text-text-primary">Historial de Actividad</h2>
+            </div>
+            <div class="p-6">
+                <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:ml-8 md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-border before:to-transparent">
+                    @foreach($requisition->activities as $activity)
+                        @php
+                            $actionConfig = match($activity->action) {
+                                'created' => ['icon' => 'plus-circle', 'color' => 'text-primary-600', 'bg' => 'bg-primary-50', 'border' => 'border-primary-100'],
+                                'approved' => ['icon' => 'check-circle', 'color' => 'text-success', 'bg' => 'bg-success-light', 'border' => 'border-success-border'],
+                                'rejected' => ['icon' => 'x-circle', 'color' => 'text-danger', 'bg' => 'bg-danger-light', 'border' => 'border-danger-border'],
+                                'status_changed' => ['icon' => 'arrow-right-circle', 'color' => 'text-warning', 'bg' => 'bg-warning-light', 'border' => 'border-warning-border'],
+                                default => ['icon' => 'edit-3', 'color' => 'text-text-secondary', 'bg' => 'bg-surface-hover', 'border' => 'border-border-strong'],
+                            };
+                        @endphp
+                        <div class="relative flex items-start gap-4 md:gap-6 group">
+                            {{-- Line & Icon --}}
+                            <div class="relative z-10 flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border shadow-sm shrink-0 bg-surface-card transition-transform group-hover:scale-105 {{ $actionConfig['border'] }}">
+                                <div class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center {{ $actionConfig['bg'] }}">
+                                    <i data-lucide="{{ $actionConfig['icon'] }}" class="w-4 h-4 md:w-5 md:h-5 {{ $actionConfig['color'] }}"></i>
+                                </div>
+                            </div>
+                            
+                            {{-- Content --}}
+                            <div class="flex-1 min-w-0 pt-1 md:pt-2">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+                                    <p class="text-small font-medium text-text-primary">
+                                        {{ $activity->description ?? ucfirst(__($activity->action)) }}
+                                    </p>
+                                    <span class="text-xs-fluid text-text-muted whitespace-nowrap" title="{{ $activity->created_at->format('d/m/Y H:i:s') }}">
+                                        {{ $activity->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
+                                <div class="text-xs-fluid text-text-muted flex items-center gap-1.5">
+                                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                                    {{ $activity->user ? $activity->user->name : 'Sistema' }}
+                                </div>
+
+                                @if($activity->old_values || $activity->new_values)
+                                    <div class="mt-3 p-3 rounded-lg bg-surface-hover border border-border overflow-x-auto">
+                                        @if($activity->action === 'status_changed')
+                                            <div class="flex items-center gap-3 text-xs-fluid font-medium">
+                                                <span class="text-text-muted line-through">{{ strtoupper($activity->old_values['status'] ?? '—') }}</span>
+                                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-text-secondary"></i>
+                                                <span class="text-primary-600">{{ strtoupper($activity->new_values['status'] ?? '—') }}</span>
+                                            </div>
+                                        @else
+                                            <pre class="text-[0.65rem] text-text-muted font-mono leading-relaxed">{{ json_encode(['De' => $activity->old_values, 'A' => $activity->new_values], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            </form>
-        </x-modal>
+            </div>
+        </div>
     @endif
+
+    {{-- ─── Modal de Rechazo (RF-REQ-09) ─── --}}
+    @include('livewire.requisitions._reject-modal')
 
     {{-- ─── Diálogo de confirmación global ─── --}}
     <x-confirm-modal />

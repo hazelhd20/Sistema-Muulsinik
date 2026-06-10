@@ -18,21 +18,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('requisition_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('requisition_items', 'unit_price_original')) {
+            if (! Schema::hasColumn('requisition_items', 'unit_price_original')) {
                 $table->decimal('unit_price_original', 14, 2)
                     ->nullable()
                     ->after('unit_price')
                     ->comment('Precio exacto de la cotización (trazabilidad)');
             }
 
-            if (!Schema::hasColumn('requisition_items', 'tax_amount')) {
+            if (! Schema::hasColumn('requisition_items', 'tax_amount')) {
                 $table->decimal('tax_amount', 14, 2)
                     ->nullable()
                     ->after('unit_price_original')
                     ->comment('IVA por unidad (del proveedor o calculado)');
             }
 
-            if (!Schema::hasColumn('requisition_items', 'tax_source')) {
+            if (! Schema::hasColumn('requisition_items', 'tax_source')) {
                 $table->string('tax_source', 30)
                     ->nullable()
                     ->after('tax_amount')

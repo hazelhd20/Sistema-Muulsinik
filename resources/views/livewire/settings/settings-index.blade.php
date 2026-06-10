@@ -1,5 +1,5 @@
-<x-modal show="isOpen" title="Configuración del Sistema" maxWidth="5xl">
-    <div x-data="{ tab: @entangle('activeTab') }" class="flex flex-col md:flex-row h-[580px] max-h-[70vh] overflow-hidden">
+<x-modal show="isOpen" title="Configuración del Sistema" maxWidth="5xl" @open-settings.window="show = true">
+    <div x-data="{ tab: @entangle('activeTab') }" class="flex flex-col md:flex-row h-[80vh] md:h-[580px] max-h-none md:max-h-[70vh] overflow-hidden">
         {{-- Sidebar Interno --}}
         <div class="w-full md:w-56 border-b md:border-b-0 md:border-r border-border bg-surface-hover/20 p-4 shrink-0 flex flex-col justify-between">
             <nav class="space-y-1">
@@ -62,7 +62,7 @@
                 {{-- Nombre --}}
                 <div class="section-row">
                     <div>
-                        <p class="section-row-label">Nombre de la empresa <span class="text-danger">*</span></p>
+                        <p class="section-row-label">Nombre de la empresa <span class="text-danger font-medium ml-0.5" aria-hidden="true">*</span></p>
                         <p class="section-row-desc">Razón social completa.</p>
                     </div>
                     <x-form-field :error="$errors->first('company_name')">
@@ -77,7 +77,7 @@
                         <p class="section-row-desc">Registro Federal de Contribuyentes.</p>
                     </div>
                     <x-form-field :error="$errors->first('company_rfc')">
-                        <input type="text" wire:model="company_rfc" class="input" placeholder="ABC123456ABC1" style="font-family: ui-monospace, monospace; letter-spacing: 0.05em;">
+                        <input type="text" wire:model="company_rfc" class="input font-mono tracking-wider" placeholder="ABC123456ABC1">
                     </x-form-field>
                 </div>
 
@@ -140,8 +140,7 @@
                         <p class="section-row-desc">Texto fijo que precede al número. Ej: <span class="font-mono text-text-primary">REQ-</span></p>
                     </div>
                     <x-form-field :error="$errors->first('req_prefix')">
-                        <input type="text" wire:model="req_prefix" class="input" placeholder="REQ-"
-                               style="font-family: ui-monospace, monospace; letter-spacing: 0.05em;">
+                        <input type="text" wire:model="req_prefix" class="input font-mono tracking-wider" placeholder="REQ-">
                         @if($req_prefix && $req_next_number)
                             <p class="mt-1.5 text-xs-fluid text-text-muted">
                                 Próximo número:

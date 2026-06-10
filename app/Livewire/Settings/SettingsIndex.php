@@ -16,33 +16,35 @@ class SettingsIndex extends Component
     // Tab activa
     public string $activeTab = 'empresa';
 
-    protected $listeners = [
-        'open-settings' => 'open',
-    ];
 
-    public function open(): void
-    {
-        $this->loadSettings();
-        $this->isOpen = true;
-    }
 
     // Datos de Empresa
     public string $company_name = '';
+
     public string $company_rfc = '';
+
     public string $company_address = '';
+
     public string $company_phone = '';
+
     public string $company_email = '';
+
     public ?string $company_logo = null;
+
     public $newLogo = null;
 
     // Configuración de Documentos
     public string $req_prefix = 'REQ-';
-    public int $req_next_number = 1;
-    public string $currency_symbol = '$';
-    public string $currency_position = 'before';
-    public int $decimal_places = 2;
-    public string $terms_conditions = '';
 
+    public int $req_next_number = 1;
+
+    public string $currency_symbol = '$';
+
+    public string $currency_position = 'before';
+
+    public int $decimal_places = 2;
+
+    public string $terms_conditions = '';
 
     protected function rules(): array
     {

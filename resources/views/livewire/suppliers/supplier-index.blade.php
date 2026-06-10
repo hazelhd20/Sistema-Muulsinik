@@ -91,7 +91,7 @@
                                             <x-button wire:click="openEditSupplierModal({{ $supplier->id }})"
                                                 variant="icon-primary" icon="pencil" title="Editar proveedor" aria-label="Editar proveedor" />
                                             <x-button wire:click="deleteSupplier({{ $supplier->id }})"
-                                                wire:confirm="¿Eliminar este proveedor y todos sus vendedores?"
+                                                wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse."
                                                 variant="icon-danger" icon="trash-2" title="Eliminar proveedor"
                                                 aria-label="Eliminar proveedor" />
                                         </div>
@@ -132,7 +132,7 @@
                                     <x-skeleton class="h-4  rounded w-20" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-5  rounded-full w-24" />
+                                    <x-skeleton class="h-5  rounded w-24" />
                                 </td>
                                 <td>
                                     <x-skeleton class="h-4  rounded w-20" />
@@ -214,7 +214,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 <x-button wire:click="openEditVendor({{ $vendor->id }})" variant="icon-primary" icon="edit-2" title="Editar" />
-                                <x-button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar vendedor?"
+                                <x-button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar este vendedor? Esta acción no puede deshacerse."
                                     variant="icon-danger" icon="trash-2" title="Eliminar" />
                             </div>
                         </div>

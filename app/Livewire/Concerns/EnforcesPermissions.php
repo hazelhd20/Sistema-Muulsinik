@@ -10,10 +10,12 @@ trait EnforcesPermissions
      */
     protected function denyUnless(string $permission, string $message = 'No tienes permiso para realizar esta acción.'): bool
     {
-        if (!auth()->user()?->hasPermission($permission)) {
+        if (! auth()->user()?->hasPermission($permission)) {
             session()->flash('error', $message);
+
             return true;
         }
+
         return false;
     }
 }

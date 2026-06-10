@@ -20,7 +20,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('requisition_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('requisition_items', 'discount_percent')) {
+            if (! Schema::hasColumn('requisition_items', 'discount_percent')) {
                 $table->decimal('discount_percent', 8, 4)
                     ->nullable()
                     ->after('unit_price_original')

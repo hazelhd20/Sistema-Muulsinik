@@ -23,10 +23,10 @@ class PendingQuotationsList extends Component
             ->where('is_orphan', false)
             ->where(function ($query) {
                 $query->whereIn('status', ['pending', 'processing'])
-                      ->orWhere(function ($q) {
-                          $q->whereIn('status', ['completed', 'failed'])
+                    ->orWhere(function ($q) {
+                        $q->whereIn('status', ['completed', 'failed'])
                             ->where('created_at', '>=', now()->subDays(7));
-                      });
+                    });
             })
             ->orderByDesc('created_at')
             ->get();

@@ -3,17 +3,23 @@
 namespace App\Livewire;
 
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class NotificationDropdown extends Component
 {
+    private const MAX_NOTIFICATIONS = 10;
+
     public bool $isOpen = false;
-    public array $notifications = [];
+
+    public Collection $notifications;
+
     public int $unreadCount = 0;
 
     public function mount(): void
     {
+        $this->notifications = collect();
         $this->loadNotifications();
     }
 
@@ -21,15 +27,16 @@ class NotificationDropdown extends Component
     {
         $user = auth()->user();
 
-        if (!$user) {
-            $this->notifications = [];
+        if (! $user) {
+            $this->notifications = collect();
             $this->unreadCount = 0;
+
             return;
         }
 
-        $this->notifications = $user->notifications()
+        $this->notifications = collect($user->notifications()
             ->latest()
-            ->limit(10)
+            ->limit(self::MAX_NOTIFICATIONS)
             ->get()
             ->map(fn (DatabaseNotification $notification) => [
                 'id' => $notification->id,
@@ -42,15 +49,14 @@ class NotificationDropdown extends Component
                 'action_text' => $notification->data['action_text'] ?? 'Ver',
                 'read_at' => $notification->read_at,
                 'created_at' => $notification->created_at->diffForHumans(),
-            ])
-            ->toArray();
+            ]));
 
         $this->unreadCount = $user->unreadNotifications()->count();
     }
 
     public function toggle(): void
     {
-        $this->isOpen = !$this->isOpen;
+        $this->isOpen = ! $this->isOpen;
     }
 
     public function close(): void

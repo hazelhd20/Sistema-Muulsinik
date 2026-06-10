@@ -2,12 +2,12 @@
 
 namespace App\Livewire\QuickBudgets;
 
+use App\Livewire\Concerns\WithSorting;
 use App\Models\QuickBudget;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class QuickBudgetIndex extends Component
 {

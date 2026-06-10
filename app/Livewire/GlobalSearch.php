@@ -11,8 +11,12 @@ use Livewire\Component;
 
 class GlobalSearch extends Component
 {
+    private const RESULTS_LIMIT = 5;
+
     public string $query = '';
+
     public bool $isOpen = false;
+
     public array $results = [];
 
     public function updatedQuery(): void
@@ -25,10 +29,11 @@ class GlobalSearch extends Component
         if (strlen($this->query) < 2) {
             $this->results = [];
             $this->isOpen = false;
+
             return;
         }
 
-        $searchTerm = '%' . $this->query . '%';
+        $searchTerm = '%'.$this->query.'%';
         $this->results = [];
 
         // Buscar requisiciones (por folio o nombre de proyecto)
@@ -37,7 +42,7 @@ class GlobalSearch extends Component
             ->orWhereHas('project', function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm);
             })
-            ->limit(5)
+            ->limit(self::RESULTS_LIMIT)
             ->get()
             ->map(fn ($item) => [
                 'id' => $item->id,
@@ -54,7 +59,7 @@ class GlobalSearch extends Component
         $suppliers = Supplier::where('trade_name', 'like', $searchTerm)
             ->orWhere('legal_name', 'like', $searchTerm)
             ->orWhere('rfc', 'like', $searchTerm)
-            ->limit(5)
+            ->limit(self::RESULTS_LIMIT)
             ->get()
             ->map(fn ($item) => [
                 'id' => $item->id,
@@ -71,12 +76,12 @@ class GlobalSearch extends Component
         $projects = Project::where('name', 'like', $searchTerm)
             ->orWhere('description', 'like', $searchTerm)
             ->where('status', 'activo')
-            ->limit(5)
+            ->limit(self::RESULTS_LIMIT)
             ->get()
             ->map(fn ($item) => [
                 'id' => $item->id,
                 'title' => $item->name,
-                'subtitle' => 'Presupuesto: $' . number_format($item->total_budget, 2),
+                'subtitle' => 'Presupuesto: $'.number_format($item->total_budget, 2),
                 'url' => url('/proyectos'),
                 'type' => 'project',
                 'typeLabel' => 'Proyecto',
@@ -91,7 +96,7 @@ class GlobalSearch extends Component
             ->orWhereHas('category', function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm);
             })
-            ->limit(5)
+            ->limit(self::RESULTS_LIMIT)
             ->get()
             ->map(fn ($item) => [
                 'id' => $item->id,
@@ -111,7 +116,7 @@ class GlobalSearch extends Component
             'products' => $products,
         ];
 
-        $hasResults = !empty($requisitions) || !empty($suppliers) || !empty($projects) || !empty($products);
+        $hasResults = ! empty($requisitions) || ! empty($suppliers) || ! empty($projects) || ! empty($products);
         $this->isOpen = $hasResults;
     }
 

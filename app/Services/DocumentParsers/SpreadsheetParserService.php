@@ -30,14 +30,14 @@ class SpreadsheetParserService implements ParserInterface
      * - "importe neto" / "total" → total con IVA por línea
      */
     private const HEADER_MAP = [
-        'name'          => ['producto', 'material', 'descripcion', 'descripción', 'articulo', 'artículo', 'nombre', 'concepto', 'item'],
-        'quantity'      => ['cantidad', 'cant', 'qty', 'pzas', 'unidades'],
-        'unit'          => ['unidad', 'u.m.', 'um', 'medida', 'unit'],
+        'name' => ['producto', 'material', 'descripcion', 'descripción', 'articulo', 'artículo', 'nombre', 'concepto', 'item'],
+        'quantity' => ['cantidad', 'cant', 'qty', 'pzas', 'unidades'],
+        'unit' => ['unidad', 'u.m.', 'um', 'medida', 'unit'],
         // Campos más específicos primero para evitar matcheos ambiguos
-        'line_total'    => ['importe neto', 'total neto', 'monto total', 'total con iva', 'neto'],
+        'line_total' => ['importe neto', 'total neto', 'monto total', 'total con iva', 'neto'],
         'line_subtotal' => ['importe', 'subtotal', 'sub total', 'monto'],
-        'tax_amount'    => ['impuesto', 'iva', 'i.v.a.', 'i.v.a', 'tax'],
-        'unit_price'    => ['precio unitario', 'p. unitario', 'p.u.', 'pu', 'precio', 'costo', 'unit price', 'costo unitario', 'valor unitario'],
+        'tax_amount' => ['impuesto', 'iva', 'i.v.a.', 'i.v.a', 'tax'],
+        'unit_price' => ['precio unitario', 'p. unitario', 'p.u.', 'pu', 'precio', 'costo', 'unit price', 'costo unitario', 'valor unitario'],
     ];
 
     public function __construct(
@@ -49,21 +49,21 @@ class SpreadsheetParserService implements ParserInterface
     public function parse(string $filePath): array
     {
         $spreadsheet = IOFactory::load($filePath);
-        $sheet       = $spreadsheet->getActiveSheet();
-        $rows        = $sheet->toArray(null, true, true, true);
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray(null, true, true, true);
 
         if (empty($rows)) {
             return ['supplier' => null, 'store' => null, 'seller' => null, 'tax_info' => null, 'items' => [], 'raw_text' => ''];
         }
 
         // Paso 1: encontrar la fila de encabezados
-        $headerRow  = null;
-        $columnMap  = [];
-        $rawLines   = [];
+        $headerRow = null;
+        $columnMap = [];
+        $rawLines = [];
 
         foreach ($rows as $rowIndex => $row) {
             $rawLines[] = implode(' | ', array_filter($row));
-            $detected   = $this->detectHeaders($row);
+            $detected = $this->detectHeaders($row);
 
             if (count($detected) >= 2) {
                 $headerRow = $rowIndex;
@@ -74,22 +74,23 @@ class SpreadsheetParserService implements ParserInterface
 
         // Si no se detectaron encabezados, intentar con Gemini AI sobre el texto crudo
         if ($headerRow === null) {
-            $rawText  = implode("\n", $rawLines);
+            $rawText = implode("\n", $rawLines);
             $aiResult = $this->gemini->structureRawText($rawText);
 
             if ($aiResult !== null) {
                 $aiResult['raw_text'] = $rawText;
                 // Normalizar unidades de los ítems extraídos por IA
                 $aiResult['items'] = $this->normalizer->normalizeItems($aiResult['items'] ?? []);
+
                 return $aiResult;
             }
 
             return [
                 'supplier' => null,
-                'store'    => null,
-                'seller'   => null,
+                'store' => null,
+                'seller' => null,
                 'tax_info' => null,
-                'items'    => [],
+                'items' => [],
                 'raw_text' => $rawText,
             ];
         }
@@ -106,11 +107,11 @@ class SpreadsheetParserService implements ParserInterface
                 continue;
             }
 
-            $quantity     = $this->toFloat($this->getCellValue($row, $columnMap, 'quantity'));
-            $unitPrice    = $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price'));
+            $quantity = $this->toFloat($this->getCellValue($row, $columnMap, 'quantity'));
+            $unitPrice = $this->toFloat($this->getCellValue($row, $columnMap, 'unit_price'));
             $lineSubtotal = $this->toFloat($this->getCellValue($row, $columnMap, 'line_subtotal'));
-            $lineTotal    = $this->toFloat($this->getCellValue($row, $columnMap, 'line_total'));
-            $taxAmount    = $this->toFloat($this->getCellValue($row, $columnMap, 'tax_amount'));
+            $lineTotal = $this->toFloat($this->getCellValue($row, $columnMap, 'line_total'));
+            $taxAmount = $this->toFloat($this->getCellValue($row, $columnMap, 'tax_amount'));
 
             // Inferir unit_price si no se detectó pero hay subtotal y cantidad
             $unitPrice = $this->inferUnitPrice($unitPrice, $quantity, $lineSubtotal, $lineTotal, $taxAmount);
@@ -120,14 +121,14 @@ class SpreadsheetParserService implements ParserInterface
             $normalizedUnit = $this->normalizer->normalizeUnit($rawUnit);
 
             $items[] = [
-                'name'               => trim($name),
-                'quantity'           => $quantity,
-                'unit'               => $normalizedUnit,
-                'unit_price'         => $unitPrice,
-                'tax_amount'         => $taxAmount,
+                'name' => trim($name),
+                'quantity' => $quantity,
+                'unit' => $normalizedUnit,
+                'unit_price' => $unitPrice,
+                'tax_amount' => $taxAmount,
                 'price_includes_tax' => null,
-                'line_subtotal'      => $lineSubtotal,
-                'line_total'         => $lineTotal,
+                'line_subtotal' => $lineSubtotal,
+                'line_total' => $lineTotal,
             ];
         }
 
@@ -146,10 +147,10 @@ class SpreadsheetParserService implements ParserInterface
 
         return [
             'supplier' => $supplier,
-            'store'    => null,
-            'seller'   => null,
+            'store' => null,
+            'seller' => null,
             'tax_info' => null,
-            'items'    => $items,
+            'items' => $items,
             'raw_text' => implode("\n", $rawLines),
         ];
     }
@@ -219,9 +220,9 @@ class SpreadsheetParserService implements ParserInterface
         foreach (self::HEADER_MAP as $field => $keywords) {
             foreach ($keywords as $keyword) {
                 $matchCandidates[] = [
-                    'field'   => $field,
+                    'field' => $field,
                     'keyword' => $keyword,
-                    'length'  => mb_strlen($keyword),
+                    'length' => mb_strlen($keyword),
                 ];
             }
         }
@@ -251,10 +252,11 @@ class SpreadsheetParserService implements ParserInterface
 
     private function getCellValue(array $row, array $columnMap, string $field): ?string
     {
-        if (!isset($columnMap[$field])) {
+        if (! isset($columnMap[$field])) {
             return null;
         }
         $val = $row[$columnMap[$field]] ?? null;
+
         return $val !== null ? trim((string) $val) : null;
     }
 
@@ -263,6 +265,7 @@ class SpreadsheetParserService implements ParserInterface
         if ($value === null || $value === '') {
             return null;
         }
+
         return (float) str_replace([',', '$', ' '], ['', '', ''], $value);
     }
 }

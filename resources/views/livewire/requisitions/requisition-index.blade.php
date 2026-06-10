@@ -1,63 +1,5 @@
-<div x-data="{
-    activeTab: 'todas',
-    showPreviewModal: false,
-    previewUrl: null,
-    previewType: null,
-    showFilters: false,
-    isPdf() {
-        return this.previewType === 'application/pdf' || (this.previewUrl && this.previewUrl.toLowerCase().includes('.pdf'));
-    },
-    isImage() {
-        return (this.previewType && this.previewType.startsWith('image/')) || (this.previewUrl && this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i));
-    },
-    openPreview(url, mimeType) {
-        this.previewUrl = url;
-        this.previewType = mimeType;
-        this.showPreviewModal = true;
-    },
-    filterStatus: '',
-    filterProject: '',
-    filterCreator: '',
-    filterVendor: '',
-    filterPeriod: '',
-    initFilters() {
-        this.filterStatus = $wire.statusFilter || '';
-        this.filterProject = $wire.projectFilter || '';
-        this.filterCreator = $wire.creatorFilter || '';
-        this.filterVendor = $wire.vendorFilter || '';
-        this.filterPeriod = $wire.periodFilter || '';
-    },
-    applyFilters() {
-        $wire.set('statusFilter', this.filterStatus, false);
-        $wire.set('projectFilter', this.filterProject, false);
-        $wire.set('creatorFilter', this.filterCreator, false);
-        $wire.set('vendorFilter', this.filterVendor, false);
-        $wire.set('periodFilter', this.filterPeriod, false);
-        $wire.$refresh();
-    },
-    clearFilters() {
-        this.filterStatus = '';
-        this.filterProject = '';
-        this.filterCreator = '';
-        this.filterVendor = '';
-        this.filterPeriod = '';
-        this.applyFilters();
-    },
-    selectedRows: @entangle('selectedRows'),
-    get allSelected() {
-        return this.selectedRows.length > 0 && this.selectedRows.length === {{ $requisitions->count() }};
-    },
-    toggleAll() {
-        if (this.allSelected) {
-            this.selectedRows = [];
-        } else {
-            this.selectedRows = [{{ $requisitions->pluck('id')->join(',') }}].map(String);
-        }
-    },
-    init() {
-        this.initFilters();
-    }
-}">
+<div x-data="requisitionIndex(@entangle('selectedRows'))"
+     x-init="totalOnPage = {{ $requisitions->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Compras" title="Requisiciones">
         <x-slot:actions>
@@ -71,22 +13,20 @@
     </x-page-header>
 
     {{-- Tabs de Navegación --}}
-    <div class="mb-6 border-b border-border">
-        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-            <button @click="activeTab = 'todas'"
-                :class="activeTab === 'todas' ? 'border-primary-500 text-primary-600' : 'border-transparent text-text-muted hover:border-border hover:text-text-primary'"
-                class="whitespace-nowrap border-b-2 py-4 px-1 text-small font-medium transition-colors">
-                Requisiciones
-            </button>
-            <button @click="activeTab = 'borradores'"
-                :class="activeTab === 'borradores' ? 'border-primary-500 text-primary-600' : 'border-transparent text-text-muted hover:border-border hover:text-text-primary'"
-                class="whitespace-nowrap border-b-2 py-4 px-1 text-small font-medium inline-flex items-center gap-2 transition-colors">
-                Borradores y Procesos
-                @if($pendingQuotations->count() > 0)
-                    <span class="bg-primary-100 text-primary-600 py-0.5 px-2 rounded-full text-xs-fluid font-bold">{{ $pendingQuotations->count() }}</span>
-                @endif
-            </button>
-        </nav>
+    <div class="tab-nav mb-6">
+        <button @click="activeTab = 'todas'"
+            :class="activeTab === 'todas' ? 'active' : ''"
+            class="tab-btn">
+            Requisiciones
+        </button>
+        <button @click="activeTab = 'borradores'"
+            :class="activeTab === 'borradores' ? 'active' : ''"
+            class="tab-btn">
+            Borradores y Procesos
+            @if($pendingQuotations->count() > 0)
+                <span class="badge badge-primary ml-1">{{ $pendingQuotations->count() }}</span>
+            @endif
+        </button>
     </div>
 
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-filters">
@@ -168,7 +108,7 @@
     {{-- Requisitions Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden"
-            wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
+            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
             class="w-full">
             <div class="table-container">
                 @if($requisitions->isNotEmpty())
@@ -176,10 +116,10 @@
                         <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
-                                    <x-table-checkbox
-                                        x-bind:checked="allSelected"
-                                        x-on:change="toggleAll()"
-                                    />
+                                        <input type="checkbox"
+                                            class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
+                                            x-bind:checked="allSelected"
+                                            x-on:change="toggleAll([{{ $requisitions->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="number" label="Folio" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -199,7 +139,7 @@
                         <tbody>
                             @foreach($requisitions as $req)
                                 <tr wire:key="requisition-row-{{ $req->id }}"
-                                    class="group hover:bg-gray-50/80 transition-colors duration-150"
+                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
                                     :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
@@ -224,6 +164,11 @@
                                     </td>
                                     <td class="w-1 whitespace-nowrap py-3">
                                         <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                        @if($req->status === 'rechazada' && $req->rejection_comment)
+                                            <p class="text-[10px] text-danger mt-1 max-w-[120px] truncate" title="{{ $req->rejection_comment }}">
+                                                {{ $req->rejection_comment }}
+                                            </p>
+                                        @endif
                                     </td>
                                     <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
                                         <div class="flex items-center justify-end">
@@ -319,7 +264,7 @@
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden"
-            wire:target="search, statusFilter, projectFilter, periodFilter, previousPage, nextPage, gotoPage"
+            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="table-container">
                 <table>
@@ -361,7 +306,7 @@
                                     <x-skeleton class="h-4  rounded w-20 ml-auto" />
                                 </td>
                                 <td>
-                                    <x-skeleton class="h-6  rounded-full w-20" />
+                                    <x-skeleton class="h-6  rounded w-20" />
                                 </td>
                                 <td class="text-right flex justify-end gap-1">
                                     <x-skeleton class="w-8 h-8  rounded" />
@@ -380,31 +325,13 @@
 
 
 
-    {{-- Reject Modal (RF-REQ-09: comentario obligatorio) --}}
-    @if($showRejectModal)
-        <x-modal show="showRejectModal"
-            :title="$isBulkReject ? 'Rechazar Requisiciones Seleccionadas' : 'Rechazar Requisición'"
-            :subtitle="$isBulkReject ? 'Indica el motivo del rechazo para todas las requisiciones seleccionadas (obligatorio)' : 'Indica el motivo del rechazo (obligatorio)'"
-            maxWidth="md">
-            <form wire:submit="confirmReject" class="p-5 space-y-4">
-                <x-form-field label="Motivo del rechazo" required error="{{ $errors->first('rejectionComment') }}">
-                    <textarea wire:model="rejectionComment" class="input" rows="3"
-                        placeholder="Explica por qué esta(s) requisición(es) fue(ron) rechazada(s)..."></textarea>
-                </x-form-field>
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showRejectModal', false)" variant="secondary">Cancelar</x-button>
-                    <x-button type="submit" variant="danger">
-                        Confirmar Rechazo
-                    </x-button>
-                </div>
-            </form>
-        </x-modal>
-    @endif
+    {{-- Reject Modal (RF-REQ-09: extraído a partial compartido) --}}
+    @include('livewire.requisitions._reject-modal')
 
     {{-- Bulk Actions Bar --}}
     <x-bulk-actions-bar>
         @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-            <button type="button"
+            <x-button
                 @click="$dispatch('confirm-action', {
                     title: 'Aprobar Seleccionadas',
                     description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
@@ -413,22 +340,23 @@
                     action: 'approveSelected',
                     params: []
                 })"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs-fluid font-semibold bg-success hover:bg-success-hover text-white transition-colors cursor-pointer shrink-0">
-                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                variant="success"
+                icon="check-circle">
                 Aprobar
-            </button>
-            <button type="button" wire:click="openBulkRejectModal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-danger hover:bg-danger-hover text-white transition-colors cursor-pointer shrink-0">
-                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+            </x-button>
+            <x-button wire:click="openBulkRejectModal" variant="warning" icon="x-octagon" target="openBulkRejectModal">
                 Rechazar
-            </button>
+            </x-button>
         @endif
 
-        <button type="button" wire:click="exportSelected" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer shrink-0">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            Exportar
-        </button>
+        <div class="h-8 w-px bg-border mx-1 hidden sm:block"></div>
 
-        <button type="button"
+        {{-- Exportar: usa variante secondary ya que no es una acción destructiva --}}
+        <x-button wire:click="exportSelected" variant="secondary" icon="file-down">
+            Exportar
+        </x-button>
+
+        <x-button
             @click="$dispatch('confirm-action', {
                 title: 'Eliminar Seleccionadas',
                 description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
@@ -437,10 +365,10 @@
                 action: 'deleteSelected',
                 params: []
             })"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs-fluid font-semibold bg-danger hover:bg-danger-hover text-white transition-colors cursor-pointer shrink-0">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            variant="danger"
+            icon="trash-2">
             Eliminar
-        </button>
+        </x-button>
     </x-bulk-actions-bar>
 
     {{-- Drawer de Detalle Rápido --}}

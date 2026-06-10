@@ -3,22 +3,27 @@
 namespace App\Livewire\Measures;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Measure;
+use App\Models\Product;
+use App\Models\RequisitionItem;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Livewire\Concerns\WithSorting;
 
 class MeasureIndex extends Component
 {
-    use WithPagination, EnforcesPermissions, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting;
 
     public string $search = '';
 
     public string $name = '';
+
     public string $abbreviation = '';
+
     public ?int $editingId = null;
+
     public bool $showCreateModal = false;
 
     protected $rules = [
@@ -54,7 +59,9 @@ class MeasureIndex extends Component
 
     public function save(): void
     {
-        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
 
         $this->validate();
 
@@ -77,15 +84,18 @@ class MeasureIndex extends Component
 
     public function delete(int $id): void
     {
-        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) return;
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
 
         $measure = Measure::findOrFail($id);
 
-        $isUsed = \App\Models\RequisitionItem::where('measure_id', $measure->id)->exists() ||
-                  \App\Models\Product::where('measure_id', $measure->id)->exists();
+        $isUsed = RequisitionItem::where('measure_id', $measure->id)->exists() ||
+                  Product::where('measure_id', $measure->id)->exists();
 
         if ($isUsed) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: la medida está en uso por productos o requisiciones.']);
+
             return;
         }
 
@@ -97,8 +107,8 @@ class MeasureIndex extends Component
     #[Title('Catálogo de Medidas')]
     public function render()
     {
-        $measures = Measure::where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('abbreviation', 'like', '%' . $this->search . '%')
+        $measures = Measure::where('name', 'like', '%'.$this->search.'%')
+            ->orWhere('abbreviation', 'like', '%'.$this->search.'%')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 

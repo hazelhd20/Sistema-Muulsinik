@@ -41,7 +41,7 @@ class User extends Authenticatable
     /** Verifica si el usuario tiene un permiso específico. */
     public function hasPermission(string $permission): bool
     {
-        if (!$this->role) {
+        if (! $this->role) {
             return false;
         }
 
@@ -59,5 +59,15 @@ class User extends Authenticatable
     public function hasRole(string $roleName): bool
     {
         return $this->role?->name === $roleName;
+    }
+
+    /**
+     * Retorna todos los usuarios con permiso para aprobar requisiciones.
+     */
+    public static function getApprovers(): \Illuminate\Support\Collection
+    {
+        return static::with('role')->get()->filter(
+            fn ($user) => $user->hasPermission('requisiciones.aprobar') || $user->hasPermission('*')
+        );
     }
 }
