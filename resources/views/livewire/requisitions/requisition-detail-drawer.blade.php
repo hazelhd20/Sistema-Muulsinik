@@ -85,12 +85,13 @@
                         @foreach($detailRequisition->items as $item)
                             <div class="flex justify-between items-center bg-surface-main/20 p-3 rounded-lg border border-border">
                                 <div>
-                                    <p class="font-medium text-small text-text-primary">
+                                    <p class="font-medium text-small text-text-primary leading-snug mb-1">
                                         {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
                                     </p>
-                                    <p class="text-xs-fluid text-text-muted">
-                                        {{ number_format($item->quantity, 2) }}
-                                        {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                    <p class="text-[0.65rem] font-medium text-text-muted">
+                                        <span class="inline-flex items-center justify-center bg-surface-hover px-1.5 py-0.5 rounded text-text-secondary border border-border">
+                                            {{ number_format($item->quantity, 2) }} {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                        </span>
                                     </p>
                                 </div>
                                 <div class="text-right">

@@ -24,7 +24,19 @@
                                 <i data-lucide="file-edit" class="w-5 h-5" wire:ignore></i>
                             </div>
                             <div>
-                                <p class="text-small font-semibold text-text-primary">Borrador de Requisición listo</p>
+                                @php
+                                    $supplierName = $pq->supplier?->name ?? ($pq->raw_parsed_data['supplier_name'] ?? null);
+                                    $total = $pq->draft_state['total'] ?? ($pq->raw_parsed_data['total'] ?? null);
+                                    $title = $supplierName ? "Borrador: {$supplierName}" : "Borrador de Requisición listo";
+                                @endphp
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <p class="text-small font-semibold text-text-primary">{{ $title }}</p>
+                                    @if($total)
+                                        <span class="text-[0.65rem] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded-md border border-success/20">
+                                            ${{ number_format((float)$total, 2) }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="text-xs-fluid text-text-muted">
                                     Procesado de: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>

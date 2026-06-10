@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -37,6 +38,18 @@ class RequisitionIndex extends Component
 
     // Selección masiva
     public array $selectedRows = [];
+
+    #[Computed]
+    public function canApproveSelection(): bool
+    {
+        if (empty($this->selectedRows)) {
+            return false;
+        }
+
+        return Requisition::whereIn('id', $this->selectedRows)
+            ->where('status', 'pendiente')
+            ->exists();
+    }
 
     // Rechazo con comentario obligatorio (RF-REQ-09)
     public bool $showRejectModal = false;

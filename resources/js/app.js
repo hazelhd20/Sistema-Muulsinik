@@ -22,9 +22,11 @@ document.addEventListener('livewire:initialized', () => {
 // Alpine component: Listado de Requisiciones
 // Gestiona: tabs, preview modal, filtros, selección masiva
 document.addEventListener("alpine:init", () => {
-    Alpine.data("requisitionIndex", (selectedRows) => ({
+    Alpine.data("requisitionIndex", (selectedRows, pageStatuses = {}) => ({
         activeTab: "todas",
         showFilters: false,
+        
+        statuses: pageStatuses,
 
         // -- Preview Modal --
         showPreviewModal: false,
@@ -95,6 +97,10 @@ document.addEventListener("alpine:init", () => {
             } else {
                 this.selectedRows = ids.map(String);
             }
+        },
+        get canApproveSelection() {
+            if (this.selectedRows.length === 0) return false;
+            return this.selectedRows.some(id => this.statuses[id] === 'pendiente');
         },
 
         // -- Lifecycle --

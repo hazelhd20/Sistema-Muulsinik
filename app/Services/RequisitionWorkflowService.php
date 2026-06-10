@@ -23,9 +23,13 @@ class RequisitionWorkflowService
             throw new InvalidArgumentException('Solo las requisiciones en borrador pueden enviarse a aprobación.');
         }
 
-        $isAdmin = in_array('*', $user->role?->permissions ?? [], true);
+        if ($requisition->created_by !== $user->id) {
+            throw new InvalidArgumentException('Solo el creador de la requisición puede enviarla a aprobación.');
+        }
 
-        if ($isAdmin) {
+        $hasApprovalRights = $user->hasPermission('requisiciones.aprobar') || $user->hasPermission('*');
+
+        if ($hasApprovalRights) {
             $requisition->update([
                 'status' => 'aprobada',
                 'approved_by' => $user->id,
@@ -34,11 +38,13 @@ class RequisitionWorkflowService
             $requisition->activities()->create([
                 'user_id' => $user->id,
                 'action' => 'approved',
-                'description' => 'Aprobada automáticamente al solicitar.',
+                'description' => 'Aprobada automáticamente al solicitar (tiene permisos de aprobación).',
                 'old_values' => ['status' => 'borrador'],
                 'new_values' => ['status' => 'aprobada'],
             ]);
 
+            // Como el creador es quien auto-aprueba, no es estrictamente necesario notificarle a sí mismo,
+            // pero mantenemos la lógica por si el creador fuera distinto en algún caso extremo (ya evitado arriba).
             if ($requisition->creator && $requisition->creator->id !== $user->id) {
                 $requisition->creator->notify(
                     new RequisitionStatusChanged($requisition, 'borrador', 'aprobada', $user)

@@ -1,6 +1,14 @@
 <div>
     {{-- ─── Header con acciones de workflow ─── --}}
-    <x-page-header subtitle="Requisiciones" title="Detalle de Requisición">
+    <x-page-header subtitle="Requisiciones">
+        <x-slot:title>
+            <div class="flex items-center gap-3">
+                {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
+                <x-status-badge
+                    :status="$requisition->status"
+                    :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+            </div>
+        </x-slot:title>
         <x-slot:actions>
             {{-- Acciones secundarias siempre visibles --}}
             <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
@@ -11,122 +19,58 @@
             </x-button>
 
             {{-- ── Workflow: Borrador → Pendiente (o Aprobada si admin) ── --}}
-            @if(auth()->user()->hasPermission('*') && $requisition->status === 'borrador')
-                <x-button
-                    @click="$dispatch('confirm-action', {
-                        title: 'Aprobar Requisición',
-                        description: 'Tienes permisos de administrador. La requisición se aprobará automáticamente.',
-                        confirmLabel: 'Aprobar ahora',
-                        variant: 'success',
-                        action: 'submitForApproval',
-                        params: []
-                    })"
-                    variant="success" icon="check-circle">
-                    Aprobar Requisición
-                </x-button>
-            @elseif($requisition->status === 'borrador')
-                <x-button
-                    @click="$dispatch('confirm-action', {
-                        title: 'Solicitar Aprobación',
-                        description: 'La requisición será enviada a los aprobadores del sistema.',
-                        confirmLabel: 'Enviar a aprobación',
-                        variant: 'primary',
-                        action: 'submitForApproval',
-                        params: []
-                    })"
-                    variant="primary" icon="send">
-                    Solicitar Aprobación
-                </x-button>
-            @elseif(in_array($requisition->status, ['pendiente', 'aprobada', 'rechazada']) && $requisition->created_by === auth()->id())
-                <x-button variant="primary" icon="send" disabled class="disabled" title="Documento ya procesado">
-                    Solicitar Aprobación
-                </x-button>
-            @endif
-
-            {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
-            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                @if($requisition->status === 'pendiente')
-                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal">
-                        Rechazar
-                    </x-button>
+            @if($requisition->status === 'borrador' && $requisition->created_by === auth()->id())
+                @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                     <x-button
                         @click="$dispatch('confirm-action', {
                             title: 'Aprobar Requisición',
-                            description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                            confirmLabel: 'Aprobar',
+                            description: 'Tienes permisos de aprobación. La requisición se aprobará automáticamente.',
+                            confirmLabel: 'Aprobar ahora',
                             variant: 'success',
-                            action: 'approve',
+                            action: 'submitForApproval',
                             params: []
                         })"
                         variant="success" icon="check-circle">
-                        Aprobar
+                        Aprobar Requisición
                     </x-button>
-                @elseif(in_array($requisition->status, ['aprobada', 'rechazada']))
-                    <x-button variant="secondary" icon="x-circle" disabled class="disabled" title="Documento ya procesado">
-                        Rechazar
-                    </x-button>
-                    <x-button variant="success" icon="check-circle" disabled class="disabled" title="Documento ya procesado">
-                        Aprobar
+                @else
+                    <x-button
+                        @click="$dispatch('confirm-action', {
+                            title: 'Solicitar Aprobación',
+                            description: 'La requisición será enviada a los aprobadores del sistema.',
+                            confirmLabel: 'Enviar a aprobación',
+                            variant: 'primary',
+                            action: 'submitForApproval',
+                            params: []
+                        })"
+                        variant="primary" icon="send">
+                        Solicitar Aprobación
                     </x-button>
                 @endif
+            @endif
+
+            {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
+            @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
+                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal">
+                    Rechazar
+                </x-button>
+                <x-button
+                    @click="$dispatch('confirm-action', {
+                        title: 'Aprobar Requisición',
+                        description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                        confirmLabel: 'Aprobar',
+                        variant: 'success',
+                        action: 'approve',
+                        params: []
+                    })"
+                    variant="success" icon="check-circle">
+                    Aprobar
+                </x-button>
             @endif
         </x-slot:actions>
     </x-page-header>
 
-    {{-- ─── Stepper de Workflow (E1) ─── --}}
-    <div class="card mb-6">
-        <div class="flex items-center justify-between px-2">
-            @php
-                $steps = [
-                    'borrador' => ['label' => 'Borrador', 'icon' => 'file-edit'],
-                    'pendiente' => ['label' => 'Pendiente', 'icon' => 'clock'],
-                    'aprobada' => ['label' => 'Aprobada', 'icon' => 'check-circle'],
-                ];
-                if ($requisition->status === 'rechazada') {
-                    $steps['aprobada'] = ['label' => 'Rechazada', 'icon' => 'x-circle'];
-                }
 
-                $currentStatus = $requisition->status;
-                $currentIndex = array_search($currentStatus, array_keys($steps));
-                if ($currentIndex === false) $currentIndex = 0;
-            @endphp
-
-            @foreach($steps as $key => $step)
-                @php
-                    $stepIndex = $loop->index;
-                    $isCompleted = $stepIndex < $currentIndex;
-                    $isCurrent = $stepIndex === $currentIndex;
-
-                    $colorClass = 'text-text-muted bg-surface-hover';
-                    $lineClass = 'bg-border';
-
-                    if ($isCompleted) {
-                        $colorClass = 'text-white bg-success';
-                        $lineClass = 'bg-success';
-                    } elseif ($isCurrent) {
-                        if ($key === 'rechazada') {
-                            $colorClass = 'text-white bg-danger';
-                        } elseif ($key === 'aprobada') {
-                            $colorClass = 'text-white bg-success';
-                        } else {
-                            $colorClass = 'text-primary-700 bg-primary-100 ring-4 ring-primary-50';
-                        }
-                    }
-                @endphp
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center w-8 h-8 rounded-full transition-colors {{ $colorClass }}">
-                        <i data-lucide="{{ $step['icon'] }}" class="w-4 h-4"></i>
-                    </div>
-                    <span class="text-small font-medium hidden sm:inline-block {{ $isCurrent || $isCompleted ? 'text-text-primary' : 'text-text-muted' }}">
-                        {{ $step['label'] }}
-                    </span>
-                </div>
-                @if(!$loop->last)
-                    <div class="flex-1 h-0.5 mx-4 transition-colors {{ $lineClass }}"></div>
-                @endif
-            @endforeach
-        </div>
-    </div>
 
     {{-- ─── Banner de rechazo (visible solo cuando rechazada) ─── --}}
     @if($requisition->status === 'rechazada' && $requisition->rejection_comment)
@@ -149,21 +93,13 @@
 
     <div class="space-y-6">
 
-        {{-- ─── Tarjeta de resumen ─── --}}
+        {{-- ─── Tarjeta de metadatos ─── --}}
         <div class="card p-6">
-            <div class="flex items-start justify-between mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
-                    <h2 class="text-h2 font-semibold text-text-primary">
-                        {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
-                    </h2>
-                    <p class="text-small text-text-muted mt-1">{{ $requisition->date?->format('d/m/Y') }}</p>
+                    <span class="text-xs-fluid text-text-muted block mb-1">Fecha</span>
+                    <span class="text-small font-medium text-text-primary">{{ $requisition->date?->format('d/m/Y') ?? '—' }}</span>
                 </div>
-                <x-status-badge
-                    :status="$requisition->status"
-                    :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                     <span class="text-xs-fluid text-text-muted block mb-1">Proyecto</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->project?->name ?? '—' }}</span>
@@ -173,11 +109,10 @@
                     <span class="text-small font-medium text-text-primary">{{ $requisition->creator?->name ?? '—' }}</span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Proveedor</span>
+                    <span class="text-xs-fluid text-text-muted block mb-1">Proveedor sugerido</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->vendor?->name ?? '—' }}</span>
                 </div>
 
-                {{-- Quién aprobó / rechazó --}}
                 @if($requisition->approver && in_array($requisition->status, ['aprobada', 'rechazada']))
                     <div>
                         <span class="text-xs-fluid text-text-muted block mb-1">
@@ -188,8 +123,8 @@
                 @endif
 
                 @if($requisition->annotations)
-                    <div class="col-span-2 md:col-span-3">
-                        <span class="text-xs-fluid text-text-muted block mb-1">Notas</span>
+                    <div class="col-span-2 md:col-span-4">
+                        <span class="text-xs-fluid text-text-muted block mb-1">Notas adicionales</span>
                         <span class="text-small text-text-primary">{{ $requisition->annotations }}</span>
                     </div>
                 @endif

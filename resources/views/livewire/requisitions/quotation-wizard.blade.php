@@ -160,7 +160,7 @@
 
 
             {{-- General Info --}}
-            <div class="card mb-6">
+            <div class="card p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-h2 text-text-primary">Información General</h2>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
@@ -240,7 +240,7 @@
 
 
 
-            <div class="card mb-6">
+            <div class="card p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <h2 class="text-h2 text-text-primary">Productos</h2>
