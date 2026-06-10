@@ -72,7 +72,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             :style="{ minWidth: $refs.trigger?.offsetWidth + 'px' }"
-            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] overflow-hidden"
+            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] max-h-64 overflow-hidden"
             style="display: none;"
         >
         <!-- Search Input -->

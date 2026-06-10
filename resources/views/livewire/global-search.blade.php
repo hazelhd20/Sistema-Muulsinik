@@ -10,6 +10,10 @@
             id="global-search-input"
             class="input pl-8 pr-10 w-72 h-8 py-0 text-small bg-surface-card"
             x-ref="searchInput"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
             @keydown.esc="open = false; $wire.clear()"
             @focus="focused = true; open = true"
             @blur="focused = false"
@@ -37,7 +41,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute top-full left-0 mt-2 w-[28rem] bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-50"
+        class="absolute top-full right-0 mt-2 w-[28rem] bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-50"
         style="display: none;"
     >
         @php
@@ -172,6 +176,10 @@
                         wire:model.live.debounce.300ms="query"
                         placeholder="Buscar..."
                         class="input pl-10 w-full"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="none"
+                        spellcheck="false"
                         @keydown.esc="open = false; $wire.clear()"
                     >
                 </div>

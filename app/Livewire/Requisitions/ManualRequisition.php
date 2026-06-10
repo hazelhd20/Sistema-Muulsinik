@@ -151,16 +151,28 @@ class ManualRequisition extends Component
     #[Title('Nueva Requisición Manual')]
     public function render()
     {
-        $projects = Project::where('status', 'activo')->orderBy('name')->get();
-        $vendors = Vendor::orderBy('name')->get();
+        $projects   = Project::where('status', 'activo')->orderBy('name')->get();
+        $vendors    = Vendor::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
-        $measures = Measure::orderBy('name')->get();
+        $measures   = Measure::orderBy('name')->get();
+
+        // Totales calculados en el componente — la vista solo los consume
+        $subtotal = collect($this->items)->sum(
+            fn($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)
+        );
+        $iva   = round($subtotal * 0.16, 2);
+        $totals = [
+            'subtotal' => $subtotal,
+            'iva'      => $iva,
+            'total'    => round($subtotal + $iva, 2),
+        ];
 
         return view('livewire.requisitions.manual-requisition', compact(
             'projects',
             'vendors',
             'categories',
-            'measures'
+            'measures',
+            'totals'
         ));
     }
 }

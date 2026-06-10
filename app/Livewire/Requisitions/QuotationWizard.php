@@ -96,7 +96,7 @@ class QuotationWizard extends Component
     public function mount(): void
     {
         $this->date = now()->format('Y-m-d');
-        
+
         if ($this->quotationId) {
             $quotation = Quotation::find($this->quotationId);
             if ($quotation) {
@@ -1018,12 +1018,16 @@ class QuotationWizard extends Component
             $vendors = \App\Models\Vendor::where('supplier_id', $this->supplierId)->orderBy('name')->get();
         }
 
+        // El modelo Quotation se carga aquí para evitar queries en la vista
+        $quotation = $this->quotationId ? Quotation::find($this->quotationId) : null;
+
         return view('livewire.requisitions.quotation-wizard', compact(
             'projects',
             'suppliers',
             'measures',
             'categories',
-            'vendors'
+            'vendors',
+            'quotation'
         ));
     }
 }

@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 [x-cloak] {
     display: none !important;
@@ -20,8 +20,10 @@
  * - Tipografía Inter + Plus Jakarta Sans
  */
 @theme {
-    --font-sans: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
 
     /* Fluid Typography — escalada para ERP de escritorio */
     --font-size-display: clamp(1.5rem, 2.5vw + 0.75rem, 2rem);
@@ -48,48 +50,48 @@
     --color-primary-900: #011666;
 
     /* Surface — Base tintado corporativo (Slate Blue) */
-    --color-surface-main: #F4F7FA;
-    --color-surface-card: #FFFFFF;
-    --color-surface-sidebar: #FFFFFF;
-    --color-surface-hover: #F8FAFC;
-    --color-surface-active: #F0F4FF;
+    --color-surface-main: #f4f7fa;
+    --color-surface-card: #ffffff;
+    --color-surface-sidebar: #ffffff;
+    --color-surface-hover: #f8fafc;
+    --color-surface-active: #f0f4ff;
 
     /* Text */
-    --color-text-primary: #0F1117;
-    --color-text-secondary: #52596B;
-    --color-text-muted: #64748B;
+    --color-text-primary: #0f1117;
+    --color-text-secondary: #52596b;
+    --color-text-muted: #64748b;
 
     /* Border */
-    --color-border: #E2E8F0;
-    --color-border-strong: #CBD5E1;
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5e1;
 
     /* Semantic */
-    --color-success: #0D9E6E;
-    --color-success-hover: #0A7C56;
-    --color-success-active: #065F46;
-    --color-success-light: #ECFDF5;
-    --color-success-border: #A7F3D0;
+    --color-success: #0d9e6e;
+    --color-success-hover: #0a7c56;
+    --color-success-active: #065f46;
+    --color-success-light: #ecfdf5;
+    --color-success-border: #a7f3d0;
 
-    --color-warning: #D97706;
-    --color-warning-hover: #B45309;
-    --color-warning-active: #92400E;
-    --color-warning-light: #FFFBEB;
-    --color-warning-border: #FDE68A;
+    --color-warning: #d97706;
+    --color-warning-hover: #b45309;
+    --color-warning-active: #92400e;
+    --color-warning-light: #fffbeb;
+    --color-warning-border: #fde68a;
 
-    --color-danger: #DC2626;
-    --color-danger-hover: #B91C1C;
-    --color-danger-active: #991B1B;
-    --color-danger-light: #FEF2F2;
-    --color-danger-border: #FECACA;
+    --color-danger: #dc2626;
+    --color-danger-hover: #b91c1c;
+    --color-danger-active: #991b1b;
+    --color-danger-light: #fef2f2;
+    --color-danger-border: #fecaca;
 
-    --color-info: #0284C7;
-    --color-info-hover: #0369A1;
+    --color-info: #0284c7;
+    --color-info-hover: #0369a1;
     --color-info-active: #075985;
-    --color-info-light: #F0F9FF;
-    --color-info-border: #BAE6FD;
+    --color-info-light: #f0f9ff;
+    --color-info-border: #bae6fd;
 
-    --color-border-light: #F1F5F9;
-    --color-surface-th: #F8FAFC;
+    --color-border-light: #f1f5f9;
+    --color-surface-th: #f8fafc;
 
     --color-scrollbar: #d1d5db;
     --color-scrollbar-hover: #9ca3af;
@@ -109,9 +111,15 @@
 
     /* ── Shadows (Premium Minimal) ── */
     --shadow-sm: 0 1px 2px 0 rgba(15, 17, 23, 0.04);
-    --shadow-md: 0 4px 6px -1px rgba(15, 17, 23, 0.05), 0 2px 4px -2px rgba(15, 17, 23, 0.03);
-    --shadow-lg: 0 10px 15px -3px rgba(15, 17, 23, 0.06), 0 4px 6px -4px rgba(15, 17, 23, 0.04);
-    --shadow-xl: 0 20px 25px -5px rgba(15, 17, 23, 0.08), 0 8px 10px -6px rgba(15, 17, 23, 0.04);
+    --shadow-md:
+        0 4px 6px -1px rgba(15, 17, 23, 0.05),
+        0 2px 4px -2px rgba(15, 17, 23, 0.03);
+    --shadow-lg:
+        0 10px 15px -3px rgba(15, 17, 23, 0.06),
+        0 4px 6px -4px rgba(15, 17, 23, 0.04);
+    --shadow-xl:
+        0 20px 25px -5px rgba(15, 17, 23, 0.08),
+        0 8px 10px -6px rgba(15, 17, 23, 0.04);
     --shadow-2xl: 0 25px 50px -12px rgba(15, 17, 23, 0.12);
 
     /* ── Animations ── */
@@ -181,7 +189,9 @@ input[type="search"]::-webkit-search-results-decoration {
 /* ── Utility Classes ────────────────────────────────────── */
 @layer utilities {
     .transition-premium {
-        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+        transition-property:
+            color, background-color, border-color, text-decoration-color, fill,
+            stroke, opacity, box-shadow, transform, filter, backdrop-filter;
         transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
         transition-duration: 220ms;
     }
@@ -235,7 +245,6 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* ── Components ─────────────────────────────────────────── */
 @layer components {
-
     /* ── Card ── */
     .card {
         background-color: var(--color-surface-card);
@@ -247,7 +256,10 @@ input[type="search"]::-webkit-search-results-decoration {
 
     /* Interactive cards (clickable panels) */
     .card-interactive {
-        transition: border-color 150ms, box-shadow 150ms, transform 150ms;
+        transition:
+            border-color 150ms,
+            box-shadow 150ms,
+            transform 150ms;
         cursor: pointer;
     }
 
@@ -271,7 +283,9 @@ input[type="search"]::-webkit-search-results-decoration {
         font-size: var(--font-size-small);
         line-height: 1.5;
         border-radius: 0.4375rem;
-        transition: background-color 120ms, box-shadow 120ms;
+        transition:
+            background-color 120ms,
+            box-shadow 120ms;
         cursor: pointer;
         border: none;
         position: relative;
@@ -281,7 +295,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
     .btn-primary:hover {
         background-color: var(--color-primary-700);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-600) 12%, transparent);
+        box-shadow: 0 0 0 3px
+            color-mix(in srgb, var(--color-primary-600) 12%, transparent);
     }
 
     .btn-primary:active {
@@ -309,7 +324,9 @@ input[type="search"]::-webkit-search-results-decoration {
         font-size: var(--font-size-small);
         line-height: 1.5;
         border-radius: 0.4375rem;
-        transition: background-color 120ms, box-shadow 120ms;
+        transition:
+            background-color 120ms,
+            box-shadow 120ms;
         cursor: pointer;
         border: none;
         position: relative;
@@ -318,11 +335,92 @@ input[type="search"]::-webkit-search-results-decoration {
 
     .btn-danger:hover {
         background-color: var(--color-danger-hover);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 12%, transparent);
+        box-shadow: 0 0 0 3px
+            color-mix(in srgb, var(--color-danger) 12%, transparent);
     }
 
     .btn-danger:active {
         background-color: var(--color-danger-active);
+        box-shadow: none;
+    }
+
+    /* ── Success Button ── */
+    .btn-success {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4375rem;
+        padding: 0.4375rem 1rem;
+        min-height: 2.25rem;
+        background-color: var(--color-success);
+        color: #fff;
+        font-weight: 600;
+        font-size: var(--font-size-small);
+        line-height: 1.5;
+        border-radius: 0.4375rem;
+        transition:
+            background-color 120ms,
+            box-shadow 120ms;
+        cursor: pointer;
+        border: none;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .btn-success:hover {
+        background-color: var(--color-success-hover);
+        box-shadow: 0 0 0 3px
+            color-mix(in srgb, var(--color-success) 12%, transparent);
+    }
+
+    .btn-success:active {
+        background-color: var(--color-success-active);
+        box-shadow: none;
+    }
+
+    .btn-success:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    /* ── Warning Button ── */
+    .btn-warning {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4375rem;
+        padding: 0.4375rem 1rem;
+        min-height: 2.25rem;
+        background-color: var(--color-warning);
+        color: #fff;
+        font-weight: 600;
+        font-size: var(--font-size-small);
+        line-height: 1.5;
+        border-radius: 0.4375rem;
+        transition:
+            background-color 120ms,
+            box-shadow 120ms;
+        cursor: pointer;
+        border: none;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .btn-warning:hover {
+        background-color: var(--color-warning-hover);
+        box-shadow: 0 0 0 3px
+            color-mix(in srgb, var(--color-warning) 12%, transparent);
+    }
+
+    .btn-warning:active {
+        background-color: var(--color-warning-active);
+        box-shadow: none;
+    }
+
+    .btn-warning:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
         box-shadow: none;
     }
 
@@ -341,7 +439,10 @@ input[type="search"]::-webkit-search-results-decoration {
         line-height: 1.5;
         border-radius: 0.4375rem;
         border: 1px solid var(--color-border);
-        transition: background-color 120ms, border-color 120ms, box-shadow 120ms;
+        transition:
+            background-color 120ms,
+            border-color 120ms,
+            box-shadow 120ms;
         cursor: pointer;
         position: relative;
         white-space: nowrap;
@@ -366,7 +467,9 @@ input[type="search"]::-webkit-search-results-decoration {
         font-size: var(--font-size-body);
         font-family: var(--font-sans);
         color: var(--color-text-primary);
-        transition: border-color 120ms, box-shadow 120ms;
+        transition:
+            border-color 120ms,
+            box-shadow 120ms;
         line-height: 1.5;
     }
 
@@ -379,7 +482,7 @@ input[type="search"]::-webkit-search-results-decoration {
     .input-error,
     .has-error .input {
         border-color: var(--color-danger) !important;
-        background-color: #FEF2F2 !important;
+        background-color: #fef2f2 !important;
     }
 
     .input-error:focus,
@@ -410,6 +513,22 @@ input[type="search"]::-webkit-search-results-decoration {
         min-height: 4.5rem;
     }
 
+    /* ── Inline input (inside editable table cells) ──
+       Transparent by default; shows border/bg on interaction. */
+    .input-inline {
+        border-color: transparent;
+        background-color: transparent;
+    }
+
+    .input-inline:hover {
+        border-color: var(--color-border);
+    }
+
+    .input-inline:focus {
+        border-color: var(--color-primary-600);
+        background-color: var(--color-surface-card);
+    }
+
     /* ── Label ── */
     .label {
         display: block;
@@ -432,7 +551,11 @@ input[type="search"]::-webkit-search-results-decoration {
         letter-spacing: 0.015em;
         white-space: nowrap;
         border: 1px solid transparent;
-        transition: background-color 120ms, border-color 120ms, color 120ms, box-shadow 120ms;
+        transition:
+            background-color 120ms,
+            border-color 120ms,
+            color 120ms,
+            box-shadow 120ms;
     }
 
     .badge-primary {
@@ -475,7 +598,9 @@ input[type="search"]::-webkit-search-results-decoration {
         font-weight: 450;
         color: var(--color-text-secondary);
         border-radius: 0.4375rem;
-        transition: background-color 120ms, color 120ms;
+        transition:
+            background-color 120ms,
+            color 120ms;
         text-decoration: none;
         line-height: 1.4;
     }
@@ -575,7 +700,9 @@ input[type="search"]::-webkit-search-results-decoration {
         padding: 0.3125rem;
         border-radius: 0.375rem;
         color: var(--color-text-muted);
-        transition: background-color 120ms, color 120ms;
+        transition:
+            background-color 120ms,
+            color 120ms;
         background-color: transparent;
         border: none;
         cursor: pointer;
@@ -614,7 +741,10 @@ input[type="search"]::-webkit-search-results-decoration {
         background-color: var(--color-surface-card);
         color: var(--color-text-secondary);
         border: 1px solid var(--color-border);
-        transition: background-color 120ms, border-color 120ms, box-shadow 120ms;
+        transition:
+            background-color 120ms,
+            border-color 120ms,
+            box-shadow 120ms;
         cursor: pointer;
     }
 
@@ -696,8 +826,8 @@ input[type="search"]::-webkit-search-results-decoration {
         gap: 0.25rem;
     }
 
-    nav[role="navigation"] span[aria-current="page"]>span,
-    nav[role="navigation"] [aria-current="page"]>span {
+    nav[role="navigation"] span[aria-current="page"] > span,
+    nav[role="navigation"] [aria-current="page"] > span {
         background-color: var(--color-primary-600) !important;
         color: #fff !important;
         border-color: var(--color-primary-600) !important;
@@ -705,7 +835,7 @@ input[type="search"]::-webkit-search-results-decoration {
         font-weight: 600;
     }
 
-    nav[role="navigation"] span>span,
+    nav[role="navigation"] span > span,
     nav[role="navigation"] a {
         border-radius: 0.375rem !important;
         border-color: transparent !important;
@@ -713,7 +843,9 @@ input[type="search"]::-webkit-search-results-decoration {
         font-weight: 500;
         color: var(--color-text-secondary);
         background-color: transparent;
-        transition: background-color 120ms, color 120ms;
+        transition:
+            background-color 120ms,
+            color 120ms;
     }
 
     nav[role="navigation"] a:hover {
@@ -740,6 +872,31 @@ input[type="search"]::-webkit-search-results-decoration {
     .spinner-sm {
         width: 0.875rem;
         height: 0.875rem;
+    }
+
+    .spinner-lg {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-width: 2px;
+    }
+
+    .spinner-xl {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-width: 3px;
+    }
+
+    /* ── Processing spinner (gradient-trail, 3-tone) ── */
+    .spinner-processing {
+        display: block;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 9999px;
+        border: 3px solid var(--color-primary-100);
+        border-top-color: var(--color-primary-600);
+        border-right-color: var(--color-primary-300);
+        animation: spin 0.8s linear infinite;
+        flex-shrink: 0;
     }
 
     @keyframes spin {
@@ -781,7 +938,12 @@ input[type="search"]::-webkit-search-results-decoration {
 
     /* ── Skeleton loading (Vercel-inspired) ── */
     .skeleton {
-        background: linear-gradient(90deg, var(--color-surface-main) 25%, #E8EAF0 50%, var(--color-surface-main) 75%);
+        background: linear-gradient(
+            90deg,
+            var(--color-surface-main) 25%,
+            #e8eaf0 50%,
+            var(--color-surface-main) 75%
+        );
         background-size: 200% 100%;
         animation: skeleton-shimmer 1.5s ease-in-out infinite;
         border-radius: 0.375rem;
@@ -966,6 +1128,16 @@ input[type="search"]::-webkit-search-results-decoration {
         background-color: var(--color-surface-hover);
     }
 
+    /* Modifier for editable tables with inline popovers/dropdowns
+       that need to overflow the container */
+    .table-embedded-form {
+        overflow: visible;
+    }
+
+    .table-embedded-form table {
+        min-width: 100%;
+    }
+
     /* Inputs inside table cells */
     .table-embedded td .input {
         height: 2rem;
@@ -992,7 +1164,9 @@ input[type="search"]::-webkit-search-results-decoration {
     /* ── Focus-visible ── */
     .btn-primary:focus-visible,
     .btn-danger:focus-visible,
-    .btn-secondary:focus-visible {
+    .btn-secondary:focus-visible,
+    .btn-success:focus-visible,
+    .btn-warning:focus-visible {
         outline: 2px solid var(--color-primary-400);
         outline-offset: 2px;
     }
@@ -1024,7 +1198,9 @@ input[type="search"]::-webkit-search-results-decoration {
         border-bottom: 2px solid transparent;
         background: none;
         cursor: pointer;
-        transition: color 120ms, border-color 120ms;
+        transition:
+            color 120ms,
+            border-color 120ms;
         margin-bottom: -1px;
         white-space: nowrap;
     }
@@ -1117,7 +1293,6 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* ── Accessibility: Respect users who prefer reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-
     *,
     ::before,
     ::after {

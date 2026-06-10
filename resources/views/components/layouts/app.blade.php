@@ -52,7 +52,7 @@
         {{-- ══════════════════════════════════════
         SIDEBAR — Industrial Premium Minimal
         ══════════════════════════════════════ --}}
-        <aside class="fixed inset-y-0 left-0 z-40 w-[15rem] bg-surface-sidebar flex flex-col
+        <aside class="fixed inset-y-0 left-0 z-50 w-[15rem] bg-surface-sidebar flex flex-col
                    border-r border-border
                    transition-transform duration-200 ease-out
                    lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shrink-0"
@@ -70,20 +70,20 @@
                 <p class="nav-section-label">Principal</p>
 
                 <a href="{{ url('/dashboard') }}" wire:navigate.hover class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
 
                 @if(auth()->user()->hasPermission('proyectos.ver'))
                     <a href="{{ url('/proyectos') }}" wire:navigate.hover class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
-                        <i data-lucide="hard-hat" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="hard-hat" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Proyectos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('gastos.ver'))
                     <a href="{{ url('/gastos') }}" wire:navigate.hover class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
-                        <i data-lucide="wallet" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="wallet" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Gastos</span>
                     </a>
                 @endif
@@ -91,7 +91,7 @@
                 @if(auth()->user()->hasPermission('requisiciones.ver'))
                     <a href="{{ url('/requisiciones') }}" wire:navigate.hover
                         class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
-                        <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Requisiciones</span>
                     </a>
                 @endif
@@ -99,7 +99,7 @@
                 @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
                     <a href="{{ route('cotizador.index') }}" wire:navigate.hover
                         class="nav-link {{ request()->routeIs('cotizador.*') ? 'active' : '' }}">
-                        <i data-lucide="calculator" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="calculator" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Cotizador</span>
                     </a>
                 @endif
@@ -109,7 +109,7 @@
                 @if(auth()->user()->hasPermission('usuarios.ver'))
                     <a href="{{ url('/usuarios') }}" wire:navigate.hover
                         class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
-                        <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="users" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Usuarios</span>
                     </a>
                 @endif
@@ -117,14 +117,14 @@
                 @if(auth()->user()->hasPermission('proveedores.ver'))
                     <a href="{{ url('/proveedores') }}" wire:navigate.hover
                         class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
-                        <i data-lucide="truck" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="truck" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Proveedores</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('reportes.ver'))
                     <a href="{{ url('/reportes') }}" wire:navigate.hover class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Reportes</span>
                     </a>
                 @endif
@@ -133,18 +133,18 @@
 
                 @if(auth()->user()->hasPermission('productos.ver'))
                     <a href="{{ url('/productos') }}" wire:navigate.hover class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
-                        <i data-lucide="package" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="package" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Productos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('catalogos.ver'))
                     <a href="{{ url('/medidas') }}" wire:navigate.hover class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
-                        <i data-lucide="ruler" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="ruler" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Medidas</span>
                     </a>
                     <a href="{{ url('/categorias') }}" wire:navigate.hover class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
-                        <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+                        <i data-lucide="layers" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                         <span>Categorías</span>
                     </a>
                 @endif
@@ -155,7 +155,7 @@
 
                 {{-- User profile row --}}
                 <div class="flex items-center gap-2.5 px-2.5 py-2 mb-1">
-                    <div class="w-7 h-7 rounded-md bg-primary-600 flex items-center justify-center shrink-0">
+                    <div class="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center shrink-0">
                         <span class="text-xs-fluid font-bold text-white leading-none">
                             {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                         </span>
@@ -171,14 +171,14 @@
                 </div>
 
                 <button x-data x-on:click="$dispatch('open-settings')" class="nav-link w-full text-left cursor-pointer">
-                    <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
+                    <i data-lucide="settings" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
                     <span>Configuración</span>
                 </button>
 
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
                     <button type="submit" class="nav-link w-full text-left group hover:bg-danger-light hover:!text-danger">
-                        <i data-lucide="log-out" class="w-4 h-4 shrink-0 group-hover:text-danger-hover"></i>
+                        <i data-lucide="log-out" class="w-4 h-4 shrink-0 group-hover:text-danger-hover" aria-hidden="true"></i>
                         <span>Cerrar sesión</span>
                     </button>
                 </form>
@@ -190,7 +190,7 @@
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition-opacity duration-150" x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" @click="mobileSidebarOpen = false"
-            class="fixed inset-0 z-30 bg-black/20 backdrop-blur-[2px] lg:hidden" style="display: none;"></div>
+            class="fixed inset-0 z-45 bg-black/20 backdrop-blur-[2px] lg:hidden" style="display: none;"></div>
 
         {{-- ══════════════════════════════════════
         MAIN CONTENT AREA
@@ -198,21 +198,20 @@
         <div class="flex-1 flex flex-col min-w-0">
 
             {{-- Top Bar ──────────────────────────── --}}
-            <header class="sticky top-0 z-20 bg-surface-main border-b border-border">
+            <header class="sticky top-0 z-35 bg-surface-main border-b border-border">
                 <div class="flex items-center justify-between h-14 px-5 lg:px-6 max-w-screen-2xl mx-auto w-full">
 
-                    {{-- Left: Hamburger (mobile) + Global Search --}}
+                    {{-- Left: Hamburger (mobile) --}}
                     <div class="flex items-center gap-3">
                         <button @click="mobileSidebarOpen = !mobileSidebarOpen"
                             class="lg:hidden p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition">
                             <i data-lucide="menu" class="w-5 h-5"></i>
                         </button>
-
-                        <livewire:global-search />
                     </div>
 
-                    {{-- Right: notifications --}}
-                    <div class="flex items-center gap-1">
+                    {{-- Right: Global Search + Notifications --}}
+                    <div class="flex items-center gap-3">
+                        <livewire:global-search />
                         <livewire:notification-dropdown />
                     </div>
 

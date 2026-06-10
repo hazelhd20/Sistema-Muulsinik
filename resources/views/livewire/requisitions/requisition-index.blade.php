@@ -75,17 +75,15 @@
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
             <button @click="activeTab = 'todas'"
                 :class="activeTab === 'todas' ? 'border-primary-500 text-primary-600' : 'border-transparent text-text-muted hover:border-border hover:text-text-primary'"
-                class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors">
-                <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                class="whitespace-nowrap border-b-2 py-4 px-1 text-small font-medium transition-colors">
                 Requisiciones
             </button>
             <button @click="activeTab = 'borradores'"
                 :class="activeTab === 'borradores' ? 'border-primary-500 text-primary-600' : 'border-transparent text-text-muted hover:border-border hover:text-text-primary'"
-                class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors">
-                <i data-lucide="file-edit" class="w-4 h-4"></i>
+                class="whitespace-nowrap border-b-2 py-4 px-1 text-small font-medium inline-flex items-center gap-2 transition-colors">
                 Borradores y Procesos
                 @if($pendingQuotations->count() > 0)
-                    <span class="bg-primary-100 text-primary-600 py-0.5 px-2 rounded-full text-xs-fluid font-bold ml-1">{{ $pendingQuotations->count() }}</span>
+                    <span class="bg-primary-100 text-primary-600 py-0.5 px-2 rounded-full text-xs-fluid font-bold">{{ $pendingQuotations->count() }}</span>
                 @endif
             </button>
         </nav>
@@ -102,7 +100,7 @@
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar requisición..." />
 
         {{-- Filters Popover --}}
-        <x-filters-popover :activeCount="$activeCount" @filters-opened="initFilters()">
+        <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
             <x-form-field label="Estado">
                 <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']" placeholder="Todos los estados" />
             </x-form-field>
@@ -124,7 +122,7 @@
             </x-form-field>
 
             <x-slot name="footer">
-                <button type="button" @click="clearFilters(); open = false" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
                     Limpiar todo
                 </button>
                 <x-button type="button" @click="applyFilters(); open = false" variant="primary">
@@ -138,7 +136,7 @@
     @if($activeCount > 0)
     <div class="flex flex-wrap items-center gap-2 mb-4">
         @if($statusFilter)
-            @php 
+            @php
                 $statusNames = ['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada'];
             @endphp
             <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
@@ -178,7 +176,7 @@
                         <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
-                                    <x-table-checkbox 
+                                    <x-table-checkbox
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll()"
                                     />
@@ -200,7 +198,7 @@
                         </thead>
                         <tbody>
                             @foreach($requisitions as $req)
-                                <tr wire:key="requisition-row-{{ $req->id }}" 
+                                <tr wire:key="requisition-row-{{ $req->id }}"
                                     class="group hover:bg-gray-50/80 transition-colors duration-150"
                                     :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
@@ -256,14 +254,32 @@
 
                                                     @if($req->status === 'borrador')
                                                         <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" wire:click="submitForApproval({{ $req->id }})" wire:confirm="¿Enviar esta requisición a aprobación?" icon="send">
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', {
+                                                                title: 'Solicitar Aprobación',
+                                                                description: 'La requisición será enviada a los aprobadores del sistema.',
+                                                                confirmLabel: 'Enviar a aprobación',
+                                                                variant: 'primary',
+                                                                action: 'submitForApproval',
+                                                                params: [{{ $req->id }}]
+                                                            })"
+                                                            icon="send">
                                                             Solicitar aprobación
                                                         </x-dropdown-link>
                                                     @endif
 
                                                     @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
                                                         <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" wire:click="approve({{ $req->id }})" wire:confirm="¿Aprobar esta requisición?" icon="check-circle" success="true">
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', {
+                                                                title: 'Aprobar Requisición',
+                                                                description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                                                                confirmLabel: 'Aprobar',
+                                                                variant: 'success',
+                                                                action: 'approve',
+                                                                params: [{{ $req->id }}]
+                                                            })"
+                                                            icon="check-circle" success="true">
                                                             Aprobar
                                                         </x-dropdown-link>
                                                         <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">
@@ -273,7 +289,16 @@
 
                                                     @if(in_array($req->status, ['borrador', 'rechazada']))
                                                         <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" wire:click="deleteRequisition({{ $req->id }})" wire:confirm="¿Eliminar esta requisición permanentemente?" danger="true" icon="trash-2">
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', {
+                                                                title: 'Eliminar Requisición',
+                                                                description: 'Esta acción es permanente y no se puede deshacer.',
+                                                                confirmLabel: 'Eliminar',
+                                                                variant: 'danger',
+                                                                action: 'deleteRequisition',
+                                                                params: [{{ $req->id }}]
+                                                            })"
+                                                            danger="true" icon="trash-2">
                                                             Eliminar
                                                         </x-dropdown-link>
                                                     @endif
@@ -357,8 +382,8 @@
 
     {{-- Reject Modal (RF-REQ-09: comentario obligatorio) --}}
     @if($showRejectModal)
-        <x-modal show="showRejectModal" 
-            :title="$isBulkReject ? 'Rechazar Requisiciones Seleccionadas' : 'Rechazar Requisición'" 
+        <x-modal show="showRejectModal"
+            :title="$isBulkReject ? 'Rechazar Requisiciones Seleccionadas' : 'Rechazar Requisición'"
             :subtitle="$isBulkReject ? 'Indica el motivo del rechazo para todas las requisiciones seleccionadas (obligatorio)' : 'Indica el motivo del rechazo (obligatorio)'"
             maxWidth="md">
             <form wire:submit="confirmReject" class="p-5 space-y-4">
@@ -379,11 +404,20 @@
     {{-- Bulk Actions Bar --}}
     <x-bulk-actions-bar>
         @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-            <button type="button" wire:click="approveSelected" wire:confirm="¿Aprobar todas las requisiciones seleccionadas que estén pendientes?" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer shrink-0">
+            <button type="button"
+                @click="$dispatch('confirm-action', {
+                    title: 'Aprobar Seleccionadas',
+                    description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
+                    confirmLabel: 'Aprobar seleccionadas',
+                    variant: 'success',
+                    action: 'approveSelected',
+                    params: []
+                })"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs-fluid font-semibold bg-success hover:bg-success-hover text-white transition-colors cursor-pointer shrink-0">
                 <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                 Aprobar
             </button>
-            <button type="button" wire:click="openBulkRejectModal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition-colors cursor-pointer shrink-0">
+            <button type="button" wire:click="openBulkRejectModal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-danger hover:bg-danger-hover text-white transition-colors cursor-pointer shrink-0">
                 <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
                 Rechazar
             </button>
@@ -394,7 +428,16 @@
             Exportar
         </button>
 
-        <button type="button" wire:click="deleteSelected" wire:confirm="¿Eliminar permanentemente las requisiciones seleccionadas que estén en borrador o rechazadas?" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer shrink-0">
+        <button type="button"
+            @click="$dispatch('confirm-action', {
+                title: 'Eliminar Seleccionadas',
+                description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
+                confirmLabel: 'Eliminar',
+                variant: 'danger',
+                action: 'deleteSelected',
+                params: []
+            })"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs-fluid font-semibold bg-danger hover:bg-danger-hover text-white transition-colors cursor-pointer shrink-0">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             Eliminar
         </button>
@@ -402,6 +445,9 @@
 
     {{-- Drawer de Detalle Rápido --}}
     <livewire:requisitions.requisition-detail-drawer />
+
+    {{-- Diálogo de confirmación global --}}
+    <x-confirm-modal />
 
     {{-- ═══════ PREVIEW MODAL ═══════ --}}
     <x-preview-modal />

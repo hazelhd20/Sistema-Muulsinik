@@ -28,9 +28,8 @@
         @foreach([1 => 'Subir archivo', 2 => 'Procesando', 3 => 'Revisar y guardar'] as $num => $label)
             <div wire:key="step-indicator-{{ $num }}" class="flex items-center gap-2 {{ $num < 3 ? 'flex-1' : '' }}">
                 <div class="flex items-center gap-2">
-                    <div
-                        class="w-8 h-8 rounded-full flex items-center justify-center text-small font-semibold transition-all duration-300 border
-                                            {{ $step > $num ? 'bg-emerald-600 text-white border-emerald-600' : ($step === $num ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-surface-card text-text-muted border-border') }}">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-small font-semibold transition-all duration-300 border
+                               {{ $step > $num ? 'bg-success text-white border-success' : ($step === $num ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-surface-card text-text-muted border-border') }}">
                         @if($step > $num)
                             <i data-lucide="check" class="w-4 h-4" wire:ignore></i>
                         @else
@@ -42,7 +41,7 @@
                 </div>
                 @if($num < 3)
                     <div
-                        class="flex-1 h-0.5 mx-4 rounded-full {{ $step > $num ? 'bg-emerald-600' : 'bg-border' }} transition-all duration-500">
+                        class="flex-1 h-0.5 mx-4 rounded-full {{ $step > $num ? 'bg-success' : 'bg-border' }} transition-all duration-500">
                     </div>
                 @endif
             </div>
@@ -62,7 +61,7 @@
                     <x-button wire:key="process-btn" x-data="{ visible: true }" x-show="visible"
                         @file-removed.window="visible = false" type="button"
                         wire:click="processUpload" wire:loading.attr="disabled" target="processUpload"
-                        variant="primary" class="w-full mt-6 py-3 text-body" icon="scan-line">
+                        variant="primary" class="w-full mt-6" icon="scan-line">
                         Procesar Cotización
                     </x-button>
                 @endif
@@ -79,28 +78,29 @@
             x-init="$nextTick(() => { if(window.lucide) lucide.createIcons({ root: $el }) })">
             <div class="p-8 text-center">
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
-                    {{-- Animación de procesamiento --}}
-                    <div class="mb-6">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-primary-50 flex items-center justify-center mb-4">
-                            <svg class="animate-spin h-10 w-10 text-primary-600" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-                                    fill="none" />
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
+                    {{-- Spinner premium con doble anillo --}}
+                    <div class="mb-8">
+                        <div class="relative w-20 h-20 mx-auto mb-6">
+                            {{-- Anillo exterior decorativo --}}
+                            <div class="absolute -inset-2.5 rounded-full border border-primary-100 bg-primary-50/40"></div>
+                            {{-- Anillo interior con sombra --}}
+                            <div class="absolute inset-0 rounded-full bg-primary-50 border border-primary-100 shadow-sm flex items-center justify-center">
+                                <span class="spinner-processing"></span>
+                            </div>
                         </div>
-                        <h2 class="text-h1 text-text-primary mb-2">Procesando tu cotización</h2>
-                        <p class="text-body text-text-muted">
-                            Estamos extrayendo la información del documento mediante Inteligencia Artificial.<br>
-                            Esto puede tomar hasta 30 segundos...
+                        <h2 class="text-h1 font-semibold text-text-primary mb-2">Procesando cotización</h2>
+                        <p class="text-body text-text-muted max-w-xs mx-auto leading-relaxed">
+                            La IA está extrayendo los datos del documento.<br>
+                            Puede tomar hasta 30 segundos.
                         </p>
                     </div>
 
-                    <p class="text-xs-fluid text-text-muted mt-4 flex items-center justify-center gap-1.5">
-                        <i data-lucide="info" class="w-3 h-3 shrink-0"></i>
-                        Puedes esperar aquí o navegar a otra página. Te notificaremos cuando termine.
-                    </p>
+                    <div class="inline-flex items-center gap-2 text-xs-fluid text-text-muted bg-surface-main border border-border rounded-full px-3 py-1.5">
+                        <i data-lucide="info" class="w-3.5 h-3.5 text-primary-400 shrink-0"></i>
+                        <span>Puedes ir a otra página; te avisaremos al terminar</span>
+                    </div>
 
-                    <div class="mt-6 flex justify-center">
+                    <div class="mt-5 flex justify-center">
                         <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" class="text-small" wire:navigate>
                             Ir a Requisiciones
                         </x-button>
@@ -108,35 +108,45 @@
 
                 @elseif($processingStatus === 'failed')
                     {{-- Error state --}}
-                    <div class="flex flex-col items-center max-w-lg mx-auto text-center py-4">
-                        {{-- Ícono premium --}}
-                        <div
-                            class="w-12 h-12 rounded-xl bg-danger-light text-danger flex items-center justify-center mb-4 shrink-0">
-                            <i data-lucide="alert-triangle" class="w-6 h-6" wire:ignore></i>
+                    <div class="flex flex-col items-center max-w-sm mx-auto text-center py-2">
+                        {{-- Ícono de error con borde semántico --}}
+                        <div class="w-14 h-14 rounded-2xl bg-danger-light border border-danger-border flex items-center justify-center mb-5 shrink-0">
+                            <i data-lucide="alert-triangle" class="w-7 h-7 text-danger" wire:ignore></i>
                         </div>
 
-                        {{-- Título y Mensaje --}}
-                        <h2 class="text-h2 font-semibold text-text-primary mb-2">Error al procesar el archivo</h2>
-                        <p class="text-small text-text-muted mb-6">No hemos podido estructurar los datos del documento
-                            automáticamente.</p>
+                        {{-- Título y descripción --}}
+                        <h2 class="text-h2 font-semibold text-text-primary mb-1">Error al procesar</h2>
+                        <p class="text-small text-text-muted mb-5">No fue posible extraer los datos del documento automáticamente.</p>
 
-                        <div class="w-full bg-surface-hover border border-border p-4 rounded-xl mb-6 text-left">
-                            <p class="text-xs-fluid font-medium text-text-secondary leading-relaxed">
+                        {{-- Caja de mensaje de error con color semántico --}}
+                        <div class="w-full flex gap-2.5 items-start bg-danger-light border border-danger-border rounded-lg px-4 py-3 mb-6 text-left">
+                            <i data-lucide="info" class="w-4 h-4 text-danger mt-0.5 shrink-0" wire:ignore></i>
+                            <p class="text-xs-fluid text-danger leading-relaxed">
                                 {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
                             </p>
                         </div>
 
-                        {{-- Botones de acción --}}
-                        <div class="flex flex-col sm:flex-row w-full gap-2.5 justify-center">
-                            <x-button wire:click="retryProcessing" variant="primary" class="group text-small" icon="refresh-cw" iconClass="transition-transform group-hover:rotate-180 duration-500">
+                        {{-- Botones con jerarquía clara --}}
+                        <div class="flex flex-col w-full gap-2.5">
+                            {{-- Acción principal --}}
+                            <x-button wire:click="retryProcessing" variant="primary" class="w-full group" icon="refresh-cw" iconClass="transition-transform group-hover:rotate-180 duration-500">
                                 Reintentar
                             </x-button>
-                            <x-button wire:click="continueManually" variant="secondary" icon="edit-3" class="text-small">
-                                Llenar manualmente
-                            </x-button>
-                            <x-button wire:click="resetWizard" variant="secondary" icon="file-up" class="text-small">
-                                Cambiar archivo
-                            </x-button>
+                            {{-- Separador visual --}}
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 h-px bg-border"></div>
+                                <span class="text-xs-fluid text-text-muted whitespace-nowrap">o continúa de otra forma</span>
+                                <div class="flex-1 h-px bg-border"></div>
+                            </div>
+                            {{-- Acciones secundarias --}}
+                            <div class="grid grid-cols-2 gap-2">
+                                <x-button wire:click="continueManually" variant="secondary" icon="edit-3" class="w-full">
+                                    Llenar manualmente
+                                </x-button>
+                                <x-button wire:click="resetWizard" variant="secondary" icon="file-up" class="w-full">
+                                    Cambiar archivo
+                                </x-button>
+                            </div>
                         </div>
                     </div>
                 @endif
@@ -155,9 +165,7 @@
             <div class="card mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-h2 text-text-primary">Información General</h2>
-                    @php
-                        $quotation = $quotationId ? \App\Models\Quotation::find($quotationId) : null;
-                    @endphp
+                    {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
                         <x-button type="button"
                             @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')"
@@ -181,16 +189,16 @@
                             </x-custom-combobox>
                             @if(($supplierMatch['status'] ?? '') === 'new')
                                 <i data-lucide="plus-circle"
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none"
-                                    title="Se creará como nuevo proveedor" wire:ignore></i>
+                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
+                                        title="Se creará como nuevo proveedor" wire:ignore></i>
                             @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
                                 <i data-lucide="sparkles"
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
                                     title="Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%" wire:ignore></i>
                             @elseif(($supplierMatch['status'] ?? '') === 'exact')
                                 <i data-lucide="check-circle-2"
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 pointer-events-none"
-                                    title="Proveedor existente" wire:ignore></i>
+                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
+                                        title="Proveedor existente" wire:ignore></i>
                             @endif
                         </div>
                     </x-form-field>
@@ -211,16 +219,16 @@
                             </x-custom-combobox>
                             @if(($vendorMatch['status'] ?? '') === 'new')
                                 <i data-lucide="plus-circle"
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none"
-                                    title="Se creará como nuevo vendedor" wire:ignore></i>
+                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
+                                        title="Se creará como nuevo vendedor" wire:ignore></i>
                             @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
                                 <i data-lucide="sparkles"
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
                                     title="Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%" wire:ignore></i>
                             @elseif(($vendorMatch['status'] ?? '') === 'exact')
                                 <i data-lucide="check-circle-2"
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 pointer-events-none"
-                                    title="Vendedor existente" wire:ignore></i>
+                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
+                                        title="Vendedor existente" wire:ignore></i>
                             @endif
                         </div>
                     </x-form-field>
@@ -253,7 +261,7 @@
 
                 @if(count($items) > 0)
                     {{-- Tabla de productos --}}
-                    <div class="table-embedded md:!overflow-visible">
+                    <div class="table-embedded table-embedded-form">
                         <table>
                             <thead>
                                 <tr>
@@ -274,9 +282,9 @@
                                         $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                         $productStatus = $item['_match']['product']['status'] ?? '';
                                         $productBorder = match (true) {
-                                            $productStatus === 'exact' => 'border-emerald-500/30 bg-emerald-50/5',
+                                            $productStatus === 'exact' => 'border-success/30 bg-success/5',
                                             $productStatus === 'fuzzy' => 'border-primary-500/30 bg-primary-50/5',
-                                            $productStatus === 'new' => 'border-amber-500/30 bg-amber-50/5',
+                                            $productStatus === 'new'   => 'border-warning/30 bg-warning/5',
                                             default => '',
                                         };
                                     @endphp
@@ -284,229 +292,79 @@
                                         wire:key="item-row-{{ $i }}">
                                         {{-- Nombre / Producto --}}
                                         <td class="pb-4">
-                                            <div class="relative" x-data="{ open: false }">
-                                                @php
-                                                    $isFuzzyPending = isset($item['product_confirmed']) && !$item['product_confirmed'] && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
-                                                    $hasProductIndicator = $isFuzzyPending || ($item['_match']['product']['status'] ?? '') === 'exact' || ($item['_match']['product']['status'] ?? '') === 'new';
-                                                @endphp
-                                                <div class="relative w-full">
+                                            @php
+                                                $isFuzzyPending      = isset($item['product_confirmed'])
+                                                    && !$item['product_confirmed']
+                                                    && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
+                                                $productStatus       = $item['_match']['product']['status'] ?? '';
+                                                $hasProductIndicator = $isFuzzyPending || in_array($productStatus, ['exact', 'new']);
+                                            @endphp
+                                            <div class="relative">
+                                                <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
                                                     <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                        class="input {{ $productBorder }} text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                        class="input input-inline {{ $productBorder }} text-small w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
                                                         placeholder="Nombre del producto">
-                                                    @if($isFuzzyPending)
-                                                        <button type="button" @click="open = !open"
-                                                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-primary-100/50 text-primary-600 transition shrink-0 animate-pulse z-10"
-                                                            title="Coincidencia difusa detectada">
-                                                            <i data-lucide="sparkles" class="w-4 h-4" wire:ignore></i>
-                                                        </button>
-                                                    @elseif(($item['_match']['product']['status'] ?? '') === 'exact')
-                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-emerald-600 shrink-0 z-10"
+                                                </x-conflict-popover>
+                                                {{-- Indicadores estáticos (no interactivos) --}}
+                                                @if(!$isFuzzyPending)
+                                                    @if($productStatus === 'exact')
+                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
                                                             title="Confirmado en catálogo">
                                                             <i data-lucide="check-circle-2" class="w-4 h-4" wire:ignore></i>
                                                         </div>
-                                                    @elseif(($item['_match']['product']['status'] ?? '') === 'new')
-                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-amber-600 shrink-0 z-10"
-                                                            title="Se creará como nuevo">
+                                                    @elseif($productStatus === 'new')
+                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
+                                                            title="Se creará como nuevo producto">
                                                             <i data-lucide="plus-circle" class="w-4 h-4" wire:ignore></i>
                                                         </div>
                                                     @endif
-                                                </div>
-
-                                                @if($isFuzzyPending)
-                                                    {{-- Popover flotante absoluto de confirmación fuzzy --}}
-                                                    <div x-show="open" @click.outside="open = false" x-cloak
-                                                        class="absolute z-[95] left-0 top-[38px] mt-1 w-72 p-3.5 rounded-xl border border-border bg-surface-card shadow-lg animate-scale-in text-xs"
-                                                        x-transition>
-                                                        <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-border">
-                                                            <i data-lucide="sparkles" class="w-4 h-4 text-primary-600 shrink-0 mt-0.5"
-                                                                wire:ignore></i>
-                                                            <div>
-                                                                <p class="font-semibold text-text-primary">Coincidencia detectada</p>
-                                                                <p class="text-[10px] text-text-muted">¿El producto corresponde a la
-                                                                    base de datos?</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="space-y-1.5 mb-3 text-[11px]">
-                                                            <div class="flex justify-between gap-2">
-                                                                <span class="text-text-muted">En cotización:</span>
-                                                                <span
-                                                                    class="font-medium text-text-primary text-right">{{ $item['name'] }}</span>
-                                                            </div>
-                                                            <div class="flex justify-between gap-2">
-                                                                <span class="text-text-muted">En catálogo:</span>
-                                                                <span
-                                                                    class="font-semibold text-text-primary text-right">"{{ $item['_match']['product']['catalog_name'] }}"</span>
-                                                            </div>
-                                                            <div
-                                                                class="flex justify-between gap-2 pt-1 border-t border-border text-[10px]">
-                                                                <span class="text-text-muted">Nivel de confianza:</span>
-                                                                <span
-                                                                    class="font-semibold text-primary-600">{{ round(($item['_match']['product']['confidence'] ?? 0) * 100) }}%
-                                                                    de similitud</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="flex flex-col gap-1">
-                                                            <button type="button" wire:click="confirmProductAssociation({{ $i }})"
-                                                                @click="open = false"
-                                                                class="w-full py-1.5 rounded bg-primary-600 text-white text-[10px] font-semibold hover:bg-primary-700 transition">
-                                                                Confirmar y vincular (✓)
-                                                            </button>
-                                                            <button type="button" wire:click="rejectProductAssociation({{ $i }})"
-                                                                @click="open = false"
-                                                                class="w-full py-1.5 rounded bg-surface-main border border-border text-text-primary text-[10px] font-semibold hover:bg-surface-hover transition">
-                                                                Crear como producto nuevo
-                                                            </button>
-                                                        </div>
-                                                    </div>
                                                 @endif
                                             </div>
                                         </td>
 
                                         {{-- Categoría --}}
                                         <td class="pb-4">
-                                            <div class="relative" x-data="{ open: false }">
-                                                @php
-                                                    $hasCatConflict = isset($item['conflict']['category']);
-                                                @endphp
-                                                <div class="relative w-full">
-                                                    <x-custom-select wire:model.live="items.{{ $i }}.category_id"
-                                                        :options="$categories->pluck('name', 'id')->toArray()"
-                                                        placeholder="Sin categoría"
-                                                        textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
-                                                    @if($hasCatConflict)
-                                                        <button type="button" @click="open = !open"
-                                                            class="absolute right-8 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse z-10"
-                                                            title="Discrepancia en categoría">
-                                                            <i data-lucide="alert-triangle" class="w-4 h-4" wire:ignore></i>
-                                                        </button>
-                                                    @endif
-                                                </div>
-
-                                                @if($hasCatConflict)
-                                                    <div x-show="open" @click.outside="open = false" x-cloak
-                                                        class="absolute z-[90] right-0 mt-1 w-64 p-3.5 rounded-xl border border-border bg-surface-card shadow-lg animate-scale-in text-xs"
-                                                        x-transition>
-                                                        <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-border">
-                                                            <i data-lucide="help-circle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"
-                                                                wire:ignore></i>
-                                                            <div>
-                                                                <p class="font-semibold text-text-primary">¿Categoría diferente?</p>
-                                                                <p class="text-[10px] text-text-muted">La IA sugirió una categoría
-                                                                    diferente.</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="space-y-1.5 mb-3 text-[11px]">
-                                                            <div class="flex justify-between gap-2">
-                                                                <span class="text-text-muted">Registrada:</span>
-                                                                <span
-                                                                    class="font-medium text-text-primary text-right">{{ $item['conflict']['category']['registered'] }}</span>
-                                                            </div>
-                                                            <div class="flex justify-between gap-2">
-                                                                <span class="text-text-muted">Propuesta IA:</span>
-                                                                <span
-                                                                    class="font-bold text-amber-600 text-right">{{ $item['conflict']['category']['suggested'] }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="flex flex-col gap-1">
-                                                            <button type="button"
-                                                                wire:click="resolveProductConflict({{ $i }}, 'category')"
-                                                                @click="open = false"
-                                                                class="w-full py-1.5 rounded bg-amber-600 text-white text-[10px] font-semibold hover:bg-amber-700 transition">
-                                                                Actualizar catálogo maestro
-                                                            </button>
-                                                            <button type="button" wire:click="dismissProductConflict({{ $i }})"
-                                                                @click="open = false"
-                                                                class="w-full py-1.5 rounded bg-surface-main border border-border text-text-primary text-[10px] font-semibold hover:bg-surface-hover transition">
-                                                                Conservar catálogo
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                @endif
-                                            </div>
+                                            @php $hasCatConflict = isset($item['conflict']['category']); @endphp
+                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i" triggerRight="right-8">
+                                                <x-custom-select wire:model.live="items.{{ $i }}.category_id"
+                                                    :options="$categories->pluck('name', 'id')->toArray()"
+                                                    placeholder="Sin categoría"
+                                                    textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
+                                            </x-conflict-popover>
                                         </td>
 
                                         {{-- Cantidad --}}
                                         <td class="pb-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
                                                 step="0.01"
-                                                class="input text-center tabular-nums text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white"
+                                                class="input input-inline text-center tabular-nums text-small"
                                                 placeholder="0">
                                         </td>
 
                                         {{-- Unidad --}}
                                         <td class="pb-4">
-                                            <div class="relative" x-data="{ open: false }">
-                                                @php
-                                                    $hasUnitConflict = isset($item['conflict']['unit']);
-                                                @endphp
-                                                <div class="relative w-full">
-                                                    <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
-                                                        :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()" placeholder="Unidad"
-                                                        inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
-                                                    </x-custom-combobox>
-                                                    @if($hasUnitConflict)
-                                                        <button type="button" @click="open = !open"
-                                                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-amber-100/50 text-amber-600 transition shrink-0 animate-pulse z-10"
-                                                            title="Discrepancia en unidad">
-                                                            <i data-lucide="alert-triangle" class="w-4 h-4" wire:ignore></i>
-                                                        </button>
-                                                    @endif
-                                                </div>
-
-                                                @if($hasUnitConflict)
-                                                    <div x-show="open" @click.outside="open = false" x-cloak
-                                                        class="absolute z-[90] right-0 mt-1 w-64 p-3.5 rounded-xl border border-border bg-surface-card shadow-lg animate-scale-in text-xs"
-                                                        x-transition>
-                                                        <div class="flex items-start gap-2 mb-2 pb-1.5 border-b border-border">
-                                                            <i data-lucide="help-circle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"
-                                                                wire:ignore></i>
-                                                            <div>
-                                                                <p class="font-semibold text-text-primary">¿Unidad diferente?</p>
-                                                                <p class="text-[10px] text-text-muted">La IA sugirió una unidad de
-                                                                    medida diferente.</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="space-y-1.5 mb-3 text-[11px]">
-                                                            <div class="flex justify-between gap-2">
-                                                                <span class="text-text-muted">Registrada:</span>
-                                                                <span
-                                                                    class="font-medium text-text-primary text-right">{{ $item['conflict']['unit']['registered'] }}</span>
-                                                            </div>
-                                                            <div class="flex justify-between gap-2">
-                                                                <span class="text-text-muted">Propuesta IA:</span>
-                                                                <span
-                                                                    class="font-bold text-amber-600 text-right">{{ $item['conflict']['unit']['suggested'] }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="flex flex-col gap-1">
-                                                            <button type="button" wire:click="resolveProductConflict({{ $i }}, 'unit')"
-                                                                @click="open = false"
-                                                                class="w-full py-1.5 rounded bg-amber-600 text-white text-[10px] font-semibold hover:bg-amber-700 transition">
-                                                                Actualizar catálogo maestro
-                                                            </button>
-                                                            <button type="button" wire:click="dismissProductConflict({{ $i }})"
-                                                                @click="open = false"
-                                                                class="w-full py-1.5 rounded bg-surface-main border border-border text-text-primary text-[10px] font-semibold hover:bg-surface-hover transition">
-                                                                Conservar catálogo
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                @endif
-                                            </div>
+                                            @php $hasUnitConflict = isset($item['conflict']['unit']); @endphp
+                                            <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
+                                                <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
+                                                    :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
+                                                    placeholder="Unidad"
+                                                    inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
+                                                </x-custom-combobox>
+                                            </x-conflict-popover>
                                         </td>
 
                                         {{-- Precio Unitario --}}
                                         <td class="pb-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
                                                 step="0.01"
-                                                class="input text-right tabular-nums text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white"
+                                                class="input input-inline text-right tabular-nums text-small"
                                                 placeholder="0.00">
                                             @if(($item['discount_percent'] ?? 0) > 0)
                                                 <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs-fluid">
                                                     <span class="text-text-muted line-through tabular-nums">
                                                         ${{ number_format($item['unit_price_original'] ?? 0, 2, '.', ',') }}
                                                     </span>
-                                                    <span class="text-emerald-600 font-medium">
+                                                    <span class="text-success font-medium">
                                                         -{{ rtrim(rtrim(number_format($item['discount_percent'], 2, '.', ''), '0'), '.') }}%
                                                     </span>
                                                 </div>

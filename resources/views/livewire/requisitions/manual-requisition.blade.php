@@ -24,7 +24,7 @@
                         $vendorOptions[$vendor->id] = $vendor->name . ' (' . ($vendor->supplier->trade_name ?? 'Sin Proveedor') . ')';
                     }
                 @endphp
-                <x-form-field label="Vendedor (Opcional)" error="{{ $errors->first('reqVendorId') }}">
+                <x-form-field label="Vendedor" error="{{ $errors->first('reqVendorId') }}">
                     <x-custom-select wire:model="reqVendorId" :options="$vendorOptions" placeholder="Vendedor..." />
                 </x-form-field>
 
@@ -107,7 +107,7 @@
 
             {{-- Items Table --}}
             @if(count($items) > 0)
-                <div class="table-embedded md:!overflow-visible">
+                <div class="table-embedded table-embedded-form">
                     <table>
                         <thead>
                             <tr>
@@ -132,7 +132,7 @@
                                     wire:key="item-row-{{ $i }}">
                                     <td class="pb-4">
                                         <input wire:model.live.debounce.400ms="items.{{ $i }}.name" type="text"
-                                            class="input text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white w-full"
+                                            class="input input-inline text-small w-full"
                                             placeholder="Nombre del producto">
                                     </td>
                                     <td class="pb-4">
@@ -143,7 +143,7 @@
                                     <td class="pb-4">
                                         <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
                                             step="0.01"
-                                            class="input text-center tabular-nums text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white"
+                                            class="input input-inline text-center tabular-nums text-small"
                                             placeholder="0">
                                     </td>
                                     <td class="pb-4">
@@ -158,7 +158,7 @@
                                     <td class="pb-4">
                                         <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
                                             step="0.01"
-                                            class="input text-right tabular-nums text-small border-transparent bg-transparent hover:border-border focus:border-primary-500 focus:bg-white"
+                                            class="input input-inline text-right tabular-nums text-small"
                                             placeholder="0.00">
                                     </td>
                                     <td
@@ -178,28 +178,26 @@
                     </table>
                 </div>
 
-                {{-- Totales --}}
-                @php
-                    $subtotalTotal = collect($items)->sum(fn($i) => ($i['quantity'] ?? 0) * ($i['unit_price'] ?? 0));
-                    $ivaTotal = round($subtotalTotal * 0.16, 2);
-                    $grandTotal = $subtotalTotal + $ivaTotal;
-                @endphp
+                {{-- Totales (calculados en ManualRequisition::render()) --}}
                 <div class="flex justify-end mt-4">
                     <x-totals-summary>
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                            <span
-                                class="text-small font-medium text-text-secondary tabular-nums">${{ number_format($subtotalTotal, 2, '.', ',') }}</span>
+                            <span class="text-small font-medium text-text-secondary tabular-nums">
+                                ${{ number_format($totals['subtotal'], 2, '.', ',') }}
+                            </span>
                         </div>
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">IVA (16%)</span>
-                            <span
-                                class="text-small font-medium text-text-muted tabular-nums">${{ number_format($ivaTotal, 2, '.', ',') }}</span>
+                            <span class="text-small font-medium text-text-muted tabular-nums">
+                                ${{ number_format($totals['iva'], 2, '.', ',') }}
+                            </span>
                         </div>
                         <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border">
                             <span class="text-body font-semibold text-text-primary">Total c/IVA</span>
-                            <span
-                                class="text-h3 font-bold text-text-primary tabular-nums">${{ number_format($grandTotal, 2, '.', ',') }}</span>
+                            <span class="text-h3 font-bold text-text-primary tabular-nums">
+                                ${{ number_format($totals['total'], 2, '.', ',') }}
+                            </span>
                         </div>
                     </x-totals-summary>
                 </div>

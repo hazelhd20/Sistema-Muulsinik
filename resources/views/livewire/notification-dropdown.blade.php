@@ -1,24 +1,30 @@
-<div class="relative" x-data="{ open: @entangle('isOpen') }" @click.away="open = false">
-    {{-- Botón de notificaciones --}}
-    <button wire:click="toggle" class="relative p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition"
+<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
+    {{-- Botón de notificaciones (wire:ignore para prevenir parpadeo del icono de campana) --}}
+    <button @click="open = !open" wire:ignore
+        class="relative p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition"
         title="Notificaciones">
         <i data-lucide="bell" class="w-[17px] h-[17px]"></i>
 
-        {{-- Badge de notificaciones no leídas --}}
-        @if($unreadCount > 0)
-            <span
-                class="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-[9px] font-bold text-white flex items-center justify-center shadow-sm">
-                {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-            </span>
-        @endif
+        {{-- Badge de notificaciones no leídas (fuera del ignore para poder actualizarse) --}}
+        <div class="absolute -top-0.5 -right-0.5" wire:key="unread-badge">
+            @if($unreadCount > 0)
+                <span
+                    class="min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-[9px] font-bold text-white flex items-center justify-center shadow-sm leading-none">
+                    {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                </span>
+            @endif
+        </div>
     </button>
 
     {{-- Dropdown de notificaciones --}}
-    <div x-show="open" x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
+    <div x-show="open"
+        x-transition:enter="transition-premium"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition-premium"
+        x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute top-full right-0 mt-2 w-80 bg-surface-card rounded-xl shadow-2xl border border-border overflow-hidden z-50"
+        class="absolute top-full right-0 mt-2 w-85 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-[100]"
         style="display: none;">
         {{-- Header --}}
         <div class="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-hover">
