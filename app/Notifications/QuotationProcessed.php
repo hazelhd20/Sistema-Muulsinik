@@ -4,9 +4,11 @@ namespace App\Notifications;
 
 use App\Models\Quotation;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class QuotationProcessed extends Notification
+class QuotationProcessed extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
@@ -18,7 +20,12 @@ class QuotationProcessed extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
     public function toDatabase(object $notifiable): array
@@ -30,7 +37,7 @@ class QuotationProcessed extends Notification
                 'message' => "El archivo '{$this->quotation->original_filename}' ha sido procesado",
                 'icon' => 'file-check',
                 'color' => 'success',
-                'action_url' => url("/requisiciones/subir-cotizacion?id={$this->quotation->id}"),
+                'action_url' => "/requisiciones/subir-cotizacion?id={$this->quotation->id}",
                 'action_text' => 'Ver',
                 'quotation_id' => $this->quotation->id,
                 'quotation_filename' => $this->quotation->original_filename,
@@ -43,7 +50,7 @@ class QuotationProcessed extends Notification
             'message' => $this->errorMessage ?? "No se pudo procesar '{$this->quotation->original_filename}'. Requiere revisión manual.",
             'icon' => 'file-x',
             'color' => 'danger',
-            'action_url' => url("/requisiciones/subir-cotizacion?id={$this->quotation->id}"),
+            'action_url' => "/requisiciones/subir-cotizacion?id={$this->quotation->id}",
             'action_text' => 'Reintentar',
             'quotation_id' => $this->quotation->id,
             'quotation_filename' => $this->quotation->original_filename,

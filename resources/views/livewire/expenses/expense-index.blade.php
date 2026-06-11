@@ -99,7 +99,7 @@
                                         <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
                                     </td>
                                     <td>
-                                        <p class="font-medium text-text-primary">{{ $expense->concept }}</p>
+                                        <p class="font-semibold text-text-primary">{{ $expense->concept }}</p>
                                         <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
                                     </td>
                                     <td>
@@ -112,8 +112,8 @@
                                     <td>
                                         <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
                                     </td>
-                                    <td class="text-body text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
-                                    <td class="numeric font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
+                                    <td class="text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
+                                    <td class="text-right font-semibold tabular-nums text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
                                     <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
                                         <div class="flex items-center justify-end">
                                             <x-dropdown align="right" width="48">

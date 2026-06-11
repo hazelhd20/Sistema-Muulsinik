@@ -57,15 +57,20 @@
             this.variant      = payload.variant      ?? 'danger';
             this.action       = payload.action       ?? '';
             this.params       = payload.params       ?? [];
+            this.onConfirmCallback = payload.onConfirmCallback ?? null;
             this.loading      = false;
             this.show         = true;
         },
 
         async execute() {
-            if (!this.action || this.loading) return;
+            if (this.loading) return;
             this.loading = true;
             try {
-                await $wire[this.action](...this.params);
+                if (this.onConfirmCallback) {
+                    await this.onConfirmCallback();
+                } else if (this.action) {
+                    await $wire[this.action](...this.params);
+                }
             } catch(e) {
                 console.error('[confirm-modal]', e);
             } finally {

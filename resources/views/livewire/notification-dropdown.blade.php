@@ -80,9 +80,24 @@
                                 {{ $notification['message'] }}
                             </p>
                             <div class="flex items-center justify-between mt-2">
-                                <span class="text-xs-fluid text-text-muted">{{ $notification['created_at'] }}</span>
+                                <span class="text-xs-fluid text-text-muted" 
+                                    x-data="{ 
+                                        time: '{{ $notification['created_at_iso'] }}', 
+                                        relative: '{{ $notification['created_at'] }}' 
+                                    }"
+                                    x-init="setInterval(() => {
+                                        const seconds = Math.floor((new Date() - new Date(time)) / 1000);
+                                        if(seconds < 60) relative = 'hace unos segundos';
+                                        else if(seconds < 3600) relative = 'hace ' + Math.floor(seconds/60) + (Math.floor(seconds/60) === 1 ? ' minuto' : ' minutos');
+                                        else if(seconds < 86400) relative = 'hace ' + Math.floor(seconds/3600) + (Math.floor(seconds/3600) === 1 ? ' hora' : ' horas');
+                                        else relative = 'hace ' + Math.floor(seconds/86400) + (Math.floor(seconds/86400) === 1 ? ' día' : ' días');
+                                    }, 60000)"
+                                    x-text="relative">
+                                    {{ $notification['created_at'] }}
+                                </span>
                                 <div class="flex items-center gap-2">
-                                    <a href="{{ $notification['action_url'] }}" wire:navigate
+                                    <a href="{{ $notification['action_url'] }}" 
+                                        @if(!str_contains($notification['action_url'], '/storage/exports/')) wire:navigate @else download @endif
                                         wire:click="markAsRead('{{ $notification['id'] }}')"
                                         class="text-xs-fluid font-medium text-primary-600 hover:text-primary-700 transition-colors">
                                         {{ $notification['action_text'] }}
@@ -106,7 +121,4 @@
         @endif
     </div>
     </template>
-
-    {{-- Polling cada 60 segundos (solo visible) para actualizar --}}
-    <div wire:poll.60s.visible="loadNotifications"></div>
 </div>

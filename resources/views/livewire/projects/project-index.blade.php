@@ -91,7 +91,7 @@
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                     </td>
-                                    <td class="font-medium whitespace-nowrap text-text-primary">
+                                    <td class="font-semibold whitespace-nowrap text-text-primary">
                                         <span class="max-w-[200px] truncate"
                                             title="{{ $project->name }}">{{ $project->name }}</span>
                                     </td>

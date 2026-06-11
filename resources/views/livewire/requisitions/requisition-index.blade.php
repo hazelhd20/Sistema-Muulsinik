@@ -144,13 +144,13 @@
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
                                     </td>
-                                    <td class="font-medium whitespace-nowrap">
+                                    <td class="font-semibold text-text-primary whitespace-nowrap">
                                         {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
                                         {{ $req->project->name ?? '—' }}
                                     </td>
-                                    <td class="whitespace-nowrap">
+                                    <td class="text-text-secondary whitespace-nowrap">
                                         {{ $req->date?->format('d/m/Y') }}
                                     </td>
                                     <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
@@ -455,10 +455,27 @@
 
         <div class="h-8 w-px bg-border mx-1 hidden sm:block"></div>
 
-        {{-- Exportar: usa variante secondary ya que no es una acción destructiva --}}
-        <x-button wire:click="exportSelected" variant="secondary" icon="file-down">
-            Exportar
-        </x-button>
+        {{-- Menú de Exportación --}}
+        <x-dropdown align="top" width="56">
+            <x-slot name="trigger">
+                <x-button variant="secondary" icon="file-down" wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportar</span>
+                    <span wire:loading wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportando...</span>
+                </x-button>
+            </x-slot>
+            <x-slot name="content">
+                <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
+                    Resumen (CSV)
+                </x-dropdown-link>
+                <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
+                    Detallado con Ítems (CSV)
+                </x-dropdown-link>
+                <div class="border-t border-border my-1"></div>
+                <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
+                    PDFs en ZIP
+                </x-dropdown-link>
+            </x-slot>
+        </x-dropdown>
 
         <x-button
             @click="$dispatch('confirm-action', {

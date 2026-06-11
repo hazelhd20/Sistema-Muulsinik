@@ -86,7 +86,7 @@
                                         <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
                                     </td>
                                     <td>
-                                        <p class="font-medium text-text-primary">{{ $budget->title }}</p>
+                                        <p class="font-semibold text-text-primary">{{ $budget->title }}</p>
                                         @if($budget->description)
                                             <p class="text-xs-fluid text-text-muted truncate max-w-[200px]">{{ $budget->description }}</p>
                                         @endif
@@ -96,7 +96,7 @@
                                     </td>
                                     <td class="text-body text-text-secondary">{{ $budget->created_at->format('d/m/Y') }}</td>
                                     <td class="text-center text-body">{{ $budget->items_count }}</td>
-                                    <td class="text-right font-semibold text-text-primary">
+                                    <td class="text-right font-semibold tabular-nums text-text-primary">
                                         ${{ number_format($budget->grand_total, 2, '.', ',') }}</td>
                                     <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
                                         <div class="flex items-center justify-end">

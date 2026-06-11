@@ -114,7 +114,7 @@
                                     <div class="flex items-center gap-3 mt-3">
                                         <a
                                             href="{{ $data['action_url'] ?? '#' }}"
-                                            wire:navigate
+                                            @if(!str_contains($data['action_url'] ?? '', '/storage/exports/')) wire:navigate @else download @endif
                                             wire:click="markAsRead('{{ $notification->id }}')"
                                             class="text-small font-medium text-primary-600 hover:text-primary-700 transition-colors"
                                         >

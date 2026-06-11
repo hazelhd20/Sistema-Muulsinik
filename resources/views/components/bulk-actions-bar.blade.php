@@ -14,10 +14,7 @@
     style="display: none;"
 >
     <div class="flex items-center gap-3 border-r border-border pr-4 shrink-0">
-        <span class="relative flex h-2.5 w-2.5">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span>
-        </span>
+        <x-pulse-indicator color="primary" />
         <span class="text-sm font-semibold text-text-primary whitespace-nowrap">
             <span x-text="{{ $model }}.length"></span> seleccionados
         </span>

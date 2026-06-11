@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\BroadcastsEvents;
+use Illuminate\Broadcasting\PrivateChannel;
 
 /**
  * @property int $id
@@ -24,6 +26,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Requisition extends Model
 {
+    use BroadcastsEvents;
+
+    public function broadcastOn(string $event): array
+    {
+        return [
+            new PrivateChannel('requisitions.index'),
+            new PrivateChannel('App.Models.Requisition.' . $this->id),
+        ];
+    }
+
+    public function broadcastWhen(string $event): bool
+    {
+        // No transmitir actualizaciones por WebSockets si es solo un borrador
+        return $this->status !== 'borrador';
+    }
     protected $fillable = [
         'project_id',
         'vendor_id',

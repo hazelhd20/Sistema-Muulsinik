@@ -271,8 +271,8 @@ class RequisitionIndex extends Component
         $this->selectedRows = [];
     }
 
-    /** Exportación masiva de requisiciones seleccionadas a formato CSV. */
-    public function exportSelected()
+    /** Exportación masiva de requisiciones seleccionadas a formato CSV (Resumen). */
+    public function exportCsvSummary()
     {
         if (empty($this->selectedRows)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
@@ -318,13 +318,105 @@ class RequisitionIndex extends Component
 
         $this->selectedRows = []; // Limpiar selección tras exportación
 
-        return response()->streamDownload($callback, 'requisiciones_export_'.now()->format('Ymd_His').'.csv', $headers);
+        return response()->streamDownload($callback, 'requisiciones_resumen_'.now()->format('Ymd_His').'.csv', $headers);
+    }
+
+    /** Exportación masiva de requisiciones seleccionadas a formato CSV (Detallado con Ítems). */
+    public function exportCsvDetailed()
+    {
+        if (empty($this->selectedRows)) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
+            return;
+        }
+
+        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'approver', 'items.product', 'items.measure'])
+            ->whereIn('id', $this->selectedRows)
+            ->get();
+
+        $headers = [
+            'Content-type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename=requisiciones_detallado_'.now()->format('Ymd_His').'.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        // Columnas incluyendo los ítems
+        $columns = ['Folio Requisición', 'Proyecto', 'Fecha Req', 'Proveedor Req', 'Total Req', 'Estado Req', 'Producto/Servicio', 'Cantidad', 'Medida', 'Precio Unitario', 'Subtotal Ítem'];
+
+        $callback = function () use ($requisitions, $columns) {
+            $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF"); // BOM para UTF-8 en Excel
+            fputcsv($file, $columns);
+
+            foreach ($requisitions as $req) {
+                $folio = $req->number ?? 'REQ-'.str_pad($req->id, 5, '0', STR_PAD_LEFT);
+                $project = $req->project->name ?? '—';
+                $date = $req->date?->format('d/m/Y') ?? '—';
+                $vendor = $req->vendor->name ?? '—';
+                
+                // Si no tiene ítems, exportar al menos la cabecera
+                if ($req->items->isEmpty()) {
+                    fputcsv($file, [
+                        $folio, $project, $date, $vendor, $req->total, ucfirst($req->status), 
+                        '—', '—', '—', '—', '—'
+                    ]);
+                } else {
+                    foreach ($req->items as $item) {
+                        $productName = $item->product ? $item->product->canonical_name : $item->description;
+                        fputcsv($file, [
+                            $folio, $project, $date, $vendor, $req->total, ucfirst($req->status),
+                            $productName,
+                            $item->quantity,
+                            $item->measure->name ?? '—',
+                            $item->unit_price,
+                            $item->subtotal
+                        ]);
+                    }
+                }
+            }
+            fclose($file);
+        };
+
+        $this->selectedRows = [];
+        return response()->streamDownload($callback, 'requisiciones_detallado_'.now()->format('Ymd_His').'.csv', $headers);
+    }
+
+    /** Exportación masiva de requisiciones seleccionadas a PDFs en un archivo ZIP (Asíncrono). */
+    public function exportPdfZip()
+    {
+        if (empty($this->selectedRows)) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
+            return;
+        }
+
+        // Despachar el Job a la cola
+        \App\Jobs\ExportRequisitionsPdfZipJob::dispatch(auth()->id(), $this->selectedRows);
+
+        $this->selectedRows = [];
+        $this->dispatch('toast', ['icon' => 'info', 'message' => 'Exportación iniciada. Recibirás una notificación cuando el archivo ZIP esté listo para descargar.']);
+    }
+
+    public function getListeners(): array
+    {
+        $userId = auth()->id();
+        
+        $listeners = [];
+
+        if ($userId) {
+            $listeners["echo-private:App.Models.User.{$userId},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated"] = 'refreshCount';
+        }
+
+        return $listeners;
     }
 
     #[On('quotation-dismissed')]
+    #[On('echo-private:requisitions.index,.RequisitionCreated')]
+    #[On('echo-private:requisitions.index,.RequisitionUpdated')]
+    #[On('echo-private:requisitions.index,.RequisitionDeleted')]
     public function refreshCount(): void
     {
-        // Triggers re-rendering to update the tab count
+        // Triggers re-rendering to update the tab count and table data instantly
     }
 
     #[Layout('components.layouts.app')]

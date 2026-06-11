@@ -91,72 +91,55 @@
                     </div>
                 </div>
                 <div class="h-64 flex-1" data-chart="{{ json_encode($monthlyData) }}"
-                     x-data="{
-                         chartData: [],
-                         chart: null,
-                         init() {
-                             const ctx = document.getElementById('trend-chart');
-                             if (!ctx) return;
-                             this.chartData = JSON.parse(this.$el.getAttribute('data-chart'));
-                             this.chart = new Chart(ctx, {
-                                 type: 'line',
-                                 data: {
-                                     labels: this.chartData.map(d => d.short),
-                                     datasets: [{
-                                         label: 'Gastos',
-                                         data: this.chartData.map(d => d.total),
-                                         borderColor: '#0230c8',
-                                         backgroundColor: 'rgba(2, 48, 200, 0.08)',
-                                         fill: true,
-                                         tension: 0.4,
-                                         borderWidth: 2.5,
-                                         pointBackgroundColor: '#0230c8',
-                                         pointRadius: 4,
-                                         pointHoverRadius: 6,
-                                     }]
+                     x-data="chartCanvas((data) => ({
+                         type: 'line',
+                         data: {
+                             labels: data.map(d => d.short),
+                             datasets: [{
+                                 label: 'Gastos',
+                                 data: data.map(d => d.total),
+                                 borderColor: '#0230c8',
+                                 backgroundColor: 'rgba(2, 48, 200, 0.08)',
+                                 fill: true,
+                                 tension: 0.4,
+                                 borderWidth: 2.5,
+                                 pointBackgroundColor: '#0230c8',
+                                 pointRadius: 4,
+                                 pointHoverRadius: 6,
+                             }]
+                         },
+                         options: {
+                             responsive: true,
+                             maintainAspectRatio: false,
+                             plugins: {
+                                 legend: { display: false },
+                                 tooltip: {
+                                     backgroundColor: '#1E1B2E',
+                                     padding: 12,
+                                     cornerRadius: 8,
+                                     titleFont: { family: 'Plus Jakarta Sans' },
+                                     bodyFont: { family: 'Plus Jakarta Sans' },
+                                     callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` }
+                                 }
+                             },
+                             scales: {
+                                 x: {
+                                     grid: { display: false },
+                                     ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9CA3AF' }
                                  },
-                                 options: {
-                                     responsive: true,
-                                     maintainAspectRatio: false,
-                                     plugins: {
-                                         legend: { display: false },
-                                         tooltip: {
-                                             backgroundColor: '#1E1B2E',
-                                             padding: 12,
-                                             cornerRadius: 8,
-                                             titleFont: { family: 'Plus Jakarta Sans' },
-                                             bodyFont: { family: 'Plus Jakarta Sans' },
-                                             callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` }
-                                         }
-                                     },
-                                     scales: {
-                                         x: {
-                                             grid: { display: false },
-                                             ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9CA3AF' }
-                                         },
-                                         y: {
-                                             grid: { color: 'rgba(0,0,0,0.04)' },
-                                             ticks: {
-                                                 font: { family: 'Plus Jakarta Sans', size: 11 },
-                                                 color: '#9CA3AF',
-                                                 callback: v => `$${(v / 1000).toFixed(0)}k`
-                                             }
-                                         }
+                                 y: {
+                                     grid: { color: 'rgba(0,0,0,0.04)' },
+                                     ticks: {
+                                         font: { family: 'Plus Jakarta Sans', size: 11 },
+                                         color: '#9CA3AF',
+                                         callback: v => `$${(v / 1000).toFixed(0)}k`
                                      }
                                  }
-                             });
-
-                             const observer = new MutationObserver(() => {
-                                 const newData = JSON.parse(this.$el.getAttribute('data-chart'));
-                                 this.chart.data.labels = newData.map(d => d.short);
-                                 this.chart.data.datasets[0].data = newData.map(d => d.total);
-                                 this.chart.update();
-                             });
-                             observer.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
+                             }
                          }
-                     }">
+                     }))">
                     <div wire:ignore class="h-full w-full">
-                        <canvas id="trend-chart"></canvas>
+                        <canvas></canvas>
                     </div>
                 </div>
             </div>
@@ -171,56 +154,40 @@
                 @else
                     <div wire:key="overview-category-content" class="flex flex-col flex-1">
                         <div class="h-52 flex items-center justify-center" data-chart="{{ json_encode($expenseByCategory) }}"
-                             x-data="{
-                                 chartData: [],
-                                 chart: null,
-                                 init() {
-                                     const ctx = document.getElementById('category-chart');
-                                     if (!ctx) return;
-                                     this.chartData = JSON.parse(this.$el.getAttribute('data-chart'));
-                                     const labels = {{ json_encode($categoryLabels) }};
-                                     const colors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
-                                     this.chart = new Chart(ctx, {
-                                         type: 'doughnut',
-                                         data: {
-                                             labels: this.chartData.map(d => labels[d.category] || d.category),
-                                             datasets: [{
-                                                 data: this.chartData.map(d => d.total),
-                                                 backgroundColor: colors.slice(0, this.chartData.length),
-                                                 borderWidth: 0,
-                                                 hoverOffset: 6,
-                                             }]
-                                         },
-                                         options: {
-                                             responsive: true,
-                                             maintainAspectRatio: false,
-                                             cutout: '65%',
-                                             plugins: {
-                                                 legend: { display: false },
-                                                 tooltip: {
-                                                     backgroundColor: '#1E1B2E',
-                                                     padding: 10,
-                                                     cornerRadius: 8,
-                                                     titleFont: { family: 'Plus Jakarta Sans' },
-                                                     bodyFont: { family: 'Plus Jakarta Sans' },
-                                                     callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
-                                                 }
+                             x-data="chartCanvas((data) => {
+                                 const labels = {{ json_encode($categoryLabels) }};
+                                 const colors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
+                                 return {
+                                     type: 'doughnut',
+                                     data: {
+                                         labels: data.map(d => labels[d.category] || d.category),
+                                         datasets: [{
+                                             data: data.map(d => d.total),
+                                             backgroundColor: colors.slice(0, data.length),
+                                             borderWidth: 0,
+                                             hoverOffset: 6,
+                                         }]
+                                     },
+                                     options: {
+                                         responsive: true,
+                                         maintainAspectRatio: false,
+                                         cutout: '65%',
+                                         plugins: {
+                                             legend: { display: false },
+                                             tooltip: {
+                                                 backgroundColor: '#1E1B2E',
+                                                 padding: 10,
+                                                 cornerRadius: 8,
+                                                 titleFont: { family: 'Plus Jakarta Sans' },
+                                                 bodyFont: { family: 'Plus Jakarta Sans' },
+                                                 callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
                                              }
                                          }
-                                     });
-
-                                     const observer = new MutationObserver(() => {
-                                         const newData = JSON.parse(this.$el.getAttribute('data-chart'));
-                                         this.chart.data.labels = newData.map(d => labels[d.category] || d.category);
-                                         this.chart.data.datasets[0].data = newData.map(d => d.total);
-                                         this.chart.data.datasets[0].backgroundColor = colors.slice(0, newData.length);
-                                         this.chart.update();
-                                     });
-                                     observer.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
-                                 }
-                             }">
+                                     }
+                                 };
+                             })">
                             <div wire:ignore class="h-full w-full">
-                                <canvas id="category-chart"></canvas>
+                                <canvas></canvas>
                             </div>
                         </div>
                         <div class="mt-4 space-y-2">
@@ -519,55 +486,39 @@
                 @else
                     <div wire:key="products-chart-content" class="flex flex-col flex-1">
                         <div class="h-52 flex items-center justify-center" data-chart="{{ json_encode($productsByCategory) }}"
-                             x-data="{
-                                 chartData: [],
-                                 chart: null,
-                                 init() {
-                                     const ctx = document.getElementById('product-category-chart');
-                                     if (!ctx) return;
-                                     this.chartData = JSON.parse(this.$el.getAttribute('data-chart'));
-                                     const colors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
-                                     this.chart = new Chart(ctx, {
-                                         type: 'doughnut',
-                                         data: {
-                                             labels: this.chartData.map(d => d.category_name || 'Sin categoría'),
-                                             datasets: [{
-                                                 data: this.chartData.map(d => d.total_amount),
-                                                 backgroundColor: colors.slice(0, this.chartData.length),
-                                                 borderWidth: 0,
-                                                 hoverOffset: 6,
-                                             }]
-                                         },
-                                         options: {
-                                             responsive: true,
-                                             maintainAspectRatio: false,
-                                             cutout: '65%',
-                                             plugins: {
-                                                 legend: { display: false },
-                                                 tooltip: {
-                                                     backgroundColor: '#1E1B2E',
-                                                     padding: 10,
-                                                     cornerRadius: 8,
-                                                     titleFont: { family: 'Plus Jakarta Sans' },
-                                                     bodyFont: { family: 'Plus Jakarta Sans' },
-                                                     callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
-                                                 }
+                             x-data="chartCanvas((data) => {
+                                 const colors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+                                 return {
+                                     type: 'doughnut',
+                                     data: {
+                                         labels: data.map(d => d.category_name || 'Sin categoría'),
+                                         datasets: [{
+                                             data: data.map(d => d.total_amount),
+                                             backgroundColor: colors.slice(0, data.length),
+                                             borderWidth: 0,
+                                             hoverOffset: 6,
+                                         }]
+                                     },
+                                     options: {
+                                         responsive: true,
+                                         maintainAspectRatio: false,
+                                         cutout: '65%',
+                                         plugins: {
+                                             legend: { display: false },
+                                             tooltip: {
+                                                 backgroundColor: '#1E1B2E',
+                                                 padding: 10,
+                                                 cornerRadius: 8,
+                                                 titleFont: { family: 'Plus Jakarta Sans' },
+                                                 bodyFont: { family: 'Plus Jakarta Sans' },
+                                                 callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
                                              }
                                          }
-                                     });
-
-                                     const observer = new MutationObserver(() => {
-                                         const newData = JSON.parse(this.$el.getAttribute('data-chart'));
-                                         this.chart.data.labels = newData.map(d => d.category_name || 'Sin categoría');
-                                         this.chart.data.datasets[0].data = newData.map(d => d.total_amount);
-                                         this.chart.data.datasets[0].backgroundColor = colors.slice(0, newData.length);
-                                         this.chart.update();
-                                     });
-                                     observer.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
-                                 }
-                             }">
+                                     }
+                                 };
+                             })">
                             <div wire:ignore class="h-full w-full">
-                                <canvas id="product-category-chart"></canvas>
+                                <canvas></canvas>
                             </div>
                         </div>
                         <div class="mt-4 space-y-2">

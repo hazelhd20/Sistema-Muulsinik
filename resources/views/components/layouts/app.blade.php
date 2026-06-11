@@ -282,30 +282,29 @@
             if (el && !el.hasAttribute('data-confirmed')) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: el.getAttribute('wire:confirm'),
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0230c8',
-                    cancelButtonColor: '#ef4444',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar',
-                    customClass: {
-                        popup: 'rounded-xl shadow-xl',
-                        confirmButton: '!rounded-md !text-sm !font-semibold',
-                        cancelButton: '!rounded-md !text-sm !font-semibold'
+                
+                // Determinar la variante visual (danger si es acción destructiva)
+                let isDanger = el.getAttribute('wire:click')?.toLowerCase().includes('delete') 
+                            || el.classList.contains('text-danger') 
+                            || el.hasAttribute('danger')
+                            || el.getAttribute('wire:confirm').toLowerCase().includes('eliminar');
+
+                window.dispatchEvent(new CustomEvent('confirm-action', {
+                    detail: {
+                        title: '¿Estás seguro?',
+                        description: el.getAttribute('wire:confirm'),
+                        variant: isDanger ? 'danger' : 'warning',
+                        confirmLabel: 'Confirmar',
+                        onConfirmCallback: () => {
+                            el.setAttribute('data-confirmed', 'true');
+                            const orig = window.confirm;
+                            window.confirm = () => true;
+                            el.click();
+                            window.confirm = orig;
+                            el.removeAttribute('data-confirmed');
+                        }
                     }
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        el.setAttribute('data-confirmed', 'true');
-                        const orig = window.confirm;
-                        window.confirm = () => true;
-                        el.click();
-                        window.confirm = orig;
-                        el.removeAttribute('data-confirmed');
-                    }
-                });
+                }));
             }
         }, true);
     </script>

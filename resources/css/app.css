@@ -743,11 +743,7 @@ input[type="search"]::-webkit-search-results-decoration {
     }
 
     .table-container tbody tr {
-        transition: background-color 80ms;
-    }
-
-    .table-container tbody tr:hover td {
-        background-color: var(--color-surface-hover);
+        /* transition handled by tailwind */
     }
 
     /* ── Icon-only action buttons ── */

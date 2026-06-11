@@ -5,7 +5,7 @@
     <div class="modal-panel w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden bg-surface-card shadow-2xl rounded-xl border border-border relative">
         <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
             <h3 class="text-h2 text-text-primary flex items-center gap-2">
-                <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
+                Vista Previa del Documento
             </h3>
             <button @click="showPreviewModal = false"
                 class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">

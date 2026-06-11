@@ -11,12 +11,76 @@ document.addEventListener('DOMContentLoaded', initIcons);
 document.addEventListener('livewire:navigated', initIcons);
 
 document.addEventListener('livewire:initialized', () => {
-    Livewire.hook('morph.updated', ({ el, component }) => {
-        if (window.lucide) {
-            // Se invoca sin parámetros para que escanee todo el DOM recién insertado
-            lucide.createIcons();
-        }
+    /**
+     * Livewire 4 - Solución profesional para iconos de Lucide.
+     *
+     * Por qué 'commit.succeed' y NO 'morph.updated':
+     * - morph.updated: se dispara POR CADA elemento morfado (puede ser 100 veces)
+     *   y el DOM puede estar aún a medio reemplazar cuando se llama.
+     * - commit.succeed: se dispara UNA SOLA VEZ por request, DESPUÉS de que todo
+     *   el DOM ha sido actualizado completamente. Es el momento correcto y seguro.
+     */
+    Livewire.hook('commit', ({ succeed }) => {
+        succeed(() => {
+            if (window.lucide) lucide.createIcons();
+        });
     });
+});
+
+document.addEventListener("alpine:init", () => {
+    // Estandarización de Gráficas con Chart.js
+    // Uso: x-data="chartCanvas((data) => ({ type: 'line', data: {...}, options: {...} }))"
+    Alpine.data("chartCanvas", (configCallback) => ({
+        chart: null,
+        chartData: [],
+        _observer: null,
+
+        init() {
+            this.chartData = JSON.parse(this.$el.getAttribute('data-chart') || '[]');
+
+            // Esperar a que el canvas esté en el DOM antes de renderizar
+            // (necesario en Livewire 4 con tabs @if que hacen round-trip al servidor)
+            this.waitForCanvas();
+
+            // Observar cambios de datos enviados por Livewire
+            this._observer = new MutationObserver(() => {
+                const raw = this.$el.getAttribute('data-chart');
+                if (!raw) return;
+                this.chartData = JSON.parse(raw);
+                this.renderChart();
+            });
+            this._observer.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
+        },
+
+        waitForCanvas(attempts = 0) {
+            const canvas = this.$el.querySelector('canvas');
+            if (canvas) {
+                this.renderChart();
+            } else if (attempts < 10) {
+                // Reintentar hasta 10 veces (~200ms total) en caso de que el DOM aún no esté listo
+                setTimeout(() => this.waitForCanvas(attempts + 1), 20);
+            }
+        },
+
+        renderChart() {
+            const canvas = this.$el.querySelector('canvas');
+            if (!canvas) return;
+
+            // Destruir instancia previa para evitar el error "Canvas is already in use"
+            const existingChart = window.Chart?.getChart(canvas);
+            if (existingChart) existingChart.destroy();
+
+            if (typeof window.Chart === 'undefined') return;
+
+            const config = configCallback(this.chartData);
+            this.chart = new Chart(canvas, config);
+        },
+
+        destroy() {
+            if (this._observer) this._observer.disconnect();
+            if (this.chart) this.chart.destroy();
+        }
+    }));
 });
 
 // Alpine component: Listado de Requisiciones

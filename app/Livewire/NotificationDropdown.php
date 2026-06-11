@@ -49,6 +49,7 @@ class NotificationDropdown extends Component
                 'action_text' => $notification->data['action_text'] ?? 'Ver',
                 'read_at' => $notification->read_at,
                 'created_at' => $notification->created_at->diffForHumans(),
+                'created_at_iso' => $notification->created_at->toISOString(),
             ]));
 
         $this->unreadCount = $user->unreadNotifications()->count();
@@ -80,7 +81,21 @@ class NotificationDropdown extends Component
         $this->loadNotifications();
     }
 
-    #[On('notification-received')]
+    public function getListeners(): array
+    {
+        $userId = auth()->id();
+        
+        $listeners = [
+            'notification-received' => 'refreshNotifications',
+        ];
+
+        if ($userId) {
+            $listeners["echo-private:App.Models.User.{$userId},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated"] = 'refreshNotifications';
+        }
+
+        return $listeners;
+    }
+
     public function refreshNotifications(): void
     {
         $this->loadNotifications();

@@ -68,9 +68,7 @@
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $users->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="name" label="Usuario" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="email" label="Correo Electrónico" :sortField="$sortField"
+                                <x-sortable-header field="name" label="Usuario / Correo" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="role_id" label="Rol" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -89,12 +87,8 @@
                                                 <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                             </td>
                                             <td>
-                                                <div class="flex flex-col">
-                                                    <span class="text-small font-semibold text-text-primary">{{ $user->name }}</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="text-small text-text-secondary">{{ $user->email }}</span>
+                                                <p class="font-semibold text-text-primary">{{ $user->name }}</p>
+                                                <p class="text-xs-fluid text-text-muted">{{ $user->email }}</p>
                                             </td>
                                             <td>
                                                 @if($user->role)
@@ -104,18 +98,9 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <button wire:click="toggleActive({{ $user->id }})"
-                                                    class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
-                                                            {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
-                                                            @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-80 cursor-pointer @else cursor-not-allowed opacity-50 @endif"
-                                                    title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
-                                                    aria-pressed="{{ $user->active ? 'true' : 'false' }}"
-                                                    @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
-                                                    <span class="badge-dot"></span>
-                                                    {{ $user->active ? 'Activo' : 'Inactivo' }}
-                                                </button>
+                                                <x-status-badge :status="$user->active ? 'activo' : 'inactivo'" :map="['activo' => 'success', 'inactivo' => 'danger']" />
                                             </td>
-                                            <td class="text-text-muted text-small">
+                                            <td class="text-body text-text-secondary">
                                                 {{ $user->created_at->format('d/m/Y') }}
                                             </td>
                                             <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
@@ -129,6 +114,12 @@
                                                             @if(auth()->user()->hasPermission('usuarios.editar'))
                                                                 <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">
                                                                     Editar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            
+                                                            @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
+                                                                <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">
+                                                                    {{ $user->active ? 'Desactivar' : 'Activar' }}
                                                                 </x-dropdown-link>
                                                             @endif
 
@@ -194,16 +185,7 @@
                             </div>
                             <div class="flex flex-col items-end">
                                 <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1 text-right">Estado</p>
-                                <button wire:click="toggleActive({{ $user->id }})"
-                                    class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
-                                            {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
-                                            @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-80 cursor-pointer @else cursor-not-allowed opacity-50 @endif"
-                                    title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
-                                    aria-pressed="{{ $user->active ? 'true' : 'false' }}"
-                                    @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
-                                    <span class="badge-dot"></span>
-                                    {{ $user->active ? 'Activo' : 'Inactivo' }}
-                                </button>
+                                <x-status-badge :status="$user->active ? 'activo' : 'inactivo'" :map="['activo' => 'success', 'inactivo' => 'danger']" />
                             </div>
                             <div class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
                                 <div class="flex items-center gap-1.5 text-text-secondary">
@@ -226,6 +208,12 @@
                                     @if(auth()->user()->hasPermission('usuarios.editar'))
                                         <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">
                                             Editar
+                                        </x-dropdown-link>
+                                    @endif
+                                    
+                                    @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
+                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">
+                                            {{ $user->active ? 'Desactivar' : 'Activar' }}
                                         </x-dropdown-link>
                                     @endif
                                     @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
@@ -335,20 +323,21 @@
     {{-- Modal Unificado Crear/Editar Usuario --}}
     @if($showModal)
         <x-modal show="showModal" :title="$editingId ? 'Editar Usuario' : 'Nuevo Usuario'">
-            <form wire:submit="saveUser" class="p-5 space-y-4">
+            <form wire:submit="saveUser" class="p-5 space-y-4" autocomplete="off">
                 <x-form-field label="Nombre completo" required error="{{ $errors->first('name') }}">
-                    <input wire:model="name" type="text" class="input" placeholder="Ej. Juan Pérez">
+                    <input wire:model="name" type="text" class="input" placeholder="Ej. Juan Pérez" autocomplete="off">
                 </x-form-field>
 
                 <x-form-field label="Correo electrónico" required error="{{ $errors->first('email') }}">
-                    <input wire:model="email" type="email" class="input" placeholder="ejemplo@empresa.com">
+                    <input wire:model="email" type="email" class="input" placeholder="ejemplo@empresa.com" autocomplete="off">
                 </x-form-field>
 
                 <div class="grid grid-cols-2 gap-4">
                     <x-form-field :label="$editingId ? 'Nueva Contraseña' : 'Contraseña'" :required="!$editingId"
                         error="{{ $errors->first('password') }}">
                         <input wire:model="password" type="password" class="input"
-                            placeholder="{{ $editingId ? 'Dejar en blanco para mantener actual' : 'Mínimo 6 caracteres' }}">
+                            placeholder="{{ $editingId ? 'Dejar en blanco para mantener actual' : 'Mínimo 6 caracteres' }}"
+                            autocomplete="new-password">
                     </x-form-field>
                     <x-form-field label="Rol asignado" required error="{{ $errors->first('role_id') }}">
                         <x-custom-select wire:model="role_id" :options="$roles->pluck('name', 'id')->toArray()"
