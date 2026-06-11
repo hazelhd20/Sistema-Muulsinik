@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ tab: @entangle('activeTab') }">
     @assets
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @endassets
@@ -14,43 +14,178 @@
     </x-page-header>
 
     {{-- Tabs --}}
-    <div class="flex items-center gap-1 mb-5 border-b border-border" x-data="{ tab: @entangle('activeTab') }">
+    <div class="tab-nav">
         <button @click="tab = 'overview'; $wire.set('activeTab', 'overview')"
-            :class="tab === 'overview' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
-            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <x-lucide-layout-dashboard class="w-3.5 h-3.5" /> Resumen
+            :class="tab === 'overview' ? 'active' : ''"
+            class="tab-btn">
+            Resumen
         </button>
         <button @click="tab = 'suppliers'; $wire.set('activeTab', 'suppliers')"
-            :class="tab === 'suppliers' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
-            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <x-lucide-building-2 class="w-3.5 h-3.5" /> Proveedores
+            :class="tab === 'suppliers' ? 'active' : ''"
+            class="tab-btn">
+            Proveedores
         </button>
         <button @click="tab = 'vendors'; $wire.set('activeTab', 'vendors')"
-            :class="tab === 'vendors' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
-            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <x-lucide-user-check class="w-3.5 h-3.5" /> Vendedores
+            :class="tab === 'vendors' ? 'active' : ''"
+            class="tab-btn">
+            Vendedores
         </button>
         <button @click="tab = 'products'; $wire.set('activeTab', 'products')"
-            :class="tab === 'products' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
-            class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <x-lucide-package class="w-3.5 h-3.5" /> Productos
+            :class="tab === 'products' ? 'active' : ''"
+            class="tab-btn">
+            Productos
         </button>
     </div>
 
     {{-- Skeleton de Carga --}}
     <div wire:loading wire:target="activeTab" class="w-full">
-        <div class="animate-pulse space-y-4">
+        
+        {{-- Skeleton Overview --}}
+        <div x-show="tab === 'overview'" class="space-y-4">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div class="h-24 bg-surface-hover rounded-xl"></div>
-                <div class="h-24 bg-surface-hover rounded-xl"></div>
-                <div class="h-24 bg-surface-hover rounded-xl"></div>
-                <div class="h-24 bg-surface-hover rounded-xl"></div>
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-5 flex items-center gap-4">
+                        <x-skeleton class="w-12 h-12 rounded-xl" />
+                        <div class="flex-1">
+                            <x-skeleton class="h-7 w-20 mb-2 rounded" />
+                            <x-skeleton class="h-3 w-32 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div class="lg:col-span-2 h-64 bg-surface-hover rounded-xl"></div>
-                <div class="h-64 bg-surface-hover rounded-xl"></div>
+                <div class="lg:col-span-2 card p-6 flex flex-col h-64">
+                    <div class="mb-4">
+                        <x-skeleton class="h-4 w-40 mb-2 rounded" />
+                        <x-skeleton class="h-3 w-24 rounded" />
+                    </div>
+                    <x-skeleton class="flex-1 w-full rounded-lg" />
+                </div>
+                <div class="card p-6 flex flex-col h-64">
+                    <x-skeleton class="h-4 w-40 mb-4 rounded" />
+                    <div class="flex-1 flex items-center justify-center">
+                        <x-skeleton class="w-32 h-32 rounded-full" />
+                    </div>
+                </div>
             </div>
-            <div class="h-96 bg-surface-hover rounded-xl mt-4"></div>
+            {{-- Overview Bottom Cards (Presupuesto vs Top Proyectos) --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                <div class="card p-6 flex flex-col h-80">
+                    <x-skeleton class="h-4 w-48 mb-6 rounded" />
+                    <div class="space-y-6">
+                        @for($i = 0; $i < 4; $i++)
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <x-skeleton class="h-3 w-32 rounded" />
+                                    <x-skeleton class="h-3 w-16 rounded" />
+                                </div>
+                                <x-skeleton class="h-2 w-full rounded-full" />
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+                <div class="card p-6 flex flex-col h-80">
+                    <x-skeleton class="h-4 w-40 mb-6 rounded" />
+                    <div class="space-y-4">
+                        @for($i = 0; $i < 5; $i++)
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <x-skeleton class="w-6 h-6 rounded" />
+                                    <div>
+                                        <x-skeleton class="h-4 w-32 mb-1 rounded" />
+                                        <x-skeleton class="h-3 w-20 rounded" />
+                                    </div>
+                                </div>
+                                <x-skeleton class="h-4 w-24 rounded" />
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Skeleton Suppliers / Vendors --}}
+        <div x-show="tab === 'suppliers' || tab === 'vendors'" style="display: none;" class="table-container min-h-[500px]">
+            <div class="px-4 py-3 border-b border-border">
+                <x-skeleton class="h-4 w-48 mb-2 rounded" />
+                <x-skeleton class="h-3 w-64 rounded" />
+            </div>
+            <div class="overflow-x-auto flex-1">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>
+                            <th><x-skeleton class="h-4 w-32 rounded" /></th>
+                            <th><x-skeleton class="h-4 w-24 rounded" /></th>
+                            <th class="text-center"><x-skeleton class="h-4 w-16 mx-auto rounded" /></th>
+                            <th class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 6; $i++)
+                            <tr>
+                                <td><x-skeleton class="h-6 w-6 rounded-lg" /></td>
+                                <td><x-skeleton class="h-4 w-48 rounded" /></td>
+                                <td><x-skeleton class="h-6 w-20 rounded-full" /></td>
+                                <td class="text-center"><x-skeleton class="h-4 w-8 mx-auto rounded" /></td>
+                                <td class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Skeleton Products --}}
+        <div x-show="tab === 'products'" style="display: none;" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2 table-container min-h-[500px]">
+                <div class="px-4 py-3 border-b border-border">
+                    <x-skeleton class="h-4 w-48 mb-2 rounded" />
+                    <x-skeleton class="h-3 w-64 rounded" />
+                </div>
+                <div class="overflow-x-auto flex-1">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>
+                                <th><x-skeleton class="h-4 w-40 rounded" /></th>
+                                <th><x-skeleton class="h-4 w-24 rounded" /></th>
+                                <th class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for($i = 0; $i < 6; $i++)
+                                <tr>
+                                    <td><x-skeleton class="h-6 w-6 rounded-lg" /></td>
+                                    <td>
+                                        <x-skeleton class="h-4 w-48 mb-1 rounded" />
+                                        <x-skeleton class="h-3 w-16 rounded" />
+                                    </td>
+                                    <td><x-skeleton class="h-6 w-24 rounded-full" /></td>
+                                    <td class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card p-6 flex flex-col min-h-[500px]">
+                <x-skeleton class="h-4 w-40 mb-4 rounded" />
+                <div class="flex-1 flex items-center justify-center">
+                    <x-skeleton class="w-48 h-48 rounded-full" />
+                </div>
+                <div class="mt-8 space-y-4">
+                    @for($i = 0; $i < 5; $i++)
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <x-skeleton class="w-3 h-3 rounded-full" />
+                                <x-skeleton class="w-24 h-3 rounded" />
+                            </div>
+                            <x-skeleton class="w-12 h-3 rounded" />
+                        </div>
+                    @endfor
+                </div>
+            </div>
         </div>
     </div>
 

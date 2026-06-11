@@ -112,7 +112,7 @@
 
         {{-- Footer --}}
         @if(!empty($notifications))
-            <div class="dropdown-footer">
+            <div class="dropdown-footer justify-center">
                 <a href="{{ url('/notificaciones') }}" wire:navigate
                     class="text-small text-primary-600 hover:text-primary-700 font-medium transition-colors">
                     Ver todas las notificaciones
