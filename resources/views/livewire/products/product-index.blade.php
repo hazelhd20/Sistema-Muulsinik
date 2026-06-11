@@ -55,7 +55,7 @@
     {{-- Products table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($products->isNotEmpty())
                     <table>
                         <thead>
@@ -112,12 +112,53 @@
                         message="Agrega productos para gestionar tu inventario." />
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($products->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @foreach($products as $product)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors group">
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <span class="font-bold text-text-primary text-body truncate block">{{ $product->canonical_name }}</span>
+                                @if($product->description)
+                                    <p class="text-xs-fluid text-text-muted mt-0.5 line-clamp-2">{{ $product->description }}</p>
+                                @endif
+                            </div>
+                            <div class="text-right shrink-0">
+                                @if($product->category)
+                                    <x-dynamic-badge :value="$product->category->name" />
+                                @else
+                                    <span class="text-text-muted text-xs-fluid">—</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                            <span class="font-medium text-text-secondary">Unidad de medida</span>
+                            @if($product->measure && $product->measure->abbreviation)
+                                <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
+                            @else
+                                <span>—</span>
+                            @endif
+                        </div>
+
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-button @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" variant="icon" icon="eye" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="openEditModal({{ $product->id }})" variant="icon-primary" icon="pencil" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="deleteProduct({{ $product->id }})" wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
@@ -150,6 +191,30 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <x-skeleton class="h-5 w-32 rounded" />
+                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
+                            </div>
+                            <x-skeleton class="h-5 w-20 rounded-full" />
+                        </div>
+                        <div class="flex justify-between items-center bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                            <x-skeleton class="h-4 w-24 rounded" />
+                            <x-skeleton class="h-5 w-16 rounded" />
+                        </div>
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

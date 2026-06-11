@@ -28,7 +28,7 @@
     {{-- Suppliers Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($suppliers->isNotEmpty())
                     <table>
                         <thead>
@@ -105,12 +105,56 @@
                         message="Agrega un proveedor para comenzar." />
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($suppliers->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @foreach($suppliers as $supplier)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors group">
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <span class="font-bold text-text-primary text-body truncate block">{{ $supplier->trade_name }}</span>
+                                @if($supplier->rfc)
+                                    <span class="text-xs-fluid text-text-muted font-mono mt-0.5 block">{{ $supplier->rfc }}</span>
+                                @endif
+                            </div>
+                            <div class="text-right shrink-0">
+                                @if($supplier->category)
+                                    <x-dynamic-badge :value="$supplier->category" />
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                            <div class="flex items-center gap-1.5 col-span-2">
+                                <i data-lucide="users" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span>{{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}</span>
+                            </div>
+                            
+                            @if($supplier->notes)
+                                <div class="col-span-2 flex items-start gap-1.5 mt-1">
+                                    <i data-lucide="sticky-note" class="w-3.5 h-3.5 shrink-0 mt-0.5"></i>
+                                    <span class="line-clamp-2">{{ $supplier->notes }}</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-button wire:click="viewVendors({{ $supplier->id }})" variant="icon" icon="users" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="openEditSupplierModal({{ $supplier->id }})" variant="icon-primary" icon="pencil" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
@@ -148,6 +192,30 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <x-skeleton class="h-5 w-32 rounded" />
+                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
+                            </div>
+                            <x-skeleton class="h-5 w-20 rounded-full" />
+                        </div>
+                        <div class="bg-surface-hover/50 p-3 rounded-xl border border-border/50 flex flex-col gap-2">
+                            <x-skeleton class="h-3 w-28 rounded" />
+                            <x-skeleton class="h-3 w-full rounded mt-1" />
+                        </div>
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>
@@ -195,12 +263,6 @@
     @if($showVendorsModal && $viewingSupplier)
         <x-modal show="showVendorsModal" title="Vendedores" :subtitle="$viewingSupplier->trade_name" maxWidth="md">
             <div class="p-6">
-                @if(session('vendor_success'))
-                    <div x-data
-                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('vendor_success') }}' }); $el.remove()"
-                        wire:key="toast-vendor-{{ microtime(true) }}">
-                    </div>
-                @endif
 
                 {{-- Existing vendors --}}
                 <div class="space-y-3 mb-4">
@@ -231,8 +293,12 @@
                                 placeholder="Nombre del vendedor *">
                         </x-form-field>
                         <div class="grid grid-cols-2 gap-3">
-                            <input wire:model="vendorPhone" type="tel" class="input" placeholder="Teléfono">
-                            <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
+                            <x-form-field error="{{ $errors->first('vendorPhone') }}">
+                                <input wire:model="vendorPhone" type="tel" class="input" placeholder="Teléfono">
+                            </x-form-field>
+                            <x-form-field error="{{ $errors->first('vendorEmail') }}">
+                                <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
+                            </x-form-field>
                         </div>
                         <div class="flex gap-2">
                             <x-button type="submit" variant="primary" target="saveVendor" class="text-xs-fluid">

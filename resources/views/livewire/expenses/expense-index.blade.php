@@ -43,7 +43,7 @@
     {{-- Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($expenses->isNotEmpty())
                     <table>
                         <thead>
@@ -107,12 +107,60 @@
                     </x-empty-state>
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($expenses->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @foreach($expenses as $expense)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors group">
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <span class="font-bold text-text-primary text-body truncate block">{{ $expense->concept }}</span>
+                                <p class="text-xs-fluid text-text-secondary mt-1 truncate">Por: {{ $expense->user->name ?? '—' }}</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="font-bold text-text-primary text-body block">${{ number_format($expense->amount, 2, '.', ',') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                            <div class="flex items-center gap-1.5 col-span-2">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span>{{ $expense->date->format('d/m/Y') }}</span>
+                            </div>
+                            
+                            <div class="col-span-2 mt-1">
+                                <span class="font-medium text-text-secondary mb-1 block">Proyecto:</span>
+                                @if($expense->is_distributed)
+                                    <x-badge variant="primary" icon="split">Distribuido</x-badge>
+                                @else
+                                    <span class="text-text-primary truncate block">{{ $expense->project->name ?? '—' }}</span>
+                                @endif
+                            </div>
+
+                            <div class="col-span-2 mt-1">
+                                <span class="font-medium text-text-secondary mb-1 block">Categoría:</span>
+                                <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            @if($expense->receipt_file)
+                                <x-button href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" variant="icon-primary" title="Ver comprobante" icon="file-text" class="text-xs-fluid w-8 h-8" />
+                            @endif
+                            <x-button wire:click="deleteExpense({{ $expense->id }})" wire:confirm="¿Eliminar este gasto? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
@@ -152,6 +200,30 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <x-skeleton class="h-5 w-32 rounded" />
+                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
+                            </div>
+                            <x-skeleton class="h-5 w-20 rounded" />
+                        </div>
+                        <div class="bg-surface-hover/50 p-3 rounded-xl border border-border/50 flex flex-col gap-2">
+                            <x-skeleton class="h-3 w-24 rounded" />
+                            <x-skeleton class="h-4 w-32 rounded mt-1" />
+                            <x-skeleton class="h-5 w-24 rounded-full mt-1" />
+                        </div>
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

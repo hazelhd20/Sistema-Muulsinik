@@ -1,208 +1,223 @@
-<div class="relative" x-data="{ open: @entangle('isOpen'), focused: false }" @click.away="open = false">
-    {{-- Input de búsqueda --}}
-    <div class="relative hidden sm:flex items-center">
-        <i data-lucide="search"
-            class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none"></i>
-        <input
-            type="search"
-            wire:model.live.debounce.300ms="query"
-            placeholder="Buscar"
-            id="global-search-input"
-            class="input pl-8 pr-10 w-72 h-8 py-0 text-small bg-surface-card"
-            x-ref="searchInput"
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="none"
-            spellcheck="false"
-            @keydown.esc="open = false; $wire.clear()"
-            @focus="focused = true; open = true"
-            @blur="focused = false"
-        >
-        <kbd x-show="!focused && !$wire.query" x-transition class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-text-muted bg-surface-hover rounded border border-border hidden lg:inline-block">
-            Ctrl+K
-        </kbd>
-        <button
-            x-show="$wire.query"
-            x-transition
-            @click="$wire.clear()"
-            type="button"
-            class="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-surface-hover text-text-muted"
-        >
-            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-        </button>
-    </div>
-
-    {{-- Dropdown de resultados --}}
-    <div
-        x-show="open"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
-        class="absolute top-full right-0 mt-2 w-[28rem] bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-50"
-        style="display: none;"
+<div x-data="{
+        open: @entangle('isOpen'),
+        selectedIndex: 0,
+        init() {
+            this.$watch('open', value => {
+                if (value) {
+                    this.$nextTick(() => {
+                        this.$refs.searchInput.focus();
+                        this.selectedIndex = 0;
+                    });
+                } else {
+                    $wire.clear();
+                }
+            });
+            // Ctrl+K / Cmd+K
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    this.open = true;
+                }
+            });
+            // Cerrar el modal automáticamente al navegar con wire:navigate
+            document.addEventListener('livewire:navigated', () => {
+                this.open = false;
+            });
+        },
+        focusNext() {
+            const items = this.getItems();
+            if (items.length === 0) return;
+            this.selectedIndex = (this.selectedIndex + 1) % items.length;
+            this.scrollToItem(items[this.selectedIndex]);
+        },
+        focusPrev() {
+            const items = this.getItems();
+            if (items.length === 0) return;
+            this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
+            this.scrollToItem(items[this.selectedIndex]);
+        },
+        selectCurrent() {
+            const items = this.getItems();
+            if (items[this.selectedIndex]) {
+                const link = items[this.selectedIndex].querySelector('a');
+                if (link) link.click();
+                else items[this.selectedIndex].click();
+            }
+        },
+        getItems() {
+            if (!this.$refs.results) return [];
+            return Array.from(this.$refs.results.querySelectorAll('[data-search-item]'));
+        },
+        scrollToItem(item) {
+            item.scrollIntoView({ block: 'nearest' });
+        }
+    }"
+    @keydown.escape.window="open = false"
+>
+    {{-- Unified Trigger Button (Icon Only) --}}
+    <button
+        type="button"
+        @click="open = true"
+        class="relative p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
+        title="Buscar (Ctrl+K)"
+        aria-label="Buscar"
     >
-        @php
-            $hasAnyResults = !empty($results['requisitions']) || !empty($results['suppliers']) || !empty($results['projects']) || !empty($results['products']);
-        @endphp
+        <i data-lucide="search" class="w-4 h-4"></i>
+    </button>
 
-        @if(!$hasAnyResults && strlen($query) >= 2)
-            <x-empty-state icon="search-x" title="No se encontraron resultados" message="Intenta con otros términos de búsqueda" class="py-8" />
-        @elseif(!$hasAnyResults && strlen($query) < 2)
-            <x-empty-state icon="search" title="¿Qué estás buscando?" message="Busca requisiciones, proveedores, proyectos o productos." class="py-8" />
-        @endif
-
-        <div class="max-h-[70vh] overflow-y-auto">
-            {{-- Requisiciones --}}
-            @if(!empty($results['requisitions']))
-                <div class="py-2">
-                    <div class="px-4 py-1.5 bg-surface-hover">
-                        <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Requisiciones</span>
-                    </div>
-                    @foreach($results['requisitions'] as $item)
-                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="primary" />
-                    @endforeach
-                </div>
-            @endif
-
-            {{-- Proveedores --}}
-            @if(!empty($results['suppliers']))
-                <div class="py-2 {{ !empty($results['requisitions']) ? 'border-t border-border' : '' }}">
-                    <div class="px-4 py-1.5 bg-surface-hover">
-                        <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Proveedores</span>
-                    </div>
-                    @foreach($results['suppliers'] as $item)
-                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="success" />
-                    @endforeach
-                </div>
-            @endif
-
-            {{-- Proyectos --}}
-            @if(!empty($results['projects']))
-                <div class="py-2 {{ !empty($results['requisitions']) || !empty($results['suppliers']) ? 'border-t border-border' : '' }}">
-                    <div class="px-4 py-1.5 bg-surface-hover">
-                        <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Proyectos</span>
-                    </div>
-                    @foreach($results['projects'] as $item)
-                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="warning" />
-                    @endforeach
-                </div>
-            @endif
-
-            {{-- Productos --}}
-            @if(!empty($results['products']))
-                <div class="py-2 {{ !empty($results['requisitions']) || !empty($results['suppliers']) || !empty($results['projects']) ? 'border-t border-border' : '' }}">
-                    <div class="px-4 py-1.5 bg-surface-hover">
-                        <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wide">Productos</span>
-                    </div>
-                    @foreach($results['products'] as $item)
-                        <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="info" />
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-        {{-- Footer --}}
-        @if($hasAnyResults)
-            <div class="px-4 py-2 bg-surface-hover border-t border-border flex items-center justify-between">
-                <div class="flex items-center gap-3 text-xs-fluid text-text-muted">
-                    <span><kbd class="px-1 py-0.5 bg-surface-card rounded border border-border">esc</kbd> cerrar</span>
-                </div>
-            </div>
-        @endif
-    </div>
-
-    {{-- Input móvil (visible solo en móvil) --}}
-    <div class="sm:hidden relative flex items-center">
-        <button
-            @click="open = true; $nextTick(() => $refs.mobileInput.focus())"
-            class="p-2 rounded-md text-text-secondary hover:bg-surface-hover transition"
-        >
-            <i data-lucide="search" class="w-5 h-5"></i>
-        </button>
-
+    {{-- Command Palette Modal --}}
+    <template x-teleport="body">
         <div
             x-show="open"
-            x-transition
-            class="fixed inset-0 z-[60] bg-surface-main"
+            class="relative z-[100]"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true"
             style="display: none;"
         >
-            <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
-                <div class="relative flex-1">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
-                    <input
-                        type="search"
-                        x-ref="mobileInput"
-                        wire:model.live.debounce.300ms="query"
-                        placeholder="Buscar..."
-                        class="input pl-10 w-full"
-                        autocomplete="off"
-                        autocorrect="off"
-                        autocapitalize="none"
-                        spellcheck="false"
-                        @keydown.esc="open = false; $wire.clear()"
-                    >
+            {{-- Backdrop --}}
+            <div
+                x-show="open"
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
+            ></div>
+
+            {{-- Modal Panel --}}
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto p-4 sm:p-6 md:p-20">
+                <div
+                    x-show="open"
+                    @click.away="open = false"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="mx-auto max-w-2xl transform divide-y divide-border overflow-hidden rounded-xl bg-surface-card shadow-2xl ring-1 ring-border transition-all flex flex-col"
+                >
+                    {{-- Input Header --}}
+                    <div class="relative flex items-center px-4 py-3">
+                        <i data-lucide="search" class="w-5 h-5 text-text-muted absolute left-4"></i>
+                        <input
+                            type="text"
+                            x-ref="searchInput"
+                            wire:model.live.debounce.300ms="query"
+                            @input="selectedIndex = 0"
+                            @keydown.arrow-down.prevent="focusNext()"
+                            @keydown.arrow-up.prevent="focusPrev()"
+                            @keydown.enter.prevent="selectCurrent()"
+                            class="w-full bg-transparent pl-10 pr-10 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-0 text-body border-0 h-10"
+                            placeholder="Buscar requisiciones, proyectos, proveedores..."
+                            autocomplete="off"
+                        >
+                        {{-- Clear Button --}}
+                        <button
+                            type="button"
+                            wire:loading.remove
+                            x-show="$wire.query"
+                            @click="$wire.clear(); $refs.searchInput.focus()"
+                            class="absolute right-4 text-text-muted hover:text-text-primary p-1 rounded-md transition"
+                        >
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    {{-- Results Body --}}
+                    @php
+                        $hasAnyResults = !empty($results['requisitions']) || !empty($results['suppliers']) || !empty($results['projects']) || !empty($results['products']);
+                    @endphp
+
+                    <div class="max-h-[60vh] overflow-y-auto p-2" x-ref="results">
+                        {{-- Skeletons de Carga --}}
+                        <div wire:loading wire:target="query" class="w-full">
+                            <div class="space-y-5 p-2">
+                                @for($i = 0; $i < 2; $i++)
+                                <div>
+                                    {{-- Título de categoría --}}
+                                    <x-skeleton class="h-3 w-24 rounded mb-3" />
+                                    {{-- Filas de resultado --}}
+                                    <div class="space-y-2">
+                                        @for($j = 0; $j < 2; $j++)
+                                        <div class="flex items-center gap-3 px-3 py-2">
+                                            <x-skeleton class="w-8 h-8 rounded-lg shrink-0" />
+                                            <div class="flex-1 space-y-2">
+                                                <x-skeleton class="h-3 w-2/5 rounded" />
+                                                <x-skeleton class="h-2.5 w-1/4 rounded" />
+                                            </div>
+                                        </div>
+                                        @endfor
+                                    </div>
+                                </div>
+                                @endfor
+                            </div>
+                        </div>
+
+                        {{-- Contenido de Resultados --}}
+                        <div wire:loading.remove wire:target="query">
+                            @if(!$hasAnyResults && strlen($query) >= 2)
+                                <x-empty-state icon="search-x" title="No encontramos resultados" class="py-14">
+                                    <p class="text-xs-fluid text-text-muted mt-2">
+                                        No pudimos encontrar nada para "<span class="font-semibold text-text-primary" x-text="$wire.query"></span>". Revisa la ortografía o intenta con otro término.
+                                    </p>
+                                </x-empty-state>
+                            @elseif(!$hasAnyResults && strlen($query) < 2)
+                                <x-empty-state icon="search" title="¿Qué estás buscando?" message="Busca requisiciones, proyectos, proveedores y productos escribiendo arriba." class="py-14" />
+                            @endif
+
+                            @if($hasAnyResults)
+                                @php
+                                    $globalIndex = 0;
+                                    $colorMap = [
+                                        'requisitions' => 'primary',
+                                        'projects' => 'warning',
+                                        'suppliers' => 'success',
+                                        'products' => 'info',
+                                    ];
+                                @endphp
+
+                                @foreach(['requisitions' => 'Requisiciones', 'projects' => 'Proyectos', 'suppliers' => 'Proveedores', 'products' => 'Productos'] as $key => $label)
+                                    @if(!empty($results[$key]))
+                                        <div class="mb-4 last:mb-0">
+                                            <h2 class="px-3 py-1 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">{{ $label }}</h2>
+                                            <div class="mt-2 space-y-1">
+                                                @foreach($results[$key] as $item)
+                                                    <x-search-result-item 
+                                                        data-search-item
+                                                        :url="$item['url']" 
+                                                        :icon="$item['icon']" 
+                                                        :title="$item['title']" 
+                                                        :subtitle="$item['subtitle']" 
+                                                        :color="$colorMap[$key]"
+                                                        class="transition-colors block w-full outline-none"
+                                                        x-bind:class="{ 'bg-surface-hover ring-1 ring-border': selectedIndex === {{ $globalIndex }} }"
+                                                        @mouseenter="selectedIndex = {{ $globalIndex }}"
+                                                        @keydown.enter.prevent="selectCurrent()"
+                                                    />
+                                                    @php $globalIndex++; @endphp
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Footer / Legend --}}
+                    <div class="flex flex-wrap items-center justify-between bg-surface-hover px-4 py-2.5 text-xs text-text-muted border-t border-border dropdown-footer">
+                        <div class="flex gap-4">
+                            <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↵</kbd> para seleccionar</span>
+                            <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↓</kbd><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↑</kbd> para navegar</span>
+                        </div>
+                        <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">esc</kbd> para cerrar</span>
+                    </div>
                 </div>
-                <button @click="open = false; $wire.clear()" class="text-small text-text-secondary">Cancelar</button>
-            </div>
-
-            <div class="overflow-y-auto h-[calc(100vh-4rem)]">
-                @php
-                    $hasAnyResultsMobile = !empty($results['requisitions']) || !empty($results['suppliers']) || !empty($results['projects']) || !empty($results['products']);
-                @endphp
-
-                @if(!$hasAnyResultsMobile && strlen($query) >= 2)
-                    <x-empty-state icon="search-x" title="No se encontraron resultados" class="py-8" />
-                @elseif(!$hasAnyResultsMobile && strlen($query) < 2)
-                    <x-empty-state icon="search" title="Explora tu sistema" message="Busca cualquier recurso por nombre o identificador." class="py-8" />
-                @endif
-
-                @if(!empty($results['requisitions']))
-                    <div class="py-2">
-                        <div class="px-4 py-2 bg-surface-hover">
-                            <span class="text-xs-fluid font-semibold text-text-muted uppercase">Requisiciones</span>
-                        </div>
-                        @foreach($results['requisitions'] as $item)
-                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="primary" :isMobile="true" />
-                        @endforeach
-                    </div>
-                @endif
-
-                @if(!empty($results['suppliers']))
-                    <div class="py-2">
-                        <div class="px-4 py-2 bg-surface-hover">
-                            <span class="text-xs-fluid font-semibold text-text-muted uppercase">Proveedores</span>
-                        </div>
-                        @foreach($results['suppliers'] as $item)
-                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="success" :isMobile="true" />
-                        @endforeach
-                    </div>
-                @endif
-
-                @if(!empty($results['projects']))
-                    <div class="py-2">
-                        <div class="px-4 py-2 bg-surface-hover">
-                            <span class="text-xs-fluid font-semibold text-text-muted uppercase">Proyectos</span>
-                        </div>
-                        @foreach($results['projects'] as $item)
-                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="warning" :isMobile="true" />
-                        @endforeach
-                    </div>
-                @endif
-
-                @if(!empty($results['products']))
-                    <div class="py-2">
-                        <div class="px-4 py-2 bg-surface-hover">
-                            <span class="text-xs-fluid font-semibold text-text-muted uppercase">Productos</span>
-                        </div>
-                        @foreach($results['products'] as $item)
-                            <x-search-result-item :url="$item['url']" :icon="$item['icon']" :title="$item['title']" :subtitle="$item['subtitle']" color="info" :isMobile="true" />
-                        @endforeach
-                    </div>
-                @endif
             </div>
         </div>
-    </div>
+    </template>
 </div>

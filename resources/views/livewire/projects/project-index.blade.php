@@ -56,7 +56,7 @@
     <div class="relative min-h-[200px] mb-5">
         <div wire:loading.class="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage"
             class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($projects->isNotEmpty())
                     <table>
                         <thead>
@@ -136,12 +136,66 @@
                         message="Crea tu primer proyecto para comenzar." />
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($projects->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @foreach($projects as $project)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors group">
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <span class="font-bold text-text-primary text-body truncate block">{{ $project->name }}</span>
+                                <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $project->client ?? 'Sin cliente' }}</p>
+                            </div>
+                            <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
+                                <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                            <div>
+                                <p class="mb-0.5 text-[10px] uppercase font-semibold">Presupuesto</p>
+                                <span class="font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</span>
+                            </div>
+                            <div>
+                                <p class="mb-0.5 text-[10px] uppercase font-semibold">Gastado</p>
+                                <span class="text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
+                            </div>
+                            <div class="col-span-2 mt-1">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] font-medium text-text-secondary">Ejecución</span>
+                                    <span class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-surface-hover rounded-full overflow-hidden">
+                                    @php
+                                        $percent = min($project->budget_used_percent, 100);
+                                        $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
+                                    @endphp
+                                    <div class="{{ $barColor }} h-full rounded-full transition-all" style="width: {{ $percent }}%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 col-span-2 mt-1">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span>Inicio: {{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-button @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" variant="icon" icon="eye" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="openEditModal({{ $project->id }})" variant="icon-primary" icon="pencil" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="deleteProject({{ $project->id }})" wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
@@ -185,6 +239,33 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <x-skeleton class="h-5 w-32 rounded" />
+                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
+                            </div>
+                            <x-skeleton class="h-6 w-20 rounded-full" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                            <x-skeleton class="h-4 w-20 rounded" />
+                            <x-skeleton class="h-4 w-20 rounded" />
+                            <div class="col-span-2 mt-1">
+                                <x-skeleton class="h-1.5 w-full rounded-full" />
+                            </div>
+                            <x-skeleton class="h-3 w-32 rounded col-span-2 mt-1" />
+                        </div>
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

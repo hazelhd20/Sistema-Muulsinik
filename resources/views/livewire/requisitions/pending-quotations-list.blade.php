@@ -3,9 +3,9 @@
         <div class="space-y-3">
             @foreach($pendingQuotations as $pq)
                 <div wire:key="pending-quotation-{{ $pq->id }}"
-                     class="flex items-center justify-between p-4 rounded-xl border bg-surface-card border-border hover:bg-surface-hover transition-colors shadow-sm">
+                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border bg-surface-card border-border hover:bg-surface-hover transition-colors shadow-sm">
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-start sm:items-center gap-3 w-full sm:w-auto">
                         @if($pq->isProcessing() || $pq->status === 'pending')
                             {{-- Estado: procesando --}}
                             <div class="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 shadow-sm">
@@ -56,7 +56,7 @@
                         @endif
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-0 border-border/50 sm:border-transparent mt-1 sm:mt-0">
                         {{-- Descartar con confirm-modal (SVG Nativo en slot para prevenir parpadeo) --}}
                         <x-button
                             @click="$dispatch('confirm-action', {

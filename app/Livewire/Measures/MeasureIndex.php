@@ -107,8 +107,11 @@ class MeasureIndex extends Component
     #[Title('Catálogo de Medidas')]
     public function render()
     {
-        $measures = Measure::where('name', 'like', '%'.$this->search.'%')
-            ->orWhere('abbreviation', 'like', '%'.$this->search.'%')
+        $measures = Measure::where(function ($q) {
+                $q->where('name', 'like', '%'.$this->search.'%')
+                  ->orWhere('abbreviation', 'like', '%'.$this->search.'%');
+            })
+            ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 

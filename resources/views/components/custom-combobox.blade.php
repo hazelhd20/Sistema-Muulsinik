@@ -162,10 +162,15 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             :style="{ minWidth: $refs.input?.offsetWidth + 'px' }"
-            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] max-h-64 overflow-y-auto"
+            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] max-h-64 overflow-hidden"
             style="display: none;"
-        >
-        <div class="py-1" x-ref="listbox">
+        @if(isset($header))
+            <div class="dropdown-header">
+                {{ $header }}
+            </div>
+        @endif
+
+        <div class="py-1 flex-1 overflow-y-auto" x-ref="listbox">
             <template x-if="filteredOptions.length > 0">
                 <template x-for="(opt, index) in filteredOptions" :key="index">
                     <div
@@ -187,6 +192,12 @@
                 </div>
             </template>
         </div>
+
+        @if(isset($footer))
+            <div class="dropdown-footer">
+                {{ $footer }}
+            </div>
+        @endif
         </div>
     </template>
 </div>

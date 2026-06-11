@@ -28,7 +28,6 @@ class GlobalSearch extends Component
     {
         if (strlen($this->query) < 2) {
             $this->results = [];
-            $this->isOpen = false;
 
             return;
         }
@@ -48,7 +47,7 @@ class GlobalSearch extends Component
                 'id' => $item->id,
                 'title' => $item->number,
                 'subtitle' => $item->project?->name ?? 'Sin proyecto',
-                'url' => url('/requisiciones'),
+                'url' => route('requisiciones.show', $item->id),
                 'type' => 'requisition',
                 'typeLabel' => 'Requisición',
                 'icon' => 'clipboard-list',
@@ -65,24 +64,26 @@ class GlobalSearch extends Component
                 'id' => $item->id,
                 'title' => $item->trade_name,
                 'subtitle' => $item->legal_name ?: $item->rfc,
-                'url' => url('/proveedores'),
+                'url' => route('proveedores.index', ['search' => $item->trade_name]),
                 'type' => 'supplier',
                 'typeLabel' => 'Proveedor',
                 'icon' => 'truck',
             ])
             ->toArray();
 
-        // Buscar proyectos
-        $projects = Project::where('name', 'like', $searchTerm)
-            ->orWhere('description', 'like', $searchTerm)
+        // Buscar proyectos (solo activos)
+        $projects = Project::where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                  ->orWhere('description', 'like', $searchTerm);
+            })
             ->where('status', 'activo')
             ->limit(self::RESULTS_LIMIT)
             ->get()
             ->map(fn ($item) => [
                 'id' => $item->id,
                 'title' => $item->name,
-                'subtitle' => 'Presupuesto: $'.number_format($item->total_budget, 2),
-                'url' => url('/proyectos'),
+                'subtitle' => 'Presupuesto: $'.number_format(floatval($item->total_budget), 2),
+                'url' => route('proyectos.show', $item->id),
                 'type' => 'project',
                 'typeLabel' => 'Proyecto',
                 'icon' => 'hard-hat',
@@ -102,7 +103,7 @@ class GlobalSearch extends Component
                 'id' => $item->id,
                 'title' => $item->name,
                 'subtitle' => $item->category?->name ?? 'Sin categoría',
-                'url' => url('/productos'),
+                'url' => route('productos.index', ['search' => $item->name]),
                 'type' => 'product',
                 'typeLabel' => 'Producto',
                 'icon' => 'package',
@@ -115,16 +116,12 @@ class GlobalSearch extends Component
             'projects' => $projects,
             'products' => $products,
         ];
-
-        $hasResults = ! empty($requisitions) || ! empty($suppliers) || ! empty($projects) || ! empty($products);
-        $this->isOpen = $hasResults;
     }
 
     public function clear(): void
     {
         $this->query = '';
         $this->results = [];
-        $this->isOpen = false;
     }
 
     #[On('open-global-search')]

@@ -102,6 +102,7 @@ class CategoryIndex extends Component
     public function render()
     {
         $categories = Category::where('name', 'like', '%'.$this->search.'%')
+            ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 

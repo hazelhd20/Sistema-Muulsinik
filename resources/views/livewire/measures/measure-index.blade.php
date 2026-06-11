@@ -36,7 +36,7 @@
     {{-- Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($measures->isNotEmpty())
                     <table>
                         <thead>
@@ -45,6 +45,7 @@
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
+                                <th>Productos</th>
                                 <th class="actions">Acciones</th>
                             </tr>
                         </thead>
@@ -57,6 +58,13 @@
                                             <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
                                         @else
                                             <span class="text-text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($measure->products_count > 0)
+                                            <x-badge variant="info">{{ $measure->products_count }} productos</x-badge>
+                                        @else
+                                            <x-badge variant="secondary">Sin productos</x-badge>
                                         @endif
                                     </td>
                                     <td class="actions">
@@ -75,17 +83,47 @@
                     <x-empty-state icon="ruler" title="No se encontraron medidas." />
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($measures->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-3 mt-2">
+                @foreach($measures as $measure)
+                    <div class="card p-4 flex justify-between items-center relative overflow-hidden transition-colors group">
+                        
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-bold text-text-primary text-body truncate block">{{ $measure->name }}</span>
+                                @if($measure->abbreviation)
+                                    <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
+                                @endif
+                            </div>
+                            @if($measure->products_count > 0)
+                                <x-badge variant="info">{{ $measure->products_count }} productos</x-badge>
+                            @else
+                                <x-badge variant="secondary">Sin productos</x-badge>
+                            @endif
+                        </div>
+
+                        <div class="flex justify-end gap-1 shrink-0 ml-3">
+                            <x-button wire:click="openEditModal({{ $measure->id }})" variant="icon-primary" icon="pencil" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="delete({{ $measure->id }})" wire:confirm="¿Eliminar esta medida? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
                             <th>Nombre</th>
                             <th>Abreviación</th>
+                            <th>Productos</th>
                             <th class="actions">Acciones</th>
                         </tr>
                     </thead>
@@ -98,6 +136,9 @@
                                 <td>
                                     <x-skeleton class="h-5  rounded-full w-16" />
                                 </td>
+                                <td>
+                                    <x-skeleton class="h-5  rounded-full w-24" />
+                                </td>
                                 <td class="actions justify-end flex gap-1">
                                     <x-skeleton class="w-8 h-8  rounded" />
                                     <x-skeleton class="w-8 h-8  rounded" />
@@ -106,6 +147,25 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-3 mt-2">
+                @for($i = 0; $i < 5; $i++)
+                    <div class="card p-4 flex justify-between items-center relative overflow-hidden bg-surface-main">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <x-skeleton class="h-5 w-24 rounded" />
+                                <x-skeleton class="h-5 w-12 rounded-full" />
+                            </div>
+                            <x-skeleton class="h-5 w-24 rounded-full" />
+                        </div>
+                        <div class="flex justify-end gap-1 shrink-0 ml-3">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

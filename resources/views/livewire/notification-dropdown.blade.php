@@ -1,7 +1,7 @@
 <div class="relative" x-data="{ open: false, id: $id('dropdown-menu') }" x-id="['dropdown-menu']" @close.stop="open = false" @dropdown-opened.window="if ($event.detail.id !== id) open = false">
     {{-- Botón de notificaciones (wire:ignore para prevenir parpadeo del icono de campana) --}}
     <button @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" x-ref="trigger" wire:ignore.self
-        class="relative p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition"
+        class="relative p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
         title="Notificaciones">
         <i data-lucide="bell" class="w-4 h-4"></i>
 
@@ -30,8 +30,8 @@
             class="absolute z-[100] w-80 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden"
             style="display: none;">
         {{-- Header --}}
-        <div class="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-hover">
-            <h3 class="text-small font-semibold text-text-primary">Notificaciones</h3>
+        <div class="dropdown-header">
+            <h3 class="dropdown-header-title">Notificaciones</h3>
             @if($unreadCount > 0)
                 <button wire:click="markAllAsRead"
                     class="text-xs-fluid text-primary-600 hover:text-primary-700 font-medium transition-colors">
@@ -97,7 +97,7 @@
 
         {{-- Footer --}}
         @if(!empty($notifications))
-            <div class="px-4 py-2 bg-surface-hover border-t border-border text-center">
+            <div class="dropdown-footer">
                 <a href="{{ url('/notificaciones') }}" wire:navigate
                     class="text-small text-primary-600 hover:text-primary-700 font-medium transition-colors">
                     Ver todas las notificaciones

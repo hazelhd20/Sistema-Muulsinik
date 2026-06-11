@@ -36,12 +36,13 @@
     {{-- Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($categories->isNotEmpty())
                     <table>
                         <thead>
                             <tr>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <th>Productos</th>
                                 <th class="actions">Acciones</th>
                             </tr>
                         </thead>
@@ -50,6 +51,13 @@
                                 <tr wire:key="category-row-{{ $category->id }}">
                                     <td class="font-medium text-text-primary">
                                         {{ $category->name }}
+                                    </td>
+                                    <td>
+                                        @if($category->products_count > 0)
+                                            <x-badge variant="info">{{ $category->products_count }} productos</x-badge>
+                                        @else
+                                            <x-badge variant="secondary">Sin productos</x-badge>
+                                        @endif
                                     </td>
                                     <td class="actions">
                                         <div class="flex items-center justify-end gap-1">
@@ -67,16 +75,41 @@
                     <x-empty-state icon="layers" title="No se encontraron categorías." />
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($categories->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-3 mt-2">
+                @foreach($categories as $category)
+                    <div class="card p-4 flex justify-between items-center relative overflow-hidden transition-colors group">
+                        
+                        <div class="min-w-0 flex-1">
+                            <span class="font-bold text-text-primary text-body truncate block mb-1">{{ $category->name }}</span>
+                            @if($category->products_count > 0)
+                                <x-badge variant="info">{{ $category->products_count }} productos</x-badge>
+                            @else
+                                <x-badge variant="secondary">Sin productos</x-badge>
+                            @endif
+                        </div>
+
+                        <div class="flex justify-end gap-1 shrink-0 ml-3">
+                            <x-button wire:click="openEditModal({{ $category->id }})" variant="icon-primary" icon="pencil" class="text-xs-fluid w-8 h-8" />
+                            <x-button wire:click="delete({{ $category->id }})" wire:confirm="¿Eliminar esta categoría? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
                             <th>Nombre</th>
+                            <th>Productos</th>
                             <th class="actions">Acciones</th>
                         </tr>
                     </thead>
@@ -86,6 +119,9 @@
                                 <td>
                                     <x-skeleton class="h-4  rounded w-48" />
                                 </td>
+                                <td>
+                                    <x-skeleton class="h-5  rounded-full w-24" />
+                                </td>
                                 <td class="actions justify-end flex gap-1">
                                     <x-skeleton class="w-8 h-8  rounded" />
                                     <x-skeleton class="w-8 h-8  rounded" />
@@ -94,6 +130,22 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-3 mt-2">
+                @for($i = 0; $i < 5; $i++)
+                    <div class="card p-4 flex justify-between items-center relative overflow-hidden bg-surface-main">
+                        <div class="flex-1">
+                            <x-skeleton class="h-5 w-32 rounded mb-2" />
+                            <x-skeleton class="h-5 w-24 rounded-full" />
+                        </div>
+                        <div class="flex justify-end gap-1 shrink-0 ml-3">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

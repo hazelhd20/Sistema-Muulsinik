@@ -13,6 +13,7 @@ use App\Services\DataNormalizerService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,6 +21,7 @@ class ProductIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
+    #[Url(as: 'search')]
     public string $search = '';
 
     public string $categoryFilter = '';

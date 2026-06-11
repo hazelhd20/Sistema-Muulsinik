@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Measure extends Model
 {
@@ -32,5 +33,10 @@ class Measure extends Model
     public static function getOptionsArray(): array
     {
         return static::orderBy('name')->pluck('name', 'id')->toArray();
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 }

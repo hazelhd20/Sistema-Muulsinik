@@ -110,7 +110,7 @@
         <div wire:loading.class="hidden"
             wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
             class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($requisitions->isNotEmpty())
                     <table>
                         <thead class="bg-surface-main/50 border-b border-border">
@@ -275,13 +275,71 @@
                         message="Crea una requisición o sube una cotización para comenzar." />
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($requisitions->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @foreach($requisitions as $req)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                         :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         wire:key="req-mobile-card-{{ $req->id }}">
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex items-start gap-3">
+                                <div class="pt-0.5">
+                                    <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="font-bold text-text-primary text-body">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                        <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                    </div>
+                                    <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $req->project->name ?? 'Sin proyecto' }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="font-bold text-text-primary tabular-nums text-body">${{ number_format($req->total, 2, '.', ',') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span>{{ $req->date?->format('d/m/Y') }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 truncate">
+                                <i data-lucide="user" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span class="truncate">{{ $req->creator->name ?? '—' }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 truncate col-span-2 mt-0.5">
+                                <i data-lucide="building-2" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span class="truncate">{{ $req->vendor?->name ?? 'Sin proveedor' }}</span>
+                            </div>
+                        </div>
+
+                        @if($req->status === 'rechazada' && $req->rejection_comment)
+                            <div class="bg-danger-50 text-danger-700 text-xs-fluid p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
+                                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                                <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
+                            </div>
+                        @endif
+
+                        <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
+                            <x-button @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" variant="secondary" icon="eye" class="text-xs-fluid py-1.5 px-3">
+                                Ver Detalles
+                            </x-button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden"
             wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
@@ -331,6 +389,35 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex items-start gap-3">
+                                <x-skeleton class="w-4 h-4 rounded mt-0.5" />
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <x-skeleton class="h-5 w-20 rounded" />
+                                        <x-skeleton class="h-5 w-16 rounded-full" />
+                                    </div>
+                                    <x-skeleton class="h-3 w-32 rounded mt-2" />
+                                </div>
+                            </div>
+                            <x-skeleton class="h-5 w-16 rounded" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                            <x-skeleton class="h-3 w-24 rounded" />
+                            <x-skeleton class="h-3 w-28 rounded" />
+                            <x-skeleton class="h-3 w-40 rounded col-span-2" />
+                        </div>
+                        <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
+                            <x-skeleton class="h-8 w-24 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

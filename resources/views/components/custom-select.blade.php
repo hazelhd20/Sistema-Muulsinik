@@ -76,8 +76,8 @@
             style="display: none;"
         >
         <!-- Search Input -->
-        <div x-show="Object.keys(options).length >= {{ $minSearch }}" class="p-2 border-b border-border sticky top-0 bg-surface-card z-10">
-            <div class="relative">
+        <div x-show="Object.keys(options).length >= {{ $minSearch }}" class="dropdown-header sticky top-0 z-10 p-2">
+            <div class="relative w-full">
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted"></i>
                 <input 
                     x-ref="searchInput"

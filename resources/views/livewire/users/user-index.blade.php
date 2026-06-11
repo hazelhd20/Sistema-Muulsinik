@@ -36,7 +36,7 @@
     {{-- Users Table --}}
     <div class="relative min-h-[200px]">
         <div wire:loading.class="hidden" wire:target="search, roleFilter, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 @if($users->isNotEmpty())
                     <table>
                         <thead>
@@ -116,12 +116,60 @@
                     </x-empty-state>
                 @endif
             </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            @if($users->isNotEmpty())
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @foreach($users as $user)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors group">
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <span class="font-bold text-text-primary text-body truncate block">{{ $user->name }}</span>
+                                <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $user->email }}</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                @if($user->role)
+                                    <x-dynamic-badge :value="$user->role->name" />
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                            <span class="font-medium text-text-secondary">Estado</span>
+                            <button wire:click="toggleActive({{ $user->id }})"
+                                class="badge border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500
+                                        {{ $user->active ? 'badge-success border-success-border' : 'badge-danger border-danger-border' }}
+                                        @if(auth()->id() !== $user->id && auth()->user()->hasPermission('usuarios.editar')) hover:opacity-80 cursor-pointer @else cursor-not-allowed opacity-50 @endif"
+                                title="{{ $user->active ? 'Clic para desactivar' : 'Clic para activar' }}"
+                                aria-pressed="{{ $user->active ? 'true' : 'false' }}"
+                                @if(auth()->id() === $user->id || !auth()->user()->hasPermission('usuarios.editar')) disabled @endif>
+                                <span class="badge-dot"></span>
+                                {{ $user->active ? 'Activo' : 'Inactivo' }}
+                            </button>
+                        </div>
+
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            @if(auth()->user()->hasPermission('usuarios.editar'))
+                                <x-button wire:click="openEditModal({{ $user->id }})" variant="icon-primary" title="Editar" icon="pencil" class="text-xs-fluid w-8 h-8" />
+                            @endif
+
+                            @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                <x-button wire:click="deleteUser({{ $user->id }})"
+                                    wire:confirm="¿Eliminar este usuario? Esta acción no puede deshacerse."
+                                    variant="icon-danger" title="Eliminar" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container">
+            <div class="table-container hidden md:block">
                 <table>
                     <thead>
                         <tr>
@@ -157,6 +205,29 @@
                         @endfor
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Skeletons Móviles --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <x-skeleton class="h-5 w-32 rounded" />
+                                <x-skeleton class="h-3 w-40 rounded mt-1.5" />
+                            </div>
+                            <x-skeleton class="h-5 w-20 rounded-full" />
+                        </div>
+                        <div class="flex justify-between items-center bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                            <x-skeleton class="h-4 w-16 rounded" />
+                            <x-skeleton class="h-6 w-20 rounded-full" />
+                        </div>
+                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
+                            <x-skeleton class="h-8 w-8 rounded" />
+                            <x-skeleton class="h-8 w-8 rounded" />
+                        </div>
+                    </div>
+                @endfor
             </div>
         </div>
     </div>

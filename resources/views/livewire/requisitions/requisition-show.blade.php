@@ -138,7 +138,7 @@
                 <x-badge variant="secondary">{{ $requisition->items->count() }}</x-badge>
             </div>
 
-            <div class="table-embedded border-t-0 border-x-0 rounded-none">
+            <div class="table-embedded border-t-0 border-x-0 rounded-none overflow-x-auto">
                 <table>
                     <thead>
                         <tr>
