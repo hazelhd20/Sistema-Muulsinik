@@ -106,7 +106,7 @@
                         <input
                             type="text"
                             x-ref="searchInput"
-                            wire:model.live.debounce.300ms="query"
+                            wire:model.live.debounce.400ms="query"
                             @input="selectedIndex = 0"
                             @keydown.arrow-down.prevent="focusNext()"
                             @keydown.arrow-up.prevent="focusPrev()"
@@ -135,19 +135,24 @@
                     <div class="max-h-[60vh] overflow-y-auto p-2" x-ref="results">
                         {{-- Skeletons de Carga --}}
                         <div wire:loading wire:target="query" class="w-full">
-                            <div class="space-y-5 p-2">
+                            <div class="space-y-4 p-2">
                                 @for($i = 0; $i < 2; $i++)
                                 <div>
                                     {{-- Título de categoría --}}
-                                    <x-skeleton class="h-3 w-24 rounded mb-3" />
+                                    <div class="px-3 py-1 mb-2">
+                                        <x-skeleton class="h-2.5 w-24 rounded" />
+                                    </div>
                                     {{-- Filas de resultado --}}
-                                    <div class="space-y-2">
+                                    <div class="space-y-1">
                                         @for($j = 0; $j < 2; $j++)
-                                        <div class="flex items-center gap-3 px-3 py-2">
+                                        <div class="flex items-center gap-3 px-4 py-2.5 opacity-{{ 100 - ($j * 30) }}">
                                             <x-skeleton class="w-8 h-8 rounded-lg shrink-0" />
                                             <div class="flex-1 space-y-2">
-                                                <x-skeleton class="h-3 w-2/5 rounded" />
-                                                <x-skeleton class="h-2.5 w-1/4 rounded" />
+                                                <div class="flex items-center gap-2">
+                                                    <x-skeleton class="h-3 w-1/3 rounded" />
+                                                    <x-skeleton class="h-3 w-8 rounded-full" />
+                                                </div>
+                                                <x-skeleton class="h-2 w-1/4 rounded" />
                                             </div>
                                         </div>
                                         @endfor
@@ -166,21 +171,31 @@
                                     </p>
                                 </x-empty-state>
                             @elseif(!$hasAnyResults && strlen($query) < 2)
-                                <x-empty-state icon="search" title="¿Qué estás buscando?" message="Busca requisiciones, proyectos, proveedores y productos escribiendo arriba." class="py-14" />
+                                <div class="py-6 px-4">
+                                    <h3 class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-3">Acciones Rápidas</h3>
+                                    <div class="space-y-1">
+                                        <a href="{{ route('requisiciones.index') }}" wire:navigate class="flex items-center gap-3 px-3 py-2 hover:bg-surface-hover transition-colors group rounded-md">
+                                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0"><x-lucide-clipboard-list class="w-4 h-4 text-primary-600" /></div>
+                                            <div class="min-w-0 flex-1"><p class="text-small font-medium text-text-primary group-hover:text-primary-600 transition-colors">Crear Requisición</p></div>
+                                        </a>
+                                        <a href="{{ route('proyectos.index') }}" wire:navigate class="flex items-center gap-3 px-3 py-2 hover:bg-surface-hover transition-colors group rounded-md">
+                                            <div class="w-8 h-8 rounded-lg bg-warning-light flex items-center justify-center shrink-0"><x-lucide-hard-hat class="w-4 h-4 text-warning" /></div>
+                                            <div class="min-w-0 flex-1"><p class="text-small font-medium text-text-primary group-hover:text-primary-600 transition-colors">Ver Proyectos Activos</p></div>
+                                        </a>
+                                        <a href="{{ route('productos.index') }}" wire:navigate class="flex items-center gap-3 px-3 py-2 hover:bg-surface-hover transition-colors group rounded-md">
+                                            <div class="w-8 h-8 rounded-lg bg-info-light flex items-center justify-center shrink-0"><x-lucide-package class="w-4 h-4 text-info" /></div>
+                                            <div class="min-w-0 flex-1"><p class="text-small font-medium text-text-primary group-hover:text-primary-600 transition-colors">Catálogo de Productos</p></div>
+                                        </a>
+                                    </div>
+                                </div>
                             @endif
 
                             @if($hasAnyResults)
                                 @php
                                     $globalIndex = 0;
-                                    $colorMap = [
-                                        'requisitions' => 'primary',
-                                        'projects' => 'warning',
-                                        'suppliers' => 'success',
-                                        'products' => 'info',
-                                    ];
                                 @endphp
 
-                                @foreach(['requisitions' => 'Requisiciones', 'projects' => 'Proyectos', 'suppliers' => 'Proveedores', 'products' => 'Productos'] as $key => $label)
+                                @foreach($categories as $key => $label)
                                     @if(!empty($results[$key]))
                                         <div class="mb-4 last:mb-0">
                                             <h2 class="px-3 py-1 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">{{ $label }}</h2>
@@ -193,6 +208,7 @@
                                                         :title="$item['title']" 
                                                         :subtitle="$item['subtitle']" 
                                                         :color="$colorMap[$key]"
+                                                        :typeLabel="$item['typeLabel'] ?? null"
                                                         class="transition-colors block w-full outline-none"
                                                         x-bind:class="{ 'bg-surface-hover ring-1 ring-border': selectedIndex === {{ $globalIndex }} }"
                                                         @mouseenter="selectedIndex = {{ $globalIndex }}"
@@ -209,7 +225,7 @@
                     </div>
 
                     {{-- Footer / Legend --}}
-                    <div class="flex flex-wrap items-center justify-between text-xs text-text-muted dropdown-footer">
+                    <div class="hidden sm:flex flex-wrap items-center justify-between text-xs text-text-muted dropdown-footer">
                         <div class="flex gap-4">
                             <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↵</kbd> para seleccionar</span>
                             <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↓</kbd><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↑</kbd> para navegar</span>

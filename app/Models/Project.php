@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Laravel\Scout\Searchable;
 
 /**
  * @property int $id
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\DB;
  */
 class Project extends Model
 {
+    use Searchable;
+
     protected $fillable = [
         'name', 'description', 'client', 'budget',
         'start_date', 'end_date', 'status',
@@ -31,6 +34,22 @@ class Project extends Model
         'start_date' => 'date',
         'end_date' => 'date',
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'client' => $this->client,
+            'status' => $this->status,
+        ];
+    }
 
     public function expenses(): HasMany
     {

@@ -2,8 +2,9 @@
     'url',
     'icon',
     'title',
-    'subtitle',
+    'subtitle' => null,
     'color' => 'primary', // primary, success, warning, info
+    'typeLabel' => null,
 ])
 
 @php
@@ -26,8 +27,15 @@
         <x-dynamic-component :component="'lucide-' . $icon" class="w-4 h-4 {{ $textClass }}" />
     </div>
     <div class="min-w-0 flex-1">
-        <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{{ $title }}</p>
-        <p class="text-xs-fluid text-text-muted truncate">{{ $subtitle }}</p>
+        <div class="flex items-center gap-2">
+            <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{!! $title !!}</p>
+            @if($typeLabel)
+                <span class="badge badge-secondary shrink-0 text-[0.6rem] py-0.5 px-1.5 opacity-60">{{ $typeLabel }}</span>
+            @endif
+        </div>
+        @if(!empty($subtitle))
+            <p class="text-xs-fluid text-text-muted truncate">{!! $subtitle !!}</p>
+        @endif
     </div>
     <x-lucide-arrow-right class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
 </a>

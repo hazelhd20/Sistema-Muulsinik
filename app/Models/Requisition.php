@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\BroadcastsEvents;
 use Illuminate\Broadcasting\PrivateChannel;
+use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property int $id
@@ -26,7 +28,18 @@ use Illuminate\Broadcasting\PrivateChannel;
  */
 class Requisition extends Model
 {
-    use BroadcastsEvents;
+    use BroadcastsEvents, Searchable, HasFactory;
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'number' => $this->number,
+            'project_name' => $this->project ? $this->project->name : '',
+            'annotations' => $this->annotations,
+            'status' => $this->status,
+        ];
+    }
 
     public function broadcastOn(string $event): array
     {

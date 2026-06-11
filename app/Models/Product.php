@@ -3,11 +3,16 @@
 namespace App\Models;
 
 use App\Services\DataNormalizerService;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Scout\Searchable;
 
 class Product extends Model
 {
+    
+    use HasFactory, Searchable;
+
     protected $fillable = ['canonical_name', 'normalized_name', 'measure_id', 'description', 'category_id'];
 
     protected static function booted()
@@ -30,5 +35,21 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'canonical_name' => $this->canonical_name,
+            'normalized_name' => $this->normalized_name,
+            'category_name' => $this->category ? $this->category->name : '',
+            'description' => $this->description,
+        ];
     }
 }
