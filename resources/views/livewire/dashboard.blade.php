@@ -275,85 +275,85 @@
             </table>
         </div>
     </div>
-</div>
-
-@script
-<script>
-    Alpine.data('chartComponent', () => ({
-        initChart() {
-            if (typeof Chart === 'undefined') {
-                console.warn('Chart.js no está cargado. Usa la directiva @assets de Livewire.');
-                return;
-            }
-            this.renderChart();
-        },
-        renderChart() {
-            const ctx = document.getElementById('monthly-expenses-chart');
-            if (!ctx) return;
-
-            const data = @json($monthlyExpenses);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.map(d => d.month),
-                    datasets: [{
-                        // Paleta mapeada a design tokens:
-                        // rgba(2,48,200,X) = var(--color-primary-600) con opacidad X
-                        // '#0F1117'        = var(--color-text-primary)
-                        // '#9299A8'        = var(--color-text-muted)
-                        label: 'Gastos',
-                        data: data.map(d => d.total),
-                        backgroundColor: (ctx) => {
-                            const chart = ctx.chart;
-                            const { ctx: c, chartArea } = chart;
-                            if (!chartArea) return 'rgba(2,48,200,0.12)';
-                            const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                            gradient.addColorStop(0, 'rgba(2,48,200,0.18)');
-                            gradient.addColorStop(1, 'rgba(2,48,200,0.04)');
-                            return gradient;
-                        },
-                        borderColor: 'rgba(2,48,200,0.7)',
-                        borderWidth: 1.5,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#0F1117',
-                            titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
-                            bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
-                            padding: 10,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: (ctx) => ` $${ctx.parsed.y.toLocaleString()}`
-                            }
-                        }
+    
+    @script
+    <script>
+        Alpine.data('chartComponent', () => ({
+            initChart() {
+                if (typeof Chart === 'undefined') {
+                    console.warn('Chart.js no está cargado. Usa la directiva @@assets de Livewire.');
+                    return;
+                }
+                this.renderChart();
+            },
+            renderChart() {
+                const ctx = document.getElementById('monthly-expenses-chart');
+                if (!ctx) return;
+    
+                const data = @json($monthlyExpenses);
+    
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.month),
+                        datasets: [{
+                            // Paleta mapeada a design tokens:
+                            // rgba(2,48,200,X) = var(--color-primary-600) con opacidad X
+                            // '#0F1117'        = var(--color-text-primary)
+                            // '#9299A8'        = var(--color-text-muted)
+                            label: 'Gastos',
+                            data: data.map(d => d.total),
+                            backgroundColor: (ctx) => {
+                                const chart = ctx.chart;
+                                const { ctx: c, chartArea } = chart;
+                                if (!chartArea) return 'rgba(2,48,200,0.12)';
+                                const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                                gradient.addColorStop(0, 'rgba(2,48,200,0.18)');
+                                gradient.addColorStop(1, 'rgba(2,48,200,0.04)');
+                                return gradient;
+                            },
+                            borderColor: 'rgba(2,48,200,0.7)',
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                        }]
                     },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            border: { display: false },
-                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9299A8' }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#0F1117',
+                                titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
+                                bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+                                padding: 10,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: (ctx) => ` $${ctx.parsed.y.toLocaleString()}`
+                                }
+                            }
                         },
-                        y: {
-                            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-                            border: { display: false, dash: [4, 4] },
-                            ticks: {
-                                font: { family: 'Plus Jakarta Sans', size: 11 },
-                                color: '#9299A8',
-                                callback: (v) => `$${(v / 1000).toFixed(0)}k`
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9299A8' }
+                            },
+                            y: {
+                                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                                border: { display: false, dash: [4, 4] },
+                                ticks: {
+                                    font: { family: 'Plus Jakarta Sans', size: 11 },
+                                    color: '#9299A8',
+                                    callback: (v) => `$${(v / 1000).toFixed(0)}k`
+                                }
                             }
                         }
                     }
-                }
-            });
-        }
-    }));
-</script>
-@endscript
+                });
+            }
+        }));
+    </script>
+    @endscript
+</div>

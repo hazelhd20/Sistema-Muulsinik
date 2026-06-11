@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Dashboard;
 use App\Livewire\Expenses\ExpenseIndex;
 use App\Livewire\Measures\MeasureIndex;
 use App\Livewire\Notifications\NotificationIndex;
@@ -26,6 +27,15 @@ class LivewireIndexViewsTest extends TestCase
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+    }
+
+    public function test_dashboard_renders()
+    {
+        $user = User::first();
+        $this->actingAs($user);
+
+        Livewire::test(Dashboard::class)
+            ->assertStatus(200);
     }
 
     public function test_user_index_renders()
@@ -151,7 +161,7 @@ class LivewireIndexViewsTest extends TestCase
 
         Livewire::test(RequisitionIndex::class)
             ->set('selectedRows', [(string) $req->id])
-            ->call('exportSelected')
+            ->call('exportCsvSummary')
             ->assertFileDownloaded();
     }
 }

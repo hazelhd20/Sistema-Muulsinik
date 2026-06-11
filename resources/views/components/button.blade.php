@@ -30,13 +30,13 @@
 @if($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $baseClasses]) }}>
         @if($icon)
-            <x-icon :name="$icon" class="{{ $iconClass }}" />
+            <x-custom-icon :name="$icon" class="{{ $iconClass }}" />
         @endif
         @if(!$isIconButton || $slot->isNotEmpty())
             {{ $slot }}
         @endif
         @if($iconRight)
-            <x-icon :name="$iconRight" class="{{ $iconClass }}" />
+            <x-custom-icon :name="$iconRight" class="{{ $iconClass }}" />
         @endif
     </a>
 @else
@@ -48,7 +48,7 @@
         @endif
 
         @if($icon)
-            <x-icon :name="$icon" class="{{ $iconClass }}" />
+            <x-custom-icon :name="$icon" class="{{ $iconClass }}" />
         @endif
 
         @if(!$isIconButton || $slot->isNotEmpty())
@@ -56,7 +56,7 @@
         @endif
 
         @if($iconRight)
-            <x-icon :name="$iconRight" class="{{ $iconClass }}" />
+            <x-custom-icon :name="$iconRight" class="{{ $iconClass }}" />
         @endif
 
         @if($target)
