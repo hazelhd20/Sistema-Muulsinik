@@ -1,4 +1,4 @@
-<div x-data="{ showFilters: false }">
+<div x-data="{ showFilters: false, selectedRows: @entangle('selectedRows') }">
     {{-- Header --}}
     <x-page-header subtitle="Red de suministro" title="Proveedores">
         <x-slot:actions>
@@ -9,30 +9,68 @@
     </x-page-header>
 
     {{-- Filters Bar --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center">
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search: compact width --}}
         <x-search-input wire:model.live.debounce.50ms="search" placeholder="Buscar por nombre o RFC..." />
 
-        <div class="flex-1"></div>
+        {{-- Filters Popover --}}
+        @php
+            $activeCount = $categoryFilter ? 1 : 0;
+        @endphp
+        <div x-data="{
+            filterCategory: '{{ $categoryFilter }}',
+            initFilters() {
+                this.filterCategory = '{{ $categoryFilter }}';
+            },
+            applyFilters() {
+                if ($wire.categoryFilter !== this.filterCategory) $wire.set('categoryFilter', this.filterCategory);
+            },
+            clearFilters() {
+                this.filterCategory = '';
+                this.applyFilters();
+                open = false;
+            }
+        }">
+            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                <x-form-field label="Categoría">
+                    <x-custom-select x-model="filterCategory" :options="$categories" placeholder="Todas las categorías" />
+                </x-form-field>
 
-        {{-- Clear button: only when search active --}}
-        @if($search)
-            <button wire:click="$set('search', '');" type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-small text-text-muted hover:text-text-primary transition-colors">
-                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                Limpiar
-            </button>
+                <x-slot name="footer">
+                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                        Limpiar filtros
+                    </button>
+                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                        Aplicar Filtros
+                    </x-button>
+                </x-slot>
+            </x-filters-popover>
+        </div>
+    </div>
+
+    {{-- Active Chips Row --}}
+    @if($activeCount > 0)
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+        @if($categoryFilter)
+            <x-filter-chip label="Categoría" :value="$categoryFilter" wire:click="$set('categoryFilter', '')" />
         @endif
     </div>
+    @endif
 
     {{-- Suppliers Table --}}
     <div class="relative min-h-[200px]">
-        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="w-full">
+        <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="w-full">
             <div class="table-container hidden md:block">
                 @if($suppliers->isNotEmpty())
                     <table>
-                        <thead>
+                        <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
+                                <th class="w-10 pl-4 pr-2 text-center">
+                                    <input type="checkbox"
+                                        class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
+                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $suppliers->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $suppliers->pluck('id')->join(',') }}].map(String).includes(id))"
+                                        :checked="[{{ $suppliers->pluck('id')->join(',') }}].length > 0 && [{{ $suppliers->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                </th>
                                 <x-sortable-header field="trade_name" label="Proveedor" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="rfc" label="RFC" :sortField="$sortField"
@@ -41,12 +79,17 @@
                                     :sortDirection="$sortDirection" />
                                 <th>Vendedores</th>
                                 <th>Notas</th>
-                                <th class="text-right">Acciones</th>
+                                <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($suppliers as $supplier)
-                                <tr class="group">
+                                <tr wire:key="supplier-row-{{ $supplier->id }}"
+                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                    :class="(selectedRows || []).map(String).includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
+                                    <td class="pl-4 pr-2 text-center" @click.stop>
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
+                                    </td>
                                     <td class="font-medium whitespace-nowrap text-text-primary">
                                         <span class="max-w-[200px] truncate"
                                             title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</span>
@@ -84,16 +127,26 @@
                                             <span class="text-text-muted">—</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="flex items-center justify-end gap-1">
-                                            <x-button wire:click="viewVendors({{ $supplier->id }})" variant="icon" icon="users"
-                                                title="Ver vendedores" aria-label="Ver vendedores" />
-                                            <x-button wire:click="openEditSupplierModal({{ $supplier->id }})"
-                                                variant="icon-primary" icon="pencil" title="Editar proveedor" aria-label="Editar proveedor" />
-                                            <x-button wire:click="deleteSupplier({{ $supplier->id }})"
-                                                wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse."
-                                                variant="icon-danger" icon="trash-2" title="Eliminar proveedor"
-                                                aria-label="Eliminar proveedor" />
+                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                        <div class="flex items-center justify-end">
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                </x-slot>
+
+                                                <x-slot name="content">
+                                                    <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
+                                                        Ver vendedores
+                                                    </x-dropdown-link>
+                                                    <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
+                                                        Editar
+                                                    </x-dropdown-link>
+                                                    <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
+                                                        wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                        Eliminar
+                                                    </x-dropdown-link>
+                                                </x-slot>
+                                            </x-dropdown>
                                         </div>
                                     </td>
                                 </tr>
@@ -101,8 +154,8 @@
                         </tbody>
                     </table>
                 @else
-                    <x-empty-state icon="truck" title="No hay proveedores registrados"
-                        message="Agrega un proveedor para comenzar." />
+                    <x-empty-state icon="building-2" title="No se encontraron proveedores"
+                        message="No hay registros que coincidan con tu búsqueda." />
                 @endif
             </div>
 
@@ -110,40 +163,71 @@
             @if($suppliers->isNotEmpty())
             <div class="md:hidden flex flex-col gap-4 mt-2">
                 @foreach($suppliers as $supplier)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors group">
-                        
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                         :class="(selectedRows || []).map(String).includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         wire:key="supplier-mobile-card-{{ $supplier->id }}">
                         <div class="flex justify-between items-start gap-2">
-                            <div class="min-w-0">
-                                <span class="font-bold text-text-primary text-body truncate block">{{ $supplier->trade_name }}</span>
-                                @if($supplier->rfc)
-                                    <span class="text-xs-fluid text-text-muted font-mono mt-0.5 block">{{ $supplier->rfc }}</span>
-                                @endif
-                            </div>
-                            <div class="text-right shrink-0">
-                                @if($supplier->category)
-                                    <x-dynamic-badge :value="$supplier->category" />
-                                @endif
+                            <div class="flex items-start gap-3">
+                                <div class="pt-0.5">
+                                    <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="font-bold text-text-primary text-body">{{ $supplier->trade_name }}</span>
+                                    </div>
+                                    @if($supplier->rfc)
+                                        <p class="text-xs-fluid text-text-secondary mt-0.5 font-mono">{{ $supplier->rfc }}</p>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
-                            <div class="flex items-center gap-1.5 col-span-2">
-                                <i data-lucide="users" class="w-3.5 h-3.5 shrink-0"></i>
-                                <span>{{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}</span>
+                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
+                            <div>
+                                <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Categoría</p>
+                                @if($supplier->category)
+                                    <x-dynamic-badge :value="$supplier->category" />
+                                @else
+                                    <span class="text-text-muted">—</span>
+                                @endif
                             </div>
-                            
+                            <div class="text-right">
+                                <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Vendedores</p>
+                                <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary justify-end">
+                                    <i data-lucide="users" class="w-3.5 h-3.5 text-text-muted"></i>
+                                    {{ $supplier->vendors_count }}
+                                </span>
+                            </div>
                             @if($supplier->notes)
-                                <div class="col-span-2 flex items-start gap-1.5 mt-1">
-                                    <i data-lucide="sticky-note" class="w-3.5 h-3.5 shrink-0 mt-0.5"></i>
-                                    <span class="line-clamp-2">{{ $supplier->notes }}</span>
+                                <div class="col-span-2 flex items-start gap-1.5 mt-1 pt-2 border-t border-border/50">
+                                    <i data-lucide="sticky-note" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
+                                    <span class="text-text-secondary line-clamp-2">{{ $supplier->notes }}</span>
                                 </div>
                             @endif
                         </div>
 
-                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
-                            <x-button wire:click="viewVendors({{ $supplier->id }})" variant="icon" icon="users" class="text-xs-fluid w-8 h-8" />
-                            <x-button wire:click="openEditSupplierModal({{ $supplier->id }})" variant="icon-primary" icon="pencil" class="text-xs-fluid w-8 h-8" />
-                            <x-button wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." variant="icon-danger" icon="trash-2" class="text-xs-fluid w-8 h-8" />
+                        <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
+                            <x-dropdown align="right" width="48">
+                                <x-slot name="trigger">
+                                    <x-button variant="secondary" class="w-full justify-center">
+                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        <span class="ml-2">Opciones</span>
+                                    </x-button>
+                                </x-slot>
+
+                                <x-slot name="content">
+                                    <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
+                                        Ver vendedores
+                                    </x-dropdown-link>
+                                    <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
+                                        Editar
+                                    </x-dropdown-link>
+                                    <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
+                                        wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                        Eliminar
+                                    </x-dropdown-link>
+                                </x-slot>
+                            </x-dropdown>
                         </div>
                     </div>
                 @endforeach
@@ -218,7 +302,28 @@
                 @endfor
             </div>
         </div>
+
+        {{-- Bulk Actions Bar --}}
+        <x-bulk-actions-bar>
+            <x-button
+                @click="$dispatch('confirm-action', {
+                    title: 'Eliminar Proveedores',
+                    description: 'Se eliminarán permanentemente los proveedores seleccionados que no estén en uso.',
+                    confirmLabel: 'Eliminar',
+                    variant: 'danger',
+                    action: 'bulkDelete',
+                    params: []
+                })"
+                variant="danger"
+                icon="trash-2">
+                Eliminar
+            </x-button>
+        </x-bulk-actions-bar>
+
     </div>
+    
+    {{-- Delete / Action Modals --}}
+    <x-confirm-modal />
 
     <div class="mt-4">{{ $suppliers->links() }}</div>
 

@@ -1062,13 +1062,19 @@ input[type="search"]::-webkit-search-results-decoration {
         font-weight: 600;
         color: var(--color-text-primary);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .dropdown-footer {
-        padding: 0.5rem 1rem; /* py-2 px-4 */
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem; /* py-3 px-4 */
         background-color: var(--color-surface-hover);
         border-top: 1px solid var(--color-border);
-        text-align: center;
     }
 
     /* ── Card structural anatomy ── */

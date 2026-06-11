@@ -22,6 +22,12 @@ class SupplierIndex extends Component
     #[Url(as: 'search')]
     public string $search = '';
 
+    public string $categoryFilter = '';
+
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     public bool $showCreateModal = false;
 
     public bool $showVendorsModal = false;
@@ -53,6 +59,8 @@ class SupplierIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function openCreateModal(): void
@@ -213,6 +221,48 @@ class SupplierIndex extends Component
 
         $supplier->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor eliminado.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$supplierId]);
+    }
+
+    public function toggleAll($supplierIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $supplierIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $supplierIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        // Obtener proveedores en uso
+        $usedInRequisitions = RequisitionItem::whereIn('supplier_id', $this->selectedRows)->pluck('supplier_id')->toArray();
+        $usedInQuotations = Quotation::whereIn('supplier_id', $this->selectedRows)->pluck('supplier_id')->toArray();
+
+        $usedSuppliers = array_unique(array_merge($usedInRequisitions, $usedInQuotations));
+        $suppliersToDelete = array_diff($this->selectedRows, $usedSuppliers);
+
+        if (count($usedSuppliers) > 0) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos proveedores no pudieron ser eliminados porque están en uso.']);
+        }
+
+        Supplier::whereIn('id', $suppliersToDelete)->delete();
+
+        if (count($suppliersToDelete) > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($suppliersToDelete) . ' proveedor(es) eliminado(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     private function resetForm(): void
@@ -231,7 +281,9 @@ class SupplierIndex extends Component
     {
         $suppliers = Supplier::withCount('vendors')
             ->when($this->search, fn ($q) => $q->where('trade_name', 'like', "%{$this->search}%")
+                ->orWhere('legal_name', 'like', "%{$this->search}%")
                 ->orWhere('rfc', 'like', "%{$this->search}%"))
+            ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(12);
 
@@ -239,6 +291,8 @@ class SupplierIndex extends Component
             ? Supplier::with('vendors')->find($this->viewingSupplierId)
             : null;
 
-        return view('livewire.suppliers.supplier-index', compact('suppliers', 'viewingSupplier'));
+        $categories = Supplier::select('category')->whereNotNull('category')->distinct()->pluck('category', 'category')->toArray();
+
+        return view('livewire.suppliers.supplier-index', compact('suppliers', 'categories', 'viewingSupplier'));
     }
 }

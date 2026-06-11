@@ -23,6 +23,10 @@ class CategoryIndex extends Component
 
     public bool $showCreateModal = false;
 
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     protected $rules = [
         'name' => 'required|string|max:255|unique:categories,name',
     ];
@@ -30,6 +34,8 @@ class CategoryIndex extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function mount(): void
@@ -95,6 +101,47 @@ class CategoryIndex extends Component
 
         $category->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría eliminada exitosamente.']);
+        
+        $this->selectedRows = array_diff($this->selectedRows, [$id]);
+    }
+
+    public function toggleAll($categoryIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $categoryIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $categoryIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        // Only delete categories that don't have products
+        $categoriesToDelete = Category::whereIn('id', $this->selectedRows)
+            ->whereDoesntHave('products')
+            ->pluck('id');
+
+        if ($categoriesToDelete->count() < count($this->selectedRows)) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunas categorías no pudieron ser eliminadas porque están en uso.']);
+        }
+
+        Category::whereIn('id', $categoriesToDelete)->delete();
+
+        if ($categoriesToDelete->count() > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => $categoriesToDelete->count() . ' categoría(s) eliminada(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     #[Layout('components.layouts.app')]

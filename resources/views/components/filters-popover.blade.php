@@ -87,8 +87,8 @@
         @keydown.escape.window="open = false"
     >
         {{-- Cabecera --}}
-        <div class="px-5 py-3 border-b border-border flex justify-between items-center bg-surface-main/30 shrink-0">
-            <h3 class="text-sm font-semibold text-text-primary flex items-center gap-2">
+        <div class="dropdown-header">
+            <h3 class="dropdown-header-title">
                 <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
                 Filtros
             </h3>
@@ -106,7 +106,7 @@
 
         {{-- Pie (opcional) --}}
         @if(isset($footer))
-            <div class="px-5 py-4 border-t border-border bg-surface-main/50 flex justify-between items-center shrink-0">
+            <div class="dropdown-footer !justify-between">
                 {{ $footer }}
             </div>
         @endif

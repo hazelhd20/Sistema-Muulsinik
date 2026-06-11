@@ -22,6 +22,12 @@ class ProjectIndex extends Component
 
     public string $statusFilter = '';
 
+    public string $periodFilter = '';
+
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     public bool $showModal = false;
 
     public ?int $editingId = null;
@@ -44,11 +50,15 @@ class ProjectIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function openCreateModal(): void
@@ -155,6 +165,49 @@ class ProjectIndex extends Component
 
         $project->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proyecto eliminado.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$projectId]);
+    }
+
+    public function toggleAll($projectIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $projectIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $projectIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        // Check for dependencies
+        $usedInRequisitions = Requisition::whereIn('project_id', $this->selectedRows)->pluck('project_id')->toArray();
+        $usedInExpenses = Expense::whereIn('project_id', $this->selectedRows)->pluck('project_id')->toArray();
+        $usedInQuotations = Quotation::whereIn('project_id', $this->selectedRows)->pluck('project_id')->toArray();
+
+        $usedProjects = array_unique(array_merge($usedInRequisitions, $usedInExpenses, $usedInQuotations));
+        $projectsToDelete = array_diff($this->selectedRows, $usedProjects);
+
+        if (count($usedProjects) > 0) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos proyectos no pudieron ser eliminados porque tienen dependencias.']);
+        }
+
+        Project::whereIn('id', $projectsToDelete)->delete();
+
+        if (count($projectsToDelete) > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($projectsToDelete) . ' proyecto(s) eliminado(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     private function resetForm(): void
@@ -177,6 +230,16 @@ class ProjectIndex extends Component
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('client', 'like', "%{$this->search}%"))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+            ->when($this->periodFilter, function ($q) {
+                $now = now();
+                match ($this->periodFilter) {
+                    'this_month' => $q->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year),
+                    'last_month' => $q->whereMonth('created_at', $now->subMonth()->month)->whereYear('created_at', $now->subMonth()->year),
+                    'this_quarter' => $q->whereRaw('QUARTER(created_at) = ?', [$now->quarter])->whereYear('created_at', $now->year),
+                    'this_year' => $q->whereYear('created_at', $now->year),
+                    default => $q
+                };
+            })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(12);
 

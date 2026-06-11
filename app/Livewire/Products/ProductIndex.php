@@ -26,6 +26,12 @@ class ProductIndex extends Component
 
     public string $categoryFilter = '';
 
+    public string $measureFilter = '';
+
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     public bool $showCreateModal = false;
 
     // Campos del producto
@@ -42,11 +48,15 @@ class ProductIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function updatedCategoryFilter(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function mount(): void
@@ -144,6 +154,46 @@ class ProductIndex extends Component
 
         $product->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto eliminado del catálogo.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$productId]);
+    }
+
+    public function toggleAll($productIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $productIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $productIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('productos.eliminar', 'No tienes permiso para eliminar productos.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        // Obtener productos en uso
+        $usedProducts = RequisitionItem::whereIn('product_id', $this->selectedRows)->pluck('product_id')->toArray();
+
+        $productsToDelete = array_diff($this->selectedRows, $usedProducts);
+
+        if (count($usedProducts) > 0) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos productos no pudieron ser eliminados porque están en uso.']);
+        }
+
+        Product::whereIn('id', $productsToDelete)->delete();
+
+        if (count($productsToDelete) > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($productsToDelete) . ' producto(s) eliminado(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     private function resetForm(): void
@@ -163,11 +213,12 @@ class ProductIndex extends Component
             ->with(['category', 'measure'])
             ->when($this->search, fn ($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
+            ->when($this->measureFilter, fn ($q) => $q->where('measure_id', $this->measureFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
         $suppliers = Supplier::orderBy('trade_name')->get();
-        $measures = Measure::getOptionsArray();
+        $measures = Measure::pluck('name', 'id')->toArray();
         $categories = Category::orderBy('name')->pluck('name', 'id')->toArray();
 
         return view('livewire.products.product-index', compact(

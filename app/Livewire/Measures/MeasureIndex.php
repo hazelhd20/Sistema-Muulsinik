@@ -26,6 +26,10 @@ class MeasureIndex extends Component
 
     public bool $showCreateModal = false;
 
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     protected $rules = [
         'name' => 'required|string|max:255',
         'abbreviation' => 'nullable|string|max:50',
@@ -34,6 +38,8 @@ class MeasureIndex extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function mount(): void
@@ -101,6 +107,50 @@ class MeasureIndex extends Component
 
         $measure->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida eliminada exitosamente.']);
+        
+        $this->selectedRows = array_diff($this->selectedRows, [$id]);
+    }
+
+    public function toggleAll($measureIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $measureIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $measureIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        // Obtener medidas en uso por productos o requisiciones
+        $usedInProducts = Product::whereIn('measure_id', $this->selectedRows)->pluck('measure_id')->toArray();
+        $usedInRequisitions = RequisitionItem::whereIn('measure_id', $this->selectedRows)->pluck('measure_id')->toArray();
+        
+        $usedMeasures = array_unique(array_merge($usedInProducts, $usedInRequisitions));
+
+        $measuresToDelete = array_diff($this->selectedRows, $usedMeasures);
+
+        if (count($usedMeasures) > 0) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunas medidas no pudieron ser eliminadas porque están en uso.']);
+        }
+
+        Measure::whereIn('id', $measuresToDelete)->delete();
+
+        if (count($measuresToDelete) > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($measuresToDelete) . ' medida(s) eliminada(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     #[Layout('components.layouts.app')]

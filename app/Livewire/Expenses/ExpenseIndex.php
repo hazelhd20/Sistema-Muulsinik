@@ -28,6 +28,12 @@ class ExpenseIndex extends Component
 
     public string $periodFilter = '';
 
+    public string $userFilter = '';
+
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     public bool $showCreateModal = false;
 
     // Campos del formulario
@@ -56,21 +62,29 @@ class ExpenseIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function updatedProjectFilter(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function updatedCategoryFilter(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function updatedPeriodFilter(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function mount(): void
@@ -153,6 +167,37 @@ class ExpenseIndex extends Component
 
         Expense::findOrFail($expenseId)->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto eliminado.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$expenseId]);
+    }
+
+    public function toggleAll($expenseIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $expenseIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $expenseIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        Expense::whereIn('id', $this->selectedRows)->delete();
+
+        if (count($this->selectedRows) > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($this->selectedRows) . ' gasto(s) eliminado(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     /** Verificar umbrales de presupuesto del proyecto (RF-GASTO-03). */
@@ -204,13 +249,15 @@ class ExpenseIndex extends Component
             ->when($this->search, fn ($q) => $q->where('concept', 'like', "%{$this->search}%"))
             ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
+            ->when($this->userFilter, fn ($q) => $q->where('user_id', $this->userFilter))
             ->when($this->periodFilter, function ($q) {
+                $now = now();
                 match ($this->periodFilter) {
-                    'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
-                    'last_month' => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
-                    'this_quarter' => $q->whereBetween('date', [now()->startOfQuarter(), now()->endOfQuarter()]),
-                    'this_year' => $q->whereYear('date', now()->year),
-                    default => null,
+                    'this_month' => $q->whereMonth('date', $now->month)->whereYear('date', $now->year),
+                    'last_month' => $q->whereMonth('date', $now->subMonth()->month)->whereYear('date', $now->subMonth()->year),
+                    'this_quarter' => $q->whereRaw('QUARTER(date) = ?', [$now->quarter])->whereYear('date', $now->year),
+                    'this_year' => $q->whereYear('date', $now->year),
+                    default => $q,
                 };
             })
             ->orderBy($this->sortField, $this->sortDirection)
@@ -218,13 +265,14 @@ class ExpenseIndex extends Component
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();
         $categories = $this->categories;
+        $users = User::select('id', 'name')->orderBy('name')->get();
 
         $totalMonth = Expense::whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
 
         return view('livewire.expenses.expense-index', compact(
-            'expenses', 'projects', 'categories', 'totalMonth'
+            'expenses', 'projects', 'categories', 'users', 'totalMonth'
         ));
     }
 }

@@ -209,7 +209,7 @@
                     </div>
 
                     {{-- Footer / Legend --}}
-                    <div class="flex flex-wrap items-center justify-between bg-surface-hover px-4 py-2.5 text-xs text-text-muted border-t border-border dropdown-footer">
+                    <div class="flex flex-wrap items-center justify-between text-xs text-text-muted dropdown-footer">
                         <div class="flex gap-4">
                             <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↵</kbd> para seleccionar</span>
                             <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↓</kbd><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↑</kbd> para navegar</span>

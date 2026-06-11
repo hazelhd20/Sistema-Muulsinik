@@ -21,6 +21,12 @@ class UserIndex extends Component
 
     public string $roleFilter = '';
 
+    public string $statusFilter = '';
+
+    public array $selectedRows = [];
+
+    public bool $allSelected = false;
+
     public bool $showModal = false;
 
     public ?int $editingId = null;
@@ -38,11 +44,15 @@ class UserIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function updatedRoleFilter(): void
     {
         $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function mount()
@@ -159,6 +169,44 @@ class UserIndex extends Component
 
         User::findOrFail($id)->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Usuario eliminado.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$id]);
+    }
+
+    public function toggleAll($userIds): void
+    {
+        if ($this->allSelected) {
+            $this->selectedRows = array_merge($this->selectedRows, $userIds);
+            $this->selectedRows = array_unique($this->selectedRows);
+        } else {
+            $this->selectedRows = array_diff($this->selectedRows, $userIds);
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if ($this->denyUnless('usuarios.eliminar', 'No tienes permiso para eliminar usuarios.')) {
+            return;
+        }
+
+        if (empty($this->selectedRows)) {
+            return;
+        }
+
+        // Prevent deleting oneself
+        $userIdsToDelete = array_diff($this->selectedRows, [auth()->id()]);
+
+        if (count($userIdsToDelete) < count($this->selectedRows)) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No puedes eliminar tu propio usuario.']);
+        }
+
+        User::whereIn('id', $userIdsToDelete)->delete();
+
+        if (count($userIdsToDelete) > 0) {
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($userIdsToDelete) . ' usuario(s) eliminado(s) exitosamente.']);
+        }
+
+        $this->selectedRows = [];
+        $this->allSelected = false;
     }
 
     public function toggleActive(int $id): void
@@ -199,6 +247,13 @@ class UserIndex extends Component
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%"))
             ->when($this->roleFilter, fn ($q) => $q->where('role_id', $this->roleFilter))
+            ->when($this->statusFilter, function ($q) {
+                if ($this->statusFilter === 'active') {
+                    $q->where('active', true);
+                } elseif ($this->statusFilter === 'inactive') {
+                    $q->where('active', false);
+                }
+            })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 

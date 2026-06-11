@@ -66,12 +66,11 @@ document.addEventListener("alpine:init", () => {
             this.filterPeriod = this.$wire.periodFilter || "";
         },
         applyFilters() {
-            this.$wire.set("statusFilter", this.filterStatus, false);
-            this.$wire.set("projectFilter", this.filterProject, false);
-            this.$wire.set("creatorFilter", this.filterCreator, false);
-            this.$wire.set("vendorFilter", this.filterVendor, false);
-            this.$wire.set("periodFilter", this.filterPeriod, false);
-            this.$wire.$refresh();
+            if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
+            if (this.$wire.projectFilter !== this.filterProject) this.$wire.set("projectFilter", this.filterProject);
+            if (this.$wire.creatorFilter !== this.filterCreator) this.$wire.set("creatorFilter", this.filterCreator);
+            if (this.$wire.vendorFilter !== this.filterVendor) this.$wire.set("vendorFilter", this.filterVendor);
+            if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
         },
         clearFilters() {
             this.filterStatus = "";
