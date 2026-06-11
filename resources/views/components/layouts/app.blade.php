@@ -13,8 +13,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800" rel="stylesheet" />
 
-    {{-- Lucide Icons CDN --}}
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    {{-- Lucide Icons were replaced by blade-lucide-icons --}}
 
     {{-- SweetAlert2 CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -70,20 +69,20 @@
                 <p class="nav-section-label">Principal</p>
 
                 <a href="{{ url('/dashboard') }}" wire:navigate.hover class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                    <x-lucide-layout-dashboard class="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>Dashboard</span>
                 </a>
 
                 @if(auth()->user()->hasPermission('proyectos.ver'))
                     <a href="{{ url('/proyectos') }}" wire:navigate.hover class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
-                        <i data-lucide="hard-hat" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-hard-hat class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Proyectos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('gastos.ver'))
                     <a href="{{ url('/gastos') }}" wire:navigate.hover class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
-                        <i data-lucide="wallet" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-wallet class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Gastos</span>
                     </a>
                 @endif
@@ -91,7 +90,7 @@
                 @if(auth()->user()->hasPermission('requisiciones.ver'))
                     <a href="{{ url('/requisiciones') }}" wire:navigate.hover
                         class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
-                        <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-clipboard-list class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Requisiciones</span>
                     </a>
                 @endif
@@ -99,7 +98,7 @@
                 @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
                     <a href="{{ route('cotizador.index') }}" wire:navigate.hover
                         class="nav-link {{ request()->routeIs('cotizador.*') ? 'active' : '' }}">
-                        <i data-lucide="calculator" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-calculator class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Cotizador</span>
                     </a>
                 @endif
@@ -109,7 +108,7 @@
                 @if(auth()->user()->hasPermission('usuarios.ver'))
                     <a href="{{ url('/usuarios') }}" wire:navigate.hover
                         class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
-                        <i data-lucide="users" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-users class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Usuarios</span>
                     </a>
                 @endif
@@ -117,14 +116,14 @@
                 @if(auth()->user()->hasPermission('proveedores.ver'))
                     <a href="{{ url('/proveedores') }}" wire:navigate.hover
                         class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
-                        <i data-lucide="truck" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-truck class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Proveedores</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('reportes.ver'))
                     <a href="{{ url('/reportes') }}" wire:navigate.hover class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-bar-chart-3 class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Reportes</span>
                     </a>
                 @endif
@@ -133,18 +132,18 @@
 
                 @if(auth()->user()->hasPermission('productos.ver'))
                     <a href="{{ url('/productos') }}" wire:navigate.hover class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
-                        <i data-lucide="package" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-package class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Productos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('catalogos.ver'))
                     <a href="{{ url('/medidas') }}" wire:navigate.hover class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
-                        <i data-lucide="ruler" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-ruler class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Medidas</span>
                     </a>
                     <a href="{{ url('/categorias') }}" wire:navigate.hover class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
-                        <i data-lucide="layers" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                        <x-lucide-layers class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Categorías</span>
                     </a>
                 @endif
@@ -171,14 +170,14 @@
                 </div>
 
                 <button x-data x-on:click="$dispatch('open-settings')" class="nav-link w-full text-left cursor-pointer">
-                    <i data-lucide="settings" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                    <x-lucide-settings class="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>Configuración</span>
                 </button>
 
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
                     <button type="submit" class="nav-link w-full text-left group hover:bg-danger-light hover:!text-danger">
-                        <i data-lucide="log-out" class="w-4 h-4 shrink-0 group-hover:text-danger-hover" aria-hidden="true"></i>
+                        <x-lucide-log-out class="w-4 h-4 shrink-0 group-hover:text-danger-hover" aria-hidden="true" />
                         <span>Cerrar sesión</span>
                     </button>
                 </form>
@@ -205,7 +204,7 @@
                     <div class="flex items-center gap-3">
                         <button @click="mobileSidebarOpen = !mobileSidebarOpen"
                             class="lg:hidden p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition">
-                            <i data-lucide="menu" class="w-5 h-5"></i>
+                            <x-lucide-menu class="w-5 h-5" />
                         </button>
                     </div>
 

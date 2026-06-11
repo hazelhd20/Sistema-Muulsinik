@@ -9,6 +9,6 @@
         class="ml-1 text-text-muted hover:text-danger focus:outline-none focus-visible:ring-1 focus-visible:ring-danger rounded transition-colors"
         title="Quitar filtro de {{ $label }}"
         aria-label="Quitar filtro de {{ $label }}: {{ $value }}">
-        <i data-lucide="x" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        <x-lucide-x class="w-3.5 h-3.5" aria-hidden="true" />
     </button>
 </div>

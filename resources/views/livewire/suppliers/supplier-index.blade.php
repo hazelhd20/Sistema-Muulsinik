@@ -95,7 +95,7 @@
                                     </td>
                                     <td>
                                         <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary">
-                                            <i data-lucide="users" class="w-3.5 h-3.5 text-text-muted"></i>
+                                            <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
                                             {{ $supplier->vendors_count }}
                                             vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                                         </span>
@@ -103,8 +103,8 @@
                                     <td>
                                         @if($supplier->notes)
                                             <div class="flex items-start gap-1 max-w-[250px]" title="{{ $supplier->notes }}">
-                                                <i data-lucide="sticky-note"
-                                                    class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
+                                                <x-lucide-sticky-note
+                                                    class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
                                                 <span
                                                     class="text-xs-fluid text-text-secondary truncate">{{ $supplier->notes }}</span>
                                             </div>
@@ -179,13 +179,13 @@
                             <div class="text-right">
                                 <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Vendedores</p>
                                 <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary justify-end">
-                                    <i data-lucide="users" class="w-3.5 h-3.5 text-text-muted"></i>
+                                    <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
                                     {{ $supplier->vendors_count }}
                                 </span>
                             </div>
                             @if($supplier->notes)
                                 <div class="col-span-2 flex items-start gap-1.5 mt-1 pt-2 border-t border-border/50">
-                                    <i data-lucide="sticky-note" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
+                                    <x-lucide-sticky-note class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
                                     <span class="text-text-secondary line-clamp-2">{{ $supplier->notes }}</span>
                                 </div>
                             @endif
@@ -195,7 +195,7 @@
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
                                     <x-button variant="secondary" class="w-full justify-center">
-                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        <x-lucide-more-horizontal class="w-4 h-4" />
                                         <span class="ml-2">Opciones</span>
                                     </x-button>
                                 </x-slot>

@@ -20,7 +20,7 @@
                     <h2 class="text-h2 font-semibold text-text-primary">{{ $project->name }}</h2>
                     @if($project->client)
                         <p class="text-small text-text-muted mt-1 flex items-center gap-1.5">
-                            <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                            <x-lucide-building-2 class="w-3.5 h-3.5" />
                             {{ $project->client }}
                         </p>
                     @endif
@@ -87,7 +87,7 @@
                 </div>
                 @if($project->budget_used_percent > 100)
                     <p class="text-xs-fluid text-danger mt-1.5 flex items-center gap-1">
-                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                        <x-lucide-alert-triangle class="w-3.5 h-3.5" />
                         El gasto acumulado supera el presupuesto asignado.
                     </p>
                 @endif
@@ -98,7 +98,7 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div class="stat-card">
                 <div class="stat-icon bg-primary-50">
-                    <i data-lucide="file-text" class="w-[18px] h-[18px] text-primary-600"></i>
+                    <x-lucide-file-text class="w-[18px] h-[18px] text-primary-600" />
                 </div>
                 <div class="min-w-0">
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
@@ -109,7 +109,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon bg-success-light">
-                    <i data-lucide="check-circle" class="w-[18px] h-[18px] text-success"></i>
+                    <x-lucide-check-circle class="w-[18px] h-[18px] text-success" />
                 </div>
                 <div class="min-w-0">
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
@@ -120,7 +120,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon bg-warning-light">
-                    <i data-lucide="clock" class="w-[18px] h-[18px] text-warning"></i>
+                    <x-lucide-clock class="w-[18px] h-[18px] text-warning" />
                 </div>
                 <div class="min-w-0">
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
@@ -131,7 +131,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon bg-danger-light">
-                    <i data-lucide="receipt" class="w-[18px] h-[18px] text-danger"></i>
+                    <x-lucide-receipt class="w-[18px] h-[18px] text-danger" />
                 </div>
                 <div class="min-w-0">
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
@@ -204,7 +204,7 @@
                                 <td colspan="7">
                                     <div class="flex flex-col items-center justify-center py-10 gap-2">
                                         <div class="w-10 h-10 rounded-full bg-surface-main flex items-center justify-center">
-                                            <i data-lucide="file-text" class="w-5 h-5 text-text-muted"></i>
+                                            <x-lucide-file-text class="w-5 h-5 text-text-muted" />
                                         </div>
                                         <p class="text-small text-text-muted">Sin requisiciones registradas</p>
                                     </div>
@@ -258,7 +258,7 @@
                                 <td colspan="5">
                                     <div class="flex flex-col items-center justify-center py-10 gap-2">
                                         <div class="w-10 h-10 rounded-full bg-surface-main flex items-center justify-center">
-                                            <i data-lucide="receipt" class="w-5 h-5 text-text-muted"></i>
+                                            <x-lucide-receipt class="w-5 h-5 text-text-muted" />
                                         </div>
                                         <p class="text-small text-text-muted">Sin gastos directos registrados</p>
                                     </div>

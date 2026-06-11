@@ -128,10 +128,10 @@
                          'bg-success-light text-success':   variant === 'success',
                      }">
                     {{-- Iconos pre-renderizados por Lucide — Alpine muestra el correcto --}}
-                    <i data-lucide="alert-triangle" class="w-5 h-5" x-show="iconName === 'alert-triangle'"></i>
-                    <i data-lucide="alert-circle"   class="w-5 h-5" x-show="iconName === 'alert-circle'"></i>
-                    <i data-lucide="help-circle"    class="w-5 h-5" x-show="iconName === 'help-circle'"></i>
-                    <i data-lucide="check-circle"   class="w-5 h-5" x-show="iconName === 'check-circle'"></i>
+                    <x-lucide-alert-triangle class="w-5 h-5" x-show="iconName === 'alert-triangle'" />
+                    <x-lucide-alert-circle   class="w-5 h-5" x-show="iconName === 'alert-circle'" />
+                    <x-lucide-help-circle    class="w-5 h-5" x-show="iconName === 'help-circle'" />
+                    <x-lucide-check-circle   class="w-5 h-5" x-show="iconName === 'check-circle'" />
                 </div>
 
                 {{-- Título + descripción --}}

@@ -1,4 +1,7 @@
 <div>
+    @assets
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @endassets
 
     {{-- ── Page Header ──────────────────────────────────── --}}
     <x-page-header subtitle="Panel de Control">
@@ -21,7 +24,7 @@
 
         <div class="stat-card">
             <div class="stat-icon bg-primary-50">
-                <i data-lucide="hard-hat" class="w-[18px] h-[18px] text-primary-600"></i>
+                <x-lucide-hard-hat class="w-[18px] h-[18px] text-primary-600" />
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $activeProjects }}</p>
@@ -31,7 +34,7 @@
 
         <div class="stat-card">
             <div class="stat-icon bg-success-light">
-                <i data-lucide="trending-up" class="w-[18px] h-[18px] text-success"></i>
+                <x-lucide-trending-up class="w-[18px] h-[18px] text-success" />
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none truncate tabular-nums">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
@@ -41,7 +44,7 @@
 
         <div class="stat-card">
             <div class="stat-icon bg-warning-light">
-                <i data-lucide="clock" class="w-[18px] h-[18px] text-warning"></i>
+                <x-lucide-clock class="w-[18px] h-[18px] text-warning" />
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $pendingRequisitions }}</p>
@@ -51,7 +54,7 @@
 
         <div class="stat-card">
             <div class="stat-icon bg-danger-light">
-                <i data-lucide="truck" class="w-[18px] h-[18px] text-danger"></i>
+                <x-lucide-truck class="w-[18px] h-[18px] text-danger" />
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $totalSuppliers }}</p>
@@ -88,7 +91,7 @@
                 <a href="{{ url('/reportes') }}"
                     class="link-more">
                     Ver reportes
-                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                    <x-lucide-arrow-right class="w-3 h-3" />
                 </a>
             </div>
             <div class="flex-1 space-y-0">
@@ -96,7 +99,7 @@
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
                         <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
-                            <i data-lucide="briefcase" class="w-3 h-3 text-primary-600"></i>
+                            <x-lucide-briefcase class="w-3 h-3 text-primary-600" />
                         </div>
                         <span class="text-small text-text-secondary">Total proyectos</span>
                     </div>
@@ -106,7 +109,7 @@
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
                         <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
-                            <i data-lucide="wallet" class="w-3 h-3 text-warning"></i>
+                            <x-lucide-wallet class="w-3 h-3 text-warning" />
                         </div>
                         <span class="text-small text-text-secondary">Gasto total</span>
                     </div>
@@ -116,7 +119,7 @@
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
                         <div class="w-5 h-5 rounded bg-danger-light flex items-center justify-center">
-                            <i data-lucide="users" class="w-3 h-3 text-danger"></i>
+                            <x-lucide-users class="w-3 h-3 text-danger" />
                         </div>
                         <span class="text-small text-text-secondary">Proveedores</span>
                     </div>
@@ -126,7 +129,7 @@
                 <div class="metric-row">
                     <div class="flex items-center gap-2">
                         <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
-                            <i data-lucide="check-circle" class="w-3 h-3 text-success"></i>
+                            <x-lucide-check-circle class="w-3 h-3 text-success" />
                         </div>
                         <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
                     </div>
@@ -149,7 +152,7 @@
                 <a href="{{ url('/proyectos') }}"
                     class="link-more">
                     Ver todos
-                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                    <x-lucide-arrow-right class="w-3 h-3" />
                 </a>
             </div>
             <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
@@ -214,7 +217,7 @@
                 <a href="{{ url('/requisiciones') }}"
                     class="link-more">
                     Ver todas
-                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                    <x-lucide-arrow-right class="w-3 h-3" />
                 </a>
             </div>
             <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
@@ -279,13 +282,10 @@
     Alpine.data('chartComponent', () => ({
         initChart() {
             if (typeof Chart === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-                script.onload = () => this.renderChart();
-                document.head.appendChild(script);
-            } else {
-                this.renderChart();
+                console.warn('Chart.js no está cargado. Usa la directiva @assets de Livewire.');
+                return;
             }
+            this.renderChart();
         },
         renderChart() {
             const ctx = document.getElementById('monthly-expenses-chart');

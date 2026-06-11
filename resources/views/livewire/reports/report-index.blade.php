@@ -1,4 +1,8 @@
 <div>
+    @assets
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @endassets
+
     {{-- Header --}}
     <x-page-header subtitle="Analítica" title="Reportes">
         <x-slot:actions>
@@ -14,35 +18,54 @@
         <button @click="tab = 'overview'; $wire.set('activeTab', 'overview')"
             :class="tab === 'overview' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
             class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Resumen
+            <x-lucide-layout-dashboard class="w-3.5 h-3.5" /> Resumen
         </button>
         <button @click="tab = 'suppliers'; $wire.set('activeTab', 'suppliers')"
             :class="tab === 'suppliers' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
             class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <i data-lucide="building-2" class="w-3.5 h-3.5"></i> Proveedores
+            <x-lucide-building-2 class="w-3.5 h-3.5" /> Proveedores
         </button>
         <button @click="tab = 'vendors'; $wire.set('activeTab', 'vendors')"
             :class="tab === 'vendors' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
             class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Vendedores
+            <x-lucide-user-check class="w-3.5 h-3.5" /> Vendedores
         </button>
         <button @click="tab = 'products'; $wire.set('activeTab', 'products')"
             :class="tab === 'products' ? 'border-primary-600 text-primary-700 font-semibold' : 'border-transparent text-text-muted hover:text-text-secondary'"
             class="px-4 py-2.5 text-small border-b-2 transition-colors flex items-center gap-1.5">
-            <i data-lucide="package" class="w-3.5 h-3.5"></i> Productos
+            <x-lucide-package class="w-3.5 h-3.5" /> Productos
         </button>
     </div>
 
-    {{-- ═══════════════════════════════════════════════════ --}}
-    {{-- TAB: RESUMEN GENERAL --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- Skeleton de Carga --}}
+    <div wire:loading wire:target="activeTab" class="w-full">
+        <div class="animate-pulse space-y-4">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="h-24 bg-surface-hover rounded-xl"></div>
+                <div class="h-24 bg-surface-hover rounded-xl"></div>
+                <div class="h-24 bg-surface-hover rounded-xl"></div>
+                <div class="h-24 bg-surface-hover rounded-xl"></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-2 h-64 bg-surface-hover rounded-xl"></div>
+                <div class="h-64 bg-surface-hover rounded-xl"></div>
+            </div>
+            <div class="h-96 bg-surface-hover rounded-xl mt-4"></div>
+        </div>
+    </div>
+
+    {{-- Contenido de Tabs --}}
+    <div wire:loading.remove wire:target="activeTab">
+        {{-- ═══════════════════════════════════════════════════ --}}
+        {{-- TAB: RESUMEN GENERAL --}}
+        {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'overview')
 
         {{-- KPI Cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
             <div class="stat-card">
                 <div class="stat-icon bg-warning-light">
-                    <i data-lucide="dollar-sign" class="w-5 h-5 text-warning"></i>
+                    <x-lucide-dollar-sign class="w-5 h-5 text-warning" />
                 </div>
                 <div>
                     <p class="text-h2 font-bold text-text-primary tabular-nums">
@@ -52,7 +75,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon bg-primary-50">
-                    <i data-lucide="receipt" class="w-5 h-5 text-primary-600"></i>
+                    <x-lucide-receipt class="w-5 h-5 text-primary-600" />
                 </div>
                 <div>
                     <p class="text-h2 text-text-primary">{{ $expenseCount }}</p>
@@ -62,7 +85,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon bg-success-light">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-success"></i>
+                    <x-lucide-check-circle class="w-5 h-5 text-success" />
                 </div>
                 <div>
                     <p class="text-h2 text-text-primary">{{ $requisitionsApproved }}</p>
@@ -71,7 +94,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon bg-danger-light">
-                    <i data-lucide="hard-hat" class="w-5 h-5 text-danger"></i>
+                    <x-lucide-hard-hat class="w-5 h-5 text-danger" />
                 </div>
                 <div>
                     <p class="text-h2 text-text-primary">{{ $activeProjects }}/{{ $totalProjects }}</p>
@@ -541,6 +564,7 @@
                 @endif
             </div>
         </div>
-    @endif
+        @endif
+    </div>
 
 </div>

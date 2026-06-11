@@ -23,7 +23,7 @@
 <th wire:click="sortBy('{{ $field }}')" class="cursor-pointer group hover:bg-surface-hover/50 transition-colors">
     <div class="flex items-center gap-1.5 {{ $alignClass }}">
         <span class="{{ $isActive ? 'text-text-primary font-semibold' : '' }}">{{ $label }}</span>
-        <i data-lucide="{{ $icon }}" 
-           class="w-3.5 h-3.5 {{ $isActive ? 'text-primary-600' : 'text-text-muted opacity-0 group-hover:opacity-100 transition-opacity' }}"></i>
+        <x-dynamic-component :component="'lucide-' . $icon" 
+           class="w-3.5 h-3.5 {{ $isActive ? 'text-primary-600' : 'text-text-muted opacity-0 group-hover:opacity-100 transition-opacity' }}" />
     </div>
 </th>

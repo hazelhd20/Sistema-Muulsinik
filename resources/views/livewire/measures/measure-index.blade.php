@@ -123,7 +123,7 @@
 
                         <div class="flex items-center justify-between mt-1 pt-2 border-t border-border/50 text-small">
                             <div class="flex items-center gap-1.5 text-text-secondary">
-                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-text-muted"></i>
+                                <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
                                 <span>Registro: {{ $measure->created_at->format('d/m/Y') }}</span>
                             </div>
                         </div>
@@ -132,7 +132,7 @@
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
                                     <x-button variant="secondary" class="w-full justify-center">
-                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        <x-lucide-more-horizontal class="w-4 h-4" />
                                         <span class="ml-2">Opciones</span>
                                     </x-button>
                                 </x-slot>

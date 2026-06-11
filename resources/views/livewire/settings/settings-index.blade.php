@@ -6,13 +6,13 @@
                 <button type="button" @click="tab = 'empresa'" 
                         :class="tab === 'empresa' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-text-secondary hover:bg-surface-hover'"
                         class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-body transition-all duration-150 text-left cursor-pointer">
-                    <i data-lucide="building-2" class="w-4 h-4 shrink-0"></i>
+                    <x-lucide-building-2 class="w-4 h-4 shrink-0" />
                     <span>Empresa</span>
                 </button>
                 <button type="button" @click="tab = 'documentos'" 
                         :class="tab === 'documentos' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-text-secondary hover:bg-surface-hover'"
                         class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-body transition-all duration-150 text-left cursor-pointer">
-                    <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
+                    <x-lucide-file-text class="w-4 h-4 shrink-0" />
                     <span>Documentos</span>
                 </button>
             </nav>
@@ -49,7 +49,7 @@
                                      class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-card">
                                 <button type="button" wire:click="deleteLogo"
                                         class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
                                 </button>
                             </div>
                         @endif

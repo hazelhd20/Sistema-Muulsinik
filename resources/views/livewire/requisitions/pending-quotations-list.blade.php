@@ -21,7 +21,7 @@
                         @elseif($pq->isCompleted())
                             {{-- Estado: completado --}}
                             <div class="w-10 h-10 rounded-xl bg-success-light text-success flex items-center justify-center shrink-0 shadow-sm">
-                                <i data-lucide="file-edit" class="w-5 h-5" wire:ignore></i>
+                                <x-lucide-file-edit class="w-5 h-5" wire:ignore />
                             </div>
                             <div>
                                 @php
@@ -45,7 +45,7 @@
                         @else
                             {{-- Estado: error --}}
                             <div class="w-10 h-10 rounded-xl bg-danger-light text-danger flex items-center justify-center shrink-0 shadow-sm">
-                                <i data-lucide="file-x" class="w-5 h-5" wire:ignore></i>
+                                <x-lucide-file-x class="w-5 h-5" wire:ignore />
                             </div>
                             <div>
                                 <p class="text-small font-semibold text-text-primary">Error al extraer datos</p>

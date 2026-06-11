@@ -13,14 +13,14 @@
 
 @if ($as === 'button')
     <button {{ $attributes->merge(['class' => $classes]) }}>
-        @if($icon) <i data-lucide="{{ $icon }}" class="w-4 h-4 shrink-0"></i> @endif
+        @if($icon) <x-dynamic-component :component="'lucide-' . $icon" class="w-4 h-4 shrink-0" /> @endif
         <span class="flex-1 text-left">{{ $slot }}</span>
-        @if($iconRight) <i data-lucide="{{ $iconRight }}" class="w-4 h-4 shrink-0"></i> @endif
+        @if($iconRight) <x-dynamic-component :component="'lucide-' . $iconRight" class="w-4 h-4 shrink-0" /> @endif
     </button>
 @elseif ($as === 'a')
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if($icon) <i data-lucide="{{ $icon }}" class="w-4 h-4 shrink-0"></i> @endif
+        @if($icon) <x-dynamic-component :component="'lucide-' . $icon" class="w-4 h-4 shrink-0" /> @endif
         <span class="flex-1">{{ $slot }}</span>
-        @if($iconRight) <i data-lucide="{{ $iconRight }}" class="w-4 h-4 shrink-0"></i> @endif
+        @if($iconRight) <x-dynamic-component :component="'lucide-' . $iconRight" class="w-4 h-4 shrink-0" /> @endif
     </a>
 @endif

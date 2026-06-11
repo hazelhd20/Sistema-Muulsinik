@@ -158,19 +158,19 @@
                             <div>
                                 <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Ítems</p>
                                 <span class="inline-flex items-center gap-1.5 text-text-primary">
-                                    <i data-lucide="list" class="w-3.5 h-3.5 text-text-muted"></i>
+                                    <x-lucide-list class="w-3.5 h-3.5 text-text-muted" />
                                     {{ $budget->items_count }}
                                 </span>
                             </div>
                             @if($budget->description)
                                 <div class="col-span-2 flex items-start gap-1.5 mt-1 pt-2 border-t border-border/50">
-                                    <i data-lucide="align-left" class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0"></i>
+                                    <x-lucide-align-left class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
                                     <span class="text-text-secondary line-clamp-2">{{ $budget->description }}</span>
                                 </div>
                             @endif
                             <div class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
                                 <div class="flex items-center gap-1.5 text-text-secondary">
-                                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-text-muted"></i>
+                                    <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
                                     <span>Registro: {{ $budget->created_at->format('d/m/Y') }}</span>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
                                     <x-button variant="secondary" class="w-full justify-center">
-                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        <x-lucide-more-horizontal class="w-4 h-4" />
                                         <span class="ml-2">Opciones</span>
                                     </x-button>
                                 </x-slot>

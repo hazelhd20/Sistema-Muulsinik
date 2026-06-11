@@ -86,7 +86,7 @@
                             <div class="flex gap-4 px-5 py-4 hover:bg-surface-hover transition-colors {{ $isUnread ? 'bg-primary-50/20' : '' }}">
                                 {{-- Icon --}}
                                 <div class="w-11 h-11 rounded-xl {{ $colorClasses }} flex items-center justify-center shrink-0">
-                                    <i data-lucide="{{ $data['icon'] ?? 'bell' }}" class="w-5 h-5"></i>
+                                    <x-dynamic-component :component="'lucide-' . $data['icon'] ?? 'bell'" class="w-5 h-5" />
                                 </div>
 
                                 {{-- Content --}}

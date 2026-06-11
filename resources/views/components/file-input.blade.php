@@ -59,17 +59,8 @@
         closePreview() {
             this.showPreview = false;
         },
-        renderFileIcon() {
-            if (!window.lucide) return;
-            const refs = ['fileIconDropzone', 'fileIconCompact'];
-            refs.forEach(ref => {
-                const el = this.$refs[ref];
-                if (!el) return;
-                const size = ref === 'fileIconDropzone' ? 'w-5 h-5' : 'w-4 h-4';
-                el.innerHTML = `<i data-lucide='${this.iconData.icon}' class='${size}'></i>`;
-                lucide.createIcons({ root: el });
-            });
-        },
+        // El renderizado de iconos ahora lo hace Alpine con x-show en la vista
+        renderFileIcon() {},
         resetState() {
             this.fileName = null;
             this.fileSize = null;
@@ -126,7 +117,7 @@
         >
             <div class="flex flex-col items-center gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center">
-                    <i data-lucide="{{ $icon }}" class="w-8 h-8 text-primary-600" wire:ignore></i>
+                    <x-dynamic-component :component="'lucide-' . $icon" class="w-8 h-8 text-primary-600" wire:ignore />
                 </div>
                 <div>
                     <p class="text-h3 text-text-primary">{{ $title }}</p>
@@ -163,7 +154,12 @@
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                      :class="iconData.bg">
-                    <span x-ref="fileIconDropzone" :class="iconData.color"></span>
+                    <div :class="iconData.color" class="flex items-center justify-center">
+                        <x-lucide-image x-show="iconData.icon === 'image'" class="w-5 h-5" x-cloak />
+                        <x-lucide-file-text x-show="iconData.icon === 'file-text'" class="w-5 h-5" x-cloak />
+                        <x-lucide-file-spreadsheet x-show="iconData.icon === 'file-spreadsheet'" class="w-5 h-5" x-cloak />
+                        <x-lucide-file x-show="iconData.icon === 'file'" class="w-5 h-5" x-cloak />
+                    </div>
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
@@ -178,11 +174,11 @@
                 <div class="flex items-center gap-1 shrink-0">
                     <button x-show="canPreview && !uploading" type="button" @click="openPreview()"
                         class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition" title="Vista previa">
-                        <i data-lucide="eye" class="w-4 h-4" wire:ignore></i>
+                        <x-lucide-eye class="w-4 h-4" wire:ignore />
                     </button>
                     <button type="button" @click="removeFile()"
                         class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger transition">
-                        <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
+                        <x-lucide-x class="w-4 h-4" wire:ignore />
                     </button>
                 </div>
             </div>
@@ -196,7 +192,7 @@
                 <img :src="previewUrl" class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-card" />
                 <button type="button" @click="removeFile()"
                     class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
-                    <i data-lucide="x" class="w-3.5 h-3.5" wire:ignore></i>
+                    <x-lucide-x class="w-3.5 h-3.5" wire:ignore />
                 </button>
             </div>
 
@@ -204,11 +200,16 @@
             <div x-show="fileName && !(previewType && previewType.startsWith('image/'))" x-cloak class="relative shrink-0">
                 <div class="h-16 w-16 rounded-lg flex items-center justify-center border border-border bg-surface-card"
                      :class="iconData.bg">
-                    <span x-ref="fileIconCompact" :class="iconData.color"></span>
+                    <div :class="iconData.color" class="flex items-center justify-center">
+                        <x-lucide-image x-show="iconData.icon === 'image'" class="w-6 h-6" x-cloak />
+                        <x-lucide-file-text x-show="iconData.icon === 'file-text'" class="w-6 h-6" x-cloak />
+                        <x-lucide-file-spreadsheet x-show="iconData.icon === 'file-spreadsheet'" class="w-6 h-6" x-cloak />
+                        <x-lucide-file x-show="iconData.icon === 'file'" class="w-6 h-6" x-cloak />
+                    </div>
                 </div>
                 <button type="button" @click="removeFile()"
                     class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
-                    <i data-lucide="x" class="w-3.5 h-3.5" wire:ignore></i>
+                    <x-lucide-x class="w-3.5 h-3.5" wire:ignore />
                 </button>
             </div>
 
@@ -228,7 +229,7 @@
                             : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20')"
                 >
                     <div class="flex items-center gap-2">
-                        <i data-lucide="upload" class="w-4 h-4 text-primary-600 shrink-0" wire:ignore></i>
+                        <x-lucide-upload class="w-4 h-4 text-primary-600 shrink-0" wire:ignore />
                         <div class="min-w-0">
                             <p class="text-body text-text-primary" x-text="fileName ? 'Cambiar archivo' : 'Seleccionar archivo'"></p>
                             <p x-show="!uploading" class="text-xs-fluid text-text-muted">
@@ -263,7 +264,7 @@
             {{-- Empty state --}}
             <div x-show="!fileName" class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                    <i data-lucide="upload" class="w-4 h-4 text-primary-600" wire:ignore></i>
+                    <x-lucide-upload class="w-4 h-4 text-primary-600" wire:ignore />
                 </div>
                 <div class="min-w-0">
                     <p class="text-body text-text-primary">Seleccionar archivo</p>
@@ -278,7 +279,12 @@
                  x-effect="if (fileExt) $nextTick(() => renderFileIcon())">
                 <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                      :class="iconData.bg">
-                    <span x-ref="fileIconCompact" :class="iconData.color"></span>
+                    <div :class="iconData.color" class="flex items-center justify-center">
+                        <x-lucide-image x-show="iconData.icon === 'image'" class="w-4 h-4" x-cloak />
+                        <x-lucide-file-text x-show="iconData.icon === 'file-text'" class="w-4 h-4" x-cloak />
+                        <x-lucide-file-spreadsheet x-show="iconData.icon === 'file-spreadsheet'" class="w-4 h-4" x-cloak />
+                        <x-lucide-file x-show="iconData.icon === 'file'" class="w-4 h-4" x-cloak />
+                    </div>
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
@@ -293,11 +299,11 @@
                 <div class="flex items-center gap-1 shrink-0">
                     <button x-show="canPreview && !uploading" type="button" @click.stop="openPreview()"
                         class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition" title="Vista previa">
-                        <i data-lucide="eye" class="w-4 h-4" wire:ignore></i>
+                        <x-lucide-eye class="w-4 h-4" wire:ignore />
                     </button>
                     <button type="button" @click.stop="removeFile()"
                         class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger transition">
-                        <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
+                        <x-lucide-x class="w-4 h-4" wire:ignore />
                     </button>
                 </div>
             </div>
@@ -315,7 +321,7 @@
                     <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
                     <button type="button" @click="closePreview()"
                         class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">
-                        <i data-lucide="x" class="w-4 h-4" wire:ignore></i>
+                        <x-lucide-x class="w-4 h-4" wire:ignore />
                     </button>
                 </div>
                 <div class="flex-1 overflow-auto flex items-center justify-center p-4 bg-surface-main">
@@ -333,7 +339,7 @@
     {{-- Error slot --}}
     @error($wireModel)
         <div class="mt-2 p-3 rounded-xl bg-surface-hover border border-danger/20 text-danger text-body flex items-center gap-2">
-            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0" wire:ignore></i>
+            <x-lucide-alert-circle class="w-4 h-4 shrink-0" wire:ignore />
             {{ $message }}
         </div>
     @enderror

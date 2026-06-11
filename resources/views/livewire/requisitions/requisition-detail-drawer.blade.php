@@ -66,7 +66,7 @@
                 {{-- Banner de rechazo --}}
                 @if($detailRequisition->status === 'rechazada' && $detailRequisition->rejection_comment)
                     <div class="flex items-start gap-3 p-4 rounded-xl bg-danger-light border border-danger-border">
-                        <i data-lucide="x-octagon" class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true"></i>
+                        <x-lucide-x-octagon class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true" />
                         <div class="min-w-0">
                             <p class="text-small font-semibold text-danger">Motivo del rechazo</p>
                             <p class="text-small text-danger mt-0.5" style="opacity:.85">

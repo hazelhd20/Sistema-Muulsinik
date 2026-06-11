@@ -1,18 +1,18 @@
 @props(['icon' => 'inbox', 'title' => '', 'message' => ''])
 
-<div {{ $attributes->class(['text-center py-12']) }}>
-    <div class="w-12 h-12 rounded-xl bg-surface-main flex items-center justify-center mx-auto mb-3">
-        <i data-lucide="{{ $icon }}" class="w-6 h-6 text-text-muted opacity-40"></i>
+<div {{ $attributes->class(['flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-2xl border-2 border-dashed border-border bg-surface-main/30']) }}>
+    <div class="w-14 h-14 rounded-2xl bg-surface-card border border-border shadow-sm flex items-center justify-center mb-4">
+        <x-dynamic-component :component="'lucide-' . $icon" class="w-7 h-7 text-text-muted" />
     </div>
     @if($title)
-        <p class="text-small font-medium text-text-secondary mb-0.5">{{ $title }}</p>
+        <h3 class="text-h3 font-semibold text-text-primary mb-1">{{ $title }}</h3>
     @endif
     @if($message)
-        <p class="text-xs-fluid text-text-muted">{{ $message }}</p>
+        <p class="text-body text-text-muted max-w-sm">{{ $message }}</p>
     @endif
     @if(isset($actions))
-        <div class="mt-4">{{ $actions }}</div>
+        <div class="mt-6">{{ $actions }}</div>
     @elseif($slot->isNotEmpty())
-        <div class="mt-4">{{ $slot }}</div>
+        <div class="mt-6">{{ $slot }}</div>
     @endif
 </div>

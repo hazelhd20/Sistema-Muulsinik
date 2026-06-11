@@ -122,7 +122,7 @@
     <!-- Input -->
     <div class="relative w-full">
         @if($icon && $iconPosition === 'left')
-            <i data-lucide="{{ $icon }}" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+            <x-dynamic-component :component="'lucide-' . $icon" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
         @endif
         
         <input 
@@ -142,7 +142,7 @@
         >
         
         @if($icon && $iconPosition === 'right')
-            <i data-lucide="{{ $icon }}" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none"></i>
+            <x-dynamic-component :component="'lucide-' . $icon" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
         @endif
 
         {{ $slot }} <!-- Para inyectar iconos de validacion/status -->

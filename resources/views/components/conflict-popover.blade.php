@@ -184,7 +184,7 @@ $cfg = $shouldRender ? match($type) {
                     title="{{ $cfg['triggerTitle'] }}"
                     :aria-expanded="open"
                     aria-haspopup="true">
-                <i data-lucide="{{ $cfg['triggerIcon'] }}" class="w-4 h-4" wire:ignore></i>
+                <x-dynamic-component :component="'lucide-' . $cfg['triggerIcon']" class="w-4 h-4" wire:ignore />
             </button>
         </div>
 
@@ -204,9 +204,9 @@ $cfg = $shouldRender ? match($type) {
 
                 {{-- Header --}}
                 <div class="flex items-start gap-2.5 mb-3 pb-2.5 border-b border-border">
-                    <i data-lucide="{{ $cfg['headerIcon'] }}"
+                    <x-dynamic-component :component="'lucide-' . $cfg['headerIcon']"
                        class="w-4 h-4 {{ $cfg['headerColor'] }} shrink-0 mt-0.5"
-                       wire:ignore></i>
+                       wire:ignore />
                     <div>
                         <p class="text-xs-fluid font-semibold text-text-primary leading-tight">
                             {{ $cfg['title'] }}

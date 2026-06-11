@@ -75,7 +75,7 @@
     {{-- ─── Banner de rechazo (visible solo cuando rechazada) ─── --}}
     @if($requisition->status === 'rechazada' && $requisition->rejection_comment)
         <div class="mb-6 flex items-start gap-3 p-4 rounded-xl bg-danger-light border border-danger-border">
-            <i data-lucide="x-octagon" class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true"></i>
+            <x-lucide-x-octagon class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true" />
             <div class="min-w-0">
                 <p class="text-small font-semibold text-danger">Requisición rechazada</p>
                 <p class="text-small text-danger mt-0.5 opacity-85">{{ $requisition->rejection_comment }}</p>
@@ -270,7 +270,7 @@
     @if($requisition->activities->isNotEmpty())
         <div class="card mb-6">
             <div class="px-6 py-4 border-b border-border flex items-center gap-3">
-                <i data-lucide="history" class="w-5 h-5 text-text-muted"></i>
+                <x-lucide-history class="w-5 h-5 text-text-muted" />
                 <h2 class="text-h3 font-semibold text-text-primary">Historial de Actividad</h2>
             </div>
             <div class="p-6">
@@ -289,7 +289,7 @@
                             {{-- Line & Icon --}}
                             <div class="relative z-10 flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border shadow-sm shrink-0 bg-surface-card transition-transform group-hover:scale-105 {{ $actionConfig['border'] }}">
                                 <div class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center {{ $actionConfig['bg'] }}">
-                                    <i data-lucide="{{ $actionConfig['icon'] }}" class="w-4 h-4 md:w-5 md:h-5 {{ $actionConfig['color'] }}"></i>
+                                    <x-dynamic-component :component="'lucide-' . $actionConfig['icon']" class="w-4 h-4 md:w-5 md:h-5 {{ $actionConfig['color'] }}" />
                                 </div>
                             </div>
                             
@@ -304,7 +304,7 @@
                                     </span>
                                 </div>
                                 <div class="text-xs-fluid text-text-muted flex items-center gap-1.5">
-                                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                                    <x-lucide-user class="w-3.5 h-3.5" />
                                     {{ $activity->user ? $activity->user->name : 'Sistema' }}
                                 </div>
 
@@ -313,7 +313,7 @@
                                         @if($activity->action === 'status_changed')
                                             <div class="flex items-center gap-3 text-xs-fluid font-medium">
                                                 <span class="text-text-muted line-through">{{ strtoupper($activity->old_values['status'] ?? '—') }}</span>
-                                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-text-secondary"></i>
+                                                <x-lucide-arrow-right class="w-3.5 h-3.5 text-text-secondary" />
                                                 <span class="text-primary-600">{{ strtoupper($activity->new_values['status'] ?? '—') }}</span>
                                             </div>
                                         @else

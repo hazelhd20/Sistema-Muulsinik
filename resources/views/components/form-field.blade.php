@@ -17,7 +17,7 @@
     @endif
     @if($error)
         <p class="mt-1 text-xs-fluid text-danger flex items-center gap-1">
-            <i data-lucide="circle-alert" class="w-3 h-3 shrink-0"></i>
+            <x-lucide-circle-alert class="w-3 h-3 shrink-0" />
             {{ $error }}
         </p>
     @endif

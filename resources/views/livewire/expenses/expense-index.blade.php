@@ -194,7 +194,7 @@
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
                                     <x-button variant="secondary" class="w-full justify-center">
-                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        <x-lucide-more-horizontal class="w-4 h-4" />
                                         <span class="ml-2">Opciones</span>
                                     </x-button>
                                 </x-slot>
@@ -351,7 +351,7 @@
                                 <div x-show="distributed"
                                     class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
                                     style="display: none;">
-                                    <i data-lucide="split" class="w-4 h-4 mr-2"></i> Gasto distribuido
+                                    <x-lucide-split class="w-4 h-4 mr-2" /> Gasto distribuido
                                 </div>
                             </div>
                         </x-form-field>

@@ -89,12 +89,12 @@
         {{-- Cabecera --}}
         <div class="dropdown-header">
             <h3 class="dropdown-header-title">
-                <i data-lucide="filter" class="w-4 h-4 text-text-muted"></i>
+                <x-lucide-filter class="w-4 h-4 text-text-muted" />
                 Filtros
             </h3>
             <button type="button" @click="open = false"
                 class="text-text-muted hover:text-text-primary transition-colors p-1 rounded-md hover:bg-surface-hover">
-                <i data-lucide="x" class="w-4 h-4"></i>
+                <x-lucide-x class="w-4 h-4" />
             </button>
         </div>
 

@@ -304,22 +304,22 @@
 
                         <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
                             <div class="flex items-center gap-1.5">
-                                <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i>
+                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
                                 <span>{{ $req->date?->format('d/m/Y') }}</span>
                             </div>
                             <div class="flex items-center gap-1.5 truncate">
-                                <i data-lucide="user" class="w-3.5 h-3.5 shrink-0"></i>
+                                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
                                 <span class="truncate">{{ $req->creator->name ?? '—' }}</span>
                             </div>
                             <div class="flex items-center gap-1.5 truncate col-span-2 mt-0.5">
-                                <i data-lucide="building-2" class="w-3.5 h-3.5 shrink-0"></i>
+                                <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
                                 <span class="truncate">{{ $req->vendor?->name ?? 'Sin proveedor' }}</span>
                             </div>
                         </div>
 
                         @if($req->status === 'rechazada' && $req->rejection_comment)
                             <div class="bg-danger-50 text-danger-700 text-xs-fluid p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
-                                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                                <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
                                 <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
                             </div>
                         @endif

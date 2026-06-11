@@ -62,7 +62,7 @@
         title="Buscar (Ctrl+K)"
         aria-label="Buscar"
     >
-        <i data-lucide="search" class="w-4 h-4"></i>
+        <x-lucide-search class="w-4 h-4" />
     </button>
 
     {{-- Command Palette Modal --}}
@@ -102,7 +102,7 @@
                 >
                     {{-- Input Header --}}
                     <div class="relative flex items-center px-4 py-3">
-                        <i data-lucide="search" class="w-5 h-5 text-text-muted absolute left-4"></i>
+                        <x-lucide-search class="w-5 h-5 text-text-muted absolute left-4" />
                         <input
                             type="text"
                             x-ref="searchInput"
@@ -123,7 +123,7 @@
                             @click="$wire.clear(); $refs.searchInput.focus()"
                             class="absolute right-4 text-text-muted hover:text-text-primary p-1 rounded-md transition"
                         >
-                            <i data-lucide="x" class="w-4 h-4"></i>
+                            <x-lucide-x class="w-4 h-4" />
                         </button>
                     </div>
 

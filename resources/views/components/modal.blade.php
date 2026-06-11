@@ -54,7 +54,7 @@
                     class="shrink-0 p-1.5 -mt-0.5 -mr-0.5 rounded-lg text-text-muted border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500
                            hover:bg-surface-hover hover:text-text-primary transition-colors"
                     aria-label="Cerrar">
-                <i data-lucide="x" class="w-4 h-4"></i>
+                <x-lucide-x class="w-4 h-4" />
             </button>
         </div>
 

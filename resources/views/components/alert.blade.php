@@ -31,7 +31,7 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => "p-3 rounded-lg text-small flex items-start gap-2.5 shadow-sm $currentColor"]) }} role="alert">
-    <i data-lucide="{{ $currentIcon }}" class="w-4 h-4 shrink-0 mt-0.5 {{ $currentIconColor }}"></i>
+    <x-dynamic-component :component="'lucide-' . $currentIcon" class="w-4 h-4 shrink-0 mt-0.5 {{ $currentIconColor }}" />
     <div class="flex-1">
         @if($message)
             <span>{{ $message }}</span>

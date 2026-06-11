@@ -82,7 +82,7 @@
                                 class="relative shrink-0 p-1.5 -mr-1.5 rounded-lg text-text-muted border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 hover:bg-surface-hover hover:text-text-primary transition-colors"
                                 aria-label="Cerrar">
                             <span class="absolute -inset-2.5"></span>
-                            <i data-lucide="x" class="w-5 h-5"></i>
+                            <x-lucide-x class="w-5 h-5" />
                         </button>
                     </div>
                 </div>

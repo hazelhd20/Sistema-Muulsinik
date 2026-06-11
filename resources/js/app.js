@@ -1,32 +1,5 @@
 import "./bootstrap";
 
-// -- Global Lucide Icons Initialization --
-const initIcons = () => {
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-};
-
-document.addEventListener('DOMContentLoaded', initIcons);
-document.addEventListener('livewire:navigated', initIcons);
-
-document.addEventListener('livewire:initialized', () => {
-    /**
-     * Livewire 4 - Solución profesional para iconos de Lucide.
-     *
-     * Por qué 'commit.succeed' y NO 'morph.updated':
-     * - morph.updated: se dispara POR CADA elemento morfado (puede ser 100 veces)
-     *   y el DOM puede estar aún a medio reemplazar cuando se llama.
-     * - commit.succeed: se dispara UNA SOLA VEZ por request, DESPUÉS de que todo
-     *   el DOM ha sido actualizado completamente. Es el momento correcto y seguro.
-     */
-    Livewire.hook('commit', ({ succeed }) => {
-        succeed(() => {
-            if (window.lucide) lucide.createIcons();
-        });
-    });
-});
-
 document.addEventListener("alpine:init", () => {
     // Estandarización de Gráficas con Chart.js
     // Uso: x-data="chartCanvas((data) => ({ type: 'line', data: {...}, options: {...} }))"
@@ -70,10 +43,14 @@ document.addEventListener("alpine:init", () => {
             const existingChart = window.Chart?.getChart(canvas);
             if (existingChart) existingChart.destroy();
 
-            if (typeof window.Chart === 'undefined') return;
+            // Si Livewire @assets ya inyectó Chart.js, lo usamos
+            if (typeof window.Chart === 'undefined') {
+                console.warn('Chart.js no está cargado. Usa la directiva @assets de Livewire.');
+                return;
+            }
 
             const config = configCallback(this.chartData);
-            this.chart = new Chart(canvas, config);
+            this.chart = new window.Chart(canvas, config);
         },
 
         destroy() {

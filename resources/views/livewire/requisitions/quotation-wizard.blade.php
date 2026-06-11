@@ -31,7 +31,7 @@
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-small font-semibold transition-all duration-300 border
                                {{ $step > $num ? 'bg-success text-white border-success' : ($step === $num ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-surface-card text-text-muted border-border') }}">
                         @if($step > $num)
-                            <i data-lucide="check" class="w-4 h-4" wire:ignore></i>
+                            <x-lucide-check class="w-4 h-4" wire:ignore />
                         @else
                             {{ $num }}
                         @endif
@@ -95,7 +95,7 @@
                     </div>
 
                     <div class="inline-flex items-center gap-2 text-xs-fluid text-text-muted bg-surface-main border border-border rounded-full px-3 py-1.5">
-                        <i data-lucide="info" class="w-3.5 h-3.5 text-primary-400 shrink-0"></i>
+                        <x-lucide-info class="w-3.5 h-3.5 text-primary-400 shrink-0" />
                         <span>Puedes ir a otra página; te avisaremos al terminar</span>
                     </div>
 
@@ -110,7 +110,7 @@
                     <div class="flex flex-col items-center max-w-sm mx-auto text-center py-2">
                         {{-- Ícono de error con borde semántico --}}
                         <div class="w-14 h-14 rounded-2xl bg-danger-light border border-danger-border flex items-center justify-center mb-5 shrink-0">
-                            <i data-lucide="alert-triangle" class="w-7 h-7 text-danger" wire:ignore></i>
+                            <x-lucide-alert-triangle class="w-7 h-7 text-danger" wire:ignore />
                         </div>
 
                         {{-- Título y descripción --}}
@@ -119,7 +119,7 @@
 
                         {{-- Caja de mensaje de error con color semántico --}}
                         <div class="w-full flex gap-2.5 items-start bg-danger-light border border-danger-border rounded-lg px-4 py-3 mb-6 text-left">
-                            <i data-lucide="info" class="w-4 h-4 text-danger mt-0.5 shrink-0" wire:ignore></i>
+                            <x-lucide-info class="w-4 h-4 text-danger mt-0.5 shrink-0" wire:ignore />
                             <p class="text-xs-fluid text-danger leading-relaxed">
                                 {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
                             </p>
@@ -186,17 +186,17 @@
                                 class="w-full" inputClass="{{ isset($supplierMatch['status']) ? 'pr-8' : '' }}">
                             </x-custom-combobox>
                             @if(($supplierMatch['status'] ?? '') === 'new')
-                                <i data-lucide="plus-circle"
+                                <x-lucide-plus-circle
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
-                                        title="Se creará como nuevo proveedor" wire:ignore></i>
+                                        title="Se creará como nuevo proveedor" wire:ignore />
                             @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
-                                <i data-lucide="sparkles"
+                                <x-lucide-sparkles
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
-                                    title="Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%" wire:ignore></i>
+                                    title="Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%" wire:ignore />
                             @elseif(($supplierMatch['status'] ?? '') === 'exact')
-                                <i data-lucide="check-circle-2"
+                                <x-lucide-check-circle-2
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
-                                        title="Proveedor existente" wire:ignore></i>
+                                        title="Proveedor existente" wire:ignore />
                             @endif
                         </div>
                     </x-form-field>
@@ -216,17 +216,17 @@
                                 inputClass="{{ isset($vendorMatch['status']) ? 'pr-8' : '' }}">
                             </x-custom-combobox>
                             @if(($vendorMatch['status'] ?? '') === 'new')
-                                <i data-lucide="plus-circle"
+                                <x-lucide-plus-circle
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
-                                        title="Se creará como nuevo vendedor" wire:ignore></i>
+                                        title="Se creará como nuevo vendedor" wire:ignore />
                             @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
-                                <i data-lucide="sparkles"
+                                <x-lucide-sparkles
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
-                                    title="Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%" wire:ignore></i>
+                                    title="Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%" wire:ignore />
                             @elseif(($vendorMatch['status'] ?? '') === 'exact')
-                                <i data-lucide="check-circle-2"
+                                <x-lucide-check-circle-2
                                     class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
-                                        title="Vendedor existente" wire:ignore></i>
+                                        title="Vendedor existente" wire:ignore />
                             @endif
                         </div>
                     </x-form-field>
@@ -308,12 +308,12 @@
                                                     @if($productStatus === 'exact')
                                                         <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
                                                             title="Confirmado en catálogo">
-                                                            <i data-lucide="check-circle-2" class="w-4 h-4" wire:ignore></i>
+                                                            <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
                                                         </div>
                                                     @elseif($productStatus === 'new')
                                                         <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
                                                             title="Se creará como nuevo producto">
-                                                            <i data-lucide="plus-circle" class="w-4 h-4" wire:ignore></i>
+                                                            <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
                                                         </div>
                                                     @endif
                                                 @endif
@@ -409,7 +409,7 @@
                             @endphp
                             <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
                                 <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
-                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                    <x-lucide-x class="w-5 h-5" />
                                 </button>
                                 
                                 <div class="flex flex-col gap-3">
@@ -423,11 +423,11 @@
                                             @if(!$isFuzzyPending)
                                                 @if($productStatus === 'exact')
                                                     <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10" title="Confirmado">
-                                                        <i data-lucide="check-circle-2" class="w-4 h-4" wire:ignore></i>
+                                                        <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
                                                     </div>
                                                 @elseif($productStatus === 'new')
                                                     <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10" title="Nuevo producto">
-                                                        <i data-lucide="plus-circle" class="w-4 h-4" wire:ignore></i>
+                                                        <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
                                                     </div>
                                                 @endif
                                             @endif
@@ -501,7 +501,7 @@
                                 </div>
                                 <div class="flex items-center justify-between gap-6">
                                     <span class="text-small text-success flex items-center gap-1">
-                                        <i data-lucide="tag" class="w-3.5 h-3.5" wire:ignore></i>
+                                        <x-lucide-tag class="w-3.5 h-3.5" wire:ignore />
                                         Descuento total
                                     </span>
                                     <span

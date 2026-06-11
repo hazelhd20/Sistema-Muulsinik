@@ -101,7 +101,7 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center gap-1 text-text-primary">
-                                            <i data-lucide="calendar" class="w-3.5 h-3.5 text-text-muted"></i>
+                                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
                                             <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                                         </div>
                                     </td>
@@ -207,7 +207,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-1.5 col-span-2 mt-1">
-                                <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i>
+                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
                                 <span>Inicio: {{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                             </div>
                         </div>
@@ -216,7 +216,7 @@
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
                                     <x-button variant="secondary" class="w-full justify-center">
-                                        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        <x-lucide-more-horizontal class="w-4 h-4" />
                                         <span class="ml-2">Opciones</span>
                                     </x-button>
                                 </x-slot>

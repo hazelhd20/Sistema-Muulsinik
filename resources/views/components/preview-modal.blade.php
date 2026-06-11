@@ -9,7 +9,7 @@
             </h3>
             <button @click="showPreviewModal = false"
                 class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">
-                <i data-lucide="x" class="w-5 h-5"></i>
+                <x-lucide-x class="w-5 h-5" />
             </button>
         </div>
         <div class="flex-1 overflow-hidden bg-surface-main p-4 relative">
@@ -22,7 +22,7 @@
             </template>
             <template x-if="!isImage() && !isPdf()">
                 <div class="flex flex-col items-center justify-center h-full text-text-muted gap-3">
-                    <i data-lucide="file-question" class="w-12 h-12 opacity-50"></i>
+                    <x-lucide-file-question class="w-12 h-12 opacity-50" />
                     <p class="font-medium text-body">Vista previa no disponible para este tipo de archivo.</p>
                     <x-button x-bind:href="previewUrl" target="_blank" variant="secondary" icon="download" class="mt-2 text-small">
                         Descargar

@@ -60,8 +60,8 @@
             <div class="mb-4" x-data>
                 <div class="relative">
                     <div class="relative">
-                        <i data-lucide="search"
-                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+                        <x-lucide-search
+                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input wire:model.live.debounce.300ms="searchQuery" type="text"
                             class="input pl-10 border-border focus:border-primary-500 bg-surface-card"
                             placeholder="Buscar producto del catálogo para agregar...">
@@ -193,7 +193,7 @@
                         @endphp
                         <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
                             <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
-                                <i data-lucide="x" class="w-5 h-5"></i>
+                                <x-lucide-x class="w-5 h-5" />
                             </button>
                             
                             <div class="flex flex-col gap-3">

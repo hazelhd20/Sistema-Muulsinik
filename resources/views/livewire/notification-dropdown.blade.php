@@ -3,7 +3,7 @@
     <button @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" x-ref="trigger" wire:ignore.self
         class="relative p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
         title="Notificaciones">
-        <i data-lucide="bell" class="w-4 h-4"></i>
+        <x-lucide-bell class="w-4 h-4" />
 
         {{-- Badge de notificaciones no leídas --}}
         <div class="absolute -top-0.5 -right-0.5" wire:key="unread-badge">
@@ -63,7 +63,7 @@
                         class="flex gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover transition-colors {{ $isUnread ? 'bg-primary-50/30' : '' }}">
                         {{-- Icono --}}
                         <div class="w-9 h-9 rounded-lg {{ $colorClasses }} flex items-center justify-center shrink-0">
-                            <i data-lucide="{{ $notification['icon'] }}" class="w-4 h-4"></i>
+                            <x-dynamic-component :component="'lucide-' . $notification['icon']" class="w-4 h-4" />
                         </div>
 
                         {{-- Contenido --}}
