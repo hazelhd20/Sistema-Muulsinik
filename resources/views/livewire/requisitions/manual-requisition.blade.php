@@ -111,7 +111,8 @@
 
             {{-- Items Table --}}
             @if(count($form->items) > 0)
-                <div class="table-embedded table-embedded-form">
+                {{-- Desktop Table --}}
+                <div class="table-embedded hidden md:block table-embedded-form">
                     <table>
                         <thead>
                             <tr>
@@ -180,6 +181,67 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Mobile Cards --}}
+                <div class="md:hidden flex flex-col gap-4 mt-4">
+                    @foreach($form->items as $i => $item)
+                        @php
+                            $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
+                            $iva = round($subtotal * 0.16, 2);
+                            $total = $subtotal + $iva;
+                        @endphp
+                        <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
+                            <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                            
+                            <div class="flex flex-col gap-3">
+                                <div class="pr-8">
+                                    <label class="text-xs-fluid text-text-muted mb-1 block">Producto</label>
+                                    <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
+                                        class="input w-full" placeholder="Nombre del producto">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs-fluid text-text-muted mb-1 block">Categoría</label>
+                                        <x-custom-select wire:model.live="form.items.{{ $i }}.category_id"
+                                            :options="$categories->pluck('name', 'id')->toArray()"
+                                            placeholder="Sin categoría" />
+                                    </div>
+                                    <div>
+                                        <label class="text-xs-fluid text-text-muted mb-1 block">Unidad</label>
+                                        <x-custom-select wire:model.live="form.items.{{ $i }}.unit" :options="$measureOptions"
+                                            placeholder="Unidad" />
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs-fluid text-text-muted mb-1 block">Cantidad</label>
+                                        <input wire:model.live.debounce.400ms="form.items.{{ $i }}.quantity" type="number" step="0.01"
+                                            class="input w-full" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs-fluid text-text-muted mb-1 block">Precio U.</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
+                                            <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number" step="0.01"
+                                                class="input w-full pl-7" placeholder="0.00">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2 flex justify-between items-center bg-surface-main p-3 rounded-lg border border-border">
+                                    <span class="text-small font-medium text-text-secondary">Total Linea:</span>
+                                    <span class="font-bold text-text-primary tabular-nums">
+                                        ${{ number_format($total, 2, '.', ',') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
                 {{-- Totales (calculados en ManualRequisition::render()) --}}

@@ -16,6 +16,8 @@ class QuickBudgetIndex extends Component
     public string $search = '';
 
     public string $periodFilter = '';
+    public string $statusFilter = '';
+    public string $userFilter = '';
 
     public array $selectedRows = [];
 
@@ -79,10 +81,14 @@ class QuickBudgetIndex extends Component
                     default => $q
                 };
             })
+            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+            ->when($this->userFilter, fn ($q) => $q->where('user_id', $this->userFilter))
             ->withCount('items')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
-        return view('livewire.quick-budgets.quick-budget-index', compact('budgets'));
+        $users = \App\Models\User::orderBy('name')->get();
+
+        return view('livewire.quick-budgets.quick-budget-index', compact('budgets', 'users'));
     }
 }

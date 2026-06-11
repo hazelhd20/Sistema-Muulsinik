@@ -1,4 +1,4 @@
-<div x-data="{ showFilters: false, selectedRows: @entangle('selectedRows') }">
+<div x-data="supplierIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $suppliers->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Red de suministro" title="Proveedores">
         <x-slot:actions>
@@ -11,41 +11,26 @@
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search: compact width --}}
-        <x-search-input wire:model.live.debounce.50ms="search" placeholder="Buscar por nombre o RFC..." />
+        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o RFC..." />
 
         {{-- Filters Popover --}}
         @php
             $activeCount = $categoryFilter ? 1 : 0;
         @endphp
-        <div x-data="{
-            filterCategory: '{{ $categoryFilter }}',
-            initFilters() {
-                this.filterCategory = '{{ $categoryFilter }}';
-            },
-            applyFilters() {
-                if ($wire.categoryFilter !== this.filterCategory) $wire.set('categoryFilter', this.filterCategory);
-            },
-            clearFilters() {
-                this.filterCategory = '';
-                this.applyFilters();
-                open = false;
-            }
-        }">
-            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                <x-form-field label="Categoría">
-                    <x-custom-select x-model="filterCategory" :options="$categories" placeholder="Todas las categorías" />
-                </x-form-field>
+        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+            <x-form-field label="Categoría">
+                <x-custom-select x-model="filterCategory" :options="$categories" placeholder="Todas las categorías" />
+            </x-form-field>
 
-                <x-slot name="footer">
-                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                        Limpiar filtros
-                    </button>
-                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                        Aplicar Filtros
-                    </x-button>
-                </x-slot>
-            </x-filters-popover>
-        </div>
+            <x-slot name="footer">
+                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar todo
+                </button>
+                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                    Aplicar Filtros
+                </x-button>
+            </x-slot>
+        </x-filters-popover>
     </div>
 
     {{-- Active Chips Row --}}
@@ -68,8 +53,8 @@
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $suppliers->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $suppliers->pluck('id')->join(',') }}].map(String).includes(id))"
-                                        :checked="[{{ $suppliers->pluck('id')->join(',') }}].length > 0 && [{{ $suppliers->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll([{{ $suppliers->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="trade_name" label="Proveedor" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -86,7 +71,7 @@
                             @foreach($suppliers as $supplier)
                                 <tr wire:key="supplier-row-{{ $supplier->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="(selectedRows || []).map(String).includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
+                                    :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
                                     </td>
@@ -164,7 +149,7 @@
             <div class="md:hidden flex flex-col gap-4 mt-2">
                 @foreach($suppliers as $supplier)
                     <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="(selectedRows || []).map(String).includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                          wire:key="supplier-mobile-card-{{ $supplier->id }}">
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex items-start gap-3">
@@ -236,7 +221,7 @@
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+        <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="table-container hidden md:block">
                 <table>

@@ -83,7 +83,7 @@
         {{-- Charts row --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             {{-- Tendencia mensual --}}
-            <div class="lg:col-span-2 card flex flex-col h-full">
+            <div class="lg:col-span-2 card p-6 flex flex-col h-full">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-small font-semibold text-text-primary">Tendencia de Gastos</h2>
@@ -162,7 +162,7 @@
             </div>
 
             {{-- Distribución por categoría (donut) --}}
-            <div class="card flex flex-col h-full">
+            <div class="card p-6 flex flex-col h-full">
                 <h2 class="text-small font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
                 @if($expenseByCategory->isEmpty())
                     <div wire:key="overview-category-empty" class="flex-1 flex flex-col items-center justify-center min-h-[260px]">
@@ -245,7 +245,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {{-- Presupuesto vs Gasto --}}
-            <div class="card flex flex-col h-full">
+            <div class="card p-6 flex flex-col h-full">
                 <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
                 @if($budgetComparison->isEmpty())
                     <div wire:key="overview-budget-empty" class="flex-1 flex flex-col items-center justify-center min-h-[200px]">
@@ -510,7 +510,7 @@
             </div>
 
             {{-- Donut por categoría de producto --}}
-            <div class="card flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
+            <div class="card p-6 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
                 <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
                 @if($topProducts->isEmpty() || $productsByCategory->isEmpty())
                     <div wire:key="products-chart-empty" class="flex-1 flex flex-col items-center justify-center min-h-[250px]">

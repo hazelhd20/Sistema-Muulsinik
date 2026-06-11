@@ -1,4 +1,4 @@
-<div x-data="{ selectedRows: @entangle('selectedRows') }">
+<div x-data="quickBudgetIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $budgets->count() }}; init()">
     <x-page-header subtitle="Trabajos menores" title="Cotizador Rápido">
         <x-slot:actions>
             <x-button href="{{ route('cotizador.wizard') }}" variant="primary" icon="calculator" wire:navigate>
@@ -15,35 +15,28 @@
         @php
             $activeCount = $periodFilter ? 1 : 0;
         @endphp
-        <div x-data="{
-            filterPeriod: '{{ $periodFilter }}',
-            initFilters() {
-                this.filterPeriod = '{{ $periodFilter }}';
-            },
-            applyFilters() {
-                if ($wire.periodFilter !== this.filterPeriod) $wire.set('periodFilter', this.filterPeriod);
-            },
-            clearFilters() {
-                this.filterPeriod = '';
-                this.applyFilters();
-                open = false;
-            }
-        }">
-            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                <x-form-field label="Período">
-                    <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
-                </x-form-field>
+        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+            <x-form-field label="Estado">
+                <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'enviado' => 'Enviado', 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', 'expirado' => 'Expirado']" placeholder="Todos los estados" />
+            </x-form-field>
 
-                <x-slot name="footer">
-                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                        Limpiar filtros
-                    </button>
-                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                        Aplicar Filtros
-                    </x-button>
-                </x-slot>
-            </x-filters-popover>
-        </div>
+            <x-form-field label="Creador">
+                <x-custom-select x-model="filterUser" :options="$users->pluck('name', 'id')->toArray()" placeholder="Todos los creadores" />
+            </x-form-field>
+
+            <x-form-field label="Período">
+                <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
+            </x-form-field>
+
+            <x-slot name="footer">
+                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar todo
+                </button>
+                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                    Aplicar Filtros
+                </x-button>
+            </x-slot>
+        </x-filters-popover>
     </div>
 
     {{-- Active Chips Row --}}
@@ -69,8 +62,8 @@
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $budgets->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $budgets->pluck('id')->join(',') }}].map(String).includes(id))"
-                                        :checked="[{{ $budgets->pluck('id')->join(',') }}].length > 0 && [{{ $budgets->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll([{{ $budgets->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="title" label="Título" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -88,7 +81,7 @@
                             @foreach($budgets as $budget)
                                 <tr wire:key="budget-row-{{ $budget->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="(selectedRows || []).map(String).includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''">
+                                    :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
                                     </td>
@@ -139,7 +132,7 @@
             <div class="md:hidden flex flex-col gap-4 mt-2">
                 @foreach($budgets as $budget)
                     <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="(selectedRows || []).map(String).includes('{{ $budget->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                          wire:key="quick-budget-mobile-card-{{ $budget->id }}">
                         
                         <div class="flex justify-between items-start gap-2">

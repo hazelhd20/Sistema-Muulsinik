@@ -1,5 +1,4 @@
-
-<div x-data="{ showFilters: false, selectedRows: @entangle('selectedRows') }">
+<div x-data="userIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $users->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Administración" title="Usuarios">
         <x-slot:actions>
@@ -20,43 +19,24 @@
         @php
             $activeCount = ($roleFilter ? 1 : 0) + ($statusFilter ? 1 : 0);
         @endphp
-        <div x-data="{
-            filterRole: '{{ $roleFilter }}',
-            filterStatus: '{{ $statusFilter }}',
-            initFilters() {
-                this.filterRole = '{{ $roleFilter }}';
-                this.filterStatus = '{{ $statusFilter }}';
-            },
-            applyFilters() {
-                if ($wire.roleFilter !== this.filterRole) $wire.set('roleFilter', this.filterRole);
-                if ($wire.statusFilter !== this.filterStatus) $wire.set('statusFilter', this.filterStatus);
-            },
-            clearFilters() {
-                this.filterRole = '';
-                this.filterStatus = '';
-                this.applyFilters();
-                open = false;
-            }
-        }">
-            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                <x-form-field label="Rol">
-                    <x-custom-select x-model="filterRole" :options="$roles->pluck('name', 'id')->toArray()" placeholder="Todos los roles" />
-                </x-form-field>
+        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+            <x-form-field label="Rol">
+                <x-custom-select x-model="filterRole" :options="$roles->pluck('name', 'id')->toArray()" placeholder="Todos los roles" />
+            </x-form-field>
 
-                <x-form-field label="Estado">
-                    <x-custom-select x-model="filterStatus" :options="['active' => 'Activo', 'inactive' => 'Inactivo']" placeholder="Todos los estados" />
-                </x-form-field>
+            <x-form-field label="Estado">
+                <x-custom-select x-model="filterStatus" :options="['active' => 'Activo', 'inactive' => 'Inactivo']" placeholder="Todos los estados" />
+            </x-form-field>
 
-                <x-slot name="footer">
-                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                        Limpiar filtros
-                    </button>
-                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                        Aplicar Filtros
-                    </x-button>
-                </x-slot>
-            </x-filters-popover>
-        </div>
+            <x-slot name="footer">
+                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar filtros
+                </button>
+                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                    Aplicar Filtros
+                </x-button>
+            </x-slot>
+        </x-filters-popover>
     </div>
 
     {{-- Active Chips Row --}}
@@ -85,8 +65,8 @@
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $users->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $users->pluck('id')->join(',') }}].map(String).includes(id))"
-                                        :checked="[{{ $users->pluck('id')->join(',') }}].length > 0 && [{{ $users->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll([{{ $users->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Usuario" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -104,7 +84,7 @@
                             @foreach($users as $user)
                                         <tr wire:key="user-row-{{ $user->id }}"
                                             class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                            :class="(selectedRows || []).map(String).includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''">
+                                            :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''">
                                             <td class="pl-4 pr-2 text-center" @click.stop>
                                                 <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                             </td>
@@ -177,7 +157,7 @@
             <div class="md:hidden flex flex-col gap-4 mt-2">
                 @foreach($users as $user)
                     <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="(selectedRows || []).map(String).includes('{{ $user->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                          wire:key="user-mobile-card-{{ $user->id }}">
                         
                         <div class="flex justify-between items-start gap-2">
@@ -264,7 +244,7 @@
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, previousPage, nextPage, gotoPage"
+        <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="table-container hidden md:block">
                 <table>
@@ -350,9 +330,7 @@
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />
 
-    <div class="mt-4">
-        {{ $users->links() }}
-    </div>
+    <div class="mt-4">{{ $users->links() }}</div>
 
     {{-- Modal Unificado Crear/Editar Usuario --}}
     @if($showModal)

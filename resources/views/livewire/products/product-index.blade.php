@@ -1,4 +1,4 @@
-<div x-data="{ showFilters: false, selectedRows: @entangle('selectedRows') }">
+<div x-data="productIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $products->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Productos">
         <x-slot:actions>
@@ -17,45 +17,26 @@
         @php
             $activeCount = ($categoryFilter ? 1 : 0) + ($measureFilter ? 1 : 0);
         @endphp
-        <div x-data="{
-            filterCategory: '{{ $categoryFilter }}',
-            filterMeasure: '{{ $measureFilter }}',
-            initFilters() {
-                this.filterCategory = '{{ $categoryFilter }}';
-                this.filterMeasure = '{{ $measureFilter }}';
-            },
-            applyFilters() {
-                if ($wire.categoryFilter !== this.filterCategory) $wire.set('categoryFilter', this.filterCategory);
-                if ($wire.measureFilter !== this.filterMeasure) $wire.set('measureFilter', this.filterMeasure);
-            },
-            clearFilters() {
-                this.filterCategory = '';
-                this.filterMeasure = '';
-                this.applyFilters();
-                open = false;
-            }
-        }">
-            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                <x-form-field label="Categoría">
-                    <x-custom-select x-model="filterCategory" :options="$categories"
-                        placeholder="Todas las categorías" />
-                </x-form-field>
+        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+            <x-form-field label="Categoría">
+                <x-custom-select x-model="filterCategory" :options="$categories"
+                    placeholder="Todas las categorías" />
+            </x-form-field>
 
-                <x-form-field label="Unidad de Medida">
-                    <x-custom-select x-model="filterMeasure" :options="$measures"
-                        placeholder="Todas las unidades" />
-                </x-form-field>
+            <x-form-field label="Unidad de Medida">
+                <x-custom-select x-model="filterMeasure" :options="$measures"
+                    placeholder="Todas las unidades" />
+            </x-form-field>
 
-                <x-slot name="footer">
-                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                        Limpiar filtros
-                    </button>
-                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                        Aplicar Filtros
-                    </x-button>
-                </x-slot>
-            </x-filters-popover>
-        </div>
+            <x-slot name="footer">
+                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar filtros
+                </button>
+                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                    Aplicar Filtros
+                </x-button>
+            </x-slot>
+        </x-filters-popover>
     </div>
 
     {{-- Active Chips Row --}}
@@ -81,8 +62,8 @@
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $products->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $products->pluck('id')->join(',') }}].map(String).includes(id))"
-                                        :checked="[{{ $products->pluck('id')->join(',') }}].length > 0 && [{{ $products->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll([{{ $products->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -98,7 +79,7 @@
                             @foreach($products as $product)
                                 <tr wire:key="product-row-{{ $product->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="(selectedRows || []).map(String).includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''">
+                                    :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
                                     </td>
@@ -164,7 +145,7 @@
             <div class="md:hidden flex flex-col gap-4 mt-2">
                 @foreach($products as $product)
                     <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="(selectedRows || []).map(String).includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                          wire:key="product-mobile-card-{{ $product->id }}">
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex items-start gap-3">
@@ -239,7 +220,7 @@
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
+        <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="table-container hidden md:block">
                 <table>

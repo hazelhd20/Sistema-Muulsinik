@@ -101,7 +101,7 @@
 
             {{-- Items Table --}}
             @if(count($items) > 0)
-                <div class="table-embedded">
+                <div class="table-embedded hidden md:block">
                     <table>
                         <thead>
                             <tr>
@@ -157,6 +157,58 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Formulario de conceptos (Mobile) --}}
+                <div class="md:hidden flex flex-col gap-4 mt-4">
+                    @foreach($items as $index => $item)
+                        <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $index }}">
+                            <button type="button" wire:click="removeItem({{ $index }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                            
+                            <div class="flex flex-col gap-3">
+                                <div class="pr-8">
+                                    <label class="text-xs-fluid text-text-muted mb-1 block">Concepto</label>
+                                    @if($item['product_id'])
+                                        <div class="flex flex-col p-2 bg-surface-main rounded-lg border border-border">
+                                            <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
+                                            <span class="text-xs-fluid text-text-muted">Prod. Catálogo ({{ $item['measure_abbr'] }})</span>
+                                        </div>
+                                    @else
+                                        <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
+                                            class="input w-full" placeholder="Escribe un concepto...">
+                                    @endif
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs-fluid text-text-muted mb-1 block">Cantidad</label>
+                                        <div class="relative">
+                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01"
+                                                class="input w-full pr-8" placeholder="0">
+                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs-fluid text-text-muted mb-1 block">Precio U.</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
+                                            <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01"
+                                                class="input w-full pl-7" placeholder="0.00">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2 flex justify-between items-center bg-surface-main p-3 rounded-lg border border-border">
+                                    <span class="text-small font-medium text-text-secondary">Total Linea:</span>
+                                    <span class="font-bold text-text-primary tabular-nums">
+                                        ${{ number_format($item['line_total'], 2) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             @else
                 <x-empty-state icon="package-search" title="No hay conceptos en la cotización"

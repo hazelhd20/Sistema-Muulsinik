@@ -1,4 +1,4 @@
-<div x-data="{ showFilters: false, selectedRows: @entangle('selectedRows') }">
+<div x-data="projectIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $projects->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Gestión" title="Proyectos">
         <x-slot:actions>
@@ -17,43 +17,24 @@
         @php
             $activeCount = ($statusFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
         @endphp
-        <div x-data="{
-            filterStatus: '{{ $statusFilter }}',
-            filterPeriod: '{{ $periodFilter }}',
-            initFilters() {
-                this.filterStatus = '{{ $statusFilter }}';
-                this.filterPeriod = '{{ $periodFilter }}';
-            },
-            applyFilters() {
-                if ($wire.statusFilter !== this.filterStatus) $wire.set('statusFilter', this.filterStatus);
-                if ($wire.periodFilter !== this.filterPeriod) $wire.set('periodFilter', this.filterPeriod);
-            },
-            clearFilters() {
-                this.filterStatus = '';
-                this.filterPeriod = '';
-                this.applyFilters();
-                open = false;
-            }
-        }">
-            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                <x-form-field label="Estado">
-                    <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
-                </x-form-field>
+        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+            <x-form-field label="Estado">
+                <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
+            </x-form-field>
 
-                <x-form-field label="Período (Creación)">
-                    <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
-                </x-form-field>
+            <x-form-field label="Período (Creación)">
+                <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
+            </x-form-field>
 
-                <x-slot name="footer">
-                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                        Limpiar filtros
-                    </button>
-                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                        Aplicar Filtros
-                    </x-button>
-                </x-slot>
-            </x-filters-popover>
-        </div>
+            <x-slot name="footer">
+                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                    Limpiar filtros
+                </button>
+                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                    Aplicar Filtros
+                </x-button>
+            </x-slot>
+        </x-filters-popover>
     </div>
 
     {{-- Active Chips Row --}}
@@ -85,8 +66,8 @@
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $projects->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $projects->pluck('id')->join(',') }}].map(String).includes(id))"
-                                        :checked="[{{ $projects->pluck('id')->join(',') }}].length > 0 && [{{ $projects->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll([{{ $projects->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -106,7 +87,7 @@
                             @foreach($projects as $project)
                                 <tr wire:key="project-row-{{ $project->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="(selectedRows || []).map(String).includes('{{ $project->id }}') ? 'bg-primary-50/50' : ''">
+                                    :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                     </td>
@@ -184,7 +165,7 @@
             <div class="md:hidden flex flex-col gap-4 mt-2">
                 @foreach($projects as $project)
                     <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="(selectedRows || []).map(String).includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                          wire:key="project-mobile-card-{{ $project->id }}">
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex items-start gap-3">
@@ -261,7 +242,7 @@
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, previousPage, nextPage, gotoPage"
+        <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="table-container hidden md:block">
                 <table>
@@ -360,7 +341,9 @@
     <x-confirm-modal />
 
     {{-- Pagination --}}
-    {{ $projects->links() }}
+    <div class="mt-4">
+        {{ $projects->links() }}
+    </div>
 
     {{-- Project Modal --}}
     @if($showModal)

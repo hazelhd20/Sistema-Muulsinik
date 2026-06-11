@@ -40,7 +40,7 @@
 
     {{-- Backdrop --}}
     <div x-show="show"
-         x-transition:enter="ease-out duration-300"
+         x-transition:enter="transition-premium"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="ease-in duration-200"
@@ -53,7 +53,7 @@
     {{-- Panel --}}
     <div class="fixed inset-y-0 right-0 flex max-w-full pl-10">
         <div x-show="show"
-             x-transition:enter="transform transition ease-out duration-300"
+             x-transition:enter="transition-premium"
              x-transition:enter-start="translate-x-full"
              x-transition:enter-end="translate-x-0"
              x-transition:leave="transform transition ease-in duration-200"

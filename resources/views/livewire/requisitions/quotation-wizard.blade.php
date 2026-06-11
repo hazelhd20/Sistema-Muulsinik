@@ -258,8 +258,8 @@
 
 
                 @if(count($items) > 0)
-                    {{-- Tabla de productos --}}
-                    <div class="table-embedded table-embedded-form">
+                    {{-- Tabla de productos (Desktop) --}}
+                    <div class="table-embedded hidden md:block table-embedded-form">
                         <table>
                             <thead>
                                 <tr>
@@ -389,6 +389,97 @@
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Formulario de productos (Mobile) --}}
+                    <div class="md:hidden flex flex-col gap-4">
+                        @foreach($items as $i => $item)
+                            @php
+                                $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
+                                $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
+                                $productStatus = $item['_match']['product']['status'] ?? '';
+                                $productBorder = match (true) {
+                                    $productStatus === 'exact' => 'border-success/30 bg-success/5',
+                                    $productStatus === 'fuzzy' => 'border-primary-500/30 bg-primary-50/5',
+                                    $productStatus === 'new'   => 'border-warning/30 bg-warning/5',
+                                    default => '',
+                                };
+                                $isFuzzyPending = isset($item['product_confirmed']) && !$item['product_confirmed'] && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
+                                $hasProductIndicator = $isFuzzyPending || in_array($productStatus, ['exact', 'new']);
+                            @endphp
+                            <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
+                                <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
+                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                </button>
+                                
+                                <div class="flex flex-col gap-3">
+                                    <div class="pr-8">
+                                        <div class="relative">
+                                            <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
+                                                <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
+                                                    class="input w-full {{ $productBorder }} {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                    placeholder="Nombre del producto">
+                                            </x-conflict-popover>
+                                            @if(!$isFuzzyPending)
+                                                @if($productStatus === 'exact')
+                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10" title="Confirmado">
+                                                        <i data-lucide="check-circle-2" class="w-4 h-4" wire:ignore></i>
+                                                    </div>
+                                                @elseif($productStatus === 'new')
+                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10" title="Nuevo producto">
+                                                        <i data-lucide="plus-circle" class="w-4 h-4" wire:ignore></i>
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs-fluid text-text-muted mb-1 block">Categoría</label>
+                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i">
+                                                <x-custom-select wire:model.live="items.{{ $i }}.category_id"
+                                                    :options="$categories->pluck('name', 'id')->toArray()"
+                                                    placeholder="Sin categoría" />
+                                            </x-conflict-popover>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs-fluid text-text-muted mb-1 block">Unidad</label>
+                                            <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
+                                                <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
+                                                    :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
+                                                    placeholder="Unidad">
+                                                </x-custom-combobox>
+                                            </x-conflict-popover>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs-fluid text-text-muted mb-1 block">Cantidad</label>
+                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
+                                                class="input w-full" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-xs-fluid text-text-muted mb-1 block">Precio U.</label>
+                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
+                                                class="input w-full" placeholder="0.00">
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2 bg-surface-main rounded-lg p-3 border border-border">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-small text-text-muted">Subtotal</span>
+                                            <span class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-medium text-text-secondary">Total c/IVA</span>
+                                            <span class="font-bold text-text-primary">${{ number_format($itemTotal, 2, '.', ',') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
 
                     {{-- Totales externos alineados a la derecha --}}

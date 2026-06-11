@@ -138,7 +138,8 @@
                 <x-badge variant="secondary">{{ $requisition->items->count() }}</x-badge>
             </div>
 
-            <div class="table-embedded border-t-0 border-x-0 rounded-none overflow-x-auto">
+            {{-- Desktop Table --}}
+            <div class="table-embedded hidden md:block border-t-0 border-x-0 rounded-none overflow-x-auto">
                 <table>
                     <thead>
                         <tr>
@@ -182,6 +183,50 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Mobile Cards --}}
+            <div class="md:hidden flex flex-col divide-y divide-border border-t border-border">
+                @forelse($requisition->items as $item)
+                    <div class="p-4 flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold text-body text-text-primary">
+                                    {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
+                                </p>
+                                <p class="text-small text-text-muted mt-0.5">
+                                    {{ $item->product?->category?->name ?? 'Sin categoría' }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50">
+                            <div>
+                                <p class="text-xs-fluid text-text-muted mb-0.5">Cantidad</p>
+                                <p class="text-small font-medium text-text-secondary">
+                                    {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs-fluid text-text-muted mb-0.5">Precio U.</p>
+                                <p class="text-small font-medium text-text-secondary">
+                                    ${{ number_format($item->unit_price, 2) }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mt-2 bg-surface-main p-2 rounded-lg border border-border">
+                            <span class="text-small font-medium text-text-secondary">Total Linea:</span>
+                            <span class="font-bold text-text-primary">
+                                ${{ number_format($item->line_total_computed, 2) }}
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-6">
+                        <x-empty-state icon="package" title="Sin productos registrados" />
+                    </div>
+                @endforelse
             </div>
 
             {{-- Totales --}}

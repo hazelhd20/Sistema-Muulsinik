@@ -1,4 +1,4 @@
-<div x-data="{ showFilters: false, selectedRows: @entangle('selectedRows') }">
+<div x-data="basicIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $measures->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Medidas">
         <x-slot:actions>
@@ -24,8 +24,8 @@
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-on:change="$el.checked ? selectedRows = [...new Set([...(selectedRows || []), ...[{{ $measures->pluck('id')->join(',') }}].map(String)])] : selectedRows = (selectedRows || []).filter(id => ![{{ $measures->pluck('id')->join(',') }}].map(String).includes(id))"
-                                        :checked="[{{ $measures->pluck('id')->join(',') }}].length > 0 && [{{ $measures->pluck('id')->join(',') }}].map(String).every(id => (selectedRows || []).includes(id))" />
+                                        x-bind:checked="allSelected"
+                                        x-on:change="toggleAll([{{ $measures->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -40,7 +40,7 @@
                             @foreach ($measures as $measure)
                                 <tr wire:key="measure-row-{{ $measure->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="(selectedRows || []).map(String).includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''">
+                                    :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
                                     </td>
@@ -95,7 +95,7 @@
             <div class="md:hidden flex flex-col gap-3 mt-2">
                 @foreach($measures as $measure)
                     <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="(selectedRows || []).map(String).includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                         :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                          wire:key="measure-mobile-card-{{ $measure->id }}">
                         
                         <div class="flex justify-between items-start gap-2">

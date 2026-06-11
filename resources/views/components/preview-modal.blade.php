@@ -1,9 +1,8 @@
 <div x-show="showPreviewModal" x-cloak
     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
     @keydown.escape.window="showPreviewModal = false">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPreviewModal = false"></div>
-    <div class="modal-card w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-scale-in"
-        x-transition>
+    <div class="modal-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px]" @click="showPreviewModal = false"></div>
+    <div class="modal-panel w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden bg-surface-card shadow-2xl rounded-xl border border-border relative">
         <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
             <h3 class="text-h2 text-text-primary flex items-center gap-2">
                 <i data-lucide="file-search" class="w-5 h-5 text-primary-600"></i> Vista Previa del Documento
