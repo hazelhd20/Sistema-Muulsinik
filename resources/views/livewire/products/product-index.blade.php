@@ -53,11 +53,10 @@
 
     {{-- Products table --}}
     <div class="relative min-h-[200px]">
-        <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="w-full">
+        <div class="w-full">
             <div class="table-container hidden md:block">
-                @if($products->isNotEmpty())
-                    <table>
-                        <thead class="bg-surface-main/50 border-b border-border">
+                <table>
+                    <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
@@ -75,210 +74,216 @@
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($products as $product)
-                                <tr wire:key="product-row-{{ $product->id }}"
-                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="pl-4 pr-2 text-center" @click.stop>
-                                        <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
+                        <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage">
+                            @if($products->isNotEmpty())
+                                @foreach($products as $product)
+                                    <tr wire:key="product-row-{{ $product->id }}"
+                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                        :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''">
+                                        <td class="pl-4 pr-2 text-center" @click.stop>
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
+                                                @if($product->description)
+                                                    <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($product->category)
+                                                <x-dynamic-badge :value="$product->category->name" />
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-body text-text-secondary">
+                                            @if($product->measure && $product->measure->abbreviation)
+                                                <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-text-muted text-small">
+                                            {{ $product->created_at->format('d/m/Y') }}
+                                        </td>
+                                        <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                            <div class="flex items-center justify-end">
+                                                <x-dropdown align="right" width="48">
+                                                    <x-slot name="trigger">
+                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                    </x-slot>
+
+                                                    <x-slot name="content">
+                                                        <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">
+                                                            Ver detalles
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
+                                                            Editar
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="deleteProduct({{ $product->id }})"
+                                                            wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                            Eliminar
+                                                        </x-dropdown-link>
+                                                    </x-slot>
+                                                </x-dropdown>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="6">
+                                        <x-empty-state icon="box" title="No se encontraron productos"
+                                            message="No hay registros que coincidan con tu búsqueda." />
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden">
+                            @for($i = 0; $i < 5; $i++)
+                                <tr class="opacity-{{ 100 - ($i * 15) }}">
+                                    <td class="pl-4 pr-2 text-center">
+                                        <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
                                     </td>
                                     <td>
-                                        <div>
-                                            <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
-                                            @if($product->description)
-                                                <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
-                                            @endif
+                                        <x-skeleton class="h-4 rounded w-48 mb-1.5" />
+                                        <x-skeleton class="h-3 rounded w-32" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-5 rounded w-24 rounded-full" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-5 rounded w-16 rounded-full" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-20" />
+                                    </td>
+                                    <td class="w-1 whitespace-nowrap pr-4 py-3">
+                                        <div class="flex items-center justify-end">
+                                            <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
                                     </td>
-                                    <td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+            </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    @if($products->isNotEmpty())
+                        @foreach($products as $product)
+                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                                 :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                 wire:key="product-mobile-card-{{ $product->id }}">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div class="flex items-start gap-3">
+                                        <div class="pt-0.5">
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-bold text-text-primary text-body">{{ $product->canonical_name }}</span>
+                                            </div>
+                                            @if($product->description)
+                                                <p class="text-xs-fluid text-text-secondary mt-0.5 truncate max-w-[200px]">{{ $product->description }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
+                                    <div>
+                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Categoría</p>
                                         @if($product->category)
                                             <x-dynamic-badge :value="$product->category->name" />
                                         @else
                                             <span class="text-text-muted">—</span>
                                         @endif
-                                    </td>
-                                    <td class="text-body text-text-secondary">
-                                        @if($product->measure && $product->measure->abbreviation)
-                                            <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
-                                        @else
-                                            <span class="text-text-muted">—</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-text-muted text-small">
-                                        {{ $product->created_at->format('d/m/Y') }}
-                                    </td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
-                                        <div class="flex items-center justify-end">
-                                            <x-dropdown align="right" width="48">
-                                                <x-slot name="trigger">
-                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
-                                                </x-slot>
-
-                                                <x-slot name="content">
-                                                    <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">
-                                                        Ver detalles
-                                                    </x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
-                                                        Editar
-                                                    </x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="deleteProduct({{ $product->id }})"
-                                                        wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                                        Eliminar
-                                                    </x-dropdown-link>
-                                                </x-slot>
-                                            </x-dropdown>
+                                    </div>
+                                    <div>
+                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1 text-right">Unidad</p>
+                                        <div class="text-right">
+                                            @if($product->measure && $product->measure->abbreviation)
+                                                <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
                                         </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <x-empty-state icon="box" title="No se encontraron productos"
-                        message="No hay registros que coincidan con tu búsqueda." />
-                @endif
-            </div>
-
-            {{-- Tarjetas Móviles (Mobile View) --}}
-            @if($products->isNotEmpty())
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                @foreach($products as $product)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                         wire:key="product-mobile-card-{{ $product->id }}">
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex items-start gap-3">
-                                <div class="pt-0.5">
-                                    <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-bold text-text-primary text-body">{{ $product->canonical_name }}</span>
                                     </div>
-                                    @if($product->description)
-                                        <p class="text-xs-fluid text-text-secondary mt-0.5 truncate max-w-[200px]">{{ $product->description }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
-                            <div>
-                                <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Categoría</p>
-                                @if($product->category)
-                                    <x-dynamic-badge :value="$product->category->name" />
-                                @else
-                                    <span class="text-text-muted">—</span>
-                                @endif
-                            </div>
-                            <div>
-                                <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1 text-right">Unidad</p>
-                                <div class="text-right">
-                                    @if($product->measure && $product->measure->abbreviation)
-                                        <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
-                                    @else
-                                        <span class="text-text-muted">—</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
-                                <div class="flex items-center gap-1.5 text-text-secondary">
-                                    <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
-                                    <span>Registro: {{ $product->created_at->format('d/m/Y') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                            <x-dropdown align="right" width="48">
-                                <x-slot name="trigger">
-                                    <x-button variant="secondary" class="w-full justify-center">
-                                        <x-lucide-more-horizontal class="w-4 h-4" />
-                                        <span class="ml-2">Opciones</span>
-                                    </x-button>
-                                </x-slot>
-
-                                <x-slot name="content">
-                                    <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">
-                                        Ver detalles
-                                    </x-dropdown-link>
-                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
-                                        Editar
-                                    </x-dropdown-link>
-                                    <x-dropdown-link as="button" wire:click="deleteProduct({{ $product->id }})"
-                                        wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                        Eliminar
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            @endif
-        </div>
-
-        {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage"
-            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container hidden md:block">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Categoría</th>
-                            <th>Unidad</th>
-                            <th class="actions">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for($i = 0; $i < 5; $i++)
-                            <tr>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-48 mb-1" />
-                                    <x-skeleton class="h-3  rounded w-32" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-5  rounded w-24" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-5  rounded w-16" />
-                                </td>
-                                <td class="actions">
-                                    <div class="flex items-center justify-end gap-1">
-                                        <x-skeleton class="w-8 h-8  rounded" />
-                                        <x-skeleton class="w-8 h-8  rounded" />
+                                    <div class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
+                                        <div class="flex items-center gap-1.5 text-text-secondary">
+                                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
+                                            <span>Registro: {{ $product->created_at->format('d/m/Y') }}</span>
+                                        </div>
                                     </div>
-                                </td>
-                            </tr>
-                        @endfor
-                    </tbody>
-                </table>
-            </div>
+                                </div>
 
-            {{-- Skeletons Móviles --}}
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                @for($i = 0; $i < 4; $i++)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <x-skeleton class="h-5 w-32 rounded" />
-                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
+                                <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
+                                    <x-dropdown align="right" width="48">
+                                        <x-slot name="trigger">
+                                            <x-button variant="secondary" class="w-full justify-center">
+                                                <x-lucide-more-horizontal class="w-4 h-4" />
+                                                <span class="ml-2">Opciones</span>
+                                            </x-button>
+                                        </x-slot>
+
+                                        <x-slot name="content">
+                                            <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">
+                                                Ver detalles
+                                            </x-dropdown-link>
+                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
+                                                Editar
+                                            </x-dropdown-link>
+                                            <x-dropdown-link as="button" wire:click="deleteProduct({{ $product->id }})"
+                                                wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                Eliminar
+                                            </x-dropdown-link>
+                                        </x-slot>
+                                    </x-dropdown>
+                                </div>
                             </div>
-                            <x-skeleton class="h-5 w-20 rounded-full" />
+                        @endforeach
+                    @else
+                        <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
+                    @endif
+                </div>
+
+                {{-- Skeletons Móviles --}}
+                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                    @for($i = 0; $i < 4; $i++)
+                        <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex items-start gap-3">
+                                    <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
+                                    <div class="min-w-0">
+                                        <x-skeleton class="h-5 w-48 rounded mb-1.5" />
+                                        <x-skeleton class="h-3 w-32 rounded" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                                <div>
+                                    <x-skeleton class="h-3 w-16 rounded mb-2" />
+                                    <x-skeleton class="h-5 w-24 rounded-full" />
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <x-skeleton class="h-3 w-12 rounded mb-2" />
+                                    <x-skeleton class="h-5 w-16 rounded-full" />
+                                </div>
+                                <div class="col-span-2 flex justify-between mt-1 pt-2 border-t border-border/50">
+                                    <x-skeleton class="h-4 w-32 rounded" />
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-2 border-t border-border mt-1">
+                                <x-skeleton class="h-9 w-full rounded-md" />
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center bg-surface-hover/50 p-3 rounded-xl border border-border/50">
-                            <x-skeleton class="h-4 w-24 rounded" />
-                            <x-skeleton class="h-5 w-16 rounded" />
-                        </div>
-                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
-                            <x-skeleton class="h-8 w-8 rounded" />
-                            <x-skeleton class="h-8 w-8 rounded" />
-                            <x-skeleton class="h-8 w-8 rounded" />
-                        </div>
-                    </div>
-                @endfor
+                    @endfor
+                </div>
             </div>
         </div>
         

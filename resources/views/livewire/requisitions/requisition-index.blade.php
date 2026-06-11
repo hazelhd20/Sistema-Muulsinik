@@ -107,13 +107,10 @@
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
     {{-- Requisitions Table --}}
     <div class="relative min-h-[200px]">
-        <div wire:loading.class="hidden"
-            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-            class="w-full">
+        <div class="w-full">
             <div class="table-container hidden md:block">
-                @if($requisitions->isNotEmpty())
-                    <table>
-                        <thead class="bg-surface-main/50 border-b border-border">
+                <table>
+                    <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
                                         <input type="checkbox"
@@ -136,288 +133,276 @@
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($requisitions as $req)
-                                <tr wire:key="requisition-row-{{ $req->id }}"
-                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="pl-4 pr-2 text-center" @click.stop>
-                                        <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
-                                    </td>
-                                    <td class="font-semibold text-text-primary whitespace-nowrap">
-                                        {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
-                                    </td>
-                                    <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
-                                        {{ $req->project->name ?? '—' }}
-                                    </td>
-                                    <td class="text-text-secondary whitespace-nowrap">
-                                        {{ $req->date?->format('d/m/Y') }}
-                                    </td>
-                                    <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
-                                        {{ $req->creator->name ?? '—' }}
-                                    </td>
-                                    <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
-                                        {{ $req->vendor?->name ?? '—' }}
-                                    </td>
-                                    <td class="text-right font-semibold tabular-nums text-text-primary">
-                                        ${{ number_format($req->total, 2, '.', ',') }}
-                                    </td>
-                                    <td class="w-1 whitespace-nowrap py-3">
-                                        <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
-                                        @if($req->status === 'rechazada' && $req->rejection_comment)
-                                            <p class="text-[10px] text-danger mt-1 max-w-[120px] truncate" title="{{ $req->rejection_comment }}">
-                                                {{ $req->rejection_comment }}
-                                            </p>
-                                        @endif
-                                    </td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
-                                        <div class="flex items-center justify-end">
-                                            <x-dropdown align="right" width="48">
-                                                <x-slot name="trigger">
-                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
-                                                </x-slot>
+                        <tbody wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage">
+                            @if($requisitions->isNotEmpty())
+                                @foreach($requisitions as $req)
+                                    <tr wire:key="requisition-row-{{ $req->id }}"
+                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                        :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
+                                        <td class="pl-4 pr-2 text-center" @click.stop>
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
+                                        </td>
+                                        <td class="font-semibold text-text-primary whitespace-nowrap">
+                                            {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
+                                        </td>
+                                        <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
+                                            {{ $req->project->name ?? '—' }}
+                                        </td>
+                                        <td class="text-text-secondary whitespace-nowrap">
+                                            {{ $req->date?->format('d/m/Y') }}
+                                        </td>
+                                        <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
+                                            {{ $req->creator->name ?? '—' }}
+                                        </td>
+                                        <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
+                                            {{ $req->vendor?->name ?? '—' }}
+                                        </td>
+                                        <td class="text-right font-semibold tabular-nums text-text-primary">
+                                            ${{ number_format($req->total, 2, '.', ',') }}
+                                        </td>
+                                        <td class="w-1 whitespace-nowrap py-3">
+                                            <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                            @if($req->status === 'rechazada' && $req->rejection_comment)
+                                                <p class="text-[10px] text-danger mt-1 max-w-[120px] truncate" title="{{ $req->rejection_comment }}">
+                                                    {{ $req->rejection_comment }}
+                                                </p>
+                                            @endif
+                                        </td>
+                                        <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                            <div class="flex items-center justify-end">
+                                                <x-dropdown align="right" width="48">
+                                                    <x-slot name="trigger">
+                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                    </x-slot>
 
-                                                <x-slot name="content">
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">
-                                                        Ver detalles
-                                                    </x-dropdown-link>
-
-                                                    @if($req->quotations->isNotEmpty())
-                                                        @php
-                                                            $firstQuot = $req->quotations->first();
-                                                            $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                                            $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                                        @endphp
-                                                        <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" icon="file-search">
-                                                            Ver cotización
+                                                    <x-slot name="content">
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">
+                                                            Ver detalles
                                                         </x-dropdown-link>
-                                                    @endif
 
-                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">
-                                                        Descargar PDF
-                                                    </x-dropdown-link>
+                                                        @if($req->quotations->isNotEmpty())
+                                                            @php
+                                                                $firstQuot = $req->quotations->first();
+                                                                $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                                                $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                                                            @endphp
+                                                            <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" icon="file-search">
+                                                                Ver cotización
+                                                            </x-dropdown-link>
+                                                        @endif
 
-                                                    @if($req->status === 'borrador' && $req->created_by === auth()->id())
-                                                        <div class="border-t border-border my-1"></div>
-                                                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">
+                                                            Descargar PDF
+                                                        </x-dropdown-link>
+
+                                                        @if($req->status === 'borrador' && $req->created_by === auth()->id())
+                                                            <div class="border-t border-border my-1"></div>
+                                                            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', {
+                                                                        title: 'Aprobar Requisición',
+                                                                        description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.',
+                                                                        confirmLabel: 'Aprobar',
+                                                                        variant: 'success',
+                                                                        action: 'submitForApproval',
+                                                                        params: [{{ $req->id }}]
+                                                                    })"
+                                                                    icon="check-circle" success="true">
+                                                                    Aprobar
+                                                                </x-dropdown-link>
+                                                            @else
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', {
+                                                                        title: 'Solicitar Aprobación',
+                                                                        description: 'La requisición será enviada a los aprobadores del sistema.',
+                                                                        confirmLabel: 'Enviar a aprobación',
+                                                                        variant: 'primary',
+                                                                        action: 'submitForApproval',
+                                                                        params: [{{ $req->id }}]
+                                                                    })"
+                                                                    icon="send">
+                                                                    Solicitar aprobación
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                        @endif
+
+                                                        @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                                            <div class="border-t border-border my-1"></div>
                                                             <x-dropdown-link as="button" type="button"
                                                                 @click="$dispatch('confirm-action', {
                                                                     title: 'Aprobar Requisición',
-                                                                    description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.',
+                                                                    description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
                                                                     confirmLabel: 'Aprobar',
                                                                     variant: 'success',
-                                                                    action: 'submitForApproval',
+                                                                    action: 'approve',
                                                                     params: [{{ $req->id }}]
                                                                 })"
                                                                 icon="check-circle" success="true">
                                                                 Aprobar
                                                             </x-dropdown-link>
-                                                        @else
-                                                            <x-dropdown-link as="button" type="button"
-                                                                @click="$dispatch('confirm-action', {
-                                                                    title: 'Solicitar Aprobación',
-                                                                    description: 'La requisición será enviada a los aprobadores del sistema.',
-                                                                    confirmLabel: 'Enviar a aprobación',
-                                                                    variant: 'primary',
-                                                                    action: 'submitForApproval',
-                                                                    params: [{{ $req->id }}]
-                                                                })"
-                                                                icon="send">
-                                                                Solicitar aprobación
+                                                            <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">
+                                                                Rechazar
                                                             </x-dropdown-link>
                                                         @endif
-                                                    @endif
 
-                                                    @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                        <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" type="button"
-                                                            @click="$dispatch('confirm-action', {
-                                                                title: 'Aprobar Requisición',
-                                                                description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                                                                confirmLabel: 'Aprobar',
-                                                                variant: 'success',
-                                                                action: 'approve',
-                                                                params: [{{ $req->id }}]
-                                                            })"
-                                                            icon="check-circle" success="true">
-                                                            Aprobar
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">
-                                                            Rechazar
-                                                        </x-dropdown-link>
-                                                    @endif
-
-                                                    @if(in_array($req->status, ['borrador', 'rechazada']))
-                                                        <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" type="button"
-                                                            @click="$dispatch('confirm-action', {
-                                                                title: 'Eliminar Requisición',
-                                                                description: 'Esta acción es permanente y no se puede deshacer.',
-                                                                confirmLabel: 'Eliminar',
-                                                                variant: 'danger',
-                                                                action: 'deleteRequisition',
-                                                                params: [{{ $req->id }}]
-                                                            })"
-                                                            danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
-                                                    @endif
-                                                </x-slot>
-                                            </x-dropdown>
+                                                        @if(in_array($req->status, ['borrador', 'rechazada']))
+                                                            <div class="border-t border-border my-1"></div>
+                                                            <x-dropdown-link as="button" type="button"
+                                                                @click="$dispatch('confirm-action', {
+                                                                    title: 'Eliminar Requisición',
+                                                                    description: 'Esta acción es permanente y no se puede deshacer.',
+                                                                    confirmLabel: 'Eliminar',
+                                                                    variant: 'danger',
+                                                                    action: 'deleteRequisition',
+                                                                    params: [{{ $req->id }}]
+                                                                })"
+                                                                danger="true" icon="trash-2">
+                                                                Eliminar
+                                                            </x-dropdown-link>
+                                                        @endif
+                                                    </x-slot>
+                                                </x-dropdown>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="10">
+                                        <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                                            message="Crea una requisición o sube una cotización para comenzar." />
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage" class="hidden">
+                            @for($i = 0; $i < 5; $i++)
+                                <tr class="opacity-{{ 100 - ($i * 15) }}">
+                                    <td class="text-center">
+                                        <x-skeleton class="w-4 h-4 rounded mx-auto" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-16" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-24" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-20" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-24" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-32" />
+                                    </td>
+                                    <td class="text-right">
+                                        <x-skeleton class="h-4 rounded w-20 ml-auto" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-6 rounded w-20" />
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="flex justify-end gap-1">
+                                            <x-skeleton class="w-8 h-8 rounded" />
+                                            <x-skeleton class="w-8 h-8 rounded" />
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @endfor
                         </tbody>
                     </table>
-                @else
-                    <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                        message="Crea una requisición o sube una cotización para comenzar." />
-                @endif
             </div>
 
             {{-- Tarjetas Móviles (Mobile View) --}}
-            @if($requisitions->isNotEmpty())
             <div class="md:hidden flex flex-col gap-4 mt-2">
-                @foreach($requisitions as $req)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                         wire:key="req-mobile-card-{{ $req->id }}">
-                        
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex items-start gap-3">
-                                <div class="pt-0.5">
-                                    <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-bold text-text-primary text-body">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
-                                        <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                <div wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    @if($requisitions->isNotEmpty())
+                        @foreach($requisitions as $req)
+                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                                 :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                 wire:key="req-mobile-card-{{ $req->id }}">
+                                
+                                <div class="flex justify-between items-start gap-2">
+                                    <div class="flex items-start gap-3">
+                                        <div class="pt-0.5">
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-bold text-text-primary text-body">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                                <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                            </div>
+                                            <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $req->project->name ?? 'Sin proyecto' }}</p>
+                                        </div>
                                     </div>
-                                    <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $req->project->name ?? 'Sin proyecto' }}</p>
-                                </div>
-                            </div>
-                            <div class="text-right shrink-0">
-                                <span class="font-bold text-text-primary tabular-nums text-body">${{ number_format($req->total, 2, '.', ',') }}</span>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
-                            <div class="flex items-center gap-1.5">
-                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
-                                <span>{{ $req->date?->format('d/m/Y') }}</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 truncate">
-                                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
-                                <span class="truncate">{{ $req->creator->name ?? '—' }}</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 truncate col-span-2 mt-0.5">
-                                <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
-                                <span class="truncate">{{ $req->vendor?->name ?? 'Sin proveedor' }}</span>
-                            </div>
-                        </div>
-
-                        @if($req->status === 'rechazada' && $req->rejection_comment)
-                            <div class="bg-danger-50 text-danger-700 text-xs-fluid p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
-                                <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
-                                <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
-                            </div>
-                        @endif
-
-                        <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
-                            <x-button @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" variant="secondary" icon="eye" class="text-xs-fluid py-1.5 px-3">
-                                Ver Detalles
-                            </x-button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            @endif
-        </div>
-
-        {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden"
-            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container hidden md:block">
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="w-10"></th>
-                            <th>Folio</th>
-                            <th>Proyecto</th>
-                            <th>Fecha</th>
-                            <th>Creador</th>
-                            <th>Proveedor</th>
-                            <th class="text-right">Total</th>
-                            <th>Estado</th>
-                            <th class="text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for($i = 0; $i < 5; $i++)
-                            <tr>
-                                <td class="text-center">
-                                    <x-skeleton class="w-4 h-4  rounded mx-auto" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-16" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-24" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-20" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-24" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-32" />
-                                </td>
-                                <td class="text-right">
-                                    <x-skeleton class="h-4  rounded w-20 ml-auto" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-6  rounded w-20" />
-                                </td>
-                                <td class="text-right flex justify-end gap-1">
-                                    <x-skeleton class="w-8 h-8  rounded" />
-                                    <x-skeleton class="w-8 h-8  rounded" />
-                                </td>
-                            </tr>
-                        @endfor
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Skeletons Móviles --}}
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                @for($i = 0; $i < 4; $i++)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex items-start gap-3">
-                                <x-skeleton class="w-4 h-4 rounded mt-0.5" />
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <x-skeleton class="h-5 w-20 rounded" />
-                                        <x-skeleton class="h-5 w-16 rounded-full" />
+                                    <div class="text-right shrink-0">
+                                        <span class="font-bold text-text-primary tabular-nums text-body">${{ number_format($req->total, 2, '.', ',') }}</span>
                                     </div>
-                                    <x-skeleton class="h-3 w-32 rounded mt-2" />
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                                    <div class="flex items-center gap-1.5">
+                                        <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
+                                        <span>{{ $req->date?->format('d/m/Y') }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 truncate">
+                                        <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
+                                        <span class="truncate">{{ $req->creator->name ?? '—' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 truncate col-span-2 mt-0.5">
+                                        <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
+                                        <span class="truncate">{{ $req->vendor?->name ?? 'Sin proveedor' }}</span>
+                                    </div>
+                                </div>
+
+                                @if($req->status === 'rechazada' && $req->rejection_comment)
+                                    <div class="bg-danger-50 text-danger-700 text-xs-fluid p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
+                                        <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
+                                        <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
+                                    </div>
+                                @endif
+
+                                <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
+                                    <x-button @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" variant="secondary" icon="eye" class="text-xs-fluid py-1.5 px-3">
+                                        Ver Detalles
+                                    </x-button>
                                 </div>
                             </div>
-                            <x-skeleton class="h-5 w-16 rounded" />
+                        @endforeach
+                    @else
+                        <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas" message="Crea una requisición o sube una cotización para comenzar." />
+                    @endif
+                </div>
+
+                {{-- Skeletons Móviles --}}
+                <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                    @for($i = 0; $i < 4; $i++)
+                        <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex items-start gap-3">
+                                    <x-skeleton class="w-4 h-4 rounded mt-0.5" />
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <x-skeleton class="h-5 w-20 rounded" />
+                                            <x-skeleton class="h-5 w-16 rounded-full" />
+                                        </div>
+                                        <x-skeleton class="h-3 w-32 rounded mt-2" />
+                                    </div>
+                                </div>
+                                <x-skeleton class="h-5 w-16 rounded" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                                <x-skeleton class="h-3 w-24 rounded" />
+                                <x-skeleton class="h-3 w-28 rounded" />
+                                <x-skeleton class="h-3 w-40 rounded col-span-2" />
+                            </div>
+                            <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
+                                <x-skeleton class="h-8 w-24 rounded" />
+                            </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
-                            <x-skeleton class="h-3 w-24 rounded" />
-                            <x-skeleton class="h-3 w-28 rounded" />
-                            <x-skeleton class="h-3 w-40 rounded col-span-2" />
-                        </div>
-                        <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
-                            <x-skeleton class="h-8 w-24 rounded" />
-                        </div>
-                    </div>
-                @endfor
+                    @endfor
+                </div>
             </div>
         </div>
     </div>

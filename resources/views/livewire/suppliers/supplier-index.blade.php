@@ -44,11 +44,10 @@
 
     {{-- Suppliers Table --}}
     <div class="relative min-h-[200px]">
-        <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="w-full">
+        <div class="w-full">
             <div class="table-container hidden md:block">
-                @if($suppliers->isNotEmpty())
-                    <table>
-                        <thead class="bg-surface-main/50 border-b border-border">
+                <table>
+                    <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
                                     <input type="checkbox"
@@ -67,224 +66,228 @@
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($suppliers as $supplier)
-                                <tr wire:key="supplier-row-{{ $supplier->id }}"
-                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="pl-4 pr-2 text-center" @click.stop>
-                                        <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
+                        <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage">
+                            @if($suppliers->isNotEmpty())
+                                @foreach($suppliers as $supplier)
+                                    <tr wire:key="supplier-row-{{ $supplier->id }}"
+                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                        :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
+                                        <td class="pl-4 pr-2 text-center" @click.stop>
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
+                                        </td>
+                                        <td class="font-semibold whitespace-nowrap text-text-primary">
+                                            <span class="max-w-[200px] truncate"
+                                                title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</span>
+                                        </td>
+                                        <td>
+                                            @if($supplier->rfc)
+                                                <span class="text-xs-fluid text-text-muted font-mono">{{ $supplier->rfc }}</span>
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($supplier->category)
+                                                <x-dynamic-badge :value="$supplier->category" />
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary">
+                                                <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
+                                                {{ $supplier->vendors_count }}
+                                                vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if($supplier->notes)
+                                                <div class="flex items-start gap-1 max-w-[250px]" title="{{ $supplier->notes }}">
+                                                    <x-lucide-sticky-note
+                                                        class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
+                                                    <span
+                                                        class="text-xs-fluid text-text-secondary truncate">{{ $supplier->notes }}</span>
+                                                </div>
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                            <div class="flex items-center justify-end">
+                                                <x-dropdown align="right" width="48">
+                                                    <x-slot name="trigger">
+                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                    </x-slot>
+
+                                                    <x-slot name="content">
+                                                        <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
+                                                            Ver vendedores
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
+                                                            Editar
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
+                                                            wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                            Eliminar
+                                                        </x-dropdown-link>
+                                                    </x-slot>
+                                                </x-dropdown>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="7">
+                                        <x-empty-state icon="building-2" title="No se encontraron proveedores"
+                                            message="No hay registros que coincidan con tu búsqueda." />
                                     </td>
-                                    <td class="font-semibold whitespace-nowrap text-text-primary">
-                                        <span class="max-w-[200px] truncate"
-                                            title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</span>
+                                </tr>
+                            @endif
+                        </tbody>
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden">
+                            @for($i = 0; $i < 6; $i++)
+                                <tr class="opacity-{{ 100 - ($i * 15) }}">
+                                    <td class="pl-4 pr-2 text-center">
+                                        <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
                                     </td>
                                     <td>
-                                        @if($supplier->rfc)
-                                            <span class="text-xs-fluid text-text-muted font-mono">{{ $supplier->rfc }}</span>
-                                        @else
-                                            <span class="text-text-muted">—</span>
-                                        @endif
+                                        <x-skeleton class="h-4 rounded w-32" />
                                     </td>
                                     <td>
+                                        <x-skeleton class="h-4 rounded w-20" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-5 rounded w-24" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-20" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-40" />
+                                    </td>
+                                    <td class="w-1 whitespace-nowrap pr-4 py-3">
+                                        <div class="flex items-center justify-end">
+                                            <x-skeleton class="w-8 h-8 rounded-md" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+            </div>
+
+            {{-- Tarjetas Móviles (Mobile View) --}}
+            <div class="md:hidden flex flex-col gap-4 mt-2">
+                <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    @if($suppliers->isNotEmpty())
+                        @foreach($suppliers as $supplier)
+                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                                 :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                 wire:key="supplier-mobile-card-{{ $supplier->id }}">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div class="flex items-start gap-3">
+                                        <div class="pt-0.5">
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-bold text-text-primary text-body">{{ $supplier->trade_name }}</span>
+                                            </div>
+                                            @if($supplier->rfc)
+                                                <p class="text-xs-fluid text-text-secondary mt-0.5 font-mono">{{ $supplier->rfc }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
+                                    <div>
+                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Categoría</p>
                                         @if($supplier->category)
                                             <x-dynamic-badge :value="$supplier->category" />
                                         @else
                                             <span class="text-text-muted">—</span>
                                         @endif
-                                    </td>
-                                    <td>
-                                        <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary">
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Vendedores</p>
+                                        <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary justify-end">
                                             <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
                                             {{ $supplier->vendors_count }}
-                                            vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        @if($supplier->notes)
-                                            <div class="flex items-start gap-1 max-w-[250px]" title="{{ $supplier->notes }}">
-                                                <x-lucide-sticky-note
-                                                    class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
-                                                <span
-                                                    class="text-xs-fluid text-text-secondary truncate">{{ $supplier->notes }}</span>
-                                            </div>
-                                        @else
-                                            <span class="text-text-muted">—</span>
-                                        @endif
-                                    </td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
-                                        <div class="flex items-center justify-end">
-                                            <x-dropdown align="right" width="48">
-                                                <x-slot name="trigger">
-                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
-                                                </x-slot>
-
-                                                <x-slot name="content">
-                                                    <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
-                                                        Ver vendedores
-                                                    </x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
-                                                        Editar
-                                                    </x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
-                                                        wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                                        Eliminar
-                                                    </x-dropdown-link>
-                                                </x-slot>
-                                            </x-dropdown>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <x-empty-state icon="building-2" title="No se encontraron proveedores"
-                        message="No hay registros que coincidan con tu búsqueda." />
-                @endif
-            </div>
-
-            {{-- Tarjetas Móviles (Mobile View) --}}
-            @if($suppliers->isNotEmpty())
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                @foreach($suppliers as $supplier)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                         wire:key="supplier-mobile-card-{{ $supplier->id }}">
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex items-start gap-3">
-                                <div class="pt-0.5">
-                                    <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-bold text-text-primary text-body">{{ $supplier->trade_name }}</span>
                                     </div>
-                                    @if($supplier->rfc)
-                                        <p class="text-xs-fluid text-text-secondary mt-0.5 font-mono">{{ $supplier->rfc }}</p>
+                                    @if($supplier->notes)
+                                        <div class="col-span-2 flex items-start gap-1.5 mt-1 pt-2 border-t border-border/50">
+                                            <x-lucide-sticky-note class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
+                                            <span class="text-text-secondary line-clamp-2">{{ $supplier->notes }}</span>
+                                        </div>
                                     @endif
                                 </div>
-                            </div>
-                        </div>
 
-                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
-                            <div>
-                                <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Categoría</p>
-                                @if($supplier->category)
-                                    <x-dynamic-badge :value="$supplier->category" />
-                                @else
-                                    <span class="text-text-muted">—</span>
-                                @endif
-                            </div>
-                            <div class="text-right">
-                                <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Vendedores</p>
-                                <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary justify-end">
-                                    <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
-                                    {{ $supplier->vendors_count }}
-                                </span>
-                            </div>
-                            @if($supplier->notes)
-                                <div class="col-span-2 flex items-start gap-1.5 mt-1 pt-2 border-t border-border/50">
-                                    <x-lucide-sticky-note class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
-                                    <span class="text-text-secondary line-clamp-2">{{ $supplier->notes }}</span>
+                                <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
+                                    <x-dropdown align="right" width="48">
+                                        <x-slot name="trigger">
+                                            <x-button variant="secondary" class="w-full justify-center">
+                                                <x-lucide-more-horizontal class="w-4 h-4" />
+                                                <span class="ml-2">Opciones</span>
+                                            </x-button>
+                                        </x-slot>
+
+                                        <x-slot name="content">
+                                            <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
+                                                Ver vendedores
+                                            </x-dropdown-link>
+                                            <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
+                                                Editar
+                                            </x-dropdown-link>
+                                            <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
+                                                wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                Eliminar
+                                            </x-dropdown-link>
+                                        </x-slot>
+                                    </x-dropdown>
                                 </div>
-                            @endif
-                        </div>
-
-                        <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                            <x-dropdown align="right" width="48">
-                                <x-slot name="trigger">
-                                    <x-button variant="secondary" class="w-full justify-center">
-                                        <x-lucide-more-horizontal class="w-4 h-4" />
-                                        <span class="ml-2">Opciones</span>
-                                    </x-button>
-                                </x-slot>
-
-                                <x-slot name="content">
-                                    <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
-                                        Ver vendedores
-                                    </x-dropdown-link>
-                                    <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
-                                        Editar
-                                    </x-dropdown-link>
-                                    <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
-                                        wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                        Eliminar
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            @endif
-        </div>
-
-        {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
-            class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container hidden md:block">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Proveedor</th>
-                            <th>RFC</th>
-                            <th>Categoría</th>
-                            <th>Vendedores</th>
-                            <th>Notas</th>
-                            <th class="text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for($i = 0; $i < 6; $i++)
-                            <tr>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-32" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-20" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-5  rounded w-24" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-20" />
-                                </td>
-                                <td>
-                                    <x-skeleton class="h-4  rounded w-40" />
-                                </td>
-                                <td class="text-right flex justify-end gap-1">
-                                    <x-skeleton class="w-8 h-8  rounded" />
-                                    <x-skeleton class="w-8 h-8  rounded" />
-                                </td>
-                            </tr>
-                        @endfor
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Skeletons Móviles --}}
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                @for($i = 0; $i < 4; $i++)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <x-skeleton class="h-5 w-32 rounded" />
-                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
                             </div>
-                            <x-skeleton class="h-5 w-20 rounded-full" />
+                        @endforeach
+                    @else
+                        <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros que coincidan con tu búsqueda." />
+                    @endif
+                </div>
+
+                {{-- Skeletons Móviles --}}
+                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                    @for($i = 0; $i < 4; $i++)
+                        <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex items-start gap-3">
+                                    <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
+                                    <div class="min-w-0">
+                                        <x-skeleton class="h-5 w-32 rounded mb-1.5" />
+                                        <x-skeleton class="h-3 w-24 rounded" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-surface-hover/50 p-3 rounded-xl border border-border/50 flex flex-col gap-2">
+                                <div class="flex justify-between">
+                                    <x-skeleton class="h-3 w-16 rounded" />
+                                    <x-skeleton class="h-3 w-16 rounded" />
+                                </div>
+                                <div class="flex justify-between">
+                                    <x-skeleton class="h-4 w-20 rounded" />
+                                    <x-skeleton class="h-4 w-8 rounded" />
+                                </div>
+                                <div class="pt-2 border-t border-border/50 mt-1">
+                                    <x-skeleton class="h-3 w-full rounded mb-1" />
+                                    <x-skeleton class="h-3 w-2/3 rounded" />
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-2 border-t border-border mt-1">
+                                <x-skeleton class="h-9 w-full rounded-md" />
+                            </div>
                         </div>
-                        <div class="bg-surface-hover/50 p-3 rounded-xl border border-border/50 flex flex-col gap-2">
-                            <x-skeleton class="h-3 w-28 rounded" />
-                            <x-skeleton class="h-3 w-full rounded mt-1" />
-                        </div>
-                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
-                            <x-skeleton class="h-8 w-8 rounded" />
-                            <x-skeleton class="h-8 w-8 rounded" />
-                            <x-skeleton class="h-8 w-8 rounded" />
-                        </div>
-                    </div>
-                @endfor
+                    @endfor
+                </div>
             </div>
         </div>
 
