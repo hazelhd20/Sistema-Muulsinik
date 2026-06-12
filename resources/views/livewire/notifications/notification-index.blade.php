@@ -63,7 +63,7 @@
     </div>
 
     {{-- Notifications List --}}
-    <div class="relative min-h-[200px]">
+    <div class="relative">
         <div wire:loading.class="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll, markAsRead, markAsUnread, delete" class="w-full">
             <div class="card p-0">
                 @if($this->notifications->isEmpty())

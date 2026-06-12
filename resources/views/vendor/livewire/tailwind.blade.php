@@ -16,7 +16,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
         {{-- Mobile View --}}
         <div class="flex justify-between flex-1 sm:hidden gap-2">
             @if ($paginator->onFirstPage())
-                <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-not-allowed rounded-md opacity-45 gap-1">
+                <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
                     <x-lucide-chevron-left class="w-3.5 h-3.5" />
                     <span>{!! __('pagination.previous') !!}</span>
                 </span>
@@ -33,7 +33,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                     <x-lucide-chevron-right class="w-3.5 h-3.5" />
                 </button>
             @else
-                <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-not-allowed rounded-md opacity-45 gap-1">
+                <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
                     <span>{!! __('pagination.next') !!}</span>
                     <x-lucide-chevron-right class="w-3.5 h-3.5" />
                 </span>
@@ -59,7 +59,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                     {{-- Previous Page Link --}}
                     @if ($paginator->onFirstPage())
                         <span aria-disabled="true" aria-label="{{ __('pagination.previous') }}">
-                            <span class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-not-allowed rounded-md opacity-45 gap-1" aria-hidden="true">
+                            <span class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1" aria-hidden="true">
                                 <x-lucide-chevron-left class="w-3.5 h-3.5" />
                                 <span>Anterior</span>
                             </span>
@@ -108,7 +108,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                         </button>
                     @else
                         <span aria-disabled="true" aria-label="{{ __('pagination.next') }}">
-                            <span class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-not-allowed rounded-md opacity-45 gap-1" aria-hidden="true">
+                            <span class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1" aria-hidden="true">
                                 <span>Siguiente</span>
                                 <x-lucide-chevron-right class="w-3.5 h-3.5" />
                             </span>

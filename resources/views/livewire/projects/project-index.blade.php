@@ -9,87 +9,93 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-xl w-full mt-4">
-        
+    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-lg w-full mt-4">
+
         {{-- Header Group (Search + Filters + Chips) --}}
-        <div class="md:border-b md:border-border md:rounded-t-xl md:bg-surface-card">
+        <div class="md:border-b md:border-border md:rounded-t-lg md:bg-surface-card">
             {{-- Filters Bar --}}
-            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
-            {{-- Search --}}
-            <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
+            <div
+                class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                {{-- Search --}}
+                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
 
-            {{-- Filters Popover --}}
-            @php
-                $activeCount = ($statusFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
-            @endphp
-            <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                <x-form-field label="Estado">
-                    <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
-                </x-form-field>
-
-                <x-form-field label="Período (Creación)">
-                    <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
-                </x-form-field>
-
-                <x-slot name="footer">
-                    <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                        Limpiar filtros
-                    </button>
-                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                        Aplicar Filtros
-                    </x-button>
-                </x-slot>
-            </x-filters-popover>
-        </div>
-
-        {{-- Active Chips Row --}}
-        @if($activeCount > 0)
-        <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
-            @if($statusFilter)
+                {{-- Filters Popover --}}
                 @php
-                    $statusNames = ['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado'];
+                    $activeCount = ($statusFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
                 @endphp
-                <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
+                <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                    <x-form-field label="Estado">
+                        <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
+                    </x-form-field>
+
+                    <x-form-field label="Período (Creación)">
+                        <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+                            placeholder="Todos los períodos" />
+                    </x-form-field>
+
+                    <x-slot name="footer">
+                        <button type="button" @click="clearFilters()"
+                            class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                            Limpiar filtros
+                        </button>
+                        <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                            Aplicar Filtros
+                        </x-button>
+                    </x-slot>
+                </x-filters-popover>
+            </div>
+
+            {{-- Active Chips Row --}}
+            @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                    @if($statusFilter)
+                        @php
+                            $statusNames = ['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado'];
+                        @endphp
+                        <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter"
+                            wire:click="$set('statusFilter', '')" />
+                    @endif
+                    @if($periodFilter)
+                        @php
+                            $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
+                        @endphp
+                        <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter"
+                            wire:click="$set('periodFilter', '')" />
+                    @endif
+                </div>
             @endif
-            @if($periodFilter)
-                @php
-                    $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
-                @endphp
-                <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter" wire:click="$set('periodFilter', '')" />
-            @endif
-        </div>
-        @endif
         </div> {{-- End Header Group --}}
 
         {{-- Projects Table --}}
-        <div class="relative min-h-[200px]">
+        <div class="relative">
             <div class="w-full">
                 {{-- Desktop View --}}
                 <div class="table-container table-integrated hidden md:block">
-                    <table>
+                    <table class="w-full table-fixed">
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
-                                <th class="actions text-center pl-6 pr-2 w-10">
+                                <th class="actions text-center pl-6 pr-2 w-14">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $projects->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                    :sortDirection="$sortDirection" class="min-w-[200px]" />
                                 <x-sortable-header field="client" label="Cliente" :sortField="$sortField"
                                     :sortDirection="$sortDirection" class="w-48" />
                                 <x-sortable-header field="start_date" label="Fechas" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-48" />
+                                    :sortDirection="$sortDirection" class="w-40" />
                                 <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" class="w-32 numeric" align="right" />
                                 <th class="w-32">Ejecución</th>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
                                     :sortDirection="$sortDirection" class="w-32" />
-                                <th class="actions pr-6">Acciones</th>
+                                <th class="actions w-28 pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody wire:loading.class="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage">
+                        <tbody wire:loading.class="hidden"
+                            wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage">
                             @if($projects->isNotEmpty())
                                 @foreach($projects as $project)
                                     <tr wire:key="project-row-{{ $project->id }}"
@@ -139,18 +145,25 @@
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
-                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                        <x-button variant="icon" icon="more-vertical"
+                                                            class="text-text-muted hover:text-text-primary"
+                                                            aria-label="Opciones" title="Opciones" />
                                                     </x-slot>
 
                                                     <x-slot name="content">
-                                                        <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">
+                                                        <x-dropdown-link as="button"
+                                                            @click="$dispatch('open-project-detail', { id: {{ $project->id }} })"
+                                                            icon="eye">
                                                             Ver detalle
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">
+                                                        <x-dropdown-link as="button"
+                                                            wire:click="openEditModal({{ $project->id }})" icon="pencil">
                                                             Editar
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})"
-                                                            wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                        <x-dropdown-link as="button"
+                                                            wire:click="deleteProject({{ $project->id }})"
+                                                            wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse."
+                                                            danger="true" icon="trash-2">
                                                             Eliminar
                                                         </x-dropdown-link>
                                                     </x-slot>
@@ -168,7 +181,9 @@
                                 </tr>
                             @endif
                         </tbody>
-                        <tbody wire:loading.class.remove="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="hidden">
+                        <tbody wire:loading.class.remove="hidden"
+                            wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
+                            class="hidden">
                             @for($i = 0; $i < 6; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
                                     <td class="actions text-center pl-6 pr-2">
@@ -207,12 +222,14 @@
 
                 {{-- Tarjetas Móviles (Mobile View) --}}
                 <div class="md:hidden flex flex-col gap-4 p-4">
-                    <div wire:loading.class="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    <div wire:loading.class="hidden"
+                        wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
+                        class="flex flex-col gap-4">
                         @if($projects->isNotEmpty())
                             @foreach($projects as $project)
                                 <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                                     :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                                     wire:key="project-mobile-card-{{ $project->id }}">
+                                    :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                    wire:key="project-mobile-card-{{ $project->id }}">
                                     <div class="flex justify-between items-start gap-2">
                                         <div class="flex items-start gap-3">
                                             <div class="pt-0.5">
@@ -220,9 +237,11 @@
                                             </div>
                                             <div class="min-w-0">
                                                 <div class="flex items-center gap-2 flex-wrap">
-                                                    <span class="font-bold text-text-primary text-body">{{ $project->name }}</span>
+                                                    <span
+                                                        class="font-bold text-text-primary text-body">{{ $project->name }}</span>
                                                 </div>
-                                                <p class="text-xs text-text-secondary mt-1 truncate">{{ $project->client ?? 'Sin cliente' }}</p>
+                                                <p class="text-xs text-text-secondary mt-1 truncate">
+                                                    {{ $project->client ?? 'Sin cliente' }}</p>
                                             </div>
                                         </div>
                                         <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
@@ -230,26 +249,31 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-2 text-xs text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                                    <div
+                                        class="grid grid-cols-2 gap-2 text-xs text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
                                         <div>
                                             <p class="mb-0.5 text-[10px] uppercase font-semibold">Presupuesto</p>
-                                            <span class="font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</span>
+                                            <span
+                                                class="font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</span>
                                         </div>
                                         <div>
                                             <p class="mb-0.5 text-[10px] uppercase font-semibold">Gastado</p>
-                                            <span class="text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
+                                            <span
+                                                class="text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
                                         </div>
                                         <div class="col-span-2 mt-1">
                                             <div class="flex justify-between items-center mb-1">
                                                 <span class="text-[10px] font-medium text-text-secondary">Ejecución</span>
-                                                <span class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+                                                <span
+                                                    class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                                             </div>
                                             <div class="w-full h-1.5 bg-surface-hover rounded-full overflow-hidden">
                                                 @php
                                                     $percent = min($project->budget_used_percent, 100);
                                                     $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
                                                 @endphp
-                                                <div class="{{ $barColor }} h-full rounded-full transition-all" style="width: {{ $percent }}%"></div>
+                                                <div class="{{ $barColor }} h-full rounded-full transition-all"
+                                                    style="width: {{ $percent }}%"></div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-1.5 col-span-2 mt-1">
@@ -268,14 +292,18 @@
                                             </x-slot>
 
                                             <x-slot name="content">
-                                                <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">
+                                                <x-dropdown-link as="button"
+                                                    @click="$dispatch('open-project-detail', { id: {{ $project->id }} })"
+                                                    icon="eye">
                                                     Ver detalle
                                                 </x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">
+                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})"
+                                                    icon="pencil">
                                                     Editar
                                                 </x-dropdown-link>
                                                 <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})"
-                                                    wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                    wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse."
+                                                    danger="true" icon="trash-2">
                                                     Eliminar
                                                 </x-dropdown-link>
                                             </x-slot>
@@ -284,14 +312,18 @@
                                 </div>
                             @endforeach
                         @else
-                            <x-empty-state icon="folder" title="No se encontraron proyectos" message="No hay registros que coincidan con tu búsqueda." />
+                            <x-empty-state icon="folder" title="No se encontraron proyectos"
+                                message="No hay registros que coincidan con tu búsqueda." />
                         @endif
                     </div>
 
                     {{-- Skeletons Móviles --}}
-                    <div wire:loading.class.remove="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                    <div wire:loading.class.remove="hidden"
+                        wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
+                        class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                            <div
+                                class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex justify-between items-start gap-2">
                                     <div class="flex items-start gap-3">
                                         <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -302,7 +334,8 @@
                                     </div>
                                     <x-skeleton class="h-6 w-20 rounded-full shrink-0" />
                                 </div>
-                                <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                                <div
+                                    class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
                                     <div>
                                         <x-skeleton class="h-3 w-20 rounded mb-1.5" />
                                         <x-skeleton class="h-4 w-20 rounded" />
@@ -330,20 +363,17 @@
                     </div>
                 </div>
             </div>
-            
+
             {{-- Bulk Actions Bar --}}
             <x-bulk-actions-bar>
-                <x-button
-                    @click="$dispatch('confirm-action', {
+                <x-button @click="$dispatch('confirm-action', {
                         title: 'Eliminar Proyectos',
                         description: 'Se eliminarán permanentemente los proyectos seleccionados que no tengan dependencias.',
                         confirmLabel: 'Eliminar',
                         variant: 'danger',
                         action: 'bulkDelete',
                         params: []
-                    })"
-                    variant="danger"
-                    icon="trash-2">
+                    })" variant="danger" icon="trash-2">
                     Eliminar
                 </x-button>
             </x-bulk-actions-bar>
@@ -352,9 +382,9 @@
 
         {{-- Pagination Footer (Card Footer on Desktop) --}}
         @if($projects->hasPages())
-        <div class="p-4 md:px-6 md:py-4 border-t border-border bg-surface-card">
-            {{ $projects->links() }}
-        </div>
+            <div class="p-4 md:px-6 md:py-4 border-t border-border bg-surface-card md:rounded-b-lg">
+                {{ $projects->links() }}
+            </div>
         @endif
     </div>
 
@@ -363,8 +393,7 @@
         <x-modal show="showModal" :title="$editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'">
             <form wire:submit="saveProject" class="p-5 space-y-4">
                 <x-form-field label="Nombre del proyecto" required error="{{ $errors->first('name') }}">
-                    <input wire:model="name" type="text" class="input"
-                        placeholder="Ej. Residencial Los Álamos">
+                    <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
                 </x-form-field>
 
                 <x-form-field label="Descripción" error="{{ $errors->first('description') }}">
@@ -377,8 +406,7 @@
                         <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
                     </x-form-field>
                     <x-form-field label="Presupuesto" required error="{{ $errors->first('budget') }}">
-                        <input wire:model="budget" type="number" step="0.01"
-                            class="input" placeholder="0.00">
+                        <input wire:model="budget" type="number" step="0.01" class="input" placeholder="0.00">
                     </x-form-field>
                 </div>
 
@@ -399,7 +427,8 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showModal', false)" variant="secondary">Cancelar</x-button>
-                    <x-button type="submit" variant="primary" target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-button>
+                    <x-button type="submit" variant="primary"
+                        target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-button>
                 </div>
             </form>
         </x-modal>

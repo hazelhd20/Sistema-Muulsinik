@@ -52,7 +52,7 @@
     @endif
 
     {{-- Table --}}
-    <div class="relative min-h-[200px]">
+    <div class="relative">
         <div wire:loading.class="hidden" wire:target="search, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
             <div class="table-container hidden md:block">
                 @if($budgets->isNotEmpty())

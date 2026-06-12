@@ -11,10 +11,10 @@
 
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-xl w-full mt-4">
+    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-lg w-full mt-4">
         
         {{-- Header Group (Search + Filters + Chips) --}}
-        <div class="md:border-b md:border-border md:rounded-t-xl md:bg-surface-card">
+        <div class="md:border-b md:border-border md:rounded-t-lg md:bg-surface-card">
             {{-- Filters Bar --}}
             <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
             {{-- Search --}}
@@ -74,25 +74,25 @@
         </div> {{-- End Header Group --}}
 
         {{-- Expenses Table --}}
-        <div class="relative min-h-[200px]">
+        <div class="relative">
             <div class="w-full">
                 {{-- Desktop View --}}
                 <div class="table-container table-integrated hidden md:block">
-                    <table>
+                    <table class="w-full table-fixed">
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
-                                <th class="actions text-center pl-6 pr-2 w-10">
+                                <th class="actions text-center pl-6 pr-2 w-14">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $expenses->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" class="min-w-[200px]" />
                                 <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-48" />
-                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
-                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" class="w-24" />
+                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" class="w-40" />
+                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
                                 <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" class="w-32 numeric" />
-                                <th class="actions pr-6">Acciones</th>
+                                <th class="actions w-28 pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage">
@@ -317,7 +317,7 @@
 
         {{-- Pagination Footer (Card Footer on Desktop) --}}
         @if($expenses->hasPages())
-        <div class="p-4 md:px-6 md:py-4 border-t border-border bg-surface-card">
+        <div class="p-4 md:px-6 md:py-4 border-t border-border bg-surface-card md:rounded-b-lg">
             {{ $expenses->links() }}
         </div>
         @endif

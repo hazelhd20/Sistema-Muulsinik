@@ -43,7 +43,7 @@
     @endif
 
     {{-- Suppliers Table --}}
-    <div class="relative min-h-[200px]">
+    <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
                 <table>
