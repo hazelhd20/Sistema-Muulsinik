@@ -11,6 +11,40 @@
 @source '../**/*.js';
 @source inline('border-amber-400 border-emerald-400 border-primary-400 opacity-0 bg-primary-50 text-primary-700 border-primary-200/50 bg-purple-50 text-purple-700 border-purple-200/50 bg-indigo-50 text-indigo-700 border-indigo-200/50 bg-cyan-50 text-cyan-700 border-cyan-200/50 bg-emerald-50 text-emerald-700 border-emerald-200/50 bg-violet-50 text-violet-700 border-violet-200/50 bg-sky-50 text-sky-700 border-sky-200/50 bg-amber-50 text-amber-700 border-amber-200/50');
 
+/* Global Resets para sensación de "App Nativa" */
+* {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Evita que hacer clic rápido en botones, tarjetas o encabezados seleccione el texto */
+button, a, .md\:card, .table-container, x-modal, .flatpickr-calendar, .flatpickr-month, .flatpickr-day {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Permitir selección de texto en inputs y áreas donde el usuario sí debe copiar */
+input:not(.select-none), textarea, p, h1, h2, h3, h4, h5, h6, span.selectable {
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+/* Evita que los campos readonly o select-none muestren resalte de selección azul al enfocarse */
+.select-none::selection,
+.select-none *::selection,
+input.select-none::selection,
+input[readonly]::selection {
+    background: transparent !important;
+    color: inherit !important;
+}
+
+.select-none::-moz-selection,
+.select-none *::-moz-selection,
+input.select-none::-moz-selection,
+input[readonly]::-moz-selection {
+    background: transparent !important;
+    color: inherit !important;
+}
+
 /*
  * Design System — Muulsinik ERP  ·  Industrial Premium Minimal
  * Inspirado en Linear, Stripe, Procore:

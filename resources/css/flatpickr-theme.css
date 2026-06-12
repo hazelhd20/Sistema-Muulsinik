@@ -6,6 +6,13 @@
     padding: 8px !important;
     background-color: var(--color-surface-card) !important;
     width: max-content !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+.flatpickr-calendar * {
+    -webkit-user-select: none !important;
+    user-select: none !important;
 }
 
 .flatpickr-calendar.arrowTop:before,
@@ -26,14 +33,18 @@
 }
 
 .flatpickr-current-month {
-    font-size: 0.9375rem !important;
+    font-size: 1rem !important;
     font-weight: 600 !important;
-    padding-top: 2px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 34px !important;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months {
     appearance: none !important;
-    background-color: var(--color-surface-hover) !important;
+    background-color: transparent !important;
     border: 1px solid transparent !important;
     border-radius: var(--radius-sm) !important;
     color: var(--color-text-primary) !important;
@@ -54,7 +65,7 @@
 }
 
 .flatpickr-current-month .numInputWrapper input.cur-year {
-    background-color: var(--color-surface-hover) !important;
+    background-color: transparent !important;
     border: 1px solid transparent !important;
     border-radius: var(--radius-sm) !important;
     color: var(--color-text-primary) !important;
@@ -62,6 +73,8 @@
     padding: 2px 6px !important;
     outline: none !important;
     transition: all 0.2s ease !important;
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
 }
 
 .flatpickr-current-month .numInputWrapper input.cur-year:hover {
@@ -74,7 +87,8 @@
     fill: var(--color-text-muted) !important;
     border-radius: var(--radius-md) !important;
     transition: all 0.2s ease !important;
-    padding: 6px !important;
+    margin: 0 !important;
+    /* Previene desalineación vertical nativa */
 }
 
 .flatpickr-prev-month:hover,
@@ -93,13 +107,19 @@ span.flatpickr-weekday {
     border-radius: var(--radius-md) !important;
     color: var(--color-text-primary) !important;
     border: 1px solid transparent !important;
+    font-size: 0.875rem !important;
+    /* 14px tipografía refinada */
+    font-weight: 500 !important;
     transition: all 0.2s ease !important;
 }
 
 .flatpickr-day:hover,
 .flatpickr-day:focus {
     background-color: var(--color-surface-hover) !important;
-    border-color: var(--color-surface-hover) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: var(--shadow-sm) !important;
+    /* Sombra sutil al hover */
+    color: var(--color-text-primary) !important;
 }
 
 .flatpickr-day.selected,
@@ -108,12 +128,6 @@ span.flatpickr-weekday {
 .flatpickr-day.selected.inRange,
 .flatpickr-day.startRange.inRange,
 .flatpickr-day.endRange.inRange,
-.flatpickr-day.selected:focus,
-.flatpickr-day.startRange:focus,
-.flatpickr-day.endRange:focus,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover,
 .flatpickr-day.selected.prevMonthDay,
 .flatpickr-day.startRange.prevMonthDay,
 .flatpickr-day.endRange.prevMonthDay,
@@ -123,19 +137,47 @@ span.flatpickr-weekday {
     background: var(--color-primary-600) !important;
     border-color: var(--color-primary-600) !important;
     color: #fff !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
+    /* Más énfasis al estar seleccionado */
+    box-shadow: var(--shadow-md), 0 0 0 2px var(--color-primary-100) !important;
+    /* Sombra y anillo premium */
 }
 
-.flatpickr-day.today {
-    border-color: var(--color-border) !important;
-    font-weight: 500 !important;
+/* Hover específico para cuando YA está seleccionado */
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+    background: var(--color-primary-700) !important;
+    border-color: var(--color-primary-700) !important;
+    color: #ffffff !important; /* MANTENER EL TEXTO BLANCO */
+    box-shadow: var(--shadow-lg), 0 0 0 2px var(--color-primary-200) !important;
 }
 
-.flatpickr-day.today:hover,
-.flatpickr-day.today:focus {
-    border-color: var(--color-border) !important;
-    background: var(--color-surface-hover) !important;
-    color: var(--color-text-primary) !important;
+/* Fallback sutil para 'today' cuando ya hay otro día seleccionado en el calendario */
+.flatpickr-day.today:not(.selected) {
+    border-color: var(--color-border-strong) !important;
+    font-weight: 600 !important;
+    color: var(--color-primary-600) !important;
+}
+
+/* Highlight fuerte estilo 'seleccionado' para 'today' SOLO SI el calendario no tiene ninguna fecha seleccionada */
+.flatpickr-calendar:not(:has(.selected)) .flatpickr-day.today {
+    background: var(--color-primary-600) !important;
+    border-color: var(--color-primary-600) !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    box-shadow: var(--shadow-md), 0 0 0 2px var(--color-primary-100) !important;
+}
+
+.flatpickr-calendar:not(:has(.selected)) .flatpickr-day.today:hover,
+.flatpickr-calendar:not(:has(.selected)) .flatpickr-day.today:focus {
+    background: var(--color-primary-700) !important;
+    border-color: var(--color-primary-700) !important;
+    color: #ffffff !important;
+    box-shadow: var(--shadow-lg), 0 0 0 2px var(--color-primary-200) !important;
 }
 
 .flatpickr-day.inRange {

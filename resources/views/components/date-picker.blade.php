@@ -18,6 +18,11 @@
                         ...{{ $options }},
                         onChange: (selectedDates, dateStr) => {
                             this.value = dateStr;
+                        },
+                        onClose: (selectedDates, dateStr, instance) => {
+                            setTimeout(() => {
+                                instance.input.blur();
+                            }, 0);
                         }
                     });
 
@@ -41,7 +46,9 @@
     <input 
         x-ref="input"
         type="text" 
-        class="input w-full bg-surface-card {{ $icon ? 'pl-9' : '' }} {{ $error ? 'border-danger-400 focus:border-danger-500 focus:ring-danger-50' : 'focus:border-primary-400 focus:ring-primary-50' }}"
+        readonly
+        class="input w-full bg-surface-card cursor-pointer select-none outline-none focus:ring-0 focus:border-border {{ $icon ? 'pl-9' : '' }} {{ $error ? 'border-danger-400' : '' }}"
+        style="-webkit-tap-highlight-color: transparent;"
         placeholder="{{ $placeholder }}"
         {{ $attributes->except(['wire:model', 'class']) }}
     />
