@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./flatpickr-theme.css";
 
 [x-cloak] {
     display: none !important;
@@ -704,7 +705,6 @@ input[type="search"]::-webkit-search-results-decoration {
         flex-shrink: 0;
     }
 
-    /* ── Table container ── */
     .table-container {
         background-color: var(--color-surface-card);
         border-radius: 0.625rem;
@@ -712,6 +712,13 @@ input[type="search"]::-webkit-search-results-decoration {
         overflow-y: hidden;
         border: 1px solid var(--color-border);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .table-container.table-integrated {
+        background-color: transparent;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
     }
 
     .table-container table {
@@ -1085,9 +1092,7 @@ input[type="search"]::-webkit-search-results-decoration {
         align-items: flex-start;
         justify-content: space-between;
         gap: 1rem;
-        padding-bottom: 1.125rem;
         margin-bottom: 1.25rem;
-        border-bottom: 1px solid var(--color-border);
     }
 
     .card-title {
@@ -1110,6 +1115,10 @@ input[type="search"]::-webkit-search-results-decoration {
         color: var(--color-text-muted);
         margin-top: 0.25rem;
         line-height: 1.5;
+    }
+
+    .card-body {
+        padding: 1.25rem 1.5rem 1.5rem 1.5rem; /* pt-5 pb-6 px-6 */
     }
 
     /* ── Section row (Stripe settings pattern) ──
@@ -1249,11 +1258,13 @@ input[type="search"]::-webkit-search-results-decoration {
     }
 
     /* Inputs inside table cells */
-    .table-embedded td .input {
-        height: 2rem;
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
+    .table-embedded td .input,
+    .table-inputs-compact td .input {
+        height: 2.25rem;
+        padding-top: 0;
+        padding-bottom: 0;
         min-width: 0;
+        vertical-align: middle;
     }
 
     /* Tfoot totals row */

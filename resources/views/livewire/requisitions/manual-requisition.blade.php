@@ -10,9 +10,12 @@
 
     <form wire:submit="createRequisition" class="space-y-6">
         {{-- 1. Datos Generales --}}
-        <div class="card p-6">
-            <h2 class="text-h2 text-text-primary mb-4">Datos Generales</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card">
+            <div class="card-header px-6 pt-5">
+                <h2 class="card-title">Datos Generales</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-form-field label="Proyecto" required error="{{ $errors->first('form.projectId') }}">
                     <x-custom-select wire:model="form.projectId" :options="$projects->pluck('name', 'id')->toArray()"
                         placeholder="Seleccionar proyecto..." />
@@ -29,7 +32,7 @@
                 </x-form-field>
 
                 <x-form-field label="Fecha" required error="{{ $errors->first('form.date') }}">
-                    <input wire:model="form.date" type="date" class="input w-full">
+                    <x-date-picker wire:model="form.date" />
                 </x-form-field>
 
                 <div class="md:col-span-3">
@@ -39,16 +42,17 @@
                     </x-form-field>
                 </div>
             </div>
+            </div>
         </div>
 
         {{-- 2. Productos --}}
-        <div class="card p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
+        <div class="card mb-6">
+            <div class="card-header px-6 pt-5 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <h2 class="text-h2 text-text-primary">Productos</h2>
+                    <h2 class="card-title">Productos</h2>
                     @if(count($form->items) > 0)
                         <x-badge variant="secondary">{{ count($form->items) }}</x-badge>
-                        <span class="text-small text-text-muted">{{ count($form->items) === 1 ? 'producto' : 'productos' }}</span>
+                        <span class="text-small text-text-muted font-normal">{{ count($form->items) === 1 ? 'producto' : 'productos' }}</span>
                     @endif
                 </div>
                 <x-button wire:click="addManualItem" variant="secondary" icon="plus">
@@ -56,9 +60,10 @@
                 </x-button>
             </div>
 
-            {{-- Search Product --}}
-            <div class="mb-4" x-data>
-                <div class="relative">
+            <div class="px-6 py-5">
+                {{-- Search Product --}}
+                <div x-data>
+                    <div class="relative">
                     <div class="relative">
                         <x-lucide-search
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -112,46 +117,46 @@
             {{-- Items Table --}}
             @if(count($form->items) > 0)
                 {{-- Desktop Table --}}
-                <div class="table-embedded hidden md:block table-embedded-form">
-                    <table>
+                <div class="hidden md:block overflow-x-auto w-full">
+                    <table class="w-full text-left table-inputs-compact">
                         <thead>
-                            <tr>
-                                <th class="w-[30%]">Producto</th>
-                                <th class="w-[15%]">Categoría</th>
-                                <th class="text-center w-[10%]">Cant.</th>
-                                <th class="text-center w-[10%]">Unidad</th>
-                                <th class="text-right w-[12%]">P.U. s/IVA</th>
-                                <th class="text-right w-[10%]">Subtotal</th>
-                                <th class="text-right w-[10%]">Total c/IVA</th>
-                                <th class="w-[3%]"></th>
+                            <tr class="bg-surface-th border-y border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[30%]">Producto</th>
+                                <th class="px-4 py-3 whitespace-nowrap w-[15%]">Categoría</th>
+                                <th class="px-4 py-3 text-center whitespace-nowrap w-[10%]">Cant.</th>
+                                <th class="px-4 py-3 text-center whitespace-nowrap w-[10%]">Unidad</th>
+                                <th class="px-4 py-3 text-right whitespace-nowrap w-[12%]">P.U. s/IVA</th>
+                                <th class="px-4 py-3 text-right whitespace-nowrap w-[10%]">Subtotal</th>
+                                <th class="px-4 py-3 text-right whitespace-nowrap w-[10%]">Total c/IVA</th>
+                                <th class="pr-6 pl-4 py-3 w-[3%]"></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-border border-b border-border">
                             @foreach($form->items as $i => $item)
                                 @php
                                     $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
                                     $iva = round($subtotal * 0.16, 2);
                                     $total = $subtotal + $iva;
                                 @endphp
-                                <tr class="align-top hover:bg-surface-hover/30 transition-all duration-200 group"
+                                <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
                                     wire:key="item-row-{{ $i }}">
-                                    <td class="pb-4">
+                                    <td class="pl-6 pr-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
-                                            class="input input-inline text-small w-full"
+                                            class="input text-small w-full"
                                             placeholder="Nombre del producto">
                                     </td>
-                                    <td class="pb-4">
+                                    <td class="px-4 py-4">
                                         <x-custom-select wire:model.live="form.items.{{ $i }}.category_id"
                                             :options="$categories->pluck('name', 'id')->toArray()"
                                             placeholder="Sin categoría" />
                                     </td>
-                                    <td class="pb-4">
+                                    <td class="px-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.quantity" type="number"
                                             step="0.01"
-                                            class="input input-inline text-center tabular-nums text-small"
+                                            class="input text-center tabular-nums text-small"
                                             placeholder="0">
                                     </td>
-                                    <td class="pb-4">
+                                    <td class="px-4 py-4">
                                         @php
                                             $measureOptions = $measures->mapWithKeys(fn($m) => [
                                                 ($m->abbreviation ?? $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')
@@ -160,21 +165,21 @@
                                         <x-custom-select wire:model.live="form.items.{{ $i }}.unit" :options="$measureOptions"
                                             placeholder="Unidad" />
                                     </td>
-                                    <td class="pb-4">
+                                    <td class="px-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number"
                                             step="0.01"
-                                            class="input input-inline text-right tabular-nums text-small"
+                                            class="input text-right tabular-nums text-small"
                                             placeholder="0.00">
                                     </td>
                                     <td
-                                        class="text-right font-medium text-text-primary tabular-nums text-small align-middle pb-4">
+                                        class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
                                         ${{ number_format($subtotal, 2, '.', ',') }}
                                     </td>
                                     <td
-                                        class="text-right font-semibold text-text-primary tabular-nums text-small align-middle pb-4">
+                                        class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
                                         ${{ number_format($total, 2, '.', ',') }}
                                     </td>
-                                    <td class="text-center pb-4">
+                                    <td class="pr-6 pl-4 py-4 text-center">
                                         <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </td>
                                 </tr>
@@ -184,14 +189,14 @@
                 </div>
 
                 {{-- Mobile Cards --}}
-                <div class="md:hidden flex flex-col gap-4 mt-4">
+                <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
                     @foreach($form->items as $i => $item)
                         @php
                             $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
                             $iva = round($subtotal * 0.16, 2);
                             $total = $subtotal + $iva;
                         @endphp
-                        <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
+                        <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
                             <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
                                 <x-lucide-x class="w-5 h-5" />
                             </button>
@@ -233,9 +238,9 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-2 flex justify-between items-center bg-surface-main p-3 rounded-lg border border-border">
+                                <div class="mt-2 flex justify-between items-center pt-3 border-t border-border/50">
                                     <span class="text-small font-medium text-text-secondary">Total Linea:</span>
-                                    <span class="font-bold text-text-primary tabular-nums">
+                                    <span class="font-bold text-h3 text-text-primary tabular-nums">
                                         ${{ number_format($total, 2, '.', ',') }}
                                     </span>
                                 </div>
@@ -245,8 +250,8 @@
                 </div>
 
                 {{-- Totales (calculados en ManualRequisition::render()) --}}
-                <div class="flex justify-end mt-4">
-                    <x-totals-summary>
+                <div class="flex justify-end px-6 pt-6 pb-8">
+                    <div class="w-full sm:w-1/2 md:w-1/3 min-w-[250px]">
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Subtotal s/IVA</span>
                             <span class="text-small font-medium text-text-secondary tabular-nums">
@@ -265,18 +270,24 @@
                                 ${{ number_format($totals['total'], 2, '.', ',') }}
                             </span>
                         </div>
-                    </x-totals-summary>
+                        
+                        {{-- Botón de Acción --}}
+                        <div class="flex justify-end pt-6 mt-6 border-t border-border/50">
+                            <x-button type="submit" variant="primary" target="createRequisition">Crear Requisición</x-button>
+                        </div>
+                    </div>
                 </div>
             @else
-                <x-empty-state icon="package-plus" title="Sin productos"
-                    message="Busca un producto del catálogo arriba o agrega un concepto manual."
-                    class="border border-dashed border-border rounded-xl py-10" />
+                <div class="px-6 pb-6">
+                    <x-empty-state icon="package-plus" title="Sin productos"
+                        message="Busca un producto del catálogo arriba o agrega un concepto manual."
+                        class="border border-dashed border-border rounded-xl py-10" />
+                        
+                    <div class="flex justify-center mt-6">
+                        <x-button type="submit" variant="primary" target="createRequisition">Crear Requisición (Vacía)</x-button>
+                    </div>
+                </div>
             @endif
-        </div>
-
-        {{-- Footer --}}
-        <div class="flex justify-end pt-6">
-            <x-button type="submit" variant="primary" target="createRequisition">Crear Requisición</x-button>
         </div>
     </form>
 </div>

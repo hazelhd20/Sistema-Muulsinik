@@ -84,7 +84,7 @@ $cfg = $shouldRender ? match($type) {
         // Botones de acción
         'confirmAction' => "confirmProductAssociation({$index})",
         'confirmLabel'  => 'Confirmar y vincular',
-        'confirmClass'  => 'bg-primary-600 hover:bg-primary-700 text-white',
+        'confirmClass'  => 'btn-primary',
 
         'cancelAction'  => "rejectProductAssociation({$index})",
         'cancelLabel'   => 'Crear como producto nuevo',
@@ -117,7 +117,7 @@ $cfg = $shouldRender ? match($type) {
 
         'confirmAction' => "resolveProductConflict({$index}, 'category')",
         'confirmLabel'  => 'Actualizar catálogo maestro',
-        'confirmClass'  => 'bg-warning hover:bg-warning-hover text-white',
+        'confirmClass'  => 'btn-warning',
 
         'cancelAction'  => "dismissProductConflict({$index})",
         'cancelLabel'   => 'Conservar catálogo actual',
@@ -150,7 +150,7 @@ $cfg = $shouldRender ? match($type) {
 
         'confirmAction' => "resolveProductConflict({$index}, 'unit')",
         'confirmLabel'  => 'Actualizar catálogo maestro',
-        'confirmClass'  => 'bg-warning hover:bg-warning-hover text-white',
+        'confirmClass'  => 'btn-warning',
 
         'cancelAction'  => "dismissProductConflict({$index})",
         'cancelLabel'   => 'Conservar catálogo actual',
@@ -168,7 +168,6 @@ $cfg = $shouldRender ? match($type) {
     {{ $slot }}
 @else
     <div x-data="{ open: false }"
-         @click.outside="open = false"
          class="relative">
 
         {{-- ── Wrapper del input + botón trigger ── --}}
@@ -179,6 +178,7 @@ $cfg = $shouldRender ? match($type) {
 
             {{-- Botón trigger — superpuesto al borde derecho del input --}}
             <button type="button"
+                    x-ref="trigger"
                     @click.stop="open = !open"
                     class="absolute {{ $triggerRight }} top-1/2 -translate-y-1/2 p-1 rounded-md {{ $cfg['triggerClass'] }} transition-colors shrink-0 z-10"
                     title="{{ $cfg['triggerTitle'] }}"
@@ -188,69 +188,72 @@ $cfg = $shouldRender ? match($type) {
             </button>
         </div>
 
-        {{-- ── Popover panel ── --}}
-        <div x-show="open"
-             x-cloak
-             x-transition:enter="transition-premium"
-             x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-100"
-             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-             x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-             class="absolute z-[95] left-0 top-full mt-1.5 w-72 rounded-xl border border-border bg-surface-card shadow-xl"
-             style="display: none;">
+        {{-- ── Popover panel (Teletransportado para evitar cortes de overflow) ── --}}
+        <template x-teleport="body">
+            <div x-show="open"
+                 x-cloak
+                 x-anchor.bottom-end.offset.4="$refs.trigger"
+                 @click.outside="open = false"
+                 @keydown.window.escape="open = false"
+                 x-transition:enter="transition-premium"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                 class="z-[250] w-72 rounded-xl border border-border bg-surface-card shadow-xl p-3.5"
+                 style="display: none;">
 
-            <div class="p-3.5">
+                <div>
 
-                {{-- Header --}}
-                <div class="flex items-start gap-2.5 mb-3 pb-2.5 border-b border-border">
-                    <x-dynamic-component :component="'lucide-' . $cfg['headerIcon']"
-                       class="w-4 h-4 {{ $cfg['headerColor'] }} shrink-0 mt-0.5"
-                       wire:ignore />
-                    <div>
-                        <p class="text-xs font-semibold text-text-primary leading-tight">
-                            {{ $cfg['title'] }}
-                        </p>
-                        <p class="text-xs text-text-muted mt-0.5 leading-relaxed">
-                            {{ $cfg['subtitle'] }}
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Filas de datos comparativos --}}
-                <div class="space-y-1.5 mb-3">
-                    @foreach($cfg['rows'] as $row)
-                        <div class="flex items-start justify-between gap-2
-                            {{ isset($row['separator']) && $row['separator'] ? 'pt-1.5 border-t border-border' : '' }}">
-                            <span class="text-xs text-text-muted shrink-0">
-                                {{ $row['label'] }}
-                            </span>
-                            <span class="text-xs {{ $row['weight'] }} {{ $row['color'] }} text-right leading-tight">
-                                {{ $row['value'] }}
-                            </span>
+                    {{-- Header --}}
+                    <div class="flex items-start gap-2.5 mb-3 pb-2.5 border-b border-border">
+                        <x-dynamic-component :component="'lucide-' . $cfg['headerIcon']"
+                           class="w-4 h-4 {{ $cfg['headerColor'] }} shrink-0 mt-0.5"
+                           wire:ignore />
+                        <div>
+                            <p class="text-xs font-semibold text-text-primary leading-tight">
+                                {{ $cfg['title'] }}
+                            </p>
+                            <p class="text-xs text-text-muted mt-0.5 leading-relaxed">
+                                {{ $cfg['subtitle'] }}
+                            </p>
                         </div>
-                    @endforeach
-                </div>
+                    </div>
 
-                {{-- Acciones --}}
-                <div class="flex flex-col gap-1.5">
-                    <button type="button"
-                            wire:click="{{ $cfg['confirmAction'] }}"
-                            @click="open = false"
-                            class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold transition-colors {{ $cfg['confirmClass'] }}">
-                        {{ $cfg['confirmLabel'] }}
-                    </button>
-                    <button type="button"
-                            wire:click="{{ $cfg['cancelAction'] }}"
-                            @click="open = false"
-                            class="w-full py-1.5 px-3 rounded-lg text-xs font-medium
-                                   bg-surface-main border border-border text-text-secondary
-                                   hover:bg-surface-hover hover:text-text-primary transition-colors">
-                        {{ $cfg['cancelLabel'] }}
-                    </button>
-                </div>
+                    {{-- Filas de datos comparativos --}}
+                    <div class="space-y-1.5 mb-3">
+                        @foreach($cfg['rows'] as $row)
+                            <div class="flex items-start justify-between gap-2
+                                {{ isset($row['separator']) && $row['separator'] ? 'pt-1.5 border-t border-border' : '' }}">
+                                <span class="text-xs text-text-muted shrink-0">
+                                    {{ $row['label'] }}
+                                </span>
+                                <span class="text-xs {{ $row['weight'] }} {{ $row['color'] }} text-right leading-tight">
+                                    {{ $row['value'] }}
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
 
+                    {{-- Acciones --}}
+                    <div class="flex flex-col gap-1.5">
+                        <button type="button"
+                                wire:click="{{ $cfg['confirmAction'] }}"
+                                @click="open = false"
+                                class="w-full py-1.5 px-3 rounded-md text-xs font-semibold min-h-0 {{ $cfg['confirmClass'] }}">
+                            {{ $cfg['confirmLabel'] }}
+                        </button>
+                        <button type="button"
+                                wire:click="{{ $cfg['cancelAction'] }}"
+                                @click="open = false"
+                                class="btn-secondary w-full py-1.5 px-3 rounded-md text-xs font-medium min-h-0">
+                            {{ $cfg['cancelLabel'] }}
+                        </button>
+                    </div>
+
+                </div>
             </div>
-        </div>
+        </template>
     </div>
 @endif

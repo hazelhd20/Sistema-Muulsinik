@@ -137,7 +137,7 @@
             @keydown.enter.prevent="selectActive()"
             placeholder="{{ $placeholder }}"
             autocomplete="off"
-            class="input w-full {{ $icon && $iconPosition === 'left' ? 'pl-9' : '' }} {{ $icon && $iconPosition === 'right' ? 'pr-9' : '' }} {{ $inputClass }}"
+            class="input w-full h-9 {{ $icon && $iconPosition === 'left' ? 'pl-9' : '' }} {{ $icon && $iconPosition === 'right' ? 'pr-9' : '' }} {{ $inputClass }}"
             :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
         >
         
@@ -162,7 +162,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             :style="{ minWidth: $refs.input?.offsetWidth + 'px' }"
-            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] max-h-64 overflow-hidden"
+            class="z-[200] bg-surface-card border border-border rounded-xl shadow-xl flex flex-col max-w-[90vw] max-h-64 overflow-hidden mt-1"
             style="display: none;"
         @if(isset($header))
             <div class="dropdown-header">
@@ -178,7 +178,7 @@
                         @click="selectOption(opt)"
                         @mouseenter="activeIndex = index"
                         class="px-4 py-2.5 text-small cursor-pointer transition-colors"
-                        :class="{ 'bg-primary-50 text-primary-900': activeIndex === index, 'text-text-primary hover:bg-surface-hover': activeIndex !== index }"
+                        :class="{ 'bg-primary-50 text-primary-900': activeIndex === index, 'text-text-primary hover:bg-zinc-100': activeIndex !== index }"
                     >
                         <span x-html="highlight(opt.label)" class="truncate"></span>
                     </div>

@@ -77,26 +77,24 @@
                 @endif
 
                 {{-- Partidas --}}
-                <div>
-                    <h4 class="text-small font-semibold text-text-primary mb-3">
+                <div class="mt-8 mb-6">
+                    <h4 class="text-xs font-semibold text-text-muted mb-2 uppercase tracking-wider">
                         Partidas ({{ $detailRequisition->items->count() }})
                     </h4>
-                    <div class="space-y-3">
+                    <div class="flex flex-col gap-3">
                         @foreach($detailRequisition->items as $item)
-                            <div class="flex justify-between items-center bg-surface-main/20 p-3 rounded-lg border border-border">
+                            <div class="flex justify-between items-center bg-surface-main/30 border border-border/50 rounded-xl p-3">
                                 <div>
                                     <p class="font-medium text-small text-text-primary leading-snug mb-1">
                                         {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
                                     </p>
-                                    <p class="text-[0.65rem] font-medium text-text-muted">
-                                        <span class="inline-flex items-center justify-center bg-surface-hover px-1.5 py-0.5 rounded text-text-secondary border border-border">
-                                            {{ number_format($item->quantity, 2) }} {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
-                                        </span>
+                                    <p class="text-xs font-medium text-text-muted">
+                                        {{ number_format($item->quantity, 2) }} {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
                                     </p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-semibold text-small text-text-primary">
-                                        ${{ number_format($item->line_total_computed, 2) }}
+                                    <p class="font-medium text-small text-text-primary tabular-nums">
+                                        ${{ number_format($item->line_subtotal_computed, 2) }}
                                     </p>
                                 </div>
                             </div>
@@ -105,7 +103,7 @@
                 </div>
 
                 {{-- Totales --}}
-                <div class="pt-4 border-t border-border">
+                <div class="pt-2">
                     <div class="flex justify-between items-center text-small mb-1">
                         <span class="text-text-muted">Subtotal</span>
                         <span class="font-medium text-text-primary">${{ number_format($detailRequisition->subtotal, 2) }}</span>

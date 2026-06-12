@@ -61,19 +61,20 @@
                 <table>
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
-                                <th class="w-10 pl-4 pr-2 text-center">
+                                <th class="actions text-center">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $users->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="name" label="Usuario" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
-                                <th class="w-32">Rol</th>
-                                <th class="w-32 text-center">Estado</th>
-                                <x-sortable-header field="created_at" label="Registro" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-32" />
-                                <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
+                                <x-sortable-header field="name" label="Usuario / Correo" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="role_id" label="Rol" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="active" label="Estado" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
+                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <th class="actions">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage">
@@ -82,7 +83,7 @@
                                             <tr wire:key="user-row-{{ $user->id }}"
                                                 class="group hover:bg-surface-hover/80 transition-colors duration-150"
                                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''">
-                                                <td class="pl-4 pr-2 text-center" @click.stop>
+                                                <td class="actions text-center" @click.stop>
                                                     <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                                 </td>
                                                 <td>
@@ -102,7 +103,7 @@
                                                 <td class="text-body text-text-secondary">
                                                     {{ $user->created_at->format('d/m/Y') }}
                                                 </td>
-                                                <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                                <td class="actions" @click.stop>
                                                     <div class="flex items-center justify-end">
                                                         <x-dropdown align="right" width="48">
                                                             <x-slot name="trigger">
@@ -146,7 +147,7 @@
                         <tbody wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="pl-4 pr-2 text-center">
+                                    <td class="actions text-center">
                                         <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
                                     </td>
                                     <td>
@@ -162,7 +163,7 @@
                                     <td>
                                         <x-skeleton class="h-4 rounded w-20" />
                                     </td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3">
+                                    <td class="actions">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>

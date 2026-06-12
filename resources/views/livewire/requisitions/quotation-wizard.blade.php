@@ -160,9 +160,9 @@
 
 
             {{-- General Info --}}
-            <div class="card p-6 mb-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-h2 text-text-primary">Información General</h2>
+            <div class="card mb-6">
+                <div class="card-header px-6 pt-5 flex items-center justify-between">
+                    <h2 class="card-title">Información General</h2>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
                         <x-button type="button"
@@ -173,7 +173,8 @@
                     @endif
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <x-form-field label="Proyecto" :required="true" :error="$errors->first('projectId')">
                         <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
                             placeholder="Seleccionar proyecto..." />
@@ -206,7 +207,7 @@
                     </x-form-field>
 
                     <x-form-field label="Fecha" :required="true" :error="$errors->first('date')">
-                        <input wire:model="date" type="date" class="input">
+                        <x-date-picker wire:model="date" />
                     </x-form-field>
 
                     <x-form-field label="Vendedor" :error="$errors->first('vendorName')">
@@ -236,17 +237,18 @@
                     <textarea wire:model="annotations" class="input" rows="2"
                         placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                 </x-form-field>
+                    </div>
             </div>
 
 
 
-            <div class="card p-6 mb-6">
-                <div class="flex items-center justify-between mb-4">
+            <div class="card mb-6">
+                <div class="card-header px-6 py-5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <h2 class="text-h2 text-text-primary">Productos</h2>
+                        <h2 class="card-title">Productos</h2>
                         @if(count($items) > 0)
                             <x-badge variant="secondary">{{ count($items) }}</x-badge>
-                                {{ count($items) === 1 ? 'producto' : 'productos' }}
+                                <span class="text-small text-text-muted font-normal">{{ count($items) === 1 ? 'producto' : 'productos' }}</span>
                         @endif
                     </div>
                     <x-button wire:click="addItem" variant="secondary" icon="plus">
@@ -254,26 +256,23 @@
                     </x-button>
                 </div>
 
-                @error('items') <x-alert type="danger" message="{{ $message }}" class="mb-4" /> @enderror
-
-
-                @if(count($items) > 0)
+                    @if(count($items) > 0)
                     {{-- Tabla de productos (Desktop) --}}
-                    <div class="table-embedded hidden md:block table-embedded-form">
-                        <table>
+                    <div class="hidden md:block overflow-x-auto w-full">
+                        <table class="w-full text-left table-inputs-compact">
                             <thead>
-                                <tr>
-                                    <th class="w-[26%]">Producto</th>
-                                    <th class="w-[13%]">Categoría</th>
-                                    <th class="text-center w-[8%]">Cant.</th>
-                                    <th class="text-center w-[9%]">Unidad</th>
-                                    <th class="text-right w-[13%]">P.U. s/IVA</th>
-                                    <th class="text-right w-[13%]">Subtotal</th>
-                                    <th class="text-right w-[12%]">Total c/IVA</th>
-                                    <th class="w-[6%]"></th>
+                                <tr class="bg-surface-th border-y border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                    <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[26%]">Producto</th>
+                                    <th class="px-4 py-3 whitespace-nowrap w-[13%]">Categoría</th>
+                                    <th class="px-4 py-3 text-center whitespace-nowrap w-[8%]">Cant.</th>
+                                    <th class="px-4 py-3 text-center whitespace-nowrap w-[9%]">Unidad</th>
+                                    <th class="px-4 py-3 text-right whitespace-nowrap w-[11%]">P.U. s/IVA</th>
+                                    <th class="px-4 py-3 text-right whitespace-nowrap w-[13%]">Subtotal</th>
+                                    <th class="px-4 py-3 text-right whitespace-nowrap w-[12%]">Total c/IVA</th>
+                                    <th class="pr-6 pl-4 py-3 w-[6%]"></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-border border-b border-border">
                                 @foreach($items as $i => $item)
                                     @php
                                         $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
@@ -286,10 +285,10 @@
                                             default => '',
                                         };
                                     @endphp
-                                    <tr class="align-top hover:bg-surface-hover/30 transition-all duration-200 group"
+                                    <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
                                         wire:key="item-row-{{ $i }}">
                                         {{-- Nombre / Producto --}}
-                                        <td class="pb-4">
+                                        <td class="pl-6 pr-4 py-4">
                                             @php
                                                 $isFuzzyPending      = isset($item['product_confirmed'])
                                                     && !$item['product_confirmed']
@@ -300,7 +299,7 @@
                                             <div class="relative">
                                                 <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
                                                     <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                        class="input input-inline {{ $productBorder }} text-small w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                        class="input {{ $productBorder }} text-small w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
                                                         placeholder="Nombre del producto">
                                                 </x-conflict-popover>
                                                 {{-- Indicadores estáticos (no interactivos) --}}
@@ -321,7 +320,7 @@
                                         </td>
 
                                         {{-- Categoría --}}
-                                        <td class="pb-4">
+                                        <td class="px-4 py-4">
                                             @php $hasCatConflict = isset($item['conflict']['category']); @endphp
                                             <x-conflict-popover type="category-conflict" :item="$item" :index="$i" triggerRight="right-8">
                                                 <x-custom-select wire:model.live="items.{{ $i }}.category_id"
@@ -332,15 +331,15 @@
                                         </td>
 
                                         {{-- Cantidad --}}
-                                        <td class="pb-4">
+                                        <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
                                                 step="0.01"
-                                                class="input input-inline text-center tabular-nums text-small"
+                                                class="input text-center tabular-nums text-small"
                                                 placeholder="0">
                                         </td>
 
                                         {{-- Unidad --}}
-                                        <td class="pb-4">
+                                        <td class="px-4 py-4">
                                             @php $hasUnitConflict = isset($item['conflict']['unit']); @endphp
                                             <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
                                                 <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
@@ -352,10 +351,10 @@
                                         </td>
 
                                         {{-- Precio Unitario --}}
-                                        <td class="pb-4">
+                                        <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
                                                 step="0.01"
-                                                class="input input-inline text-right tabular-nums text-small"
+                                                class="input text-right tabular-nums text-small"
                                                 placeholder="0.00">
                                             @if(($item['discount_percent'] ?? 0) > 0)
                                                 <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs">
@@ -371,18 +370,18 @@
 
                                         {{-- Subtotal --}}
                                         <td
-                                            class="text-right font-medium text-text-primary tabular-nums text-small align-middle pb-4">
+                                            class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
                                             ${{ number_format($itemSubtotal, 2, '.', ',') }}
                                         </td>
 
                                         {{-- Total con IVA --}}
                                         <td
-                                            class="text-right font-semibold text-text-primary tabular-nums text-small align-middle pb-4">
+                                            class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
                                             ${{ number_format($itemTotal, 2, '.', ',') }}
                                         </td>
 
                                         {{-- Delete --}}
-                                        <td class="text-center pb-4">
+                                        <td class="pr-6 pl-4 py-4 text-center">
                                             <x-button type="button" wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </td>
                                     </tr>
@@ -392,7 +391,7 @@
                     </div>
 
                     {{-- Formulario de productos (Mobile) --}}
-                    <div class="md:hidden flex flex-col gap-4">
+                    <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
                         @foreach($items as $i => $item)
                             @php
                                 $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
@@ -406,8 +405,10 @@
                                 };
                                 $isFuzzyPending = isset($item['product_confirmed']) && !$item['product_confirmed'] && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
                                 $hasProductIndicator = $isFuzzyPending || in_array($productStatus, ['exact', 'new']);
+                                $hasCatConflict = isset($item['conflict']['category']);
+                                $hasUnitConflict = isset($item['conflict']['unit']);
                             @endphp
-                            <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
+                            <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
                                 <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
                                     <x-lucide-x class="w-5 h-5" />
                                 </button>
@@ -437,10 +438,11 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs text-text-muted mb-1 block">Categoría</label>
-                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i">
+                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i" triggerRight="right-8">
                                                 <x-custom-select wire:model.live="items.{{ $i }}.category_id"
                                                     :options="$categories->pluck('name', 'id')->toArray()"
-                                                    placeholder="Sin categoría" />
+                                                    placeholder="Sin categoría"
+                                                    textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
                                             </x-conflict-popover>
                                         </div>
                                         <div>
@@ -448,7 +450,8 @@
                                             <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
                                                 <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
                                                     :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
-                                                    placeholder="Unidad">
+                                                    placeholder="Unidad"
+                                                    inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
                                                 </x-custom-combobox>
                                             </x-conflict-popover>
                                         </div>
@@ -467,14 +470,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-2 bg-surface-main rounded-lg p-3 border border-border">
-                                        <div class="flex justify-between items-center mb-1">
+                                    <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
+                                        <div class="flex justify-between items-center">
                                             <span class="text-small text-text-muted">Subtotal</span>
                                             <span class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
                                         </div>
                                         <div class="flex justify-between items-center">
-                                            <span class="font-medium text-text-secondary">Total c/IVA</span>
-                                            <span class="font-bold text-text-primary">${{ number_format($itemTotal, 2, '.', ',') }}</span>
+                                            <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
+                                            <span class="font-bold text-text-primary tabular-nums">${{ number_format($itemTotal, 2, '.', ',') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -491,8 +494,8 @@
                         $hasAnyDiscount = $this->hasAnyDiscount();
                         $subtotalBruto = $this->subtotalBruto();
                     @endphp
-                    <div class="flex justify-end mt-6">
-                        <x-totals-summary>
+                    <div class="flex justify-end px-6 pt-6 pb-8">
+                        <div class="w-full sm:w-1/2 md:w-1/3 min-w-[250px]">
                             @if($hasAnyDiscount)
                                 <div class="flex items-center justify-between gap-6">
                                     <span class="text-small text-text-muted">Subtotal bruto</span>
@@ -526,18 +529,24 @@
                                 <span
                                     class="text-h3 font-bold text-text-primary tabular-nums">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
-                        </x-totals-summary>
+                            
+                            {{-- Botón de Acción --}}
+                            <div class="flex justify-end pt-6 mt-6 border-t border-border/50">
+                                <x-button type="submit" variant="primary" target="saveRequisition">Crear Requisición</x-button>
+                            </div>
+                        </div>
                     </div>
                 @else
-                    <x-empty-state icon="package-open" title="Sin productos detectados"
-                        message="Agrégalos manualmente con el botón Agregar."
-                        class="border border-dashed border-border rounded-xl py-10" />
+                    <div class="px-6 pb-6">
+                        <x-empty-state icon="package-open" title="Sin productos detectados"
+                            message="Agrégalos manualmente con el botón Agregar."
+                            class="border border-dashed border-border rounded-xl py-10" />
+                            
+                        <div class="flex justify-center mt-6">
+                            <x-button type="submit" variant="primary" target="saveRequisition">Crear Requisición (Vacía)</x-button>
+                        </div>
+                    </div>
                 @endif
-            </div>
-
-            {{-- Actions --}}
-            <div class="flex justify-end pt-6">
-                <x-button type="submit" variant="primary" target="saveRequisition">Guardar Requisición</x-button>
             </div>
         </form>
     @endif

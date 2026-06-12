@@ -93,13 +93,16 @@
 
     <div class="space-y-6">
 
-        {{-- ─── Tarjeta de metadatos ─── --}}
-        <div class="card p-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div>
-                    <span class="text-xs text-text-muted block mb-1">Fecha</span>
-                    <span class="text-small font-medium text-text-primary">{{ $requisition->date?->format('d/m/Y') ?? '—' }}</span>
-                </div>
+        <div class="card">
+            <div class="card-header px-6 pt-5">
+                <h2 class="card-title">Detalles Generales</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div>
+                        <span class="text-xs text-text-muted block mb-1">Fecha</span>
+                        <span class="text-small font-medium text-text-primary">{{ $requisition->date?->format('d/m/Y') ?? '—' }}</span>
+                    </div>
                 <div>
                     <span class="text-xs text-text-muted block mb-1">Proyecto</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->project?->name ?? '—' }}</span>
@@ -128,55 +131,56 @@
                         <span class="text-small text-text-primary">{{ $requisition->annotations }}</span>
                     </div>
                 @endif
+                </div>
             </div>
         </div>
 
         {{-- ─── Tarjeta de productos ─── --}}
         <div class="card p-0 overflow-hidden">
-            <div class="px-6 py-5 flex items-center gap-2">
-                <h2 class="text-h2 text-text-primary">Productos Solicitados</h2>
-                <x-badge variant="secondary">{{ $requisition->items->count() }}</x-badge>
+            <div class="card-header px-6 pt-5">
+                <h2 class="card-title">Productos Solicitados</h2>
+                <x-badge variant="secondary" class="shrink-0">{{ $requisition->items->count() }}</x-badge>
             </div>
 
             {{-- Desktop Table --}}
-            <div class="table-embedded hidden md:block border-t-0 border-x-0 rounded-none overflow-x-auto">
-                <table>
-                    <thead>
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-surface-hover/50 border-y border-border text-xs font-semibold text-text-secondary">
                         <tr>
-                            <th>Producto</th>
-                            <th>Categoría</th>
-                            <th class="text-center w-[10%]">Cant.</th>
-                            <th class="text-right">Precio U.</th>
-                            <th class="text-right">Total</th>
+                            <th class="pl-6 pr-4 py-3 whitespace-nowrap">Producto</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
+                            <th class="px-4 py-3 text-center whitespace-nowrap w-[10%]">Cant.</th>
+                            <th class="px-4 py-3 text-right whitespace-nowrap">Precio U.</th>
+                            <th class="pr-6 pl-4 py-3 text-right whitespace-nowrap">Total</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-border border-b border-border">
                         @forelse($requisition->items as $item)
-                            <tr class="hover:bg-surface-hover/30">
-                                <td>
-                                    <p class="font-medium text-small">
+                            <tr class="hover:bg-surface-hover/30 transition-colors">
+                                <td class="pl-6 pr-4 py-3">
+                                    <p class="font-medium text-small text-text-primary">
                                         {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                     </p>
                                 </td>
-                                <td>
-                                    <span class="text-small text-text-muted">
+                                <td class="px-4 py-3">
+                                    <span class="text-small text-text-secondary">
                                         {{ $item->product?->category?->name ?? '—' }}
                                     </span>
                                 </td>
-                                <td class="text-center tabular-nums text-small">
+                                <td class="px-4 py-3 text-center tabular-nums text-small text-text-secondary">
                                     {{ number_format($item->quantity, 2) }}
                                     {{ $item->measure?->abbreviation ?? '' }}
                                 </td>
-                                <td class="text-right tabular-nums text-small">
+                                <td class="px-4 py-3 text-right tabular-nums text-small text-text-secondary">
                                     ${{ number_format($item->unit_price, 2) }}
                                 </td>
-                                <td class="text-right font-medium tabular-nums text-small">
+                                <td class="pr-6 pl-4 py-3 text-right font-medium tabular-nums text-small text-text-primary">
                                     ${{ number_format($item->line_total_computed, 2) }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">
+                                <td colspan="5" class="py-12 text-center">
                                     <x-empty-state icon="package" title="Sin productos registrados" />
                                 </td>
                             </tr>
@@ -186,15 +190,15 @@
             </div>
 
             {{-- Mobile Cards --}}
-            <div class="md:hidden flex flex-col divide-y divide-border border-t border-border">
+            <div class="md:hidden flex flex-col divide-y divide-border border-y border-border">
                 @forelse($requisition->items as $item)
-                    <div class="p-4 flex flex-col gap-2">
+                    <div class="px-6 py-5 flex flex-col gap-2">
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="font-bold text-body text-text-primary">
                                     {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                 </p>
-                                <p class="text-small text-text-muted mt-0.5">
+                                <p class="text-small text-text-secondary mt-0.5">
                                     {{ $item->product?->category?->name ?? 'Sin categoría' }}
                                 </p>
                             </div>
@@ -202,39 +206,39 @@
                         
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50">
                             <div>
-                                <p class="text-xs text-text-muted mb-0.5">Cantidad</p>
-                                <p class="text-small font-medium text-text-secondary">
+                                <p class="text-xs text-text-secondary mb-0.5">Cantidad</p>
+                                <p class="text-small font-medium text-text-primary">
                                     {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
                                 </p>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-text-muted mb-0.5">Precio U.</p>
-                                <p class="text-small font-medium text-text-secondary">
+                                <p class="text-xs text-text-secondary mb-0.5">Precio U.</p>
+                                <p class="text-small font-medium text-text-primary">
                                     ${{ number_format($item->unit_price, 2) }}
                                 </p>
                             </div>
                         </div>
                         
-                        <div class="flex justify-between items-center mt-2 bg-surface-main p-2 rounded-lg border border-border">
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-border/50">
                             <span class="text-small font-medium text-text-secondary">Total Linea:</span>
-                            <span class="font-bold text-text-primary">
+                            <span class="font-bold text-h3 text-text-primary">
                                 ${{ number_format($item->line_total_computed, 2) }}
                             </span>
                         </div>
                     </div>
                 @empty
-                    <div class="p-6">
-                        <x-empty-state icon="package" title="Sin productos registrados" />
+                    <div class="py-12 text-center border-b border-border">
+                        <span class="text-text-muted">No hay productos</span>
                     </div>
                 @endforelse
             </div>
 
             {{-- Totales --}}
-            <div class="flex justify-end px-6 py-5">
+            <div class="flex justify-end px-6 pt-6 pb-8">
                 <x-totals-summary>
                     <div class="flex items-center justify-between gap-6">
-                        <span class="text-small text-text-muted">Subtotal</span>
-                        <span class="text-small font-medium text-text-secondary tabular-nums">
+                        <span class="text-small text-text-secondary">Subtotal</span>
+                        <span class="text-small font-medium text-text-primary tabular-nums">
                             ${{ number_format($requisition->subtotal, 2) }}
                         </span>
                     </div>
@@ -250,8 +254,8 @@
                     @endif
 
                     <div class="flex items-center justify-between gap-6">
-                        <span class="text-small text-text-muted">IVA</span>
-                        <span class="text-small font-medium text-text-muted tabular-nums">
+                        <span class="text-small text-text-secondary">IVA</span>
+                        <span class="text-small font-medium text-text-primary tabular-nums">
                             ${{ number_format($requisition->tax_amount, 2) }}
                         </span>
                     </div>
@@ -268,33 +272,30 @@
 
     {{-- ─── Historial de Actividad (Audit Log) (H1) ─── --}}
     @if($requisition->activities->isNotEmpty())
-        <div class="card mb-6">
-            <div class="px-6 py-4 border-b border-border flex items-center gap-3">
-                <x-lucide-history class="w-5 h-5 text-text-muted" />
-                <h2 class="text-h3 font-semibold text-text-primary">Historial de Actividad</h2>
+        <div class="card mt-6 mb-6">
+            <div class="card-header px-6 pt-5">
+                <h2 class="card-title">Historial de Actividad</h2>
             </div>
-            <div class="p-6">
-                <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:ml-8 md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-border before:to-transparent">
+            <div class="card-body">
+                <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border">
                     @foreach($requisition->activities as $activity)
                         @php
                             $actionConfig = match($activity->action) {
-                                'created' => ['icon' => 'plus-circle', 'color' => 'text-primary-600', 'bg' => 'bg-primary-50', 'border' => 'border-primary-100'],
-                                'approved' => ['icon' => 'check-circle', 'color' => 'text-success', 'bg' => 'bg-success-light', 'border' => 'border-success-border'],
-                                'rejected' => ['icon' => 'x-circle', 'color' => 'text-danger', 'bg' => 'bg-danger-light', 'border' => 'border-danger-border'],
-                                'status_changed' => ['icon' => 'arrow-right-circle', 'color' => 'text-warning', 'bg' => 'bg-warning-light', 'border' => 'border-warning-border'],
-                                default => ['icon' => 'edit-3', 'color' => 'text-text-secondary', 'bg' => 'bg-surface-hover', 'border' => 'border-border-strong'],
+                                'created' => ['icon' => 'plus-circle', 'color' => 'text-primary-600', 'bg' => 'bg-primary-50'],
+                                'approved' => ['icon' => 'check-circle', 'color' => 'text-success', 'bg' => 'bg-success-light'],
+                                'rejected' => ['icon' => 'x-circle', 'color' => 'text-danger', 'bg' => 'bg-danger-light'],
+                                'status_changed' => ['icon' => 'arrow-right-circle', 'color' => 'text-warning', 'bg' => 'bg-warning-light'],
+                                default => ['icon' => 'edit-3', 'color' => 'text-text-secondary', 'bg' => 'bg-surface-hover'],
                             };
                         @endphp
                         <div class="relative flex items-start gap-4 md:gap-6 group">
                             {{-- Line & Icon --}}
-                            <div class="relative z-10 flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border shadow-sm shrink-0 bg-surface-card transition-transform group-hover:scale-105 {{ $actionConfig['border'] }}">
-                                <div class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center {{ $actionConfig['bg'] }}">
-                                    <x-dynamic-component :component="'lucide-' . $actionConfig['icon']" class="w-4 h-4 md:w-5 md:h-5 {{ $actionConfig['color'] }}" />
-                                </div>
+                            <div class="relative z-10 flex items-center justify-center w-10 h-10 rounded-full shrink-0 ring-4 ring-surface-card {{ $actionConfig['bg'] }} transition-transform group-hover:scale-110">
+                                <x-dynamic-component :component="'lucide-' . $actionConfig['icon']" class="w-5 h-5 {{ $actionConfig['color'] }}" />
                             </div>
                             
                             {{-- Content --}}
-                            <div class="flex-1 min-w-0 pt-1 md:pt-2">
+                            <div class="flex-1 min-w-0 pt-1">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                                     <p class="text-small font-medium text-text-primary">
                                         {{ $activity->description ?? ucfirst(__($activity->action)) }}
@@ -309,15 +310,15 @@
                                 </div>
 
                                 @if($activity->old_values || $activity->new_values)
-                                    <div class="mt-3 p-3 rounded-lg bg-surface-hover border border-border overflow-x-auto">
+                                    <div class="mt-3 p-4 rounded-lg bg-surface-main/30 border border-border overflow-x-auto shadow-sm">
                                         @if($activity->action === 'status_changed')
-                                            <div class="flex items-center gap-3 text-xs font-medium">
+                                            <div class="flex items-center gap-3 text-small font-medium">
                                                 <span class="text-text-muted line-through">{{ strtoupper($activity->old_values['status'] ?? '—') }}</span>
-                                                <x-lucide-arrow-right class="w-3.5 h-3.5 text-text-secondary" />
-                                                <span class="text-primary-600">{{ strtoupper($activity->new_values['status'] ?? '—') }}</span>
+                                                <x-lucide-arrow-right class="w-4 h-4 text-text-secondary" />
+                                                <span class="{{ $actionConfig['color'] }}">{{ strtoupper($activity->new_values['status'] ?? '—') }}</span>
                                             </div>
                                         @else
-                                            <pre class="text-[0.65rem] text-text-muted font-mono leading-relaxed">{{ json_encode(['De' => $activity->old_values, 'A' => $activity->new_values], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                            <pre class="text-xs text-text-secondary font-mono leading-relaxed">{{ json_encode(['De' => $activity->old_values, 'A' => $activity->new_values], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                         @endif
                                     </div>
                                 @endif

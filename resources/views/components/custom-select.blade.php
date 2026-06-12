@@ -46,7 +46,7 @@
         x-ref="trigger"
         type="button"
         @click="toggle()"
-        class="input flex items-center justify-between text-left w-full h-[38px]"
+        class="input flex items-center justify-between text-left w-full h-9"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
         <div class="flex items-center gap-2 truncate {{ $textClass }}">
@@ -72,7 +72,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             :style="{ minWidth: $refs.trigger?.offsetWidth + 'px' }"
-            class="z-[200] bg-surface-card border border-border rounded-xl shadow-lg flex flex-col max-w-[90vw] max-h-64 overflow-hidden"
+            class="z-[200] bg-surface-card border border-border rounded-xl shadow-xl flex flex-col max-w-[90vw] max-h-64 overflow-hidden mt-1"
             style="display: none;"
         >
         <!-- Search Input -->
@@ -97,7 +97,7 @@
                     @click="value = ''; close()"
                     x-show="search === ''"
                     class="px-4 py-2.5 text-small cursor-pointer transition-colors"
-                    :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
+                    :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-zinc-100'"
                 >
                     {{ $placeholder }}
                 </div>
@@ -107,7 +107,7 @@
                 <div
                     @click="value = val; close()"
                     class="px-4 py-2.5 text-small cursor-pointer transition-colors flex items-center justify-between"
-                    :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
+                    :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-zinc-100'"
                 >
                     <span x-text="label" class="truncate pr-4"></span>
                     <svg x-show="value == val" class="w-4 h-4 shrink-0 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
