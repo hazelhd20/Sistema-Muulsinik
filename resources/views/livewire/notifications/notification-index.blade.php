@@ -96,7 +96,7 @@
                                             <h4 class="text-body font-semibold text-text-primary">
                                                 {{ $data['title'] ?? 'Notificación' }}
                                                 @if($isUnread)
-                                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs-fluid font-medium bg-primary-100 text-primary-800">
+                                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                                                         Nueva
                                                     </span>
                                                 @endif
@@ -105,7 +105,7 @@
                                                 {{ $data['message'] ?? '' }}
                                             </p>
                                         </div>
-                                        <span class="text-xs-fluid text-text-muted shrink-0 whitespace-nowrap">
+                                        <span class="text-xs text-text-muted shrink-0 whitespace-nowrap">
                                             {{ $notification->created_at->locale('es')->diffForHumans() }}
                                         </span>
                                     </div>

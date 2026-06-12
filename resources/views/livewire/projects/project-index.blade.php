@@ -69,16 +69,16 @@
                                         x-on:change="toggleAll([{{ $projects->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
                                 <x-sortable-header field="client" label="Cliente" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-48" />
                                 <x-sortable-header field="start_date" label="Fechas" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-48" />
                                 <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th>Ejecución</th>
+                                    :sortDirection="$sortDirection" class="w-32" align="right" />
+                                <th class="w-32">Ejecución</th>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-32" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -108,11 +108,11 @@
                                         <td>
                                             <div class="text-text-primary font-medium tabular-nums">
                                                 ${{ number_format($project->budget, 0, '.', ',') }}</div>
-                                            <div class="text-xs-fluid text-text-muted mt-0.5 tabular-nums">
+                                            <div class="text-xs text-text-muted mt-0.5 tabular-nums">
                                                 ${{ number_format($project->total_expenses, 0, '.', ',') }} gastado</div>
                                         </td>
                                         <td class="min-w-[120px]">
-                                            <div class="flex items-center justify-between text-xs-fluid mb-1.5">
+                                            <div class="flex items-center justify-between text-xs mb-1.5">
                                                 <span
                                                     class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                                             </div>
@@ -215,7 +215,7 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="font-bold text-text-primary text-body">{{ $project->name }}</span>
                                             </div>
-                                            <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $project->client ?? 'Sin cliente' }}</p>
+                                            <p class="text-xs text-text-secondary mt-1 truncate">{{ $project->client ?? 'Sin cliente' }}</p>
                                         </div>
                                     </div>
                                     <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
@@ -223,7 +223,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                                <div class="grid grid-cols-2 gap-2 text-xs text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
                                     <div>
                                         <p class="mb-0.5 text-[10px] uppercase font-semibold">Presupuesto</p>
                                         <span class="font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</span>

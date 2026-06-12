@@ -25,7 +25,7 @@
                  alt="Muulsinik ERP"
                  class="object-contain mb-1"
                  style="height: clamp(2.5rem, 4vw + 1rem, 3.5rem);">
-            <p class="text-xs-fluid text-text-muted font-medium tracking-wider uppercase mt-2">
+            <p class="text-xs text-text-muted font-medium tracking-wider uppercase mt-2">
                 Sistema de Gestión Operativa
             </p>
         </div>

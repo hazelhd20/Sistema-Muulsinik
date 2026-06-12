@@ -166,13 +166,13 @@
                         <div wire:loading.remove wire:target="query">
                             @if(!$hasAnyResults && strlen($query) >= 2)
                                 <x-empty-state icon="search-x" title="No encontramos resultados" class="py-14">
-                                    <p class="text-xs-fluid text-text-muted mt-2">
+                                    <x-slot:description>
                                         No pudimos encontrar nada para "<span class="font-semibold text-text-primary" x-text="$wire.query"></span>". Revisa la ortografía o intenta con otro término.
-                                    </p>
+                                    </x-slot:description>
                                 </x-empty-state>
                             @elseif(!$hasAnyResults && strlen($query) < 2)
                                 <div class="py-6 px-4">
-                                    <h3 class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-3">Acciones Rápidas</h3>
+                                    <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Acciones Rápidas</h3>
                                     <div class="space-y-1">
                                         <a href="{{ route('requisiciones.index') }}" wire:navigate class="flex items-center gap-3 px-3 py-2 hover:bg-surface-hover transition-colors group rounded-md">
                                             <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0"><x-lucide-clipboard-list class="w-4 h-4 text-primary-600" /></div>
@@ -198,7 +198,7 @@
                                 @foreach($categories as $key => $label)
                                     @if(!empty($results[$key]))
                                         <div class="mb-4 last:mb-0">
-                                            <h2 class="px-3 py-1 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">{{ $label }}</h2>
+                                            <h2 class="px-3 py-1 text-xs font-semibold text-text-muted uppercase tracking-wider">{{ $label }}</h2>
                                             <div class="mt-2 space-y-1">
                                                 @foreach($results[$key] as $item)
                                                     <x-search-result-item 

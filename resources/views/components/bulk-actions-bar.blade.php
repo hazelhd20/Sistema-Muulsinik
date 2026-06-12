@@ -15,7 +15,7 @@
 >
     <div class="flex items-center gap-3 border-r border-border pr-4 shrink-0">
         <x-pulse-indicator color="primary" />
-        <span class="text-sm font-semibold text-text-primary whitespace-nowrap">
+        <span class="text-small font-semibold text-text-primary whitespace-nowrap">
             <span x-text="{{ $model }}.length"></span> seleccionados
         </span>
     </div>

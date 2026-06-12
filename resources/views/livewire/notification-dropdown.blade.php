@@ -9,7 +9,7 @@
         <div class="absolute -top-0.5 -right-0.5" wire:key="unread-badge">
             @if($unreadCount > 0)
                 <span
-                    class="min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-xs-fluid font-bold text-white flex items-center justify-center shadow-sm leading-none">
+                    class="min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-xs font-bold text-white flex items-center justify-center shadow-sm leading-none">
                     {{ $unreadCount > 99 ? '99+' : $unreadCount }}
                 </span>
             @endif
@@ -34,7 +34,7 @@
             <h3 class="dropdown-header-title">Notificaciones</h3>
             @if($unreadCount > 0)
                 <button wire:click="markAllAsRead"
-                    class="text-xs-fluid text-primary-600 hover:text-primary-700 font-medium transition-colors">
+                    class="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors">
                     Marcar todas como leídas
                 </button>
             @endif
@@ -76,11 +76,11 @@
                                     <span class="w-2 h-2 bg-primary-500 rounded-full shrink-0 mt-1"></span>
                                 @endif
                             </div>
-                            <p class="text-xs-fluid text-text-secondary mt-0.5 leading-relaxed">
+                            <p class="text-xs text-text-secondary mt-0.5 leading-relaxed">
                                 {{ $notification['message'] }}
                             </p>
                             <div class="flex items-center justify-between mt-2">
-                                <span class="text-xs-fluid text-text-muted" 
+                                <span class="text-xs text-text-muted" 
                                     x-data="{ 
                                         time: '{{ $notification['created_at_iso'] }}', 
                                         relative: '{{ $notification['created_at'] }}' 
@@ -99,7 +99,7 @@
                                     <a href="{{ $notification['action_url'] }}" 
                                         @if(!str_contains($notification['action_url'], '/storage/exports/')) wire:navigate @else download @endif
                                         wire:click="markAsRead('{{ $notification['id'] }}')"
-                                        class="text-xs-fluid font-medium text-primary-600 hover:text-primary-700 transition-colors">
+                                        class="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors">
                                         {{ $notification['action_text'] }}
                                     </a>
                                 </div>

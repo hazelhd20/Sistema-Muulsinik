@@ -39,32 +39,32 @@
             {{-- Metadata grid --}}
             <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Presupuesto</span>
+                    <span class="text-xs text-text-muted block mb-1">Presupuesto</span>
                     <span class="text-body font-semibold text-text-primary tabular-nums">
                         ${{ number_format($project->budget, 0, '.', ',') }}
                     </span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Gasto acumulado</span>
+                    <span class="text-xs text-text-muted block mb-1">Gasto acumulado</span>
                     <span class="text-body font-semibold text-text-primary tabular-nums">
                         ${{ number_format($project->total_expenses, 0, '.', ',') }}
                     </span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Fecha de inicio</span>
+                    <span class="text-xs text-text-muted block mb-1">Fecha de inicio</span>
                     <span class="text-body text-text-primary">
                         {{ $project->start_date?->format('d/m/Y') ?? '—' }}
                     </span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Fecha de fin</span>
+                    <span class="text-xs text-text-muted block mb-1">Fecha de fin</span>
                     <span class="text-body text-text-primary">
                         {{ $project->end_date?->format('d/m/Y') ?? '—' }}
                     </span>
                 </div>
                 @if($project->description)
                     <div class="col-span-2 md:col-span-4">
-                        <span class="text-xs-fluid text-text-muted block mb-1">Descripción</span>
+                        <span class="text-xs text-text-muted block mb-1">Descripción</span>
                         <span class="text-small text-text-secondary">{{ $project->description }}</span>
                     </div>
                 @endif
@@ -76,7 +76,7 @@
                 $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
             @endphp
             <div class="mt-5 pt-5 border-t border-border">
-                <div class="flex items-center justify-between text-xs-fluid mb-2">
+                <div class="flex items-center justify-between text-xs mb-2">
                     <span class="text-text-muted">Ejecución del presupuesto</span>
                     <span class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                 </div>
@@ -86,7 +86,7 @@
                     </div>
                 </div>
                 @if($project->budget_used_percent > 100)
-                    <p class="text-xs-fluid text-danger mt-1.5 flex items-center gap-1">
+                    <p class="text-xs text-danger mt-1.5 flex items-center gap-1">
                         <x-lucide-alert-triangle class="w-3.5 h-3.5" />
                         El gasto acumulado supera el presupuesto asignado.
                     </p>
@@ -104,7 +104,7 @@
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
                         {{ $project->requisitions->count() }}
                     </p>
-                    <p class="text-xs-fluid text-text-muted mt-0.5">Requisiciones</p>
+                    <p class="text-xs text-text-muted mt-0.5">Requisiciones</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -115,7 +115,7 @@
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
                         {{ $project->requisitions->where('status', 'aprobada')->count() }}
                     </p>
-                    <p class="text-xs-fluid text-text-muted mt-0.5">Aprobadas</p>
+                    <p class="text-xs text-text-muted mt-0.5">Aprobadas</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -126,7 +126,7 @@
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
                         {{ $project->requisitions->where('status', 'pendiente')->count() }}
                     </p>
-                    <p class="text-xs-fluid text-text-muted mt-0.5">Pendientes</p>
+                    <p class="text-xs text-text-muted mt-0.5">Pendientes</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -137,7 +137,7 @@
                     <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">
                         {{ $project->expenses->count() }}
                     </p>
-                    <p class="text-xs-fluid text-text-muted mt-0.5">Gastos directos</p>
+                    <p class="text-xs text-text-muted mt-0.5">Gastos directos</p>
                 </div>
             </div>
         </div>

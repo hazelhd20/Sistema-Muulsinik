@@ -13,10 +13,10 @@
     @endif
     {{ $slot }}
     @if($hint && !$error)
-        <p class="mt-1 text-xs-fluid text-text-muted">{{ $hint }}</p>
+        <p class="mt-1 text-xs text-text-muted">{{ $hint }}</p>
     @endif
     @if($error)
-        <p class="mt-1 text-xs-fluid text-danger flex items-center gap-1">
+        <p class="mt-1 text-xs text-danger flex items-center gap-1">
             <x-lucide-circle-alert class="w-3 h-3 shrink-0" />
             {{ $error }}
         </p>

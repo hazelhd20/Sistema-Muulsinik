@@ -119,17 +119,17 @@
                                             x-on:change="toggleAll([{{ $requisitions->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="number" label="Folio" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
                                 <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-48" />
                                 <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th>Creador</th>
-                                <th>Proveedor</th>
+                                    :sortDirection="$sortDirection" class="w-32" />
+                                <th class="w-48">Creador</th>
+                                <th class="w-48">Proveedor</th>
                                 <x-sortable-header field="total" label="Total" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" align="right" />
+                                    :sortDirection="$sortDirection" align="right" class="w-32" />
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-1 whitespace-nowrap" />
+                                    :sortDirection="$sortDirection" class="w-32" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -333,7 +333,7 @@
                                                 <span class="font-bold text-text-primary text-body">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
                                                 <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                                             </div>
-                                            <p class="text-xs-fluid text-text-secondary mt-1 truncate">{{ $req->project->name ?? 'Sin proyecto' }}</p>
+                                            <p class="text-xs text-text-secondary mt-1 truncate">{{ $req->project->name ?? 'Sin proyecto' }}</p>
                                         </div>
                                     </div>
                                     <div class="text-right shrink-0">
@@ -341,7 +341,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2 text-xs-fluid text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                                <div class="grid grid-cols-2 gap-2 text-xs text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
                                     <div class="flex items-center gap-1.5">
                                         <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
                                         <span>{{ $req->date?->format('d/m/Y') }}</span>
@@ -357,14 +357,14 @@
                                 </div>
 
                                 @if($req->status === 'rechazada' && $req->rejection_comment)
-                                    <div class="bg-danger-50 text-danger-700 text-xs-fluid p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
+                                    <div class="bg-danger-50 text-danger-700 text-xs p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
                                         <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
                                         <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
                                     </div>
                                 @endif
 
                                 <div class="flex justify-end pt-3 border-t border-border/50 mt-1">
-                                    <x-button @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" variant="secondary" icon="eye" class="text-xs-fluid py-1.5 px-3">
+                                    <x-button @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" variant="secondary" icon="eye" class="text-xs py-1.5 px-3">
                                         Ver Detalles
                                     </x-button>
                                 </div>

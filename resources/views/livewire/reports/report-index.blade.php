@@ -205,7 +205,7 @@
                 <div>
                     <p class="text-h2 font-bold text-text-primary tabular-nums">
                         ${{ number_format($totalExpenses, 0, '.', ',') }}</p>
-                    <p class="text-xs-fluid text-text-muted">Gasto total del período</p>
+                    <p class="text-xs text-text-muted">Gasto total del período</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -214,7 +214,7 @@
                 </div>
                 <div>
                     <p class="text-h2 text-text-primary">{{ $expenseCount }}</p>
-                    <p class="text-xs-fluid text-text-muted">Transacciones · ${{ number_format($avgExpense, 0, '.', ',') }}
+                    <p class="text-xs text-text-muted">Transacciones · ${{ number_format($avgExpense, 0, '.', ',') }}
                         prom.</p>
                 </div>
             </div>
@@ -224,7 +224,7 @@
                 </div>
                 <div>
                     <p class="text-h2 text-text-primary">{{ $requisitionsApproved }}</p>
-                    <p class="text-xs-fluid text-text-muted">Requisiciones aprobadas</p>
+                    <p class="text-xs text-text-muted">Requisiciones aprobadas</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -233,7 +233,7 @@
                 </div>
                 <div>
                     <p class="text-h2 text-text-primary">{{ $activeProjects }}/{{ $totalProjects }}</p>
-                    <p class="text-xs-fluid text-text-muted">Proyectos activos</p>
+                    <p class="text-xs text-text-muted">Proyectos activos</p>
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-small font-semibold text-text-primary">Tendencia de Gastos</h2>
-                        <p class="text-xs-fluid text-text-muted">Últimos 12 meses</p>
+                        <p class="text-xs text-text-muted">Últimos 12 meses</p>
                     </div>
                 </div>
                 <div class="h-64 flex-1" data-chart="{{ json_encode($monthlyData) }}"
@@ -386,7 +386,7 @@
                             <div>
                                 <div class="flex items-center justify-between text-body mb-1">
                                     <span class="font-medium text-text-primary truncate max-w-[60%]">{{ $comp['name'] }}</span>
-                                    <span class="text-text-muted text-xs-fluid">
+                                    <span class="text-text-muted text-xs">
                                         ${{ number_format($comp['spent'], 0, '.', ',') }} /
                                         ${{ number_format($comp['budget'], 0, '.', ',') }}
                                     </span>
@@ -396,9 +396,9 @@
                                         style="width: {{ $p }}%"></div>
                                 </div>
                                 <div class="flex justify-between mt-0.5">
-                                    <span class="text-xs-fluid text-text-muted">{{ $comp['percent'] }}% usado</span>
+                                    <span class="text-xs text-text-muted">{{ $comp['percent'] }}% usado</span>
                                     @if($comp['percent'] >= 90)
-                                        <span class="text-xs-fluid font-semibold text-danger">⚠ Sobrepresupuesto</span>
+                                        <span class="text-xs font-semibold text-danger">⚠ Sobrepresupuesto</span>
                                     @endif
                                 </div>
                             </div>
@@ -411,7 +411,7 @@
             <div class="table-container flex flex-col h-full">
                 <div class="px-4 py-3 border-b border-border">
                     <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
-                    <p class="text-xs-fluid text-text-muted">Período seleccionado</p>
+                    <p class="text-xs text-text-muted">Período seleccionado</p>
                 </div>
                 @if($topProjects->isEmpty())
                     <div wire:key="overview-projects-empty" class="flex-1 flex flex-col items-center justify-center min-h-[200px]">
@@ -434,13 +434,13 @@
                                     <tr>
                                         <td>
                                             <span
-                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
                                                 {{ $i + 1 }}
                                             </span>
                                         </td>
                                         <td>
                                             <p class="font-medium">{{ $proj->name }}</p>
-                                            <p class="text-xs-fluid text-text-muted">{{ $proj->client ?? '—' }}</p>
+                                            <p class="text-xs text-text-muted">{{ $proj->client ?? '—' }}</p>
                                         </td>
                                         <td class="text-right text-body text-text-secondary">
                                             ${{ number_format($proj->budget, 0, '.', ',') }}</td>
@@ -464,7 +464,7 @@
             <div class="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div>
                     <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
-                    <p class="text-xs-fluid text-text-muted">Monto total de requisiciones aprobadas en el período</p>
+                    <p class="text-xs text-text-muted">Monto total de requisiciones aprobadas en el período</p>
                 </div>
             </div>
             @if($topSuppliers->isEmpty())
@@ -490,7 +490,7 @@
                                 <tr>
                                     <td>
                                         <span
-                                            class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                            class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
                                             {{ $i + 1 }}
                                         </span>
                                     </td>
@@ -523,7 +523,7 @@
             <div class="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div>
                     <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
-                    <p class="text-xs-fluid text-text-muted">Montos por vendedor/contacto de proveedor en el período</p>
+                    <p class="text-xs text-text-muted">Montos por vendedor/contacto de proveedor en el período</p>
                 </div>
             </div>
             @if($topVendors->isEmpty())
@@ -548,7 +548,7 @@
                                 <tr>
                                     <td>
                                         <span
-                                            class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                            class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
                                             {{ $i + 1 }}
                                         </span>
                                     </td>
@@ -575,7 +575,7 @@
             <div class="lg:col-span-2 table-container flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
                 <div class="px-4 py-3 border-b border-border">
                     <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
-                    <p class="text-xs-fluid text-text-muted">Top 15 por monto en requisiciones aprobadas</p>
+                    <p class="text-xs text-text-muted">Top 15 por monto en requisiciones aprobadas</p>
                 </div>
                 @if($topProducts->isEmpty())
                     <div wire:key="products-table-empty" class="flex-1 flex flex-col items-center justify-center min-h-[250px]">
@@ -601,7 +601,7 @@
                                     <tr>
                                         <td>
                                             <span
-                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
                                                 {{ $i + 1 }}
                                             </span>
                                         </td>

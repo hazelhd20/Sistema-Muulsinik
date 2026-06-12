@@ -82,13 +82,13 @@
                                                 <p class="text-small font-medium text-text-primary group-hover:text-primary-600">
                                                     {{ $product['name'] }}</p>
                                                 <div class="flex items-center gap-2 mt-0.5">
-                                                    <span class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
+                                                    <span class="text-xs text-text-muted">{{ $product['category'] }}</span>
                                                     <x-badge variant="secondary">{{ $product['measure_abbr'] }}</x-badge>
                                                 </div>
                                             </div>
                                             @if($product['last_price'] > 0)
                                                 <div class="text-right">
-                                                    <p class="text-xs-fluid text-text-muted">Último costo</p>
+                                                    <p class="text-xs text-text-muted">Último costo</p>
                                                     <p class="text-small font-semibold text-text-primary">
                                                         ${{ number_format($product['last_price'], 2) }}</p>
                                                 </div>
@@ -101,7 +101,7 @@
                     @elseif(strlen($searchQuery) >= 2 && empty($searchResults))
                         <div class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in p-4 text-center">
                             <p class="text-small text-text-muted">No se encontraron productos en el catálogo.</p>
-                            <p class="text-xs-fluid text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
+                            <p class="text-xs text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
                                 Da clic en "Concepto Manual" para agregarlo tú mismo.
                             </p>
                         </div>
@@ -198,20 +198,20 @@
                             
                             <div class="flex flex-col gap-3">
                                 <div class="pr-8">
-                                    <label class="text-xs-fluid text-text-muted mb-1 block">Producto</label>
+                                    <label class="text-xs text-text-muted mb-1 block">Producto</label>
                                     <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
                                         class="input w-full" placeholder="Nombre del producto">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="text-xs-fluid text-text-muted mb-1 block">Categoría</label>
+                                        <label class="text-xs text-text-muted mb-1 block">Categoría</label>
                                         <x-custom-select wire:model.live="form.items.{{ $i }}.category_id"
                                             :options="$categories->pluck('name', 'id')->toArray()"
                                             placeholder="Sin categoría" />
                                     </div>
                                     <div>
-                                        <label class="text-xs-fluid text-text-muted mb-1 block">Unidad</label>
+                                        <label class="text-xs text-text-muted mb-1 block">Unidad</label>
                                         <x-custom-select wire:model.live="form.items.{{ $i }}.unit" :options="$measureOptions"
                                             placeholder="Unidad" />
                                     </div>
@@ -219,12 +219,12 @@
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="text-xs-fluid text-text-muted mb-1 block">Cantidad</label>
+                                        <label class="text-xs text-text-muted mb-1 block">Cantidad</label>
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.quantity" type="number" step="0.01"
                                             class="input w-full" placeholder="0">
                                     </div>
                                     <div>
-                                        <label class="text-xs-fluid text-text-muted mb-1 block">Precio U.</label>
+                                        <label class="text-xs text-text-muted mb-1 block">Precio U.</label>
                                         <div class="relative">
                                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
                                             <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number" step="0.01"

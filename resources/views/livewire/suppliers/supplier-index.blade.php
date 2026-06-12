@@ -56,12 +56,12 @@
                                         x-on:change="toggleAll([{{ $suppliers->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="trade_name" label="Proveedor" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
                                 <x-sortable-header field="rfc" label="RFC" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-48" />
                                 <x-sortable-header field="category" label="Categoría" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th>Vendedores</th>
+                                    :sortDirection="$sortDirection" class="w-32" />
+                                <th class="w-32">Vendedores</th>
                                 <th>Notas</th>
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
@@ -81,7 +81,7 @@
                                         </td>
                                         <td>
                                             @if($supplier->rfc)
-                                                <span class="text-xs-fluid text-text-muted font-mono">{{ $supplier->rfc }}</span>
+                                                <span class="text-xs text-text-muted font-mono">{{ $supplier->rfc }}</span>
                                             @else
                                                 <span class="text-text-muted">—</span>
                                             @endif
@@ -94,7 +94,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary">
+                                            <span class="inline-flex items-center gap-1.5 text-xs text-text-secondary">
                                                 <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
                                                 {{ $supplier->vendors_count }}
                                                 vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
@@ -106,7 +106,7 @@
                                                     <x-lucide-sticky-note
                                                         class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
                                                     <span
-                                                        class="text-xs-fluid text-text-secondary truncate">{{ $supplier->notes }}</span>
+                                                        class="text-xs text-text-secondary truncate">{{ $supplier->notes }}</span>
                                                 </div>
                                             @else
                                                 <span class="text-text-muted">—</span>
@@ -195,7 +195,7 @@
                                                 <span class="font-bold text-text-primary text-body">{{ $supplier->trade_name }}</span>
                                             </div>
                                             @if($supplier->rfc)
-                                                <p class="text-xs-fluid text-text-secondary mt-0.5 font-mono">{{ $supplier->rfc }}</p>
+                                                <p class="text-xs text-text-secondary mt-0.5 font-mono">{{ $supplier->rfc }}</p>
                                             @endif
                                         </div>
                                     </div>
@@ -212,7 +212,7 @@
                                     </div>
                                     <div class="text-right">
                                         <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Vendedores</p>
-                                        <span class="inline-flex items-center gap-1.5 text-xs-fluid text-text-secondary justify-end">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-text-secondary justify-end">
                                             <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
                                             {{ $supplier->vendors_count }}
                                         </span>
@@ -363,7 +363,7 @@
                         <div class="flex items-center justify-between p-3 rounded-xl bg-surface-main">
                             <div>
                                 <p class="text-body font-medium text-text-primary">{{ $vendor->name }}</p>
-                                <p class="text-xs-fluid text-text-muted">
+                                <p class="text-xs text-text-muted">
                                     {{ $vendor->phone ?? '' }}{{ $vendor->phone && $vendor->email ? ' · ' : '' }}{{ $vendor->email ?? '' }}
                                 </p>
                             </div>
@@ -394,10 +394,10 @@
                             </x-form-field>
                         </div>
                         <div class="flex gap-2">
-                            <x-button type="submit" variant="primary" target="saveVendor" class="text-xs-fluid">
+                            <x-button type="submit" variant="primary" target="saveVendor" class="text-xs">
                                 {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
                             </x-button>
-                            <x-button wire:click="$set('showAddVendor', false)" variant="secondary" class="text-xs-fluid">Cancelar</x-button>
+                            <x-button wire:click="$set('showAddVendor', false)" variant="secondary" class="text-xs">Cancelar</x-button>
                         </div>
                     </form>
                 @else

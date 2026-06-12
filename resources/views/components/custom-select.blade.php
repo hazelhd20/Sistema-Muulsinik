@@ -84,7 +84,7 @@
                     type="text" 
                     x-model="search" 
                     placeholder="Buscar..." 
-                    class="w-full pl-9 pr-3 py-1.5 text-xs-fluid border border-border rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-50"
+                    class="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-50"
                     @keydown.escape="close()"
                 >
             </div>

@@ -155,15 +155,15 @@
                 {{-- User profile row --}}
                 <div class="flex items-center gap-2.5 px-2.5 py-2 mb-1">
                     <div class="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center shrink-0">
-                        <span class="text-xs-fluid font-bold text-white leading-none">
+                        <span class="text-xs font-bold text-white leading-none">
                             {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                         </span>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs-fluid font-semibold text-text-primary truncate leading-tight">
+                        <p class="text-xs font-semibold text-text-primary truncate leading-tight">
                             {{ auth()->user()->name ?? 'Usuario' }}
                         </p>
-                        <p class="text-xs-fluid text-text-muted truncate leading-tight">
+                        <p class="text-xs text-text-muted truncate leading-tight">
                             {{ auth()->user()->role->name ?? 'Sin rol' }}
                         </p>
                     </div>

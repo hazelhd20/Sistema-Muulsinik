@@ -79,13 +79,13 @@
                                                     {{ $product['name'] }}</p>
                                                 <div class="flex items-center gap-2 mt-0.5">
                                                     <span
-                                                        class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
+                                                        class="text-xs text-text-muted">{{ $product['category'] }}</span>
                                                     <x-badge variant="secondary">{{ $product['measure_abbr'] }}</x-badge>
                                                 </div>
                                             </div>
                                             @if($product['last_price'] > 0)
                                                 <div class="text-right">
-                                                    <p class="text-xs-fluid text-text-muted">Último costo</p>
+                                                    <p class="text-xs text-text-muted">Último costo</p>
                                                     <p class="text-small font-semibold text-text-primary">
                                                         ${{ number_format($product['last_price'], 2) }}</p>
                                                 </div>
@@ -120,7 +120,7 @@
                                         @if($item['product_id'])
                                             <div class="flex flex-col">
                                                 <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
-                                                <span class="text-xs-fluid text-text-muted">Prod. Catálogo
+                                                <span class="text-xs text-text-muted">Prod. Catálogo
                                                     ({{ $item['measure_abbr'] }})</span>
                                             </div>
                                         @else
@@ -135,7 +135,7 @@
                                                 step="0.01"
                                                 class="input h-8 text-small px-2 pr-8 text-center bg-transparent border-transparent hover:border-border focus:border-primary-500 focus:bg-white">
                                             <span
-                                                class="absolute right-2 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
@@ -169,11 +169,11 @@
                             
                             <div class="flex flex-col gap-3">
                                 <div class="pr-8">
-                                    <label class="text-xs-fluid text-text-muted mb-1 block">Concepto</label>
+                                    <label class="text-xs text-text-muted mb-1 block">Concepto</label>
                                     @if($item['product_id'])
                                         <div class="flex flex-col p-2 bg-surface-main rounded-lg border border-border">
                                             <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
-                                            <span class="text-xs-fluid text-text-muted">Prod. Catálogo ({{ $item['measure_abbr'] }})</span>
+                                            <span class="text-xs text-text-muted">Prod. Catálogo ({{ $item['measure_abbr'] }})</span>
                                         </div>
                                     @else
                                         <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
@@ -183,15 +183,15 @@
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="text-xs-fluid text-text-muted mb-1 block">Cantidad</label>
+                                        <label class="text-xs text-text-muted mb-1 block">Cantidad</label>
                                         <div class="relative">
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01"
                                                 class="input w-full pr-8" placeholder="0">
-                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
+                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="text-xs-fluid text-text-muted mb-1 block">Precio U.</label>
+                                        <label class="text-xs text-text-muted mb-1 block">Precio U.</label>
                                         <div class="relative">
                                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01"

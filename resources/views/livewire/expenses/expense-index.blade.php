@@ -81,11 +81,11 @@
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $expenses->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" />
+                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-48" />
+                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
+                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" class="w-24" />
+                                <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" class="w-32" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -100,7 +100,7 @@
                                         </td>
                                         <td>
                                             <p class="font-semibold text-text-primary">{{ $expense->concept }}</p>
-                                            <p class="text-xs-fluid text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
+                                            <p class="text-xs text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
                                         </td>
                                         <td>
                                             @if($expense->is_distributed)
@@ -197,7 +197,7 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="font-bold text-text-primary text-body">{{ $expense->concept }}</span>
                                             </div>
-                                            <p class="text-xs-fluid text-text-secondary mt-1">Por: {{ $expense->user->name ?? '—' }}</p>
+                                            <p class="text-xs text-text-secondary mt-1">Por: {{ $expense->user->name ?? '—' }}</p>
                                         </div>
                                     </div>
                                     <div class="text-right shrink-0">

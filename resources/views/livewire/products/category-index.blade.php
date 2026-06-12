@@ -26,9 +26,10 @@
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $categories->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="name" label="Nombre" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th>Productos</th>
-                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" class="w-1/2 min-w-[200px]" />
+                                <th class="w-32">Productos</th>
+                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" class="w-48" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -127,7 +128,7 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="font-bold text-text-primary text-body">{{ $category->name }}</span>
                                             </div>
-                                            <p class="text-xs-fluid text-text-secondary mt-1">
+                                            <p class="text-xs text-text-secondary mt-1">
                                                 @if($category->products_count > 0)
                                                     <span class="text-info-600 font-medium">{{ $category->products_count }} productos</span>
                                                 @else

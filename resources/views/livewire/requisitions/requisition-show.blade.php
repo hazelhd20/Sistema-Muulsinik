@@ -80,7 +80,7 @@
                 <p class="text-small font-semibold text-danger">Requisición rechazada</p>
                 <p class="text-small text-danger mt-0.5 opacity-85">{{ $requisition->rejection_comment }}</p>
                 @if($requisition->approver)
-                    <p class="text-xs-fluid text-danger mt-1 opacity-60">
+                    <p class="text-xs text-danger mt-1 opacity-60">
                         Por {{ $requisition->approver->name }}
                         @if($requisition->updated_at)
                             &middot; {{ $requisition->updated_at->locale('es')->diffForHumans() }}
@@ -97,25 +97,25 @@
         <div class="card p-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Fecha</span>
+                    <span class="text-xs text-text-muted block mb-1">Fecha</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->date?->format('d/m/Y') ?? '—' }}</span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Proyecto</span>
+                    <span class="text-xs text-text-muted block mb-1">Proyecto</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->project?->name ?? '—' }}</span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Solicitante</span>
+                    <span class="text-xs text-text-muted block mb-1">Solicitante</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->creator?->name ?? '—' }}</span>
                 </div>
                 <div>
-                    <span class="text-xs-fluid text-text-muted block mb-1">Proveedor sugerido</span>
+                    <span class="text-xs text-text-muted block mb-1">Proveedor sugerido</span>
                     <span class="text-small font-medium text-text-primary">{{ $requisition->vendor?->name ?? '—' }}</span>
                 </div>
 
                 @if($requisition->approver && in_array($requisition->status, ['aprobada', 'rechazada']))
                     <div>
-                        <span class="text-xs-fluid text-text-muted block mb-1">
+                        <span class="text-xs text-text-muted block mb-1">
                             {{ $requisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por' }}
                         </span>
                         <span class="text-small font-medium text-text-primary">{{ $requisition->approver->name }}</span>
@@ -124,7 +124,7 @@
 
                 @if($requisition->annotations)
                     <div class="col-span-2 md:col-span-4">
-                        <span class="text-xs-fluid text-text-muted block mb-1">Notas adicionales</span>
+                        <span class="text-xs text-text-muted block mb-1">Notas adicionales</span>
                         <span class="text-small text-text-primary">{{ $requisition->annotations }}</span>
                     </div>
                 @endif
@@ -202,13 +202,13 @@
                         
                         <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50">
                             <div>
-                                <p class="text-xs-fluid text-text-muted mb-0.5">Cantidad</p>
+                                <p class="text-xs text-text-muted mb-0.5">Cantidad</p>
                                 <p class="text-small font-medium text-text-secondary">
                                     {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
                                 </p>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs-fluid text-text-muted mb-0.5">Precio U.</p>
+                                <p class="text-xs text-text-muted mb-0.5">Precio U.</p>
                                 <p class="text-small font-medium text-text-secondary">
                                     ${{ number_format($item->unit_price, 2) }}
                                 </p>
@@ -299,11 +299,11 @@
                                     <p class="text-small font-medium text-text-primary">
                                         {{ $activity->description ?? ucfirst(__($activity->action)) }}
                                     </p>
-                                    <span class="text-xs-fluid text-text-muted whitespace-nowrap" title="{{ $activity->created_at->format('d/m/Y H:i:s') }}">
+                                    <span class="text-xs text-text-muted whitespace-nowrap" title="{{ $activity->created_at->format('d/m/Y H:i:s') }}">
                                         {{ $activity->created_at->diffForHumans() }}
                                     </span>
                                 </div>
-                                <div class="text-xs-fluid text-text-muted flex items-center gap-1.5">
+                                <div class="text-xs text-text-muted flex items-center gap-1.5">
                                     <x-lucide-user class="w-3.5 h-3.5" />
                                     {{ $activity->user ? $activity->user->name : 'Sistema' }}
                                 </div>
@@ -311,7 +311,7 @@
                                 @if($activity->old_values || $activity->new_values)
                                     <div class="mt-3 p-3 rounded-lg bg-surface-hover border border-border overflow-x-auto">
                                         @if($activity->action === 'status_changed')
-                                            <div class="flex items-center gap-3 text-xs-fluid font-medium">
+                                            <div class="flex items-center gap-3 text-xs font-medium">
                                                 <span class="text-text-muted line-through">{{ strtoupper($activity->old_values['status'] ?? '—') }}</span>
                                                 <x-lucide-arrow-right class="w-3.5 h-3.5 text-text-secondary" />
                                                 <span class="text-primary-600">{{ strtoupper($activity->new_values['status'] ?? '—') }}</span>

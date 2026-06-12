@@ -67,13 +67,12 @@
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $users->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="name" label="Usuario / Correo" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="role_id" label="Rol" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="active" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="name" label="Usuario" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                <th class="w-32">Rol</th>
+                                <th class="w-32 text-center">Estado</th>
+                                <x-sortable-header field="created_at" label="Registro" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" class="w-32" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -88,7 +87,7 @@
                                                 </td>
                                                 <td>
                                                     <p class="font-semibold text-text-primary">{{ $user->name }}</p>
-                                                    <p class="text-xs-fluid text-text-muted">{{ $user->email }}</p>
+                                                    <p class="text-xs text-text-muted">{{ $user->email }}</p>
                                                 </td>
                                                 <td>
                                                     @if($user->role)
@@ -201,7 +200,7 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="font-bold text-text-primary text-body">{{ $user->name }}</span>
                                             </div>
-                                            <p class="text-xs-fluid text-text-secondary mt-0.5 truncate">{{ $user->email }}</p>
+                                            <p class="text-xs text-text-secondary mt-0.5 truncate">{{ $user->email }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -348,7 +347,7 @@
                         <span class="text-small font-medium text-text-primary">Usuario activo</span>
                     </label>
                     @if(auth()->id() === $editingId)
-                        <span class="text-xs-fluid text-text-muted ml-2">(No puedes desactivar tu propia cuenta)</span>
+                        <span class="text-xs text-text-muted ml-2">(No puedes desactivar tu propia cuenta)</span>
                     @endif
                 </div>
 

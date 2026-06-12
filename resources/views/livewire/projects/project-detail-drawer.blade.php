@@ -7,7 +7,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <h3 class="text-h3 text-text-primary">{{ $detailProject->name }}</h3>
-                        <p class="text-sm text-text-muted mt-1">Cliente: {{ $detailProject->client ?? 'Sin cliente' }}</p>
+                        <p class="text-small text-text-secondary mt-1">Cliente: {{ $detailProject->client ?? 'Sin cliente' }}</p>
                     </div>
                     <x-status-badge :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
                 </div>
@@ -16,11 +16,11 @@
                 <div class="bg-surface-main/30 p-4 rounded-xl border border-border">
                     <div class="flex justify-between items-end mb-3">
                         <div>
-                            <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Presupuesto</p>
-                            <p class="font-bold text-lg text-text-primary">${{ number_format($detailProject->budget, 2) }}</p>
+                            <p class="text-text-muted text-xs font-medium mb-0.5">Presupuesto</p>
+                            <p class="font-bold text-h2 text-text-primary">${{ number_format($detailProject->budget, 2) }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Gastado</p>
+                            <p class="text-text-muted text-xs font-medium mb-0.5">Gastado</p>
                             <p class="font-semibold text-text-primary">${{ number_format($detailProject->total_expenses, 2) }}</p>
                         </div>
                     </div>
@@ -37,17 +37,17 @@
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="grid grid-cols-2 gap-4 text-small">
                     <div>
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Fecha de Inicio</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Fecha de Inicio</p>
                         <p class="font-medium text-text-primary">{{ $detailProject->start_date?->format('d/m/Y') ?? 'No definida' }}</p>
                     </div>
                     <div>
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Fecha Estimada de Término</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Fecha Estimada de Término</p>
                         <p class="font-medium text-text-primary">{{ $detailProject->end_date?->format('d/m/Y') ?? 'No definida' }}</p>
                     </div>
                     <div class="col-span-2">
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Descripción</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Descripción</p>
                         <p class="font-medium text-text-primary">{{ $detailProject->description ?: 'Sin descripción' }}</p>
                     </div>
                 </div>

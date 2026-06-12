@@ -142,7 +142,7 @@
                     <x-form-field :error="$errors->first('req_prefix')">
                         <input type="text" wire:model="req_prefix" class="input font-mono tracking-wider" placeholder="REQ-">
                         @if($req_prefix && $req_next_number)
-                            <p class="mt-1.5 text-xs-fluid text-text-muted">
+                            <p class="mt-1.5 text-xs text-text-muted">
                                 Próximo número:
                                 <span class="font-mono font-medium text-text-primary">{{ $req_prefix }}{{ str_pad($req_next_number, 4, '0', STR_PAD_LEFT) }}</span>
                             </p>
@@ -189,7 +189,7 @@
                                 <input type="number" wire:model.live="decimal_places" class="input" min="0" max="4">
                             </x-form-field>
                         </div>
-                        <div class="flex items-center gap-2 text-xs-fluid text-text-muted">
+                        <div class="flex items-center gap-2 text-xs text-text-muted">
                             <span>Vista previa:</span>
                             <span class="font-mono bg-surface-main px-2.5 py-1 rounded-md border border-border text-text-primary font-medium">
                                 {{ $currency_position === 'before' ? $currency_symbol : '' }}1,234.{{ str_repeat('0', max(0, (int)$decimal_places)) }}{{ $currency_position === 'after' ? $currency_symbol : '' }}

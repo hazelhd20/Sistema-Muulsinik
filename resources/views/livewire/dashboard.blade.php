@@ -28,7 +28,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $activeProjects }}</p>
-                <p class="text-xs-fluid text-text-muted mt-0.5">Proyectos activos</p>
+                <p class="text-xs text-text-muted mt-0.5">Proyectos activos</p>
             </div>
         </div>
 
@@ -38,7 +38,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none truncate tabular-nums">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
-                <p class="text-xs-fluid text-text-muted mt-0.5">Gasto del mes</p>
+                <p class="text-xs text-text-muted mt-0.5">Gasto del mes</p>
             </div>
         </div>
 
@@ -48,7 +48,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $pendingRequisitions }}</p>
-                <p class="text-xs-fluid text-text-muted mt-0.5">Requisiciones pendientes</p>
+                <p class="text-xs text-text-muted mt-0.5">Requisiciones pendientes</p>
             </div>
         </div>
 
@@ -58,7 +58,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $totalSuppliers }}</p>
-                <p class="text-xs-fluid text-text-muted mt-0.5">Proveedores</p>
+                <p class="text-xs text-text-muted mt-0.5">Proveedores</p>
             </div>
         </div>
 
@@ -72,9 +72,9 @@
             <div class="flex items-start justify-between mb-4">
                 <div>
                     <h2 class="card-title">Gastos Mensuales</h2>
-                    <p class="text-xs-fluid text-text-muted mt-0.5">Últimos 6 meses</p>
+                    <p class="text-xs text-text-muted mt-0.5">Últimos 6 meses</p>
                 </div>
-                <span class="inline-flex items-center gap-1 text-xs-fluid font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
                     ${{ number_format($totalExpenses, 0, '.', ',') }}
                     <span class="font-normal text-text-muted">acumulado</span>
                 </span>
@@ -168,7 +168,7 @@
                         <tr @click="Livewire.navigate('{{ url('/proyectos') }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
-                                <p class="text-xs-fluid text-text-muted">{{ $project->client ?? '—' }}</p>
+                                <p class="text-xs text-text-muted">{{ $project->client ?? '—' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
@@ -235,7 +235,7 @@
                                 <p class="font-medium text-text-primary text-small">
                                     {{ $req->number ?? 'REQ-' . $req->id }}
                                 </p>
-                                <p class="text-xs-fluid text-text-muted">{{ $req->creator->name ?? '' }}</p>
+                                <p class="text-xs text-text-muted">{{ $req->creator->name ?? '' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />

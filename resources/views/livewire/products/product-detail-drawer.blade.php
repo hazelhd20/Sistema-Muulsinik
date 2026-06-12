@@ -7,14 +7,14 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <h3 class="text-h3 text-text-primary">{{ $detailProduct->canonical_name }}</h3>
-                        <p class="text-sm text-text-muted mt-1">Registrado el {{ $detailProduct->created_at?->format('d/m/Y') }}</p>
+                        <p class="text-small text-text-secondary mt-1">Registrado el {{ $detailProduct->created_at?->format('d/m/Y') }}</p>
                     </div>
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 text-sm bg-surface-main/30 p-4 rounded-xl border border-border">
+                <div class="grid grid-cols-2 gap-4 text-small bg-surface-main/30 p-4 rounded-xl border border-border">
                     <div>
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Categoría</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Categoría</p>
                         <p class="font-medium text-text-primary">
                             @if($detailProduct->category)
                                 <x-dynamic-badge :value="$detailProduct->category->name" />
@@ -24,7 +24,7 @@
                         </p>
                     </div>
                     <div>
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Unidad</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Unidad</p>
                         <p class="font-medium text-text-primary">
                             @if($detailProduct->measure && $detailProduct->measure->abbreviation)
                                 <x-badge variant="secondary">{{ $detailProduct->measure->abbreviation }}</x-badge>
@@ -34,7 +34,7 @@
                         </p>
                     </div>
                     <div class="col-span-2">
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Descripción Técnica</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Descripción Técnica</p>
                         <p class="font-medium text-text-primary">{{ $detailProduct->description ?: 'Sin descripción' }}</p>
                     </div>
                 </div>

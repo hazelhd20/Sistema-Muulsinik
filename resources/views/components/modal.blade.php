@@ -46,7 +46,7 @@
             <div class="min-w-0">
                 <h2 class="text-h2 font-semibold text-text-primary leading-snug">{{ $title }}</h2>
                 @if($subtitle)
-                    <p class="text-xs-fluid text-text-muted mt-0.5">{{ $subtitle }}</p>
+                    <p class="text-xs text-text-muted mt-0.5">{{ $subtitle }}</p>
                 @endif
             </div>
             <button type="button"

@@ -72,7 +72,7 @@
                         @else
                             <h2 class="text-h2 font-semibold text-text-primary leading-snug">{{ $title }}</h2>
                             @if($subtitle)
-                                <p class="text-sm text-text-muted mt-0.5">{{ $subtitle }}</p>
+                                <p class="text-small text-text-secondary mt-0.5">{{ $subtitle }}</p>
                             @endif
                         @endif
                     </div>

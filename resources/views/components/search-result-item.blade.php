@@ -34,7 +34,7 @@
             @endif
         </div>
         @if(!empty($subtitle))
-            <p class="text-xs-fluid text-text-muted truncate">{!! $subtitle !!}</p>
+            <p class="text-xs text-text-muted truncate">{!! $subtitle !!}</p>
         @endif
     </div>
     <x-lucide-arrow-right class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />

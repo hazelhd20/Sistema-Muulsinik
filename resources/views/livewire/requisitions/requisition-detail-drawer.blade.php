@@ -39,15 +39,15 @@
                 {{-- Detalles en grid --}}
                 <div class="grid grid-cols-2 gap-4 text-small bg-surface-main/30 p-4 rounded-xl border border-border">
                     <div>
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Proyecto</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Proyecto</p>
                         <p class="font-medium text-text-primary">{{ $detailRequisition->project?->name ?? '—' }}</p>
                     </div>
                     <div>
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Solicitante</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Solicitante</p>
                         <p class="font-medium text-text-primary">{{ $detailRequisition->creator?->name ?? '—' }}</p>
                     </div>
                     <div class="col-span-2">
-                        <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Proveedor Seleccionado</p>
+                        <p class="text-text-muted text-xs font-medium mb-0.5">Proveedor Seleccionado</p>
                         <p class="font-medium text-text-primary">
                             {{ $detailRequisition->vendor?->trade_name ?? $detailRequisition->vendor?->name ?? '—' }}
                         </p>
@@ -55,7 +55,7 @@
 
                     @if($detailRequisition->approver && in_array($detailRequisition->status, ['aprobada', 'rechazada']))
                         <div class="col-span-2">
-                            <p class="text-text-muted text-xs-fluid font-medium mb-0.5">
+                            <p class="text-text-muted text-xs font-medium mb-0.5">
                                 {{ $detailRequisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por' }}
                             </p>
                             <p class="font-medium text-text-primary">{{ $detailRequisition->approver->name }}</p>

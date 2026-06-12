@@ -27,11 +27,11 @@
                                         x-on:change="toggleAll([{{ $measures->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
                                 <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th>Productos</th>
-                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-32" />
+                                <th class="w-32">Productos</th>
+                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -141,7 +141,7 @@
                                                     <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
                                                 @endif
                                             </div>
-                                            <p class="text-xs-fluid text-text-secondary mt-1">
+                                            <p class="text-xs text-text-secondary mt-1">
                                                 @if($measure->products_count > 0)
                                                     <span class="text-info-600 font-medium">{{ $measure->products_count }} productos</span>
                                                 @else

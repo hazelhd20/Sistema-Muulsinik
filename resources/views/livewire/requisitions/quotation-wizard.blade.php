@@ -94,7 +94,7 @@
                         </p>
                     </div>
 
-                    <div class="inline-flex items-center gap-2 text-xs-fluid text-text-muted bg-surface-main border border-border rounded-full px-3 py-1.5">
+                    <div class="inline-flex items-center gap-2 text-xs text-text-muted bg-surface-main border border-border rounded-full px-3 py-1.5">
                         <x-lucide-info class="w-3.5 h-3.5 text-primary-400 shrink-0" />
                         <span>Puedes ir a otra página; te avisaremos al terminar</span>
                     </div>
@@ -120,7 +120,7 @@
                         {{-- Caja de mensaje de error con color semántico --}}
                         <div class="w-full flex gap-2.5 items-start bg-danger-light border border-danger-border rounded-lg px-4 py-3 mb-6 text-left">
                             <x-lucide-info class="w-4 h-4 text-danger mt-0.5 shrink-0" wire:ignore />
-                            <p class="text-xs-fluid text-danger leading-relaxed">
+                            <p class="text-xs text-danger leading-relaxed">
                                 {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
                             </p>
                         </div>
@@ -134,7 +134,7 @@
                             {{-- Separador visual --}}
                             <div class="flex items-center gap-3">
                                 <div class="flex-1 h-px bg-border"></div>
-                                <span class="text-xs-fluid text-text-muted whitespace-nowrap">o continúa de otra forma</span>
+                                <span class="text-xs text-text-muted whitespace-nowrap">o continúa de otra forma</span>
                                 <div class="flex-1 h-px bg-border"></div>
                             </div>
                             {{-- Acciones secundarias --}}
@@ -358,7 +358,7 @@
                                                 class="input input-inline text-right tabular-nums text-small"
                                                 placeholder="0.00">
                                             @if(($item['discount_percent'] ?? 0) > 0)
-                                                <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs-fluid">
+                                                <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs">
                                                     <span class="text-text-muted line-through tabular-nums">
                                                         ${{ number_format($item['unit_price_original'] ?? 0, 2, '.', ',') }}
                                                     </span>
@@ -436,7 +436,7 @@
 
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="text-xs-fluid text-text-muted mb-1 block">Categoría</label>
+                                            <label class="text-xs text-text-muted mb-1 block">Categoría</label>
                                             <x-conflict-popover type="category-conflict" :item="$item" :index="$i">
                                                 <x-custom-select wire:model.live="items.{{ $i }}.category_id"
                                                     :options="$categories->pluck('name', 'id')->toArray()"
@@ -444,7 +444,7 @@
                                             </x-conflict-popover>
                                         </div>
                                         <div>
-                                            <label class="text-xs-fluid text-text-muted mb-1 block">Unidad</label>
+                                            <label class="text-xs text-text-muted mb-1 block">Unidad</label>
                                             <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
                                                 <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
                                                     :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
@@ -456,12 +456,12 @@
 
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="text-xs-fluid text-text-muted mb-1 block">Cantidad</label>
+                                            <label class="text-xs text-text-muted mb-1 block">Cantidad</label>
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
                                                 class="input w-full" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-xs-fluid text-text-muted mb-1 block">Precio U.</label>
+                                            <label class="text-xs text-text-muted mb-1 block">Precio U.</label>
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
                                                 class="input w-full" placeholder="0.00">
                                         </div>

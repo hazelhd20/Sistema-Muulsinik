@@ -13,7 +13,7 @@
                             </div>
                             <div>
                                 <p class="text-small font-semibold text-text-primary">Procesando cotización en segundo plano</p>
-                                <p class="text-xs-fluid text-text-muted">
+                                <p class="text-xs text-text-muted">
                                     {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
@@ -37,7 +37,7 @@
                                         </span>
                                     @endif
                                 </div>
-                                <p class="text-xs-fluid text-text-muted">
+                                <p class="text-xs text-text-muted">
                                     Procesado de: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
@@ -49,7 +49,7 @@
                             </div>
                             <div>
                                 <p class="text-small font-semibold text-text-primary">Error al extraer datos</p>
-                                <p class="text-xs-fluid text-text-muted">
+                                <p class="text-xs text-text-muted">
                                     {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>

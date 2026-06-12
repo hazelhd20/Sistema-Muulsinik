@@ -88,7 +88,7 @@
                                     <td>
                                         <p class="font-semibold text-text-primary">{{ $budget->title }}</p>
                                         @if($budget->description)
-                                            <p class="text-xs-fluid text-text-muted truncate max-w-[200px]">{{ $budget->description }}</p>
+                                            <p class="text-xs text-text-muted truncate max-w-[200px]">{{ $budget->description }}</p>
                                         @endif
                                     </td>
                                     <td>
@@ -144,7 +144,7 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="font-bold text-text-primary text-body">{{ $budget->title }}</span>
                                     </div>
-                                    <p class="text-xs-fluid text-text-secondary mt-1 truncate">Cliente: {{ $budget->client ?? '—' }}</p>
+                                    <p class="text-xs text-text-secondary mt-1 truncate">Cliente: {{ $budget->client ?? '—' }}</p>
                                 </div>
                             </div>
                             <div class="text-right shrink-0">

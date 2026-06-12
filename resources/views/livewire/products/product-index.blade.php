@@ -65,12 +65,10 @@
                                         x-on:change="toggleAll([{{ $products->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="category_id" label="Categoría" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="measure_id" label="Unidad" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                <th class="w-48">Categoría</th>
+                                <th class="w-32">Medida</th>
+                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
@@ -87,7 +85,7 @@
                                             <div>
                                                 <p class="font-semibold text-text-primary">{{ $product->canonical_name }}</p>
                                                 @if($product->description)
-                                                    <p class="text-xs-fluid text-text-muted truncate max-w-xs">{{ $product->description }}</p>
+                                                    <p class="text-xs text-text-muted truncate max-w-xs">{{ $product->description }}</p>
                                                 @endif
                                             </div>
                                         </td>
@@ -189,7 +187,7 @@
                                                 <span class="font-bold text-text-primary text-body">{{ $product->canonical_name }}</span>
                                             </div>
                                             @if($product->description)
-                                                <p class="text-xs-fluid text-text-secondary mt-0.5 truncate max-w-[200px]">{{ $product->description }}</p>
+                                                <p class="text-xs text-text-secondary mt-0.5 truncate max-w-[200px]">{{ $product->description }}</p>
                                             @endif
                                         </div>
                                     </div>
