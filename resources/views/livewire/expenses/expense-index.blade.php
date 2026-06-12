@@ -11,10 +11,12 @@
 
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-xl w-full overflow-hidden mt-4">
+    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-xl w-full mt-4">
         
-        {{-- Filters Bar (Card Header on Desktop) --}}
-        <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4 md:border-b md:border-border md:bg-surface-card">
+        {{-- Header Group (Search + Filters + Chips) --}}
+        <div class="md:border-b md:border-border md:rounded-t-xl md:bg-surface-card">
+            {{-- Filters Bar --}}
+            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
             {{-- Search --}}
             <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar gasto..." />
 
@@ -49,10 +51,9 @@
                 </x-slot>
             </x-filters-popover>
         </div>
-
         {{-- Active Chips Row --}}
         @if($activeCount > 0)
-        <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:pb-0 md:px-6 md:py-3 md:border-b md:border-border/50 md:bg-surface-hover/30">
+        <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
             @if($projectFilter)
                 <x-filter-chip label="Proyecto" :value="$projects->firstWhere('id', $projectFilter)?->name ?? 'Desconocido'" wire:click="$set('projectFilter', '')" />
             @endif
@@ -60,7 +61,7 @@
                 <x-filter-chip label="Categoría" :value="$categories[$categoryFilter] ?? $categoryFilter" wire:click="$set('categoryFilter', '')" />
             @endif
             @if($userFilter)
-                <x-filter-chip label="Creador" :value="$users->firstWhere('id', $userFilter)?->name ?? 'Desconocido'" wire:click="$set('userFilter', '')" />
+                <x-filter-chip label="Usuario" :value="$users->firstWhere('id', $userFilter)?->name ?? 'Desconocido'" wire:click="$set('userFilter', '')" />
             @endif
             @if($periodFilter)
                 @php
@@ -70,6 +71,7 @@
             @endif
         </div>
         @endif
+        </div> {{-- End Header Group --}}
 
         {{-- Expenses Table --}}
         <div class="relative min-h-[200px]">
