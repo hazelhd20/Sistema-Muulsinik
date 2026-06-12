@@ -7,6 +7,10 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php
+        $hasActiveFilters = !empty($search) || !empty($periodFilter);
+    @endphp
+    @if($budgets->isNotEmpty() || $hasActiveFilters)
     {{-- Filters --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar cotización..." />
@@ -49,6 +53,7 @@
             <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter" wire:click="$set('periodFilter', '')" />
         @endif
     </div>
+    @endif
     @endif
 
     {{-- Table --}}
@@ -122,8 +127,10 @@
                         </tbody>
                     </table>
                 @else
-                    <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
-                        message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
+                    <div class="p-8">
+                        <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
+                            message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
+                    </div>
                 @endif
             </div>
 
@@ -199,6 +206,13 @@
                     </div>
                 @endforeach
             </div>
+            @else
+                <div class="md:hidden mt-4">
+                    <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                        <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
+                            message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
+                    </div>
+                </div>
             @endif
         </div>
 

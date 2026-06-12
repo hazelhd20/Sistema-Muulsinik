@@ -86,10 +86,12 @@
             @endforeach
         </div>
     @else
-        <x-empty-state
-            icon="check-square"
-            title="No hay borradores pendientes"
-            message="Todas tus cotizaciones han sido procesadas o enviadas a aprobación." />
+        <div class="bg-surface-card border border-border rounded-xl shadow-sm p-8">
+            <x-empty-state
+                icon="check-square"
+                title="No hay borradores pendientes"
+                message="Todas tus cotizaciones han sido procesadas o enviadas a aprobación." />
+        </div>
     @endif
 
     {{-- Diálogo de confirmación (para descartar borradores) --}}

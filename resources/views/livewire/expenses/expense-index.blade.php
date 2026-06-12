@@ -13,8 +13,12 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-lg w-full mt-4">
         
-        {{-- Header Group (Search + Filters + Chips) --}}
-        <div class="md:border-b md:border-border md:rounded-t-lg md:bg-surface-card">
+        @php
+            $hasActiveFilters = !empty($search) || !empty($projectFilter) || !empty($categoryFilter) || !empty($periodFilter) || !empty($userFilter);
+        @endphp
+        @if($expenses->isNotEmpty() || $hasActiveFilters)
+            {{-- Header Group (Search + Filters + Chips) --}}
+            <div class="md:rounded-t-lg md:bg-surface-card">
             {{-- Filters Bar --}}
             <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
             {{-- Search --}}
@@ -72,13 +76,24 @@
         </div>
         @endif
         </div> {{-- End Header Group --}}
+        @endif
 
         {{-- Expenses Table --}}
         <div class="relative">
             <div class="w-full">
                 {{-- Desktop View --}}
-                <div class="table-container table-integrated hidden md:block">
-                    <table class="w-full table-fixed">
+                <div class="table-container table-integrated hidden md:block overflow-x-auto w-full">
+                    @if($expenses->isEmpty())
+                        <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="p-8">
+                            <x-empty-state icon="receipt" title="No se encontraron gastos"
+                                message="No hay registros que coincidan con tu búsqueda." />
+                        </div>
+                    @endif
+                    <table class="w-full table-fixed min-w-[900px] {{ $expenses->isEmpty() ? 'hidden' : '' }}"
+                        @if($expenses->isEmpty())
+                            wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage"
+                        @endif
+                    >
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
                                 <th class="actions text-center pl-6 pr-2 w-14">
@@ -87,8 +102,8 @@
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $expenses->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" class="min-w-[200px]" />
-                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-48" />
+                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-[30%]" />
+                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-[20%]" />
                                 <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" class="w-40" />
                                 <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
                                 <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" class="w-32 numeric" />
@@ -96,61 +111,52 @@
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage">
-                            @if($expenses->isNotEmpty())
-                                @foreach($expenses as $expense)
-                                    <tr wire:key="expense-row-{{ $expense->id }}"
-                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                        :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="actions text-center pl-6 pr-2" @click.stop>
-                                            <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
-                                        </td>
-                                        <td>
-                                            <p class="font-semibold text-text-primary">{{ $expense->concept }}</p>
-                                            <p class="text-xs text-text-muted">Por: {{ $expense->user->name ?? '—' }}</p>
-                                        </td>
-                                        <td>
-                                            @if($expense->is_distributed)
-                                                <x-badge variant="primary" icon="split">Distribuido</x-badge>
-                                            @else
-                                                <span class="text-body text-text-secondary">{{ $expense->project->name ?? '—' }}</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
-                                        </td>
-                                        <td class="text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
-                                        <td class="numeric font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
-                                        <td class="actions pr-6" @click.stop>
-                                            <div class="flex items-center justify-end">
-                                                <x-dropdown align="right" width="48">
-                                                    <x-slot name="trigger">
-                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
-                                                    </x-slot>
+                            @foreach($expenses as $expense)
+                                <tr wire:key="expense-row-{{ $expense->id }}"
+                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                    :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50' : ''">
+                                    <td class="actions text-center pl-6 pr-2" @click.stop>
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
+                                    </td>
+                                    <td class="pr-2">
+                                        <p class="font-semibold text-text-primary truncate" title="{{ $expense->concept }}">{{ $expense->concept }}</p>
+                                        <p class="text-xs text-text-muted truncate" title="Por: {{ $expense->user->name ?? '—' }}">Por: {{ $expense->user->name ?? '—' }}</p>
+                                    </td>
+                                    <td class="pr-2">
+                                        @if($expense->is_distributed)
+                                            <x-badge variant="primary" icon="split">Distribuido</x-badge>
+                                        @else
+                                            <p class="text-body text-text-secondary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
+                                    </td>
+                                    <td class="text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
+                                    <td class="numeric font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
+                                    <td class="actions pr-6" @click.stop>
+                                        <div class="flex items-center justify-end">
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                </x-slot>
 
-                                                    <x-slot name="content">
-                                                        @if($expense->receipt_file)
-                                                            <x-dropdown-link href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" icon="file-text">
-                                                                Ver comprobante
-                                                            </x-dropdown-link>
-                                                        @endif
-                                                        <x-dropdown-link as="button" wire:click="deleteExpense({{ $expense->id }})"
-                                                            wire:confirm="¿Eliminar este gasto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                                            Eliminar
+                                                <x-slot name="content">
+                                                    @if($expense->receipt_file)
+                                                        <x-dropdown-link href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" icon="file-text">
+                                                            Ver comprobante
                                                         </x-dropdown-link>
-                                                    </x-slot>
-                                                </x-dropdown>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="7">
-                                        <x-empty-state icon="receipt" title="No se encontraron gastos"
-                                            message="No hay registros que coincidan con tu búsqueda." />
+                                                    @endif
+                                                    <x-dropdown-link as="button" wire:click="deleteExpense({{ $expense->id }})"
+                                                        wire:confirm="¿Eliminar este gasto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                        Eliminar
+                                                    </x-dropdown-link>
+                                                </x-slot>
+                                            </x-dropdown>
+                                        </div>
                                     </td>
                                 </tr>
-                            @endif
+                            @endforeach
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)

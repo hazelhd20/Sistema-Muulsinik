@@ -10,6 +10,10 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php
+        $hasActiveFilters = !empty($search) || !empty($roleFilter) || !empty($statusFilter);
+    @endphp
+    @if($users->isNotEmpty() || $hasActiveFilters)
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search --}}
@@ -53,12 +57,22 @@
         @endif
     </div>
     @endif
+    @endif
 
     {{-- Users Table --}}
     <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
-                <table>
+                @if($users->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
+                    </div>
+                @endif
+                <table class="{{ $users->isEmpty() ? 'hidden' : '' }}"
+                    @if($users->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="actions text-center">
@@ -135,13 +149,6 @@
                                                 </td>
                                             </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="6">
-                                        <x-empty-state icon="users" title="No se encontraron usuarios"
-                                            message="No hay registros que coincidan con tu búsqueda." />
-                                    </td>
-                                </tr>
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden">
@@ -260,7 +267,9 @@
                             </div>
                         @endforeach
                     @else
-                        <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
+                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                            <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
+                        </div>
                     @endif
                 </div>
 

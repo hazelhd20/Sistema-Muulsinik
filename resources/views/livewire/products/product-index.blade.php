@@ -8,6 +8,10 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php
+        $hasActiveFilters = !empty($search) || !empty($categoryFilter) || !empty($measureFilter);
+    @endphp
+    @if($products->isNotEmpty() || $hasActiveFilters)
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search --}}
@@ -50,12 +54,22 @@
         @endif
     </div>
     @endif
+    @endif
 
     {{-- Products table --}}
     <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
-                <table>
+                @if($products->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
+                    </div>
+                @endif
+                <table class="{{ $products->isEmpty() ? 'hidden' : '' }}"
+                    @if($products->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
@@ -130,13 +144,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="6">
-                                        <x-empty-state icon="box" title="No se encontraron productos"
-                                            message="No hay registros que coincidan con tu búsqueda." />
-                                    </td>
-                                </tr>
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden">
@@ -246,7 +253,9 @@
                             </div>
                         @endforeach
                     @else
-                        <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
+                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                            <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
+                        </div>
                     @endif
                 </div>
 

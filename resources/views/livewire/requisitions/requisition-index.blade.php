@@ -32,8 +32,10 @@
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-filters">
     @php
         $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
+        $hasActiveFilters = !empty($search) || $activeCount > 0;
     @endphp
 
+    @if($requisitions->isNotEmpty() || $hasActiveFilters)
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search: compact width --}}
@@ -98,6 +100,7 @@
         @endif
     </div>
     @endif
+    @endif
     </div>
 
     <div x-show="activeTab === 'borradores'" x-cloak wire:key="tab-borradores">
@@ -109,7 +112,17 @@
     <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
-                <table>
+                @if($requisitions->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                            message="Crea una requisición o sube una cotización para comenzar." />
+                    </div>
+                @endif
+                <table class="{{ $requisitions->isEmpty() ? 'hidden' : '' }}"
+                    @if($requisitions->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
@@ -134,146 +147,137 @@
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage">
-                            @if($requisitions->isNotEmpty())
-                                @foreach($requisitions as $req)
-                                    <tr wire:key="requisition-row-{{ $req->id }}"
-                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                        :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="pl-4 pr-2 text-center" @click.stop>
-                                            <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
-                                        </td>
-                                        <td class="font-semibold text-text-primary whitespace-nowrap">
-                                            {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
-                                        </td>
-                                        <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
-                                            {{ $req->project->name ?? '—' }}
-                                        </td>
-                                        <td class="text-text-secondary whitespace-nowrap">
-                                            {{ $req->date?->format('d/m/Y') }}
-                                        </td>
-                                        <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
-                                            {{ $req->creator->name ?? '—' }}
-                                        </td>
-                                        <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
-                                            {{ $req->vendor?->name ?? '—' }}
-                                        </td>
-                                        <td class="text-right font-semibold tabular-nums text-text-primary">
-                                            ${{ number_format($req->total, 2, '.', ',') }}
-                                        </td>
-                                        <td class="w-1 whitespace-nowrap py-3">
-                                            <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
-                                            @if($req->status === 'rechazada' && $req->rejection_comment)
-                                                <p class="text-[10px] text-danger mt-1 max-w-[120px] truncate" title="{{ $req->rejection_comment }}">
-                                                    {{ $req->rejection_comment }}
-                                                </p>
-                                            @endif
-                                        </td>
-                                        <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
-                                            <div class="flex items-center justify-end">
-                                                <x-dropdown align="right" width="48">
-                                                    <x-slot name="trigger">
-                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
-                                                    </x-slot>
+                            @foreach($requisitions as $req)
+                                <tr wire:key="requisition-row-{{ $req->id }}"
+                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
+                                    <td class="pl-4 pr-2 text-center" @click.stop>
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
+                                    </td>
+                                    <td class="font-semibold text-text-primary whitespace-nowrap">
+                                        {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
+                                    </td>
+                                    <td class="max-w-[150px] truncate" title="{{ $req->project->name ?? '—' }}">
+                                        {{ $req->project->name ?? '—' }}
+                                    </td>
+                                    <td class="text-text-secondary whitespace-nowrap">
+                                        {{ $req->date?->format('d/m/Y') }}
+                                    </td>
+                                    <td class="max-w-[120px] truncate" title="{{ $req->creator->name ?? '—' }}">
+                                        {{ $req->creator->name ?? '—' }}
+                                    </td>
+                                    <td class="max-w-[150px] truncate" title="{{ $req->vendor?->name ?? '—' }}">
+                                        {{ $req->vendor?->name ?? '—' }}
+                                    </td>
+                                    <td class="text-right font-semibold tabular-nums text-text-primary">
+                                        ${{ number_format($req->total, 2, '.', ',') }}
+                                    </td>
+                                    <td class="w-1 whitespace-nowrap py-3">
+                                        <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                                        @if($req->status === 'rechazada' && $req->rejection_comment)
+                                            <p class="text-[10px] text-danger mt-1 max-w-[120px] truncate" title="{{ $req->rejection_comment }}">
+                                                {{ $req->rejection_comment }}
+                                            </p>
+                                        @endif
+                                    </td>
+                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                        <div class="flex items-center justify-end">
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                </x-slot>
 
-                                                    <x-slot name="content">
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">
-                                                            Ver detalles
+                                                <x-slot name="content">
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">
+                                                        Ver detalles
+                                                    </x-dropdown-link>
+
+                                                    @if($req->quotations->isNotEmpty())
+                                                        @php
+                                                            $firstQuot = $req->quotations->first();
+                                                            $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                                                            $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
+                                                        @endphp
+                                                        <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" icon="file-search">
+                                                            Ver cotización
                                                         </x-dropdown-link>
+                                                    @endif
 
-                                                        @if($req->quotations->isNotEmpty())
-                                                            @php
-                                                                $firstQuot = $req->quotations->first();
-                                                                $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                                                $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                                            @endphp
-                                                            <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" icon="file-search">
-                                                                Ver cotización
-                                                            </x-dropdown-link>
-                                                        @endif
+                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">
+                                                        Descargar PDF
+                                                    </x-dropdown-link>
 
-                                                        <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">
-                                                            Descargar PDF
-                                                        </x-dropdown-link>
-
-                                                        @if($req->status === 'borrador' && $req->created_by === auth()->id())
-                                                            <div class="border-t border-border my-1"></div>
-                                                            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                                                                <x-dropdown-link as="button" type="button"
-                                                                    @click="$dispatch('confirm-action', {
-                                                                        title: 'Aprobar Requisición',
-                                                                        description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.',
-                                                                        confirmLabel: 'Aprobar',
-                                                                        variant: 'success',
-                                                                        action: 'submitForApproval',
-                                                                        params: [{{ $req->id }}]
-                                                                    })"
-                                                                    icon="check-circle" success="true">
-                                                                    Aprobar
-                                                                </x-dropdown-link>
-                                                            @else
-                                                                <x-dropdown-link as="button" type="button"
-                                                                    @click="$dispatch('confirm-action', {
-                                                                        title: 'Solicitar Aprobación',
-                                                                        description: 'La requisición será enviada a los aprobadores del sistema.',
-                                                                        confirmLabel: 'Enviar a aprobación',
-                                                                        variant: 'primary',
-                                                                        action: 'submitForApproval',
-                                                                        params: [{{ $req->id }}]
-                                                                    })"
-                                                                    icon="send">
-                                                                    Solicitar aprobación
-                                                                </x-dropdown-link>
-                                                            @endif
-                                                        @endif
-
-                                                        @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                            <div class="border-t border-border my-1"></div>
+                                                    @if($req->status === 'borrador' && $req->created_by === auth()->id())
+                                                        <div class="border-t border-border my-1"></div>
+                                                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                                                             <x-dropdown-link as="button" type="button"
                                                                 @click="$dispatch('confirm-action', {
                                                                     title: 'Aprobar Requisición',
-                                                                    description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                                                                    description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.',
                                                                     confirmLabel: 'Aprobar',
                                                                     variant: 'success',
-                                                                    action: 'approve',
+                                                                    action: 'submitForApproval',
                                                                     params: [{{ $req->id }}]
                                                                 })"
                                                                 icon="check-circle" success="true">
                                                                 Aprobar
                                                             </x-dropdown-link>
-                                                            <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">
-                                                                Rechazar
-                                                            </x-dropdown-link>
-                                                        @endif
-
-                                                        @if(in_array($req->status, ['borrador', 'rechazada']))
-                                                            <div class="border-t border-border my-1"></div>
+                                                        @else
                                                             <x-dropdown-link as="button" type="button"
                                                                 @click="$dispatch('confirm-action', {
-                                                                    title: 'Eliminar Requisición',
-                                                                    description: 'Esta acción es permanente y no se puede deshacer.',
-                                                                    confirmLabel: 'Eliminar',
-                                                                    variant: 'danger',
-                                                                    action: 'deleteRequisition',
+                                                                    title: 'Solicitar Aprobación',
+                                                                    description: 'La requisición será enviada a los aprobadores del sistema.',
+                                                                    confirmLabel: 'Enviar a aprobación',
+                                                                    variant: 'primary',
+                                                                    action: 'submitForApproval',
                                                                     params: [{{ $req->id }}]
                                                                 })"
-                                                                danger="true" icon="trash-2">
-                                                                Eliminar
+                                                                icon="send">
+                                                                Solicitar aprobación
                                                             </x-dropdown-link>
                                                         @endif
-                                                    </x-slot>
-                                                </x-dropdown>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="10">
-                                        <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                                            message="Crea una requisición o sube una cotización para comenzar." />
+                                                    @endif
+
+                                                    @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
+                                                        <div class="border-t border-border my-1"></div>
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', {
+                                                                title: 'Aprobar Requisición',
+                                                                description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                                                                confirmLabel: 'Aprobar',
+                                                                variant: 'success',
+                                                                action: 'approve',
+                                                                params: [{{ $req->id }}]
+                                                            })"
+                                                            icon="check-circle" success="true">
+                                                            Aprobar
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">
+                                                            Rechazar
+                                                        </x-dropdown-link>
+                                                    @endif
+
+                                                    @if(in_array($req->status, ['borrador', 'rechazada']))
+                                                        <div class="border-t border-border my-1"></div>
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', {
+                                                                title: 'Eliminar Requisición',
+                                                                description: 'Esta acción es permanente y no se puede deshacer.',
+                                                                confirmLabel: 'Eliminar',
+                                                                variant: 'danger',
+                                                                action: 'deleteRequisition',
+                                                                params: [{{ $req->id }}]
+                                                            })"
+                                                            danger="true" icon="trash-2">
+                                                            Eliminar
+                                                        </x-dropdown-link>
+                                                    @endif
+                                                </x-slot>
+                                            </x-dropdown>
+                                        </div>
                                     </td>
                                 </tr>
-                            @endif
+                            @endforeach
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)

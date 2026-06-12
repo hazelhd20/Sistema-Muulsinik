@@ -8,16 +8,30 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php
+        $hasActiveFilters = !empty($search);
+    @endphp
+    @if($categories->isNotEmpty() || $hasActiveFilters)
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar categoría..." />
     </div>
+    @endif
 
     {{-- Table --}}
     <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
-                <table>
+                @if($categories->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="layers" title="No se encontraron categorías." />
+                    </div>
+                @endif
+                <table class="{{ $categories->isEmpty() ? 'hidden' : '' }}"
+                    @if($categories->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
@@ -76,12 +90,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="5">
-                                        <x-empty-state icon="layers" title="No se encontraron categorías." />
-                                    </td>
-                                </tr>
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden">
@@ -169,7 +177,9 @@
                             </div>
                         @endforeach
                     @else
-                        <x-empty-state icon="layers" title="No se encontraron categorías." />
+                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                            <x-empty-state icon="layers" title="No se encontraron categorías." />
+                        </div>
                     @endif
                 </div>
 

@@ -8,16 +8,30 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php
+        $hasActiveFilters = !empty($search);
+    @endphp
+    @if($measures->isNotEmpty() || $hasActiveFilters)
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
     </div>
+    @endif
 
     {{-- Table --}}
     <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
-                <table>
+                @if($measures->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="ruler" title="No se encontraron medidas." />
+                    </div>
+                @endif
+                <table class="{{ $measures->isEmpty() ? 'hidden' : '' }}"
+                    @if($measures->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
@@ -83,12 +97,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="6">
-                                        <x-empty-state icon="ruler" title="No se encontraron medidas." />
-                                    </td>
-                                </tr>
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden">
@@ -182,7 +190,9 @@
                             </div>
                         @endforeach
                     @else
-                        <x-empty-state icon="ruler" title="No se encontraron medidas." />
+                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                            <x-empty-state icon="ruler" title="No se encontraron medidas." />
+                        </div>
                     @endif
                 </div>
 

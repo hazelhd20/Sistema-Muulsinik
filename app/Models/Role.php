@@ -13,10 +13,7 @@ class Role extends Model
         'permissions' => 'array',
     ];
 
-    public function rolePermissions(): HasMany
-    {
-        return $this->hasMany(RolePermission::class);
-    }
+
 
     /** Usuarios que pertenecen a este rol. */
     public function users(): HasMany

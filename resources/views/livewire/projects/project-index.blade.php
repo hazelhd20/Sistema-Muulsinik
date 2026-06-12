@@ -11,8 +11,12 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-lg w-full mt-4">
 
-        {{-- Header Group (Search + Filters + Chips) --}}
-        <div class="md:border-b md:border-border md:rounded-t-lg md:bg-surface-card">
+        @php
+            $hasActiveFilters = !empty($search) || !empty($statusFilter) || !empty($periodFilter);
+        @endphp
+        @if($projects->isNotEmpty() || $hasActiveFilters)
+            {{-- Header Group (Search + Filters + Chips) --}}
+            <div class="md:rounded-t-lg md:bg-surface-card">
             {{-- Filters Bar --}}
             <div
                 class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
@@ -65,13 +69,23 @@
                 </div>
             @endif
         </div> {{-- End Header Group --}}
+        @endif
 
         {{-- Projects Table --}}
         <div class="relative">
             <div class="w-full">
                 {{-- Desktop View --}}
-                <div class="table-container table-integrated hidden md:block">
-                    <table class="w-full table-fixed">
+                <div class="table-container table-integrated hidden md:block overflow-x-auto w-full">
+                @if($projects->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="folder" title="No se encontraron proyectos" message="No hay registros que coincidan con tu búsqueda." />
+                    </div>
+                @endif
+                <table class="w-full table-fixed min-w-[1024px] {{ $projects->isEmpty() ? 'hidden' : '' }}"
+                    @if($projects->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
                                 <th class="actions text-center pl-6 pr-2 w-14">
@@ -81,16 +95,16 @@
                                         x-on:change="toggleAll([{{ $projects->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="min-w-[200px]" />
+                                    :sortDirection="$sortDirection" class="w-[30%]" />
                                 <x-sortable-header field="client" label="Cliente" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-48" />
+                                    :sortDirection="$sortDirection" class="w-[20%]" />
                                 <x-sortable-header field="start_date" label="Fechas" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-40" />
+                                    :sortDirection="$sortDirection" class="w-36" />
                                 <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" class="w-32 numeric" align="right" />
                                 <th class="w-32">Ejecución</th>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-32" />
+                                    :sortDirection="$sortDirection" class="w-36" />
                                 <th class="actions w-28 pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -104,12 +118,10 @@
                                         <td class="actions text-center pl-6 pr-2" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                         </td>
-                                        <td class="font-semibold whitespace-nowrap text-text-primary">
-                                            <span class="max-w-[200px] truncate"
-                                                title="{{ $project->name }}">{{ $project->name }}</span>
+                                        <td class="font-semibold text-text-primary truncate" title="{{ $project->name }}">
+                                            {{ $project->name }}
                                         </td>
-                                        <td class="max-w-[150px] truncate text-text-secondary"
-                                            title="{{ $project->client ?? '—' }}">
+                                        <td class="truncate text-text-secondary" title="{{ $project->client ?? '—' }}">
                                             {{ $project->client ?? '—' }}
                                         </td>
                                         <td>
@@ -138,7 +150,7 @@
                                                     style="width: {{ $percent }}%"></div>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td class="pr-2">
                                             <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
                                         </td>
                                         <td class="actions pr-6" @click.stop>
@@ -172,13 +184,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="8">
-                                        <x-empty-state icon="folder" title="No se encontraron proyectos"
-                                            message="No hay registros que coincidan con tu búsqueda." />
-                                    </td>
-                                </tr>
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden"
@@ -312,8 +317,10 @@
                                 </div>
                             @endforeach
                         @else
-                            <x-empty-state icon="folder" title="No se encontraron proyectos"
-                                message="No hay registros que coincidan con tu búsqueda." />
+                            <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                                <x-empty-state icon="folder" title="No se encontraron proyectos"
+                                    message="No hay registros que coincidan con tu búsqueda." />
+                            </div>
                         @endif
                     </div>
 

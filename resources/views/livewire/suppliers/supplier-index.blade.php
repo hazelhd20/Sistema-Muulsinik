@@ -8,6 +8,10 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php
+        $hasActiveFilters = !empty($search) || !empty($categoryFilter);
+    @endphp
+    @if($suppliers->isNotEmpty() || $hasActiveFilters)
     {{-- Filters Bar --}}
     <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
         {{-- Search: compact width --}}
@@ -41,12 +45,22 @@
         @endif
     </div>
     @endif
+    @endif
 
     {{-- Suppliers Table --}}
     <div class="relative">
         <div class="w-full">
             <div class="table-container hidden md:block">
-                <table>
+                @if($suppliers->isEmpty())
+                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="p-8">
+                        <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros que coincidan con tu búsqueda." />
+                    </div>
+                @endif
+                <table class="{{ $suppliers->isEmpty() ? 'hidden' : '' }}"
+                    @if($suppliers->isEmpty())
+                        wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
+                    @endif
+                >
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="w-10 pl-4 pr-2 text-center">
@@ -136,13 +150,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="7">
-                                        <x-empty-state icon="building-2" title="No se encontraron proveedores"
-                                            message="No hay registros que coincidan con tu búsqueda." />
-                                    </td>
-                                </tr>
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden">
@@ -251,7 +258,9 @@
                             </div>
                         @endforeach
                     @else
-                        <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros que coincidan con tu búsqueda." />
+                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                            <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros que coincidan con tu búsqueda." />
+                        </div>
                     @endif
                 </div>
 
