@@ -44,71 +44,77 @@
         <div x-show="tab === 'overview'" class="space-y-4">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 @for($i = 0; $i < 4; $i++)
-                    <div class="card p-5 flex items-center gap-4">
-                        <x-skeleton class="w-12 h-12 rounded-xl" />
-                        <div class="flex-1">
-                            <x-skeleton class="h-7 w-20 mb-2 rounded" />
+                    <div class="stat-card">
+                        <x-skeleton class="w-10 h-10 rounded-xl shrink-0" />
+                        <div class="flex-1 w-full overflow-hidden">
+                            <x-skeleton class="h-8 w-24 mb-1 rounded" />
                             <x-skeleton class="h-3 w-32 rounded" />
                         </div>
                     </div>
                 @endfor
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div class="lg:col-span-2 card p-6 flex flex-col h-64">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                <div class="lg:col-span-2 card p-6 flex flex-col h-full">
                     <div class="mb-4">
-                        <x-skeleton class="h-4 w-40 mb-2 rounded" />
+                        <x-skeleton class="h-4 w-40 mb-1.5 rounded" />
                         <x-skeleton class="h-3 w-24 rounded" />
                     </div>
-                    <x-skeleton class="flex-1 w-full rounded-lg" />
+                    <x-skeleton class="h-64 w-full rounded-lg" />
                 </div>
-                <div class="card p-6 flex flex-col h-64">
+                <div class="card p-6 flex flex-col h-full">
                     <x-skeleton class="h-4 w-40 mb-4 rounded" />
-                    <div class="flex-1 flex items-center justify-center">
-                        <x-skeleton class="w-32 h-32 rounded-full" />
+                    <div class="h-52 flex items-center justify-center">
+                        <x-skeleton class="w-40 h-40 rounded-full" />
                     </div>
                 </div>
             </div>
             {{-- Overview Bottom Cards (Presupuesto vs Top Proyectos) --}}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-                <div class="card p-6 flex flex-col h-80">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="card p-6 flex flex-col h-full">
                     <x-skeleton class="h-4 w-48 mb-6 rounded" />
-                    <div class="space-y-6">
+                    <div class="space-y-6 flex-1">
                         @for($i = 0; $i < 4; $i++)
                             <div>
-                                <div class="flex justify-between mb-2">
-                                    <x-skeleton class="h-3 w-32 rounded" />
+                                <div class="flex justify-between items-center mb-1">
+                                    <x-skeleton class="h-4 w-3/5 rounded" />
+                                    <x-skeleton class="h-3 w-1/4 rounded" />
+                                </div>
+                                <x-skeleton class="h-2.5 w-full rounded-full" />
+                                <div class="flex justify-between mt-1">
                                     <x-skeleton class="h-3 w-16 rounded" />
                                 </div>
-                                <x-skeleton class="h-2 w-full rounded-full" />
                             </div>
                         @endfor
                     </div>
                 </div>
-                <div class="card p-6 flex flex-col h-80">
-                    <x-skeleton class="h-4 w-40 mb-6 rounded" />
-                    <div class="space-y-4">
-                        @for($i = 0; $i < 5; $i++)
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center gap-3">
-                                    <x-skeleton class="w-6 h-6 rounded" />
-                                    <div>
-                                        <x-skeleton class="h-4 w-32 mb-1 rounded" />
-                                        <x-skeleton class="h-3 w-20 rounded" />
+                <div class="table-container flex flex-col h-full">
+                    <div class="p-4 md:px-6 md:py-4">
+                        <x-skeleton class="h-4 w-40 rounded" />
+                    </div>
+                    <div class="flex-1 px-4 md:px-6 pb-4">
+                        <div class="space-y-4 mt-2">
+                            @for($i = 0; $i < 5; $i++)
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <x-skeleton class="w-6 h-6 rounded-lg" />
+                                        <div>
+                                            <x-skeleton class="h-4 w-32 mb-1 rounded" />
+                                            <x-skeleton class="h-3 w-20 rounded" />
+                                        </div>
                                     </div>
+                                    <x-skeleton class="h-4 w-24 rounded" />
                                 </div>
-                                <x-skeleton class="h-4 w-24 rounded" />
-                            </div>
-                        @endfor
+                            @endfor
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Skeleton Suppliers / Vendors --}}
-        <div x-show="tab === 'suppliers' || tab === 'vendors'" style="display: none;" class="table-container min-h-[500px]">
-            <div class="px-4 py-3 border-b border-border">
-                <x-skeleton class="h-4 w-48 mb-2 rounded" />
-                <x-skeleton class="h-3 w-64 rounded" />
+        {{-- Skeleton Suppliers --}}
+        <div x-show="tab === 'suppliers'" style="display: none;" class="table-container flex flex-col min-h-[250px]">
+            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+                <x-skeleton class="h-4 w-48 rounded" />
             </div>
             <div class="overflow-x-auto flex-1">
                 <table>
@@ -118,7 +124,8 @@
                             <th><x-skeleton class="h-4 w-32 rounded" /></th>
                             <th><x-skeleton class="h-4 w-24 rounded" /></th>
                             <th class="text-center"><x-skeleton class="h-4 w-16 mx-auto rounded" /></th>
-                            <th class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></th>
+                            <th class="text-center"><x-skeleton class="h-4 w-16 mx-auto rounded" /></th>
+                            <th class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,7 +135,39 @@
                                 <td><x-skeleton class="h-4 w-48 rounded" /></td>
                                 <td><x-skeleton class="h-6 w-20 rounded-full" /></td>
                                 <td class="text-center"><x-skeleton class="h-4 w-8 mx-auto rounded" /></td>
-                                <td class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></td>
+                                <td class="text-center"><x-skeleton class="h-4 w-8 mx-auto rounded" /></td>
+                                <td class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Skeleton Vendors --}}
+        <div x-show="tab === 'vendors'" style="display: none;" class="table-container flex flex-col min-h-[250px]">
+            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+                <x-skeleton class="h-4 w-48 rounded" />
+            </div>
+            <div class="overflow-x-auto flex-1">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>
+                            <th><x-skeleton class="h-4 w-32 rounded" /></th>
+                            <th><x-skeleton class="h-4 w-32 rounded" /></th>
+                            <th class="text-center"><x-skeleton class="h-4 w-16 mx-auto rounded" /></th>
+                            <th class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for($i = 0; $i < 6; $i++)
+                            <tr>
+                                <td><x-skeleton class="h-6 w-6 rounded-lg" /></td>
+                                <td><x-skeleton class="h-4 w-40 rounded" /></td>
+                                <td><x-skeleton class="h-4 w-40 rounded" /></td>
+                                <td class="text-center"><x-skeleton class="h-4 w-8 mx-auto rounded" /></td>
+                                <td class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></td>
                             </tr>
                         @endfor
                     </tbody>
@@ -137,20 +176,22 @@
         </div>
 
         {{-- Skeleton Products --}}
-        <div x-show="tab === 'products'" style="display: none;" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div class="lg:col-span-2 table-container min-h-[500px]">
-                <div class="px-4 py-3 border-b border-border">
-                    <x-skeleton class="h-4 w-48 mb-2 rounded" />
-                    <x-skeleton class="h-3 w-64 rounded" />
+        <div x-show="tab === 'products'" style="display: none;" class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+            <div class="lg:col-span-2 table-container flex flex-col min-h-[250px]">
+                <div class="p-4 md:px-6 md:py-4">
+                    <x-skeleton class="h-4 w-48 rounded" />
                 </div>
                 <div class="overflow-x-auto flex-1">
                     <table>
                         <thead>
                             <tr>
                                 <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>
-                                <th><x-skeleton class="h-4 w-40 rounded" /></th>
+                                <th><x-skeleton class="h-4 w-32 rounded" /></th>
                                 <th><x-skeleton class="h-4 w-24 rounded" /></th>
+                                <th class="text-center"><x-skeleton class="h-4 w-16 mx-auto rounded" /></th>
+                                <th class="text-center"><x-skeleton class="h-4 w-16 mx-auto rounded" /></th>
                                 <th class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></th>
+                                <th class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,20 +199,23 @@
                                 <tr>
                                     <td><x-skeleton class="h-6 w-6 rounded-lg" /></td>
                                     <td>
-                                        <x-skeleton class="h-4 w-48 mb-1 rounded" />
+                                        <x-skeleton class="h-4 w-48 mb-1.5 rounded" />
                                         <x-skeleton class="h-3 w-16 rounded" />
                                     </td>
                                     <td><x-skeleton class="h-6 w-24 rounded-full" /></td>
-                                    <td class="text-right"><x-skeleton class="h-4 w-24 ml-auto rounded" /></td>
+                                    <td class="text-center"><x-skeleton class="h-4 w-8 mx-auto rounded" /></td>
+                                    <td class="text-center"><x-skeleton class="h-4 w-12 mx-auto rounded" /></td>
+                                    <td class="text-right"><x-skeleton class="h-4 w-16 ml-auto rounded" /></td>
+                                    <td class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></td>
                                 </tr>
                             @endfor
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="card p-6 flex flex-col min-h-[500px]">
-                <x-skeleton class="h-4 w-40 mb-4 rounded" />
-                <div class="flex-1 flex items-center justify-center">
+            <div class="card p-6 flex flex-col h-full">
+                <x-skeleton class="h-4 w-48 mb-4 rounded" />
+                <div class="flex-1 flex items-center justify-center min-h-[200px]">
                     <x-skeleton class="w-48 h-48 rounded-full" />
                 </div>
                 <div class="mt-8 space-y-4">
@@ -179,9 +223,9 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <x-skeleton class="w-3 h-3 rounded-full" />
-                                <x-skeleton class="w-24 h-3 rounded" />
+                                <x-skeleton class="w-32 h-3 rounded" />
                             </div>
-                            <x-skeleton class="w-12 h-3 rounded" />
+                            <x-skeleton class="w-16 h-4 rounded" />
                         </div>
                     @endfor
                 </div>
@@ -307,7 +351,7 @@
                 <h2 class="text-small font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
                 @if($expenseByCategory->isEmpty())
                     <div wire:key="overview-category-empty" class="flex-1 flex flex-col items-center justify-center min-h-[260px]">
-                        <x-empty-state icon="pie-chart" title="Sin datos para el período" class="py-0" />
+                        <x-empty-state icon="pie-chart" title="No se encontraron gastos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
                     <div wire:key="overview-category-content" class="flex flex-col flex-1">
@@ -374,7 +418,7 @@
                 <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
                 @if($budgetComparison->isEmpty())
                     <div wire:key="overview-budget-empty" class="flex-1 flex flex-col items-center justify-center min-h-[200px]">
-                        <x-empty-state icon="folder-open" title="Sin proyectos activos" class="py-0" />
+                        <x-empty-state icon="folder-open" title="No se encontraron proyectos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
                     <div wire:key="overview-budget-content" class="space-y-4 flex-1">
@@ -409,14 +453,12 @@
 
             {{-- Top 5 proyectos por gasto --}}
             <div class="table-container flex flex-col h-full">
-                <div class="px-4 py-3 border-b border-border">
+                <div class="p-4 md:px-6 md:py-4">
                     <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
-                    <p class="text-xs text-text-muted">Período seleccionado</p>
                 </div>
                 @if($topProjects->isEmpty())
                     <div wire:key="overview-projects-empty" class="flex-1 flex flex-col items-center justify-center min-h-[200px]">
-                        <x-empty-state icon="folder-open" title="Sin datos"
-                            message="No hay proyectos en este período." class="py-0" />
+                        <x-empty-state icon="folder-open" title="No se encontraron proyectos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
                     <div wire:key="overview-projects-content" class="overflow-x-auto flex-1">
@@ -461,16 +503,12 @@
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'suppliers')
         <div class="table-container {{ $topSuppliers->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }}">
-            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
-                <div>
-                    <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
-                    <p class="text-xs text-text-muted">Monto total de requisiciones aprobadas en el período</p>
-                </div>
+            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+                <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
             </div>
             @if($topSuppliers->isEmpty())
                 <div wire:key="suppliers-table-empty" class="flex-1 flex flex-col items-center justify-center py-8">
-                    <x-empty-state icon="building-2" title="Sin datos de proveedores"
-                        message="No hay requisiciones aprobadas en este período." class="py-0" />
+                    <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros para el período seleccionado." class="py-0" />
                 </div>
             @else
                 <div wire:key="suppliers-table-content" class="overflow-x-auto flex-1">
@@ -520,16 +558,12 @@
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'vendors')
         <div class="table-container {{ $topVendors->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }}">
-            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
-                <div>
-                    <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
-                    <p class="text-xs text-text-muted">Montos por vendedor/contacto de proveedor en el período</p>
-                </div>
+            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+                <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
             </div>
             @if($topVendors->isEmpty())
                 <div wire:key="vendors-table-empty" class="flex-1 flex flex-col items-center justify-center py-8">
-                    <x-empty-state icon="user-check" title="Sin datos de vendedores"
-                        message="No hay requisiciones aprobadas en este período." class="py-0" />
+                    <x-empty-state icon="user-check" title="No se encontraron vendedores" message="No hay registros para el período seleccionado." class="py-0" />
                 </div>
             @else
                 <div wire:key="vendors-table-content" class="overflow-x-auto flex-1">
@@ -573,14 +607,12 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 {{ $topProducts->isEmpty() ? 'items-stretch' : 'items-start' }}">
             {{-- Tabla de productos --}}
             <div class="lg:col-span-2 table-container flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
-                <div class="px-4 py-3 border-b border-border">
+                <div class="p-4 md:px-6 md:py-4">
                     <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
-                    <p class="text-xs text-text-muted">Top 15 por monto en requisiciones aprobadas</p>
                 </div>
                 @if($topProducts->isEmpty())
                     <div wire:key="products-table-empty" class="flex-1 flex flex-col items-center justify-center min-h-[250px]">
-                        <x-empty-state icon="package" title="Sin datos de productos"
-                            message="No hay requisiciones aprobadas en este período." class="py-0" />
+                        <x-empty-state icon="package" title="No se encontraron productos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
                     <div wire:key="products-table-content" class="overflow-x-auto flex-1">
@@ -639,7 +671,7 @@
                 <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
                 @if($topProducts->isEmpty() || $productsByCategory->isEmpty())
                     <div wire:key="products-chart-empty" class="flex-1 flex flex-col items-center justify-center min-h-[250px]">
-                        <x-empty-state icon="pie-chart" title="Sin datos" class="py-0" />
+                        <x-empty-state icon="pie-chart" title="No se encontraron productos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
                     <div wire:key="products-chart-content" class="flex flex-col flex-1">
