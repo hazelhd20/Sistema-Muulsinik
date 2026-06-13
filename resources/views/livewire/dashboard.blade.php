@@ -147,7 +147,7 @@
 
         {{-- Proyectos recientes --}}
         <div class="table-container">
-            <div class="px-4 py-3 flex items-center justify-between border-b border-border">
+            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <h2 class="card-title">Proyectos Recientes</h2>
                 <a href="{{ url('/proyectos') }}"
                     class="link-more">
@@ -155,6 +155,11 @@
                     <x-lucide-arrow-right class="w-3 h-3" />
                 </a>
             </div>
+            @if($recentProjects->isEmpty())
+                <div class="p-8">
+                    <x-empty-state icon="folder-open" title="Sin proyectos registrados" />
+                </div>
+            @else
             <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
                 <thead>
                     <tr>
@@ -164,7 +169,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($recentProjects as $project)
+                    @foreach($recentProjects as $project)
                         <tr @click="Livewire.navigate('{{ url('/proyectos') }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
@@ -177,13 +182,7 @@
                                 ${{ number_format($project->budget, 0, '.', ',') }}
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3">
-                                <x-empty-state icon="folder-open" title="Sin proyectos registrados" />
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
             
@@ -208,11 +207,12 @@
                     @endfor
                 </tbody>
             </table>
+            @endif
         </div>
 
         {{-- Requisiciones recientes --}}
         <div class="table-container">
-            <div class="px-4 py-3 flex items-center justify-between border-b border-border">
+            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <h2 class="card-title">Requisiciones Recientes</h2>
                 <a href="{{ url('/requisiciones') }}"
                     class="link-more">
@@ -220,6 +220,11 @@
                     <x-lucide-arrow-right class="w-3 h-3" />
                 </a>
             </div>
+            @if($recentRequisitions->isEmpty())
+                <div class="p-8">
+                    <x-empty-state icon="clipboard" title="Sin requisiciones" />
+                </div>
+            @else
             <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
                 <thead>
                     <tr>
@@ -229,7 +234,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($recentRequisitions as $req)
+                    @foreach($recentRequisitions as $req)
                         <tr @click="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')" class="cursor-pointer hover:bg-surface-hover">
                             <td>
                                 <p class="font-medium text-text-primary text-small">
@@ -242,13 +247,7 @@
                             </td>
                             <td class="text-small text-text-secondary">{{ $req->project->name ?? '—' }}</td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3">
-                                <x-empty-state icon="clipboard" title="Sin requisiciones" />
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
             
@@ -264,15 +263,16 @@
                     @for($i=0; $i<3; $i++)
                     <tr>
                         <td>
-                            <x-skeleton class="h-4  rounded w-1/2 mb-1" />
-                            <x-skeleton class="h-3  rounded w-3/4" />
+                            <x-skeleton class="h-4 rounded w-24 mb-1" />
+                            <x-skeleton class="h-3 rounded w-16" />
                         </td>
-                        <td><x-skeleton class="h-6  rounded-full w-20" /></td>
-                        <td><x-skeleton class="h-4  rounded w-2/3" /></td>
+                        <td><x-skeleton class="h-6 rounded-full w-20" /></td>
+                        <td><x-skeleton class="h-4 rounded w-32" /></td>
                     </tr>
                     @endfor
                 </tbody>
             </table>
+            @endif
         </div>
     </div>
     

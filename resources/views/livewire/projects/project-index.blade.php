@@ -86,26 +86,37 @@
                         wire:loading.class.remove="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
                     @endif
                 >
+                        {{-- Definición centralizada de columnas (Solución ideal para distribución justa y personalización) --}}
+                        <colgroup>
+                            <col class="w-14">           {{-- Checkbox --}}
+                            <col class="w-auto">         {{-- Nombre (Ocupa el espacio restante equitativamente) --}}
+                            <col class="w-[22%]">        {{-- Cliente (Porcentaje fijo para justa distribución) --}}
+                            <col class="w-36">           {{-- Fechas --}}
+                            <col class="w-36">           {{-- Presupuesto --}}
+                            <col class="w-36">           {{-- Ejecución --}}
+                            <col class="w-32">           {{-- Estado --}}
+                            <col class="w-28">           {{-- Acciones --}}
+                        </colgroup>
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
-                                <th class="actions text-center pl-6 pr-2 w-14">
+                                <th class="actions text-center pl-6 pr-2">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $projects->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-[30%]" />
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="client" label="Cliente" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-[20%]" />
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="start_date" label="Fechas" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-36" />
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-32 numeric" align="right" />
-                                <th class="w-32">Ejecución</th>
+                                    :sortDirection="$sortDirection" class="numeric" align="right" />
+                                <th>Ejecución</th>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-36" />
-                                <th class="actions w-28 pr-6 text-right">Acciones</th>
+                                    :sortDirection="$sortDirection" />
+                                <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden"

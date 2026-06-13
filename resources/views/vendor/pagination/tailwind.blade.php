@@ -2,26 +2,30 @@
     <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}" class="flex items-center justify-between">
         
         {{-- Mobile View --}}
-        <div class="flex justify-between flex-1 sm:hidden gap-2">
+        <div class="flex items-center justify-between flex-1 sm:hidden gap-2">
             @if ($paginator->onFirstPage())
-                <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
+                <span class="relative inline-flex items-center justify-center px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
                     <x-lucide-chevron-left class="w-3.5 h-3.5" />
                     <span>{!! __('pagination.previous') !!}</span>
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-primary bg-surface-card border border-border rounded-md hover:bg-surface-hover hover:border-border-strong transition-all duration-150 shadow-sm gap-1">
+                <a href="{{ $paginator->previousPageUrl() }}" class="relative inline-flex items-center justify-center px-3 h-8 text-xs font-medium text-text-primary bg-surface-card border border-border rounded-md hover:bg-surface-hover hover:border-border-strong transition-all duration-150 shadow-sm gap-1">
                     <x-lucide-chevron-left class="w-3.5 h-3.5" />
                     <span>{!! __('pagination.previous') !!}</span>
                 </a>
             @endif
 
+            <span class="text-xs text-text-muted font-medium bg-surface-card px-2.5 py-1 border border-border rounded-md shadow-sm">
+                Pág. {{ $paginator->currentPage() }} de {{ $paginator->lastPage() }}
+            </span>
+
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-primary bg-surface-card border border-border rounded-md hover:bg-surface-hover hover:border-border-strong transition-all duration-150 shadow-sm gap-1">
+                <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center justify-center px-3 h-8 text-xs font-medium text-text-primary bg-surface-card border border-border rounded-md hover:bg-surface-hover hover:border-border-strong transition-all duration-150 shadow-sm gap-1">
                     <span>{!! __('pagination.next') !!}</span>
                     <x-lucide-chevron-right class="w-3.5 h-3.5" />
                 </a>
             @else
-                <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
+                <span class="relative inline-flex items-center justify-center px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
                     <span>{!! __('pagination.next') !!}</span>
                     <x-lucide-chevron-right class="w-3.5 h-3.5" />
                 </span>
@@ -53,13 +57,13 @@
                         <span aria-disabled="true" aria-label="{{ __('pagination.previous') }}">
                             <span class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1" aria-hidden="true">
                                 <x-lucide-chevron-left class="w-3.5 h-3.5" />
-                                <span>Anterior</span>
+                                <span>{!! __('pagination.previous') !!}</span>
                             </span>
                         </span>
                     @else
                         <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-primary bg-surface-card border border-border rounded-md hover:bg-surface-hover hover:border-border-strong transition-all duration-150 shadow-sm gap-1" aria-label="{{ __('pagination.previous') }}">
                             <x-lucide-chevron-left class="w-3.5 h-3.5" />
-                            <span>Anterior</span>
+                            <span>{!! __('pagination.previous') !!}</span>
                         </a>
                     @endif
 
@@ -93,13 +97,13 @@
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
                         <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-primary bg-surface-card border border-border rounded-md hover:bg-surface-hover hover:border-border-strong transition-all duration-150 shadow-sm gap-1" aria-label="{{ __('pagination.next') }}">
-                            <span>Siguiente</span>
+                            <span>{!! __('pagination.next') !!}</span>
                             <x-lucide-chevron-right class="w-3.5 h-3.5" />
                         </a>
                     @else
                         <span aria-disabled="true" aria-label="{{ __('pagination.next') }}">
                             <span class="relative inline-flex items-center justify-center px-2.5 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1" aria-hidden="true">
-                                <span>Siguiente</span>
+                                <span>{!! __('pagination.next') !!}</span>
                                 <x-lucide-chevron-right class="w-3.5 h-3.5" />
                             </span>
                         </span>
