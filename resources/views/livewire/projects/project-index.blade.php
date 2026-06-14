@@ -84,20 +84,20 @@
                         </div>
                     @endif
                     <table
-                        class="w-full table-fixed min-w-[1024px] {{ $projects->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
+                        class="w-full table-fixed min-w-[1200px] {{ $projects->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                         @if($projects->isEmpty()) wire:loading.class.remove="hidden"
                         wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" @endif>
                         {{-- Definición centralizada de columnas (Solución ideal para distribución justa y
                         personalización) --}}
                         <colgroup>
-                            <col class="w-14"> {{-- Checkbox --}}
-                            <col class="w-auto"> {{-- Nombre (Columna esponja: absorbe todo el espacio extra) --}}
-                            <col class="w-56"> {{-- Cliente (Ancho fijo para evitar estiramiento) --}}
-                            <col class="w-36"> {{-- Fechas --}}
-                            <col class="w-36"> {{-- Presupuesto --}}
-                            <col class="w-36"> {{-- Ejecución --}}
-                            <col class="w-32"> {{-- Estado --}}
-                            <col class="w-28"> {{-- Acciones --}}
+                            <col class="w-14">           {{-- Checkbox --}}
+                            <col class="w-[24%]">        {{-- Nombre --}}
+                            <col class="w-[18%]">        {{-- Cliente --}}
+                            <col class="w-[12%]">        {{-- Fechas --}}
+                            <col class="w-[12%]">        {{-- Presupuesto --}}
+                            <col class="w-[12%]">        {{-- Ejecución --}}
+                            <col class="w-[9%]">         {{-- Estado --}}
+                            <col class="w-28">           {{-- Acciones --}}
                         </colgroup>
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
@@ -138,10 +138,10 @@
                                         <td class="actions text-center pl-6 pr-2" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                         </td>
-                                        <td class="font-semibold text-text-primary truncate" title="{{ $project->name }}">
+                                        <td class="font-semibold text-text-primary truncate max-w-0" title="{{ $project->name }}">
                                             {{ $project->name }}
                                         </td>
-                                        <td class="truncate text-text-secondary" title="{{ $project->client ?? '—' }}">
+                                        <td class="truncate text-text-secondary max-w-0" title="{{ $project->client ?? '—' }}">
                                             {{ $project->client ?? '—' }}
                                         </td>
                                         <td>

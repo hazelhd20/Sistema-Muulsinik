@@ -7,64 +7,81 @@
         </x-slot:actions>
     </x-page-header>
 
-    @php
-        $hasActiveFilters = !empty($search) || !empty($periodFilter);
-    @endphp
-    @if($budgets->isNotEmpty() || $hasActiveFilters)
-    {{-- Filters --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
-        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar cotización..." />
-
-        {{-- Filters Popover --}}
+    {{-- Unified Datagrid Card Container --}}
+    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
         @php
             $activeCount = $periodFilter ? 1 : 0;
+            $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
-        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-            <x-form-field label="Estado">
-                <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'enviado' => 'Enviado', 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', 'expirado' => 'Expirado']" placeholder="Todos los estados" />
-            </x-form-field>
 
-            <x-form-field label="Creador">
-                <x-custom-select x-model="filterUser" :options="$users->pluck('name', 'id')->toArray()" placeholder="Todos los creadores" />
-            </x-form-field>
+        @if($budgets->isNotEmpty() || $hasActiveFilters)
+            {{-- Header Group (Search + Filters + Chips) --}}
+            <div class="md:rounded-t-lg md:bg-surface-card">
+                {{-- Filters Bar --}}
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar cotización..." />
 
-            <x-form-field label="Período">
-                <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
-            </x-form-field>
+                    {{-- Filters Popover --}}
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Estado">
+                            <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'enviado' => 'Enviado', 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', 'expirado' => 'Expirado']" placeholder="Todos los estados" />
+                        </x-form-field>
 
-            <x-slot name="footer">
-                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                    Limpiar todo
-                </button>
-                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                    Aplicar Filtros
-                </x-button>
-            </x-slot>
-        </x-filters-popover>
-    </div>
+                        <x-form-field label="Creador">
+                            <x-custom-select x-model="filterUser" :options="$users->pluck('name', 'id')->toArray()" placeholder="Todos los creadores" />
+                        </x-form-field>
 
-    {{-- Active Chips Row --}}
-    @if($activeCount > 0)
-    <div class="flex flex-wrap items-center gap-2 mb-4">
-        @if($periodFilter)
-            @php
-                $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
-            @endphp
-            <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter" wire:click="$set('periodFilter', '')" />
+                        <x-form-field label="Período">
+                            <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']" placeholder="Todos los períodos" />
+                        </x-form-field>
+
+                        <x-slot name="footer">
+                            <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                                Limpiar todo
+                            </button>
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
+                </div>
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                    @if($periodFilter)
+                        @php
+                            $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
+                        @endphp
+                        <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter" wire:click="$set('periodFilter', '')" />
+                    @endif
+                </div>
+                @endif
+            </div> {{-- End Header Group --}}
         @endif
-    </div>
-    @endif
-    @endif
 
-    {{-- Table --}}
-    <x-card class="relative overflow-hidden mb-6">
-        <div wire:loading.class="hidden" wire:target="search, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
-            <x-card.table class="hidden md:block w-full">
-                @if($budgets->isNotEmpty())
-                    <table>
+        <div class="relative">
+            <div wire:loading.class="hidden" wire:target="search, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
+                @if($budgets->isEmpty() && !$hasActiveFilters)
+                    <div class="p-8">
+                        <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
+                            message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
+                    </div>
+                @endif
+                <x-card.table class="hidden md:block w-full">
+                    <table class="w-full table-fixed min-w-[1100px] {{ $budgets->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}">
+                        <colgroup>
+                            <col class="w-14">           {{-- Checkbox --}}
+                            <col class="w-[35%]">        {{-- Título --}}
+                            <col class="w-[20%]">        {{-- Cliente --}}
+                            <col class="w-[10%]">        {{-- Fecha --}}
+                            <col class="w-[8%]">         {{-- Ítems --}}
+                            <col class="w-[12%]">        {{-- Monto Total --}}
+                            <col class="w-28">           {{-- Acciones --}}
+                        </colgroup>
                         <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
-                                <th class="w-10 pl-4 pr-2 text-center">
+                                <th class="actions text-center pl-4 pr-2">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
@@ -83,27 +100,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($budgets as $budget)
+                            @if($budgets->isEmpty() && $hasActiveFilters)
+                                <tr>
+                                    <td colspan="7" class="p-8">
+                                        <x-empty-state icon="search" title="No se encontraron cotizaciones" message="Intenta ajustar tus filtros de búsqueda." />
+                                    </td>
+                                </tr>
+                            @else
+                                @foreach($budgets as $budget)
                                 <tr wire:key="budget-row-{{ $budget->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
                                     :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="pl-4 pr-2 text-center" @click.stop>
+                                    <td class="actions pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
                                     </td>
-                                    <td>
-                                        <p class="font-semibold text-text-primary">{{ $budget->title }}</p>
+                                    <td class="max-w-0">
+                                        <p class="font-semibold text-text-primary truncate" title="{{ $budget->title }}">{{ $budget->title }}</p>
                                         @if($budget->description)
-                                            <p class="text-xs text-text-muted truncate max-w-[200px]">{{ $budget->description }}</p>
+                                            <p class="text-xs text-text-muted truncate" title="{{ $budget->description }}">{{ $budget->description }}</p>
                                         @endif
                                     </td>
-                                    <td>
-                                        <span class="text-body text-text-secondary">{{ $budget->client ?? '—' }}</span>
+                                    <td class="max-w-0">
+                                        <span class="text-body text-text-secondary truncate block" title="{{ $budget->client ?? '—' }}">{{ $budget->client ?? '—' }}</span>
                                     </td>
                                     <td class="text-body text-text-secondary">{{ $budget->created_at->format('d/m/Y') }}</td>
                                     <td class="text-center text-body">{{ $budget->items_count }}</td>
-                                    <td class="text-right font-semibold tabular-nums text-text-primary">
+                                    <td class="text-right font-semibold tabular-nums text-text-primary numeric">
                                         ${{ number_format($budget->grand_total, 2, '.', ',') }}</td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                    <td class="actions pr-4 py-3" @click.stop>
                                         <div class="flex items-center justify-end">
                                             <x-dropdown align="right" width="48">
                                                 <x-slot name="trigger">
@@ -123,23 +147,18 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
-                @else
-                    <div class="p-8">
-                        <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
-                            message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
-                    </div>
-                @endif
-            </x-card.table>
+                </x-card.table>
 
-            <div class="md:hidden p-0">
+            <div class="md:hidden p-4 flex flex-col gap-4">
             {{-- Tarjetas Móviles (Mobile View) --}}
             @if($budgets->isNotEmpty())
-            <div class="flex flex-col divide-y divide-border border-t border-border">
+            <div class="flex flex-col gap-4">
                 @foreach($budgets as $budget)
-                    <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
+                    <div class="card p-4 flex flex-col gap-3 relative transition-colors"
                          :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''"
                          wire:key="quick-budget-mobile-card-{{ $budget->id }}">
                         
@@ -207,6 +226,10 @@
                     </div>
                 @endforeach
             </div>
+            @elseif($hasActiveFilters)
+                <div class="p-8 border-t border-border">
+                    <x-empty-state icon="search" title="No se encontraron cotizaciones" message="Intenta ajustar tus filtros de búsqueda." />
+                </div>
             @else
                 <div class="p-8 border-t border-border">
                     <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
@@ -220,20 +243,33 @@
         <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <x-card.table class="hidden md:block w-full">
-                <table>
+                <table class="w-full table-fixed min-w-[1100px]">
+                    <colgroup>
+                        <col class="w-14">           {{-- Checkbox --}}
+                        <col class="w-[35%]">        {{-- Título --}}
+                        <col class="w-[20%]">        {{-- Cliente --}}
+                        <col class="w-[10%]">        {{-- Fecha --}}
+                        <col class="w-[8%]">         {{-- Ítems --}}
+                        <col class="w-[12%]">        {{-- Monto Total --}}
+                        <col class="w-28">           {{-- Acciones --}}
+                    </colgroup>
                     <thead>
                         <tr>
+                            <th class="actions pl-4 pr-2"></th>
                             <th>Título</th>
                             <th>Cliente</th>
                             <th>Fecha</th>
                             <th class="text-center">Ítems</th>
                             <th class="text-right">Monto Total</th>
-                            <th class="actions">Acciones</th>
+                            <th class="actions text-right pr-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @for($i = 0; $i < 5; $i++)
                             <tr>
+                                <td class="actions pl-4 pr-2 text-center">
+                                    <x-skeleton class="w-4 h-4 rounded mx-auto" />
+                                </td>
                                 <td>
                                     <x-skeleton class="h-4  rounded w-40 mb-1" />
                                     <x-skeleton class="h-3  rounded w-28" />
@@ -286,32 +322,28 @@
             </div>
         </div>
 
-        {{-- Bulk Actions & Pagination --}}
-        @if($budgets->hasPages() || count($selectedRows) > 0)
-            <x-card.footer class="flex-col sm:flex-row gap-4 items-center justify-between">
-                <div class="w-full sm:w-auto">
-                    <x-bulk-actions-bar>
-                        <x-button
-                            @click="$dispatch('confirm-action', {
-                                title: 'Eliminar Cotizaciones',
-                                description: 'Se eliminarán permanentemente las cotizaciones seleccionadas.',
-                                confirmLabel: 'Eliminar',
-                                variant: 'danger',
-                                action: 'bulkDelete',
-                                params: []
-                            })"
-                            variant="danger"
-                            icon="trash-2">
-                            Eliminar
-                        </x-button>
-                    </x-bulk-actions-bar>
-                </div>
+        {{-- Bulk Actions Bar --}}
+        <x-bulk-actions-bar>
+            <x-button
+                @click="$dispatch('confirm-action', {
+                    title: 'Eliminar Cotizaciones',
+                    description: 'Se eliminarán permanentemente las cotizaciones seleccionadas.',
+                    confirmLabel: 'Eliminar',
+                    variant: 'danger',
+                    action: 'bulkDelete',
+                    params: []
+                })"
+                variant="danger"
+                icon="trash-2">
+                Eliminar
+            </x-button>
+        </x-bulk-actions-bar>
+        </div>
 
-                @if($budgets->hasPages())
-                    <div class="w-full sm:w-auto overflow-x-auto">
-                        {{ $budgets->links(data: ['scrollTo' => false]) }}
-                    </div>
-                @endif
+        {{-- Pagination Footer --}}
+        @if($budgets->hasPages())
+            <x-card.footer>
+                {{ $budgets->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
     </x-card>

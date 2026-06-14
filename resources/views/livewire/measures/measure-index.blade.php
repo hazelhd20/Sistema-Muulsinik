@@ -8,57 +8,78 @@
         </x-slot:actions>
     </x-page-header>
 
-    @php
-        $hasActiveFilters = !empty($search);
-    @endphp
-    @if($measures->isNotEmpty() || $hasActiveFilters)
-    {{-- Filters Bar --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
-        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
-    </div>
-    @endif
+    {{-- Unified Datagrid Card Container --}}
+    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
+        @php
+            $hasActiveFilters = !empty($search);
+        @endphp
 
-    {{-- Table --}}
-    <x-card class="relative">
-        <div class="w-full">
-            <x-card.table class="hidden md:block">
-                @if($measures->isEmpty())
+        @if($measures->isNotEmpty() || $hasActiveFilters)
+            {{-- Header Group (Search + Filters + Chips) --}}
+            <div class="md:rounded-t-lg md:bg-surface-card">
+                {{-- Filters Bar --}}
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
+                </div>
+            </div> {{-- End Header Group --}}
+        @endif
+
+        <div class="relative">
+            <div class="w-full">
+                <x-card.table class="hidden md:block w-full">
+                @if($measures->isEmpty() && !$hasActiveFilters)
                     <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="ruler" title="No se encontraron medidas." />
                     </div>
                 @endif
-                <table class="{{ $measures->isEmpty() ? 'hidden' : '' }}"
+                <table class="w-full table-fixed min-w-[1024px] {{ $measures->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                     @if($measures->isEmpty())
                         wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
                     @endif
                 >
+                    <colgroup>
+                        <col class="w-14">           {{-- Checkbox --}}
+                        <col class="w-[35%]">        {{-- Nombre --}}
+                        <col class="w-[20%]">        {{-- Abreviación --}}
+                        <col class="w-[15%]">        {{-- Productos --}}
+                        <col class="w-[15%]">        {{-- Fecha de Registro --}}
+                        <col class="w-28">           {{-- Acciones --}}
+                    </colgroup>
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
-                                <th class="w-10 pl-4 pr-2 text-center">
+                                <th class="actions text-center pl-4 pr-2">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $measures->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-32" />
-                                <th class="w-32">Productos</th>
-                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
-                                <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
+                                    :sortDirection="$sortDirection" />
+                                <th>Productos</th>
+                                <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <th class="actions text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage">
-                            @if($measures->isNotEmpty())
+                            @if($measures->isEmpty() && $hasActiveFilters)
+                                <tr>
+                                    <td colspan="6" class="p-8">
+                                        <x-empty-state icon="search" title="No se encontraron medidas" message="Intenta ajustar tus filtros de búsqueda." />
+                                    </td>
+                                </tr>
+                            @else
                                 @foreach ($measures as $measure)
                                     <tr wire:key="measure-row-{{ $measure->id }}"
                                         class="group hover:bg-surface-hover/80 transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="pl-4 pr-2 text-center" @click.stop>
+                                        <td class="actions pl-4 pr-2 text-center" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
                                         </td>
-                                        <td class="font-medium text-text-primary">{{ $measure->name }}</td>
+                                        <td class="max-w-0">
+                                            <p class="font-medium text-text-primary truncate" title="{{ $measure->name }}">{{ $measure->name }}</p>
+                                        </td>
                                         <td>
                                             @if($measure->abbreviation)
                                                 <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
@@ -76,7 +97,7 @@
                                         <td class="text-text-muted text-small">
                                             {{ $measure->created_at->format('d/m/Y') }}
                                         </td>
-                                        <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                        <td class="actions pr-4 py-3" @click.stop>
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
@@ -102,7 +123,7 @@
                         <tbody wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="pl-4 pr-2 text-center">
+                                    <td class="actions pl-4 pr-2 text-center">
                                         <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
                                     </td>
                                     <td>
@@ -117,7 +138,7 @@
                                     <td>
                                         <x-skeleton class="h-4 rounded w-20" />
                                     </td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3">
+                                    <td class="actions pr-4 py-3">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
@@ -128,13 +149,14 @@
                     </table>
             </x-card.table>
 
+        <div class="md:hidden p-4 flex flex-col gap-4">
             {{-- Tarjetas Móviles (Mobile View) --}}
-            <div class="md:hidden flex flex-col divide-y divide-border border-t border-border mt-2">
-                <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col divide-y divide-border">
+            <div class="flex flex-col">
+                <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($measures->isNotEmpty())
                         @foreach($measures as $measure)
-                            <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
-                                 :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors"
+                                 :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''"
                                  wire:key="measure-mobile-card-{{ $measure->id }}">
                                 
                                 <div class="flex justify-between items-start gap-2">
@@ -189,6 +211,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    @elseif($hasActiveFilters)
+                        <div class="p-8">
+                            <x-empty-state icon="search" title="No se encontraron medidas" message="Intenta ajustar tus filtros de búsqueda." />
+                        </div>
                     @else
                         <div class="p-8">
                             <x-empty-state icon="ruler" title="No se encontraron medidas." />
@@ -197,9 +223,9 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col divide-y divide-border">
+                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 5; $i++)
-                        <div class="p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="card p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -221,8 +247,7 @@
             </div>
         </div>
 
-        <x-card.footer class="flex-col sm:flex-row items-center justify-between gap-4">
-            {{-- Bulk Actions Bar --}}
+        {{-- Bulk Actions Bar --}}
         <x-bulk-actions-bar>
             <x-button
                 @click="$dispatch('confirm-action', {
@@ -238,11 +263,15 @@
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
+        </div>
 
-            <div class="w-full sm:w-auto">
-                {{ $measures->links() }}
-            </div>
-        </x-card.footer>
+        @if($measures->hasPages())
+            <x-card.footer class="flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="w-full sm:w-auto overflow-x-auto">
+                    {{ $measures->links(data: ['scrollTo' => false]) }}
+                </div>
+            </x-card.footer>
+        @endif
     </x-card>
 
     {{-- Delete / Action Modals --}}

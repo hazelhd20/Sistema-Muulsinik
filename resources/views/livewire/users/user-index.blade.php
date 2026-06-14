@@ -10,68 +10,80 @@
         </x-slot:actions>
     </x-page-header>
 
-    @php
-        $hasActiveFilters = !empty($search) || !empty($roleFilter) || !empty($statusFilter);
-    @endphp
-    @if($users->isNotEmpty() || $hasActiveFilters)
-    {{-- Filters Bar --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
-        {{-- Search --}}
-        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o correo..." />
-
-        {{-- Filters Popover --}}
+    {{-- Unified Datagrid Card Container --}}
+    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
         @php
             $activeCount = ($roleFilter ? 1 : 0) + ($statusFilter ? 1 : 0);
+            $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
-        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-            <x-form-field label="Rol">
-                <x-custom-select x-model="filterRole" :options="$roles->pluck('name', 'id')->toArray()" placeholder="Todos los roles" />
-            </x-form-field>
 
-            <x-form-field label="Estado">
-                <x-custom-select x-model="filterStatus" :options="['active' => 'Activo', 'inactive' => 'Inactivo']" placeholder="Todos los estados" />
-            </x-form-field>
+        @if($users->isNotEmpty() || $hasActiveFilters)
+            {{-- Header Group (Search + Filters + Chips) --}}
+            <div class="md:rounded-t-lg md:bg-surface-card">
+                {{-- Filters Bar --}}
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                    {{-- Search --}}
+                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o correo..." />
 
-            <x-slot name="footer">
-                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                    Limpiar filtros
-                </button>
-                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                    Aplicar Filtros
-                </x-button>
-            </x-slot>
-        </x-filters-popover>
-    </div>
+                    {{-- Filters Popover --}}
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Rol">
+                            <x-custom-select x-model="filterRole" :options="$roles->pluck('name', 'id')->toArray()" placeholder="Todos los roles" />
+                        </x-form-field>
 
-    {{-- Active Chips Row --}}
-    @if($activeCount > 0)
-    <div class="flex flex-wrap items-center gap-2 mb-4">
-        @if($roleFilter)
-            <x-filter-chip label="Rol" :value="$roles->firstWhere('id', $roleFilter)?->name ?? 'Desconocido'" wire:click="$set('roleFilter', '')" />
+                        <x-form-field label="Estado">
+                            <x-custom-select x-model="filterStatus" :options="['active' => 'Activo', 'inactive' => 'Inactivo']" placeholder="Todos los estados" />
+                        </x-form-field>
+
+                        <x-slot name="footer">
+                            <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                                Limpiar filtros
+                            </button>
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
+                </div>
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                    @if($roleFilter)
+                        <x-filter-chip label="Rol" :value="$roles->firstWhere('id', $roleFilter)?->name ?? 'Desconocido'" wire:click="$set('roleFilter', '')" />
+                    @endif
+                    @if($statusFilter)
+                        @php
+                            $statusNames = ['active' => 'Activo', 'inactive' => 'Inactivo'];
+                        @endphp
+                        <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
+                    @endif
+                </div>
+                @endif
+            </div> {{-- End Header Group --}}
         @endif
-        @if($statusFilter)
-            @php
-                $statusNames = ['active' => 'Activo', 'inactive' => 'Inactivo'];
-            @endphp
-            <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
-        @endif
-    </div>
-    @endif
-    @endif
 
-    {{-- Users Table --}}
-    <x-card class="relative overflow-hidden mb-6">
-        <x-card.table class="hidden md:block w-full">
-                @if($users->isEmpty())
+        <div class="relative">
+            <div class="w-full">
+                <x-card.table class="hidden md:block w-full">
+                @if($users->isEmpty() && !$hasActiveFilters)
                     <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
                     </div>
                 @endif
-                <table class="{{ $users->isEmpty() ? 'hidden' : '' }}"
+                <table class="w-full table-fixed min-w-[1100px] {{ $users->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                     @if($users->isEmpty())
                         wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage"
                     @endif
                 >
+                    <colgroup>
+                        <col class="w-14">           {{-- Checkbox --}}
+                        <col class="w-[40%]">        {{-- Usuario / Correo --}}
+                        <col class="w-[15%]">        {{-- Rol --}}
+                        <col class="w-[15%]">        {{-- Estado --}}
+                        <col class="w-[15%]">        {{-- Fecha de Registro --}}
+                        <col class="w-28">           {{-- Acciones --}}
+                    </colgroup>
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="actions text-center">
@@ -91,7 +103,13 @@
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage">
-                            @if($users->isNotEmpty())
+                            @if($users->isEmpty() && $hasActiveFilters)
+                                <tr>
+                                    <td colspan="6" class="p-8">
+                                        <x-empty-state icon="search" title="No se encontraron usuarios" message="Intenta ajustar tus filtros de búsqueda." />
+                                    </td>
+                                </tr>
+                            @else
                                 @foreach($users as $user)
                                             <tr wire:key="user-row-{{ $user->id }}"
                                                 class="group hover:bg-surface-hover/80 transition-colors duration-150"
@@ -99,9 +117,9 @@
                                                 <td class="actions text-center" @click.stop>
                                                     <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                                 </td>
-                                                <td>
-                                                    <p class="font-semibold text-text-primary">{{ $user->name }}</p>
-                                                    <p class="text-xs text-text-muted">{{ $user->email }}</p>
+                                                <td class="max-w-0">
+                                                    <p class="font-semibold text-text-primary truncate" title="{{ $user->name }}">{{ $user->name }}</p>
+                                                    <p class="text-xs text-text-muted truncate" title="{{ $user->email }}">{{ $user->email }}</p>
                                                 </td>
                                                 <td>
                                                     @if($user->role)
@@ -180,13 +198,13 @@
                     </table>
         </x-card.table>
 
-        <div class="md:hidden p-0">
+        <div class="md:hidden p-4 flex flex-col gap-4">
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="flex flex-col">
-                <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="flex flex-col divide-y divide-border border-t border-border">
+                <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($users->isNotEmpty())
                         @foreach($users as $user)
-                            <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors"
                                  :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''"
                                  wire:key="user-mobile-card-{{ $user->id }}">
                                 <div class="flex justify-between items-start gap-2">
@@ -265,6 +283,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    @elseif($hasActiveFilters)
+                        <div class="p-8">
+                            <x-empty-state icon="search" title="No se encontraron usuarios" message="Intenta ajustar tus filtros de búsqueda." />
+                        </div>
                     @else
                         <div class="p-8">
                             <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
@@ -273,9 +295,9 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col divide-y divide-border border-t border-border">
+                <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="card p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-1"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -299,32 +321,30 @@
             </div>
         </div>
 
-        {{-- Bulk Actions & Pagination --}}
-        @if($users->hasPages() || count($selectedRows) > 0)
-            <x-card.footer class="flex-col sm:flex-row gap-4 items-center justify-between">
-                <div class="w-full sm:w-auto">
-                    <x-bulk-actions-bar>
-                        <x-button
-                            @click="$dispatch('confirm-action', {
-                                title: 'Eliminar Usuarios',
-                                description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
-                                confirmLabel: 'Eliminar',
-                                variant: 'danger',
-                                action: 'bulkDelete',
-                                params: []
-                            })"
-                            variant="danger"
-                            icon="trash-2">
-                            Eliminar
-                        </x-button>
-                    </x-bulk-actions-bar>
-                </div>
+        </div>
 
-                @if($users->hasPages())
-                    <div class="w-full sm:w-auto overflow-x-auto">
-                        {{ $users->links(data: ['scrollTo' => false]) }}
-                    </div>
-                @endif
+        {{-- Bulk Actions Bar --}}
+        <x-bulk-actions-bar>
+            <x-button
+                @click="$dispatch('confirm-action', {
+                    title: 'Eliminar Usuarios',
+                    description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
+                    confirmLabel: 'Eliminar',
+                    variant: 'danger',
+                    action: 'bulkDelete',
+                    params: []
+                })"
+                variant="danger"
+                icon="trash-2">
+                Eliminar
+            </x-button>
+        </x-bulk-actions-bar>
+        </div>
+
+        {{-- Pagination Footer --}}
+        @if($users->hasPages())
+            <x-card.footer>
+                {{ $users->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
     </x-card>

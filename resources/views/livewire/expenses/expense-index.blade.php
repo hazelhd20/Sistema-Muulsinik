@@ -89,19 +89,19 @@
                                 message="Registra el primer gasto para empezar a llevar el control financiero." />
                         </div>
                     @endif
-                    <table class="w-full table-fixed min-w-[900px] {{ $expenses->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
+                    <table class="w-full table-fixed min-w-[1100px] {{ $expenses->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                         @if($expenses->isEmpty())
                             wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage"
                         @endif
                     >
                         <colgroup>
                             <col class="w-14">           {{-- Checkbox --}}
-                            <col class="w-auto">         {{-- Concepto (Columna esponja: absorbe todo el espacio extra) --}}
-                            <col class="w-56">           {{-- Proyecto (Ancho fijo para textos predecibles) --}}
-                            <col class="w-40">           {{-- Categoría --}}
-                            <col class="w-32">           {{-- Fecha --}}
-                            <col class="w-32">           {{-- Monto --}}
-                            <col class="w-28">           {{-- Acciones --}}
+                            <col class="w-[28%]">        {{-- Concepto --}}
+                            <col class="w-[20%]">        {{-- Proyecto --}}
+                            <col class="w-[17%]">        {{-- Categoría --}}
+                            <col class="w-[12%]">        {{-- Fecha --}}
+                            <col class="w-[12%]">        {{-- Monto --}}
+                            <col class="w-[11%]">        {{-- Acciones --}}
                         </colgroup>
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
@@ -135,11 +135,11 @@
                                     <td class="actions text-center pl-6 pr-2" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
                                     </td>
-                                    <td class="pr-2">
+                                    <td class="pr-2 max-w-0">
                                         <p class="font-semibold text-text-primary truncate" title="{{ $expense->concept }}">{{ $expense->concept }}</p>
                                         <p class="text-xs text-text-muted truncate" title="Por: {{ $expense->user->name ?? '—' }}">Por: {{ $expense->user->name ?? '—' }}</p>
                                     </td>
-                                    <td class="pr-2">
+                                    <td class="pr-2 max-w-0">
                                         @if($expense->is_distributed)
                                             <x-badge variant="primary" icon="split">Distribuido</x-badge>
                                         @else

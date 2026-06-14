@@ -8,89 +8,108 @@
         </x-slot:actions>
     </x-page-header>
 
-    @php
-        $hasActiveFilters = !empty($search) || !empty($categoryFilter);
-    @endphp
-    @if($suppliers->isNotEmpty() || $hasActiveFilters)
-    {{-- Filters Bar --}}
-    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-start sm:items-center justify-between w-full">
-        {{-- Search: compact width --}}
-        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o RFC..." />
-
-        {{-- Filters Popover --}}
+    {{-- Unified Datagrid Card Container --}}
+    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
         @php
             $activeCount = $categoryFilter ? 1 : 0;
+            $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
-        <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-            <x-form-field label="Categoría">
-                <x-custom-select x-model="filterCategory" :options="$categories" placeholder="Todas las categorías" />
-            </x-form-field>
 
-            <x-slot name="footer">
-                <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                    Limpiar todo
-                </button>
-                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                    Aplicar Filtros
-                </x-button>
-            </x-slot>
-        </x-filters-popover>
-    </div>
+        @if($suppliers->isNotEmpty() || $hasActiveFilters)
+            {{-- Header Group (Search + Filters + Chips) --}}
+            <div class="md:rounded-t-lg md:bg-surface-card">
+                {{-- Filters Bar --}}
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                    {{-- Search: compact width --}}
+                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o RFC..." />
 
-    {{-- Active Chips Row --}}
-    @if($activeCount > 0)
-    <div class="flex flex-wrap items-center gap-2 mb-4">
-        @if($categoryFilter)
-            <x-filter-chip label="Categoría" :value="$categoryFilter" wire:click="$set('categoryFilter', '')" />
+                    {{-- Filters Popover --}}
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Categoría">
+                            <x-custom-select x-model="filterCategory" :options="$categories" placeholder="Todas las categorías" />
+                        </x-form-field>
+
+                        <x-slot name="footer">
+                            <button type="button" @click="clearFilters()" class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                                Limpiar todo
+                            </button>
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
+                </div>
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                    @if($categoryFilter)
+                        <x-filter-chip label="Categoría" :value="$categoryFilter" wire:click="$set('categoryFilter', '')" />
+                    @endif
+                </div>
+                @endif
+            </div> {{-- End Header Group --}}
         @endif
-    </div>
-    @endif
-    @endif
 
-    {{-- Suppliers Table --}}
-    <x-card class="relative overflow-hidden mb-6">
-        <x-card.table class="hidden md:block w-full">
-                @if($suppliers->isEmpty())
+        <div class="relative">
+            <div class="w-full">
+                <x-card.table class="hidden md:block w-full">
+                @if($suppliers->isEmpty() && !$hasActiveFilters)
                     <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros que coincidan con tu búsqueda." />
                     </div>
                 @endif
-                <table class="{{ $suppliers->isEmpty() ? 'hidden' : '' }}"
+                <table class="w-full table-fixed min-w-[1100px] {{ $suppliers->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                     @if($suppliers->isEmpty())
                         wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
                     @endif
                 >
+                    <colgroup>
+                        <col class="w-14">           {{-- Checkbox --}}
+                        <col class="w-[30%]">        {{-- Proveedor --}}
+                        <col class="w-[15%]">        {{-- RFC --}}
+                        <col class="w-[15%]">        {{-- Categoría --}}
+                        <col class="w-[10%]">        {{-- Vendedores --}}
+                        <col class="w-[18%]">        {{-- Notas --}}
+                        <col class="w-24">           {{-- Acciones --}}
+                    </colgroup>
                     <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
-                                <th class="w-10 pl-4 pr-2 text-center">
+                                <th class="actions text-center pl-4 pr-2">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $suppliers->pluck('id')->join(',') }}])" />
                                 </th>
                                 <x-sortable-header field="trade_name" label="Proveedor" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-1/3 min-w-[200px]" />
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="rfc" label="RFC" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-48" />
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="category" label="Categoría" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" class="w-32" />
-                                <th class="w-32">Vendedores</th>
+                                    :sortDirection="$sortDirection" />
+                                <th>Vendedores</th>
                                 <th>Notas</th>
-                                <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
+                                <th class="actions text-right pr-4">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage">
-                            @if($suppliers->isNotEmpty())
+                            @if($suppliers->isEmpty() && $hasActiveFilters)
+                                <tr>
+                                    <td colspan="7" class="p-8">
+                                        <x-empty-state icon="search" title="No se encontraron proveedores" message="Intenta ajustar tus filtros de búsqueda." />
+                                    </td>
+                                </tr>
+                            @else
                                 @foreach($suppliers as $supplier)
                                     <tr wire:key="supplier-row-{{ $supplier->id }}"
                                         class="group hover:bg-surface-hover/80 transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="pl-4 pr-2 text-center" @click.stop>
+                                        <td class="actions pl-4 pr-2 text-center" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
                                         </td>
-                                        <td class="font-semibold whitespace-nowrap text-text-primary">
-                                            <span class="max-w-[200px] truncate"
-                                                title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</span>
+                                        <td class="max-w-0">
+                                            <p class="font-semibold text-text-primary truncate"
+                                                title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</p>
                                         </td>
                                         <td>
                                             @if($supplier->rfc)
@@ -113,11 +132,11 @@
                                                 vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="max-w-0">
                                             @if($supplier->notes)
-                                                <div class="flex items-start gap-1 max-w-[250px]" title="{{ $supplier->notes }}">
+                                                <div class="flex items-center gap-1" title="{{ $supplier->notes }}">
                                                     <x-lucide-sticky-note
-                                                        class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
+                                                        class="w-3.5 h-3.5 text-text-muted shrink-0" />
                                                     <span
                                                         class="text-xs text-text-secondary truncate">{{ $supplier->notes }}</span>
                                                 </div>
@@ -125,7 +144,7 @@
                                                 <span class="text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="w-1 whitespace-nowrap pr-4 py-3" @click.stop>
+                                        <td class="actions pr-4 py-3" @click.stop>
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
@@ -154,7 +173,7 @@
                         <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 6; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="pl-4 pr-2 text-center">
+                                    <td class="actions pl-4 pr-2 text-center">
                                         <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
                                     </td>
                                     <td>
@@ -172,7 +191,7 @@
                                     <td>
                                         <x-skeleton class="h-4 rounded w-40" />
                                     </td>
-                                    <td class="w-1 whitespace-nowrap pr-4 py-3">
+                                    <td class="actions pr-4 py-3">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
@@ -183,13 +202,13 @@
                     </table>
         </x-card.table>
 
-        <div class="md:hidden p-0">
+        <div class="md:hidden p-4 flex flex-col gap-4">
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="flex flex-col">
-                <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="flex flex-col divide-y divide-border border-t border-border">
+                <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($suppliers->isNotEmpty())
                         @foreach($suppliers as $supplier)
-                            <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors"
                                  :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''"
                                  wire:key="supplier-mobile-card-{{ $supplier->id }}">
                                 <div class="flex justify-between items-start gap-2">
@@ -257,6 +276,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    @elseif($hasActiveFilters)
+                        <div class="p-8">
+                            <x-empty-state icon="search" title="No se encontraron proveedores" message="Intenta ajustar tus filtros de búsqueda." />
+                        </div>
                     @else
                         <div class="p-8">
                             <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros que coincidan con tu búsqueda." />
@@ -265,9 +288,9 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col divide-y divide-border border-t border-border">
+                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="card p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -300,32 +323,30 @@
             </div>
         </div>
 
-        {{-- Bulk Actions & Pagination --}}
-        @if($suppliers->hasPages() || count($selectedRows) > 0)
-            <x-card.footer class="flex-col sm:flex-row gap-4 items-center justify-between">
-                <div class="w-full sm:w-auto">
-                    <x-bulk-actions-bar>
-                        <x-button
-                            @click="$dispatch('confirm-action', {
-                                title: 'Eliminar Proveedores',
-                                description: 'Se eliminarán permanentemente los proveedores seleccionados que no estén en uso.',
-                                confirmLabel: 'Eliminar',
-                                variant: 'danger',
-                                action: 'bulkDelete',
-                                params: []
-                            })"
-                            variant="danger"
-                            icon="trash-2">
-                            Eliminar
-                        </x-button>
-                    </x-bulk-actions-bar>
-                </div>
+        </div>
 
-                @if($suppliers->hasPages())
-                    <div class="w-full sm:w-auto overflow-x-auto">
-                        {{ $suppliers->links(data: ['scrollTo' => false]) }}
-                    </div>
-                @endif
+        {{-- Bulk Actions Bar --}}
+        <x-bulk-actions-bar>
+            <x-button
+                @click="$dispatch('confirm-action', {
+                    title: 'Eliminar Proveedores',
+                    description: 'Se eliminarán permanentemente los proveedores seleccionados que no estén en uso.',
+                    confirmLabel: 'Eliminar',
+                    variant: 'danger',
+                    action: 'bulkDelete',
+                    params: []
+                })"
+                variant="danger"
+                icon="trash-2">
+                Eliminar
+            </x-button>
+        </x-bulk-actions-bar>
+        </div>
+
+        {{-- Pagination Footer --}}
+        @if($suppliers->hasPages())
+            <x-card.footer>
+                {{ $suppliers->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
     </x-card>
