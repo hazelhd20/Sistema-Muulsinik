@@ -83,35 +83,52 @@
             <div class="w-full">
                 {{-- Desktop View --}}
                 <x-card.table class="hidden md:block">
-                    @if($expenses->isEmpty())
-                        <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="p-8">
-                            <x-empty-state icon="receipt" title="No se encontraron gastos"
-                                message="No hay registros que coincidan con tu búsqueda." />
+                    @if($expenses->isEmpty() && !$hasActiveFilters)
+                        <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="p-12">
+                            <x-empty-state icon="receipt" title="Aún no hay gastos registrados"
+                                message="Registra el primer gasto para empezar a llevar el control financiero." />
                         </div>
                     @endif
-                    <table class="w-full table-fixed min-w-[900px] {{ $expenses->isEmpty() ? 'hidden' : '' }}"
+                    <table class="w-full table-fixed min-w-[900px] {{ $expenses->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                         @if($expenses->isEmpty())
                             wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage"
                         @endif
                     >
+                        <colgroup>
+                            <col class="w-14">           {{-- Checkbox --}}
+                            <col class="w-auto">         {{-- Concepto (Columna esponja: absorbe todo el espacio extra) --}}
+                            <col class="w-56">           {{-- Proyecto (Ancho fijo para textos predecibles) --}}
+                            <col class="w-40">           {{-- Categoría --}}
+                            <col class="w-32">           {{-- Fecha --}}
+                            <col class="w-32">           {{-- Monto --}}
+                            <col class="w-28">           {{-- Acciones --}}
+                        </colgroup>
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
-                                <th class="actions text-center pl-6 pr-2 w-14">
+                                <th class="actions text-center pl-6 pr-2">
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
                                         x-on:change="toggleAll([{{ $expenses->pluck('id')->join(',') }}])" />
                                 </th>
-                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-[30%]" />
-                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" class="w-[20%]" />
-                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" class="w-40" />
-                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" class="w-32" />
-                                <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" class="w-32 numeric" />
-                                <th class="actions w-28 pr-6 text-right">Acciones</th>
+                                <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="category" label="Categoría" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField" :sortDirection="$sortDirection" />
+                                <x-sortable-header field="amount" label="Monto" :sortField="$sortField" :sortDirection="$sortDirection" align="right" class="numeric" />
+                                <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage">
-                            @foreach($expenses as $expense)
+                            @if($expenses->isEmpty() && $hasActiveFilters)
+                                <tr>
+                                    <td colspan="7" class="py-16">
+                                        <x-empty-state icon="search" title="No se encontraron resultados"
+                                            message="No hay gastos que coincidan con los filtros actuales." />
+                                    </td>
+                                </tr>
+                            @else
+                                @foreach($expenses as $expense)
                                 <tr wire:key="expense-row-{{ $expense->id }}"
                                     class="group hover:bg-surface-hover/80 transition-colors duration-150"
                                     :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50' : ''">
@@ -156,7 +173,8 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                                @endforeach
+                            @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
@@ -262,7 +280,17 @@
                                 </div>
                             @endforeach
                         @else
-                            <x-empty-state icon="receipt" title="No se encontraron gastos" message="No hay registros que coincidan con tu búsqueda." />
+                            @if($hasActiveFilters)
+                                <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                                    <x-empty-state icon="search" title="No se encontraron resultados"
+                                        message="No hay gastos que coincidan con los filtros actuales." />
+                                </div>
+                            @else
+                                <div class="bg-surface-card border border-border shadow-sm rounded-xl p-12">
+                                    <x-empty-state icon="receipt" title="Aún no hay gastos registrados"
+                                        message="Registra el primer gasto para empezar a llevar el control financiero." />
+                                </div>
+                            @endif
                         @endif
                     </div>
 

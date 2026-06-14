@@ -721,7 +721,7 @@ input[type="search"]::-webkit-search-results-decoration {
     .stat-card {
         background-color: var(--color-surface-card);
         border-radius: 0.625rem;
-        padding: 1.125rem 1.25rem;
+        padding: 1.5rem;
         display: flex;
         align-items: center;
         gap: 0.875rem;

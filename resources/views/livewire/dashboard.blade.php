@@ -78,9 +78,15 @@
                 </x-slot:action>
             </x-card.header>
             <x-card.body class="pt-0">
-                <div class="h-44" x-data="chartComponent()" x-init="initChart()">
-                    <canvas id="monthly-expenses-chart"></canvas>
-                </div>
+                @if($totalExpenses == 0)
+                    <div class="py-6">
+                        <x-empty-state icon="trending-up" title="Sin gastos registrados" message="Los datos de tus gastos se graficarán aquí." />
+                    </div>
+                @else
+                    <div class="h-44" x-data="chartComponent()" x-init="initChart()">
+                        <canvas id="monthly-expenses-chart"></canvas>
+                    </div>
+                @endif
             </x-card.body>
         </x-card>
 

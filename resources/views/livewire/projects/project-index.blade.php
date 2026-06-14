@@ -17,58 +17,58 @@
         @if($projects->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
             <div class="md:rounded-t-lg md:bg-surface-card">
-            {{-- Filters Bar --}}
-            <div
-                class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
-                {{-- Search --}}
-                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
+                {{-- Filters Bar --}}
+                <div
+                    class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                    {{-- Search --}}
+                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
 
-                {{-- Filters Popover --}}
-                @php
-                    $activeCount = ($statusFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
-                @endphp
-                <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                    <x-form-field label="Estado">
-                        <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
-                    </x-form-field>
+                    {{-- Filters Popover --}}
+                    @php
+                        $activeCount = ($statusFilter ? 1 : 0) + ($periodFilter ? 1 : 0);
+                    @endphp
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Estado">
+                            <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
+                        </x-form-field>
 
-                    <x-form-field label="Período (Creación)">
-                        <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
-                            placeholder="Todos los períodos" />
-                    </x-form-field>
+                        <x-form-field label="Período (Creación)">
+                            <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+                                placeholder="Todos los períodos" />
+                        </x-form-field>
 
-                    <x-slot name="footer">
-                        <button type="button" @click="clearFilters()"
-                            class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                            Limpiar filtros
-                        </button>
-                        <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                            Aplicar Filtros
-                        </x-button>
-                    </x-slot>
-                </x-filters-popover>
-            </div>
-
-            {{-- Active Chips Row --}}
-            @if($activeCount > 0)
-                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
-                    @if($statusFilter)
-                        @php
-                            $statusNames = ['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado'];
-                        @endphp
-                        <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter"
-                            wire:click="$set('statusFilter', '')" />
-                    @endif
-                    @if($periodFilter)
-                        @php
-                            $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
-                        @endphp
-                        <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter"
-                            wire:click="$set('periodFilter', '')" />
-                    @endif
+                        <x-slot name="footer">
+                            <button type="button" @click="clearFilters()"
+                                class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                                Limpiar filtros
+                            </button>
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
                 </div>
-            @endif
-        </div> {{-- End Header Group --}}
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                    <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                        @if($statusFilter)
+                            @php
+                                $statusNames = ['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado'];
+                            @endphp
+                            <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter"
+                                wire:click="$set('statusFilter', '')" />
+                        @endif
+                        @if($periodFilter)
+                            @php
+                                $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
+                            @endphp
+                            <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter"
+                                wire:click="$set('periodFilter', '')" />
+                        @endif
+                    </div>
+                @endif
+            </div> {{-- End Header Group --}}
         @endif
 
         {{-- Projects Table --}}
@@ -76,26 +76,28 @@
             <div class="w-full">
                 {{-- Desktop View --}}
                 <x-card.table class="hidden md:block">
-                @if($projects->isEmpty())
-                    <div wire:loading.class="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="p-8">
-                        <x-empty-state icon="folder" title="No se encontraron proyectos" message="No hay registros que coincidan con tu búsqueda." />
-                    </div>
-                @endif
-                <table class="w-full table-fixed min-w-[1024px] {{ $projects->isEmpty() ? 'hidden' : '' }}"
-                    @if($projects->isEmpty())
-                        wire:loading.class.remove="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
+                    @if($projects->isEmpty() && !$hasActiveFilters)
+                        <div wire:loading.class="hidden"
+                            wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="p-12">
+                            <x-empty-state icon="folder" title="Aún no hay proyectos"
+                                message="Comienza creando un proyecto para gestionar tus gastos y tareas." />
+                        </div>
                     @endif
-                >
-                        {{-- Definición centralizada de columnas (Solución ideal para distribución justa y personalización) --}}
+                    <table
+                        class="w-full table-fixed min-w-[1024px] {{ $projects->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
+                        @if($projects->isEmpty()) wire:loading.class.remove="hidden"
+                        wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" @endif>
+                        {{-- Definición centralizada de columnas (Solución ideal para distribución justa y
+                        personalización) --}}
                         <colgroup>
-                            <col class="w-14">           {{-- Checkbox --}}
-                            <col class="w-auto">         {{-- Nombre (Ocupa el espacio restante equitativamente) --}}
-                            <col class="w-[22%]">        {{-- Cliente (Porcentaje fijo para justa distribución) --}}
-                            <col class="w-36">           {{-- Fechas --}}
-                            <col class="w-36">           {{-- Presupuesto --}}
-                            <col class="w-36">           {{-- Ejecución --}}
-                            <col class="w-32">           {{-- Estado --}}
-                            <col class="w-28">           {{-- Acciones --}}
+                            <col class="w-14"> {{-- Checkbox --}}
+                            <col class="w-auto"> {{-- Nombre (Columna esponja: absorbe todo el espacio extra) --}}
+                            <col class="w-56"> {{-- Cliente (Ancho fijo para evitar estiramiento) --}}
+                            <col class="w-36"> {{-- Fechas --}}
+                            <col class="w-36"> {{-- Presupuesto --}}
+                            <col class="w-36"> {{-- Ejecución --}}
+                            <col class="w-32"> {{-- Estado --}}
+                            <col class="w-28"> {{-- Acciones --}}
                         </colgroup>
                         <thead class="bg-surface-th border-b border-border">
                             <tr>
@@ -121,7 +123,14 @@
                         </thead>
                         <tbody wire:loading.class="hidden"
                             wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage">
-                            @if($projects->isNotEmpty())
+                            @if($projects->isEmpty() && $hasActiveFilters)
+                                <tr>
+                                    <td colspan="8" class="py-16">
+                                        <x-empty-state icon="search" title="No se encontraron resultados"
+                                            message="No hay proyectos que coincidan con los filtros actuales." />
+                                    </td>
+                                </tr>
+                            @elseif($projects->isNotEmpty())
                                 @foreach($projects as $project)
                                     <tr wire:key="project-row-{{ $project->id }}"
                                         class="group hover:bg-surface-hover/80 transition-colors duration-150"
@@ -257,7 +266,8 @@
                                                         class="font-bold text-text-primary text-body">{{ $project->name }}</span>
                                                 </div>
                                                 <p class="text-xs text-text-secondary mt-1 truncate">
-                                                    {{ $project->client ?? 'Sin cliente' }}</p>
+                                                    {{ $project->client ?? 'Sin cliente' }}
+                                                </p>
                                             </div>
                                         </div>
                                         <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
@@ -328,10 +338,17 @@
                                 </div>
                             @endforeach
                         @else
-                            <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
-                                <x-empty-state icon="folder" title="No se encontraron proyectos"
-                                    message="No hay registros que coincidan con tu búsqueda." />
-                            </div>
+                            @if($hasActiveFilters)
+                                <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                                    <x-empty-state icon="search" title="No se encontraron resultados"
+                                        message="No hay proyectos que coincidan con los filtros actuales." />
+                                </div>
+                            @else
+                                <div class="bg-surface-card border border-border shadow-sm rounded-xl p-12">
+                                    <x-empty-state icon="folder" title="Aún no hay proyectos"
+                                        message="Comienza creando un proyecto para gestionar tus gastos y tareas." />
+                                </div>
+                            @endif
                         @endif
                     </div>
 

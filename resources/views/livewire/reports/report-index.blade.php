@@ -88,7 +88,7 @@
                     </div>
                 </x-card>
                 <x-card class="flex flex-col h-full overflow-hidden">
-                    <div class="p-4 md:px-6 md:py-4">
+                    <div class="px-6 pt-6 pb-4">
                         <x-skeleton class="h-4 w-40 rounded" />
                     </div>
                     <div class="flex-1 px-4 md:px-6 pb-4">
@@ -113,7 +113,7 @@
 
         {{-- Skeleton Suppliers --}}
         <x-card x-show="tab === 'suppliers'" style="display: none;" class="flex flex-col min-h-[250px] overflow-hidden">
-            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
             <x-card.table class="flex-1 w-full">
@@ -146,7 +146,7 @@
 
         {{-- Skeleton Vendors --}}
         <x-card x-show="tab === 'vendors'" style="display: none;" class="flex flex-col min-h-[250px] overflow-hidden">
-            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
             <x-card.table class="flex-1 w-full">
@@ -178,7 +178,7 @@
         {{-- Skeleton Products --}}
         <div x-show="tab === 'products'" style="display: none;" class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
             <x-card class="lg:col-span-2 flex flex-col min-h-[250px] overflow-hidden">
-                <div class="p-4 md:px-6 md:py-4">
+                <div class="px-6 pt-6 pb-4">
                     <x-skeleton class="h-4 w-48 rounded" />
                 </div>
                 <x-card.table class="flex-1 w-full">
@@ -292,58 +292,64 @@
                         <p class="text-xs text-text-muted">Últimos 12 meses</p>
                     </div>
                 </div>
-                <div class="h-64 flex-1" data-chart="{{ json_encode($monthlyData) }}"
-                     x-data="chartCanvas((data) => ({
-                         type: 'line',
-                         data: {
-                             labels: data.map(d => d.short),
-                             datasets: [{
-                                 label: 'Gastos',
-                                 data: data.map(d => d.total),
-                                 borderColor: '#0230c8',
-                                 backgroundColor: 'rgba(2, 48, 200, 0.08)',
-                                 fill: true,
-                                 tension: 0.4,
-                                 borderWidth: 2.5,
-                                 pointBackgroundColor: '#0230c8',
-                                 pointRadius: 4,
-                                 pointHoverRadius: 6,
-                             }]
-                         },
-                         options: {
-                             responsive: true,
-                             maintainAspectRatio: false,
-                             plugins: {
-                                 legend: { display: false },
-                                 tooltip: {
-                                     backgroundColor: '#1E1B2E',
-                                     padding: 12,
-                                     cornerRadius: 8,
-                                     titleFont: { family: 'Plus Jakarta Sans' },
-                                     bodyFont: { family: 'Plus Jakarta Sans' },
-                                     callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` }
-                                 }
+                @if(collect($monthlyData)->sum('total') == 0)
+                    <div wire:key="overview-monthly-empty" class="flex-1 flex flex-col items-center justify-center min-h-[256px]">
+                        <x-empty-state icon="trending-up" title="Sin gastos registrados" message="No se han registrado gastos en los últimos 12 meses." class="py-0" />
+                    </div>
+                @else
+                    <div wire:key="overview-monthly-content" class="h-64 flex-1" data-chart="{{ json_encode($monthlyData) }}"
+                         x-data="chartCanvas((data) => ({
+                             type: 'line',
+                             data: {
+                                 labels: data.map(d => d.short),
+                                 datasets: [{
+                                     label: 'Gastos',
+                                     data: data.map(d => d.total),
+                                     borderColor: '#0230c8',
+                                     backgroundColor: 'rgba(2, 48, 200, 0.08)',
+                                     fill: true,
+                                     tension: 0.4,
+                                     borderWidth: 2.5,
+                                     pointBackgroundColor: '#0230c8',
+                                     pointRadius: 4,
+                                     pointHoverRadius: 6,
+                                 }]
                              },
-                             scales: {
-                                 x: {
-                                     grid: { display: false },
-                                     ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9CA3AF' }
+                             options: {
+                                 responsive: true,
+                                 maintainAspectRatio: false,
+                                 plugins: {
+                                     legend: { display: false },
+                                     tooltip: {
+                                         backgroundColor: '#1E1B2E',
+                                         padding: 12,
+                                         cornerRadius: 8,
+                                         titleFont: { family: 'Plus Jakarta Sans' },
+                                         bodyFont: { family: 'Plus Jakarta Sans' },
+                                         callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` }
+                                     }
                                  },
-                                 y: {
-                                     grid: { color: 'rgba(0,0,0,0.04)' },
-                                     ticks: {
-                                         font: { family: 'Plus Jakarta Sans', size: 11 },
-                                         color: '#9CA3AF',
-                                         callback: v => `$${(v / 1000).toFixed(0)}k`
+                                 scales: {
+                                     x: {
+                                         grid: { display: false },
+                                         ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9CA3AF' }
+                                     },
+                                     y: {
+                                         grid: { color: 'rgba(0,0,0,0.04)' },
+                                         ticks: {
+                                             font: { family: 'Plus Jakarta Sans', size: 11 },
+                                             color: '#9CA3AF',
+                                             callback: v => `$${(v / 1000).toFixed(0)}k`
+                                         }
                                      }
                                  }
                              }
-                         }
-                     }))">
-                    <div wire:ignore class="h-full w-full">
-                        <canvas></canvas>
+                         }))">
+                        <div wire:ignore class="h-full w-full">
+                            <canvas></canvas>
+                        </div>
                     </div>
-                </div>
+                @endif
             </x-card>
 
             {{-- Distribución por categoría (donut) --}}
@@ -453,7 +459,7 @@
 
             {{-- Top 5 proyectos por gasto --}}
             <x-card class="flex flex-col h-full overflow-hidden">
-                <div class="p-4 md:px-6 md:py-4">
+                <div class="px-6 pt-6 pb-4">
                     <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
                 </div>
                 @if($topProjects->isEmpty())
@@ -503,7 +509,7 @@
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'suppliers')
         <x-card class="{{ $topSuppliers->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }} overflow-hidden">
-            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
             </div>
             @if($topSuppliers->isEmpty())
@@ -558,7 +564,7 @@
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'vendors')
         <x-card class="{{ $topVendors->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }} overflow-hidden">
-            <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
+            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
             </div>
             @if($topVendors->isEmpty())
@@ -607,7 +613,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 {{ $topProducts->isEmpty() ? 'items-stretch' : 'items-start' }}">
             {{-- Tabla de productos --}}
             <x-card class="lg:col-span-2 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }} overflow-hidden">
-                <div class="p-4 md:px-6 md:py-4">
+                <div class="px-6 pt-6 pb-4">
                     <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
                 </div>
                 @if($topProducts->isEmpty())
