@@ -10,11 +10,9 @@
 
     <form wire:submit="createRequisition" class="space-y-6">
         {{-- 1. Datos Generales --}}
-        <div class="card">
-            <div class="card-header px-6 pt-5">
-                <h2 class="card-title">Datos Generales</h2>
-            </div>
-            <div class="card-body">
+        <x-card>
+            <x-card.header title="Datos Generales" />
+            <x-card.body>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-form-field label="Proyecto" required error="{{ $errors->first('form.projectId') }}">
                     <x-custom-select wire:model="form.projectId" :options="$projects->pluck('name', 'id')->toArray()"
@@ -42,33 +40,32 @@
                     </x-form-field>
                 </div>
             </div>
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
 
         {{-- 2. Productos --}}
-        <div class="card mb-6">
-            <div class="card-header px-6 pt-5 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <h2 class="card-title">Productos</h2>
-                    @if(count($form->items) > 0)
-                        <x-badge variant="secondary">{{ count($form->items) }}</x-badge>
-                        <span class="text-small text-text-muted font-normal">{{ count($form->items) === 1 ? 'producto' : 'productos' }}</span>
-                    @endif
-                </div>
-                <x-button wire:click="addManualItem" variant="secondary" icon="plus">
-                    Concepto Manual
-                </x-button>
-            </div>
+        <x-card class="mb-6 overflow-hidden">
+            <x-card.header title="Productos">
+                <x-slot:action>
+                    <div class="flex items-center gap-3">
+                        @if(count($form->items) > 0)
+                            <x-badge variant="secondary">{{ count($form->items) }}</x-badge>
+                        @endif
+                        <x-button wire:click="addManualItem" variant="secondary" icon="plus">
+                            Concepto Manual
+                        </x-button>
+                    </div>
+                </x-slot:action>
+            </x-card.header>
 
             <div class="px-6 py-5">
                 {{-- Search Product --}}
-                <div x-data>
-                    <div class="relative">
+                <div x-data class="relative max-w-lg">
                     <div class="relative">
                         <x-lucide-search
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input wire:model.live.debounce.300ms="searchQuery" type="text"
-                            class="input pl-10 border-border focus:border-primary-500 bg-surface-card"
+                            class="input w-full pl-10 border-border focus:border-primary-500 bg-surface-card"
                             placeholder="Buscar producto del catálogo para agregar...">
                         <div wire:loading wire:target="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2">
                             <span class="spinner spinner-sm"></span>
@@ -117,7 +114,7 @@
             {{-- Items Table --}}
             @if(count($form->items) > 0)
                 {{-- Desktop Table --}}
-                <div class="hidden md:block overflow-x-auto w-full">
+                <x-card.table class="hidden md:block w-full">
                     <table class="w-full text-left table-inputs-compact">
                         <thead>
                             <tr class="bg-surface-th border-y border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
@@ -186,7 +183,7 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </x-card.table>
 
                 {{-- Mobile Cards --}}
                 <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
@@ -282,12 +279,8 @@
                     <x-empty-state icon="package-plus" title="Sin productos"
                         message="Busca un producto del catálogo arriba o agrega un concepto manual."
                         class="border border-dashed border-border rounded-xl py-10" />
-                        
-                    <div class="flex justify-center mt-6">
-                        <x-button type="submit" variant="primary" target="createRequisition">Crear Requisición (Vacía)</x-button>
-                    </div>
                 </div>
             @endif
-        </div>
+        </x-card>
     </form>
 </div>

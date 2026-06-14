@@ -57,9 +57,8 @@
     @endif
 
     {{-- Products table --}}
-    <div class="relative">
-        <div class="w-full">
-            <div class="table-container hidden md:block">
+    <x-card class="relative overflow-hidden mb-6">
+        <x-card.table class="hidden md:block w-full">
                 @if($products->isEmpty())
                     <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
@@ -174,15 +173,16 @@
                             @endfor
                         </tbody>
                     </table>
-            </div>
+        </x-card.table>
 
+        <div class="md:hidden p-0">
             {{-- Tarjetas Móviles (Mobile View) --}}
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+            <div class="flex flex-col">
+                <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="flex flex-col divide-y divide-border border-t border-border">
                     @if($products->isNotEmpty())
                         @foreach($products as $product)
-                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                                 :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                            <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
+                                 :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''"
                                  wire:key="product-mobile-card-{{ $product->id }}">
                                 <div class="flex justify-between items-start gap-2">
                                     <div class="flex items-start gap-3">
@@ -253,16 +253,16 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                        <div class="p-8">
                             <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
                         </div>
                     @endif
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col divide-y divide-border border-t border-border">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -293,30 +293,39 @@
                 </div>
             </div>
         </div>
-        
-        {{-- Bulk Actions Bar --}}
-        <x-bulk-actions-bar>
-            <x-button
-                @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Productos',
-                    description: 'Se eliminarán permanentemente los productos seleccionados que no estén en requisiciones.',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })"
-                variant="danger"
-                icon="trash-2">
-                Eliminar
-            </x-button>
-        </x-bulk-actions-bar>
 
-    </div>
-    
+        {{-- Bulk Actions & Pagination --}}
+        @if($products->hasPages() || count($selectedRows) > 0)
+            <x-card.footer class="flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="w-full sm:w-auto">
+                    <x-bulk-actions-bar>
+                        <x-button
+                            @click="$dispatch('confirm-action', {
+                                title: 'Eliminar Productos',
+                                description: 'Se eliminarán permanentemente los productos seleccionados que no estén en requisiciones.',
+                                confirmLabel: 'Eliminar',
+                                variant: 'danger',
+                                action: 'bulkDelete',
+                                params: []
+                            })"
+                            variant="danger"
+                            icon="trash-2">
+                            Eliminar
+                        </x-button>
+                    </x-bulk-actions-bar>
+                </div>
+
+                @if($products->hasPages())
+                    <div class="w-full sm:w-auto overflow-x-auto">
+                        {{ $products->links(data: ['scrollTo' => false]) }}
+                    </div>
+                @endif
+            </x-card.footer>
+        @endif
+    </x-card>
+
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />
-
-    <div class="mt-4">{{ $products->links() }}</div>
 
     {{-- Create Product Modal --}}
     @if($showCreateModal)

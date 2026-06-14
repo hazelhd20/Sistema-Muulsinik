@@ -50,8 +50,8 @@
 
     {{-- ═══════ PASO 1: UPLOAD ═══════ --}}
     @if($step === 1)
-        <div class="card max-w-2xl mx-auto">
-            <div class="p-8">
+        <x-card class="max-w-2xl mx-auto">
+            <x-card.body class="p-8">
                 <x-file-input wire:model="file" variant="dropzone" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB"
                     :formats="['PDF', 'XLSX', 'JPG', 'PNG']" title="Arrastra tu cotización aquí"
                     subtitle="o haz clic para seleccionar un archivo" inputId="file-upload-input" />
@@ -67,15 +67,15 @@
                 @endif
 
 
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
     @endif
 
     {{-- ═══════ PASO 2: PROCESAMIENTO ═══════ --}}
     @if($step === 2)
-        <div class="card max-w-lg mx-auto" @if($processingStatus === 'processing' || $processingStatus === 'pending')
-        wire:poll.2s.visible="checkProcessingStatus" @endif x-data>
-            <div class="p-8 text-center">
+        <div @if($processingStatus === 'processing' || $processingStatus === 'pending') wire:poll.2s.visible="checkProcessingStatus" @endif>
+            <x-card class="max-w-lg mx-auto" x-data>
+            <x-card.body class="p-8 text-center">
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Spinner premium con doble anillo --}}
                     <div class="mb-8">
@@ -149,7 +149,8 @@
                         </div>
                     </div>
                 @endif
-            </div>
+            </x-card.body>
+        </x-card>
         </div>
     @endif
 
@@ -160,9 +161,9 @@
 
 
             {{-- General Info --}}
-            <div class="card mb-6">
-                <div class="card-header px-6 pt-5 flex items-center justify-between">
-                    <h2 class="card-title">Información General</h2>
+            <x-card class="mb-6">
+                <x-card.header title="Información General">
+                    <x-slot:action>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
                         <x-button type="button"
@@ -171,9 +172,10 @@
                             Ver documento
                         </x-button>
                     @endif
-                </div>
+                    </x-slot:action>
+                </x-card.header>
 
-                <div class="card-body">
+                <x-card.body>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <x-form-field label="Proyecto" :required="true" :error="$errors->first('projectId')">
                         <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
@@ -237,28 +239,28 @@
                     <textarea wire:model="annotations" class="input" rows="2"
                         placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                 </x-form-field>
-                    </div>
-            </div>
+                </x-card.body>
+            </x-card>
 
 
 
-            <div class="card mb-6">
-                <div class="card-header px-6 py-5 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <h2 class="card-title">Productos</h2>
-                        @if(count($items) > 0)
-                            <x-badge variant="secondary">{{ count($items) }}</x-badge>
-                                <span class="text-small text-text-muted font-normal">{{ count($items) === 1 ? 'producto' : 'productos' }}</span>
-                        @endif
-                    </div>
-                    <x-button wire:click="addItem" variant="secondary" icon="plus">
-                        Agregar
-                    </x-button>
-                </div>
+            <x-card class="mb-6 overflow-hidden">
+                <x-card.header title="Productos">
+                    <x-slot:action>
+                        <div class="flex items-center gap-3">
+                            @if(count($items) > 0)
+                                <x-badge variant="secondary">{{ count($items) }}</x-badge>
+                            @endif
+                            <x-button wire:click="addItem" variant="secondary" icon="plus">
+                                Agregar
+                            </x-button>
+                        </div>
+                    </x-slot:action>
+                </x-card.header>
 
                     @if(count($items) > 0)
                     {{-- Tabla de productos (Desktop) --}}
-                    <div class="hidden md:block overflow-x-auto w-full">
+                    <x-card.table class="hidden md:block w-full">
                         <table class="w-full text-left table-inputs-compact">
                             <thead>
                                 <tr class="bg-surface-th border-y border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
@@ -388,7 +390,7 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
+                    </x-card.table>
 
                     {{-- Formulario de productos (Mobile) --}}
                     <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
@@ -541,13 +543,9 @@
                         <x-empty-state icon="package-open" title="Sin productos detectados"
                             message="Agrégalos manualmente con el botón Agregar."
                             class="border border-dashed border-border rounded-xl py-10" />
-                            
-                        <div class="flex justify-center mt-6">
-                            <x-button type="submit" variant="primary" target="saveRequisition">Crear Requisición (Vacía)</x-button>
-                        </div>
                     </div>
                 @endif
-            </div>
+            </x-card>
         </form>
     @endif
 

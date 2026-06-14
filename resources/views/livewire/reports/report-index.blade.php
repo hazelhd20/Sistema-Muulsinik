@@ -54,23 +54,23 @@
                 @endfor
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                <div class="lg:col-span-2 card p-6 flex flex-col h-full">
+                <x-card class="lg:col-span-2 p-6 flex flex-col h-full">
                     <div class="mb-4">
                         <x-skeleton class="h-4 w-40 mb-1.5 rounded" />
                         <x-skeleton class="h-3 w-24 rounded" />
                     </div>
                     <x-skeleton class="h-64 w-full rounded-lg" />
-                </div>
-                <div class="card p-6 flex flex-col h-full">
+                </x-card>
+                <x-card class="p-6 flex flex-col h-full">
                     <x-skeleton class="h-4 w-40 mb-4 rounded" />
                     <div class="h-52 flex items-center justify-center">
                         <x-skeleton class="w-40 h-40 rounded-full" />
                     </div>
-                </div>
+                </x-card>
             </div>
             {{-- Overview Bottom Cards (Presupuesto vs Top Proyectos) --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="card p-6 flex flex-col h-full">
+                <x-card class="p-6 flex flex-col h-full">
                     <x-skeleton class="h-4 w-48 mb-6 rounded" />
                     <div class="space-y-6 flex-1">
                         @for($i = 0; $i < 4; $i++)
@@ -86,8 +86,8 @@
                             </div>
                         @endfor
                     </div>
-                </div>
-                <div class="table-container flex flex-col h-full">
+                </x-card>
+                <x-card class="flex flex-col h-full overflow-hidden">
                     <div class="p-4 md:px-6 md:py-4">
                         <x-skeleton class="h-4 w-40 rounded" />
                     </div>
@@ -107,16 +107,16 @@
                             @endfor
                         </div>
                     </div>
-                </div>
+                </x-card>
             </div>
         </div>
 
         {{-- Skeleton Suppliers --}}
-        <div x-show="tab === 'suppliers'" style="display: none;" class="table-container flex flex-col min-h-[250px]">
+        <x-card x-show="tab === 'suppliers'" style="display: none;" class="flex flex-col min-h-[250px] overflow-hidden">
             <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
-            <div class="overflow-x-auto flex-1">
+            <x-card.table class="flex-1 w-full">
                 <table>
                     <thead>
                         <tr>
@@ -141,15 +141,15 @@
                         @endfor
                     </tbody>
                 </table>
-            </div>
-        </div>
+            </x-card.table>
+        </x-card>
 
         {{-- Skeleton Vendors --}}
-        <div x-show="tab === 'vendors'" style="display: none;" class="table-container flex flex-col min-h-[250px]">
+        <x-card x-show="tab === 'vendors'" style="display: none;" class="flex flex-col min-h-[250px] overflow-hidden">
             <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
-            <div class="overflow-x-auto flex-1">
+            <x-card.table class="flex-1 w-full">
                 <table>
                     <thead>
                         <tr>
@@ -172,16 +172,16 @@
                         @endfor
                     </tbody>
                 </table>
-            </div>
-        </div>
+            </x-card.table>
+        </x-card>
 
         {{-- Skeleton Products --}}
         <div x-show="tab === 'products'" style="display: none;" class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-            <div class="lg:col-span-2 table-container flex flex-col min-h-[250px]">
+            <x-card class="lg:col-span-2 flex flex-col min-h-[250px] overflow-hidden">
                 <div class="p-4 md:px-6 md:py-4">
                     <x-skeleton class="h-4 w-48 rounded" />
                 </div>
-                <div class="overflow-x-auto flex-1">
+                <x-card.table class="flex-1 w-full">
                     <table>
                         <thead>
                             <tr>
@@ -211,9 +211,9 @@
                             @endfor
                         </tbody>
                     </table>
-                </div>
-            </div>
-            <div class="card p-6 flex flex-col h-full">
+                </x-card.table>
+            </x-card>
+            <x-card class="p-6 flex flex-col h-full">
                 <x-skeleton class="h-4 w-48 mb-4 rounded" />
                 <div class="flex-1 flex items-center justify-center min-h-[200px]">
                     <x-skeleton class="w-48 h-48 rounded-full" />
@@ -229,7 +229,7 @@
                         </div>
                     @endfor
                 </div>
-            </div>
+            </x-card>
         </div>
     </div>
 
@@ -285,7 +285,7 @@
         {{-- Charts row --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             {{-- Tendencia mensual --}}
-            <div class="lg:col-span-2 card p-6 flex flex-col h-full">
+            <x-card class="lg:col-span-2 p-6 flex flex-col h-full">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-small font-semibold text-text-primary">Tendencia de Gastos</h2>
@@ -344,10 +344,10 @@
                         <canvas></canvas>
                     </div>
                 </div>
-            </div>
+            </x-card>
 
             {{-- Distribución por categoría (donut) --}}
-            <div class="card p-6 flex flex-col h-full">
+            <x-card class="p-6 flex flex-col h-full">
                 <h2 class="text-small font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
                 @if($expenseByCategory->isEmpty())
                     <div wire:key="overview-category-empty" class="flex-1 flex flex-col items-center justify-center min-h-[260px]">
@@ -409,12 +409,12 @@
                         </div>
                     </div>
                 @endif
-            </div>
+            </x-card>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {{-- Presupuesto vs Gasto --}}
-            <div class="card p-6 flex flex-col h-full">
+            <x-card class="p-6 flex flex-col h-full">
                 <h2 class="text-small font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
                 @if($budgetComparison->isEmpty())
                     <div wire:key="overview-budget-empty" class="flex-1 flex flex-col items-center justify-center min-h-[200px]">
@@ -449,10 +449,10 @@
                         @endforeach
                     </div>
                 @endif
-            </div>
+            </x-card>
 
             {{-- Top 5 proyectos por gasto --}}
-            <div class="table-container flex flex-col h-full">
+            <x-card class="flex flex-col h-full overflow-hidden">
                 <div class="p-4 md:px-6 md:py-4">
                     <h2 class="text-small font-semibold text-text-primary">Top Proyectos por Gasto</h2>
                 </div>
@@ -461,7 +461,7 @@
                         <x-empty-state icon="folder-open" title="No se encontraron proyectos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
-                    <div wire:key="overview-projects-content" class="overflow-x-auto flex-1">
+                    <x-card.table wire:key="overview-projects-content" class="flex-1 w-full">
                         <table>
                             <thead>
                                 <tr>
@@ -492,9 +492,9 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
+                    </x-card.table>
                 @endif
-            </div>
+            </x-card>
         </div>
     @endif
 
@@ -502,7 +502,7 @@
     {{-- TAB: PROVEEDORES --}}
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'suppliers')
-        <div class="table-container {{ $topSuppliers->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }}">
+        <x-card class="{{ $topSuppliers->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }} overflow-hidden">
             <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
                 <h2 class="text-small font-semibold text-text-primary">Compras por Proveedor</h2>
             </div>
@@ -511,7 +511,7 @@
                     <x-empty-state icon="building-2" title="No se encontraron proveedores" message="No hay registros para el período seleccionado." class="py-0" />
                 </div>
             @else
-                <div wire:key="suppliers-table-content" class="overflow-x-auto flex-1">
+                <x-card.table wire:key="suppliers-table-content" class="flex-1 w-full">
                     <table>
                         <thead>
                             <tr>
@@ -548,16 +548,16 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </x-card.table>
             @endif
-        </div>
+        </x-card>
     @endif
 
     {{-- ═══════════════════════════════════════════════════ --}}
     {{-- TAB: VENDEDORES --}}
     {{-- ═══════════════════════════════════════════════════ --}}
     @if($activeTab === 'vendors')
-        <div class="table-container {{ $topVendors->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }}">
+        <x-card class="{{ $topVendors->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }} overflow-hidden">
             <div class="p-4 md:px-6 md:py-4 flex items-center justify-between">
                 <h2 class="text-small font-semibold text-text-primary">Compras por Vendedor</h2>
             </div>
@@ -566,7 +566,7 @@
                     <x-empty-state icon="user-check" title="No se encontraron vendedores" message="No hay registros para el período seleccionado." class="py-0" />
                 </div>
             @else
-                <div wire:key="vendors-table-content" class="overflow-x-auto flex-1">
+                <x-card.table wire:key="vendors-table-content" class="flex-1 w-full">
                     <table>
                         <thead>
                             <tr>
@@ -595,9 +595,9 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </x-card.table>
             @endif
-        </div>
+        </x-card>
     @endif
 
     {{-- ═══════════════════════════════════════════════════ --}}
@@ -606,7 +606,7 @@
     @if($activeTab === 'products')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 {{ $topProducts->isEmpty() ? 'items-stretch' : 'items-start' }}">
             {{-- Tabla de productos --}}
-            <div class="lg:col-span-2 table-container flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
+            <x-card class="lg:col-span-2 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }} overflow-hidden">
                 <div class="p-4 md:px-6 md:py-4">
                     <h2 class="text-small font-semibold text-text-primary">Productos Más Comprados</h2>
                 </div>
@@ -615,7 +615,7 @@
                         <x-empty-state icon="package" title="No se encontraron productos" message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
-                    <div wire:key="products-table-content" class="overflow-x-auto flex-1">
+                    <x-card.table wire:key="products-table-content" class="flex-1 w-full">
                         <table>
                             <thead>
                                 <tr>
@@ -662,12 +662,12 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
+                    </x-card.table>
                 @endif
-            </div>
+            </x-card>
 
             {{-- Donut por categoría de producto --}}
-            <div class="card p-6 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
+            <x-card class="p-6 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
                 <h2 class="text-small font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
                 @if($topProducts->isEmpty() || $productsByCategory->isEmpty())
                     <div wire:key="products-chart-empty" class="flex-1 flex flex-col items-center justify-center min-h-[250px]">
@@ -729,7 +729,7 @@
                         </div>
                     </div>
                 @endif
-            </div>
+            </x-card>
         </div>
         @endif
     </div>

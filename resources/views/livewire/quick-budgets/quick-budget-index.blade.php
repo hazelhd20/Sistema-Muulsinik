@@ -57,9 +57,9 @@
     @endif
 
     {{-- Table --}}
-    <div class="relative">
+    <x-card class="relative overflow-hidden mb-6">
         <div wire:loading.class="hidden" wire:target="search, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
-            <div class="table-container hidden md:block">
+            <x-card.table class="hidden md:block w-full">
                 @if($budgets->isNotEmpty())
                     <table>
                         <thead class="bg-surface-main/50 border-b border-border">
@@ -132,14 +132,15 @@
                             message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
                     </div>
                 @endif
-            </div>
+            </x-card.table>
 
+            <div class="md:hidden p-0">
             {{-- Tarjetas Móviles (Mobile View) --}}
             @if($budgets->isNotEmpty())
-            <div class="md:hidden flex flex-col gap-4 mt-2">
+            <div class="flex flex-col divide-y divide-border border-t border-border">
                 @foreach($budgets as $budget)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                         :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                    <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
+                         :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''"
                          wire:key="quick-budget-mobile-card-{{ $budget->id }}">
                         
                         <div class="flex justify-between items-start gap-2">
@@ -207,19 +208,18 @@
                 @endforeach
             </div>
             @else
-                <div class="md:hidden mt-4">
-                    <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
-                        <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
-                            message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
-                    </div>
+                <div class="p-8 border-t border-border">
+                    <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
+                        message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
                 </div>
             @endif
+            </div>
         </div>
 
         {{-- Skeleton Loader --}}
         <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
-            <div class="table-container hidden md:block">
+            <x-card.table class="hidden md:block w-full">
                 <table>
                     <thead>
                         <tr>
@@ -260,12 +260,12 @@
                         @endfor
                     </tbody>
                 </table>
-            </div>
+            </x-card.table>
 
             {{-- Skeletons Móviles --}}
-            <div class="md:hidden flex flex-col gap-4 mt-2">
+            <div class="md:hidden flex flex-col divide-y divide-border border-t border-border">
                 @for($i = 0; $i < 4; $i++)
-                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main">
+                    <div class="p-4 flex flex-col gap-3 relative bg-surface-main">
                         <div class="flex justify-between items-start gap-2">
                             <div>
                                 <x-skeleton class="h-5 w-32 rounded" />
@@ -286,27 +286,36 @@
             </div>
         </div>
 
-        {{-- Bulk Actions Bar --}}
-        <x-bulk-actions-bar>
-            <x-button
-                @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Cotizaciones',
-                    description: 'Se eliminarán permanentemente las cotizaciones seleccionadas.',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })"
-                variant="danger"
-                icon="trash-2">
-                Eliminar
-            </x-button>
-        </x-bulk-actions-bar>
+        {{-- Bulk Actions & Pagination --}}
+        @if($budgets->hasPages() || count($selectedRows) > 0)
+            <x-card.footer class="flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="w-full sm:w-auto">
+                    <x-bulk-actions-bar>
+                        <x-button
+                            @click="$dispatch('confirm-action', {
+                                title: 'Eliminar Cotizaciones',
+                                description: 'Se eliminarán permanentemente las cotizaciones seleccionadas.',
+                                confirmLabel: 'Eliminar',
+                                variant: 'danger',
+                                action: 'bulkDelete',
+                                params: []
+                            })"
+                            variant="danger"
+                            icon="trash-2">
+                            Eliminar
+                        </x-button>
+                    </x-bulk-actions-bar>
+                </div>
 
-    </div>
-    
+                @if($budgets->hasPages())
+                    <div class="w-full sm:w-auto overflow-x-auto">
+                        {{ $budgets->links(data: ['scrollTo' => false]) }}
+                    </div>
+                @endif
+            </x-card.footer>
+        @endif
+    </x-card>
+
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />
-
-    <div class="mt-4">{{ $budgets->links() }}</div>
 </div>

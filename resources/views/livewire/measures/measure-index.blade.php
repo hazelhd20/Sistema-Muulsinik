@@ -19,9 +19,9 @@
     @endif
 
     {{-- Table --}}
-    <div class="relative">
+    <x-card class="relative">
         <div class="w-full">
-            <div class="table-container hidden md:block">
+            <x-card.table class="hidden md:block">
                 @if($measures->isEmpty())
                     <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="ruler" title="No se encontraron medidas." />
@@ -126,14 +126,14 @@
                             @endfor
                         </tbody>
                     </table>
-            </div>
+            </x-card.table>
 
             {{-- Tarjetas Móviles (Mobile View) --}}
-            <div class="md:hidden flex flex-col gap-3 mt-2">
-                <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col gap-3">
+            <div class="md:hidden flex flex-col divide-y divide-border border-t border-border mt-2">
+                <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col divide-y divide-border">
                     @if($measures->isNotEmpty())
                         @foreach($measures as $measure)
-                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                            <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
                                  :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                  wire:key="measure-mobile-card-{{ $measure->id }}">
                                 
@@ -190,16 +190,16 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                        <div class="p-8">
                             <x-empty-state icon="ruler" title="No se encontraron medidas." />
                         </div>
                     @endif
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-3">
+                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col divide-y divide-border">
                     @for($i = 0; $i < 5; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -221,7 +221,8 @@
             </div>
         </div>
 
-        {{-- Bulk Actions Bar --}}
+        <x-card.footer class="flex-col sm:flex-row items-center justify-between gap-4">
+            {{-- Bulk Actions Bar --}}
         <x-bulk-actions-bar>
             <x-button
                 @click="$dispatch('confirm-action', {
@@ -238,12 +239,14 @@
             </x-button>
         </x-bulk-actions-bar>
 
-    </div>
-    
+            <div class="w-full sm:w-auto">
+                {{ $measures->links() }}
+            </div>
+        </x-card.footer>
+    </x-card>
+
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />
-
-    <div class="mt-4">{{ $measures->links() }}</div>
 
     {{-- Create / Edit Modal --}}
     @if ($showCreateModal)

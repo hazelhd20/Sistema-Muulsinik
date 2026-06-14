@@ -93,11 +93,9 @@
 
     <div class="space-y-6">
 
-        <div class="card">
-            <div class="card-header px-6 pt-5">
-                <h2 class="card-title">Detalles Generales</h2>
-            </div>
-            <div class="card-body">
+        <x-card>
+            <x-card.header title="Detalles Generales" />
+            <x-card.body>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div>
                         <span class="text-xs text-text-muted block mb-1">Fecha</span>
@@ -132,18 +130,19 @@
                     </div>
                 @endif
                 </div>
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
 
         {{-- ─── Tarjeta de productos ─── --}}
-        <div class="card p-0 overflow-hidden">
-            <div class="card-header px-6 pt-5">
-                <h2 class="card-title">Productos Solicitados</h2>
-                <x-badge variant="secondary" class="shrink-0">{{ $requisition->items->count() }}</x-badge>
-            </div>
+        <x-card class="overflow-hidden">
+            <x-card.header title="Productos Solicitados">
+                <x-slot:action>
+                    <x-badge variant="secondary" class="shrink-0">{{ $requisition->items->count() }}</x-badge>
+                </x-slot:action>
+            </x-card.header>
 
             {{-- Desktop Table --}}
-            <div class="hidden md:block overflow-x-auto">
+            <x-card.table class="hidden md:block">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-surface-hover/50 border-y border-border text-xs font-semibold text-text-secondary">
                         <tr>
@@ -187,7 +186,7 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-card.table>
 
             {{-- Mobile Cards --}}
             <div class="md:hidden flex flex-col divide-y divide-border border-y border-border">
@@ -267,16 +266,14 @@
                     </div>
                 </x-totals-summary>
             </div>
-        </div>
+        </x-card>
     </div>
 
     {{-- ─── Historial de Actividad (Audit Log) (H1) ─── --}}
     @if($requisition->activities->isNotEmpty())
-        <div class="card mt-6 mb-6">
-            <div class="card-header px-6 pt-5">
-                <h2 class="card-title">Historial de Actividad</h2>
-            </div>
-            <div class="card-body">
+        <x-card class="mt-6 mb-6">
+            <x-card.header title="Historial de Actividad" />
+            <x-card.body>
                 <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border">
                     @foreach($requisition->activities as $activity)
                         @php
@@ -326,8 +323,8 @@
                         </div>
                     @endforeach
                 </div>
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
     @endif
 
     {{-- ─── Modal de Rechazo (RF-REQ-09) ─── --}}

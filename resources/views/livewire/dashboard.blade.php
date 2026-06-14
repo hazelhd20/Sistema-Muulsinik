@@ -68,99 +68,102 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
         {{-- Gráfica de gastos --}}
-        <div class="lg:col-span-2 card p-6">
-            <div class="flex items-start justify-between mb-4">
-                <div>
-                    <h2 class="card-title">Gastos Mensuales</h2>
-                    <p class="text-xs text-text-muted mt-0.5">Últimos 6 meses</p>
+        <x-card class="lg:col-span-2">
+            <x-card.header title="Gastos Mensuales" subtitle="Últimos 6 meses">
+                <x-slot:action>
+                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
+                        ${{ number_format($totalExpenses, 0, '.', ',') }}
+                        <span class="font-normal text-text-muted">acumulado</span>
+                    </span>
+                </x-slot:action>
+            </x-card.header>
+            <x-card.body class="pt-0">
+                <div class="h-44" x-data="chartComponent()" x-init="initChart()">
+                    <canvas id="monthly-expenses-chart"></canvas>
                 </div>
-                <span class="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
-                    ${{ number_format($totalExpenses, 0, '.', ',') }}
-                    <span class="font-normal text-text-muted">acumulado</span>
-                </span>
-            </div>
-            <div class="h-44" x-data="chartComponent()" x-init="initChart()">
-                <canvas id="monthly-expenses-chart"></canvas>
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
 
         {{-- Métricas operativas --}}
-        <div class="card p-6 flex flex-col">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="card-title">Métricas</h2>
-                <a href="{{ url('/reportes') }}"
-                    class="link-more">
-                    Ver reportes
-                    <x-lucide-arrow-right class="w-3 h-3" />
-                </a>
-            </div>
-            <div class="flex-1 space-y-0">
+        <x-card>
+            <x-card.header title="Métricas">
+                <x-slot:action>
+                    <a href="{{ url('/reportes') }}" class="link-more">
+                        Ver reportes
+                        <x-lucide-arrow-right class="w-3 h-3" />
+                    </a>
+                </x-slot:action>
+            </x-card.header>
+            <x-card.body class="pt-0 flex flex-col justify-between">
+                <div class="flex-1 space-y-0">
 
-                <div class="metric-row">
-                    <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
-                            <x-lucide-briefcase class="w-3 h-3 text-primary-600" />
+                    <div class="metric-row">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
+                                <x-lucide-briefcase class="w-3 h-3 text-primary-600" />
+                            </div>
+                            <span class="text-small text-text-secondary">Total proyectos</span>
                         </div>
-                        <span class="text-small text-text-secondary">Total proyectos</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
                     </div>
-                    <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
-                </div>
 
-                <div class="metric-row">
-                    <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
-                            <x-lucide-wallet class="w-3 h-3 text-warning" />
+                    <div class="metric-row">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
+                                <x-lucide-wallet class="w-3 h-3 text-warning" />
+                            </div>
+                            <span class="text-small text-text-secondary">Gasto total</span>
                         </div>
-                        <span class="text-small text-text-secondary">Gasto total</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
                     </div>
-                    <span class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
-                </div>
 
-                <div class="metric-row">
-                    <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-danger-light flex items-center justify-center">
-                            <x-lucide-users class="w-3 h-3 text-danger" />
+                    <div class="metric-row">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded bg-danger-light flex items-center justify-center">
+                                <x-lucide-users class="w-3 h-3 text-danger" />
+                            </div>
+                            <span class="text-small text-text-secondary">Proveedores</span>
                         </div>
-                        <span class="text-small text-text-secondary">Proveedores</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
                     </div>
-                    <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
-                </div>
 
-                <div class="metric-row">
-                    <div class="flex items-center gap-2">
-                        <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
-                            <x-lucide-check-circle class="w-3 h-3 text-success" />
+                    <div class="metric-row">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
+                                <x-lucide-check-circle class="w-3 h-3 text-success" />
+                            </div>
+                            <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
                         </div>
-                        <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">
+                            {{ $approvedRequisitions }}
+                        </span>
                     </div>
-                    <span class="text-small font-semibold text-text-primary tabular-nums">
-                        {{ $approvedRequisitions }}
-                    </span>
-                </div>
 
-            </div>
-        </div>
+                </div>
+            </x-card.body>
+        </x-card>
     </div>
 
     {{-- ── Recent tables ─────────────────────────────────── --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {{-- Proyectos recientes --}}
-        <div class="table-container">
-            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
-                <h2 class="card-title">Proyectos Recientes</h2>
-                <a href="{{ url('/proyectos') }}"
-                    class="link-more">
-                    Ver todos
-                    <x-lucide-arrow-right class="w-3 h-3" />
-                </a>
-            </div>
+        <x-card>
+            <x-card.header title="Proyectos Recientes">
+                <x-slot:action>
+                    <a href="{{ url('/proyectos') }}" class="link-more">
+                        Ver todos
+                        <x-lucide-arrow-right class="w-3 h-3" />
+                    </a>
+                </x-slot:action>
+            </x-card.header>
             @if($recentProjects->isEmpty())
-                <div class="p-8">
+                <x-card.body class="pt-2">
                     <x-empty-state icon="folder-open" title="Sin proyectos registrados" />
-                </div>
+                </x-card.body>
             @else
-            <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
+            <x-card.table>
+                <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
                 <thead>
                     <tr>
                         <th>Proyecto</th>
@@ -207,25 +210,27 @@
                     @endfor
                 </tbody>
             </table>
+            </x-card.table>
             @endif
-        </div>
+        </x-card>
 
         {{-- Requisiciones recientes --}}
-        <div class="table-container">
-            <div class="px-6 pt-6 pb-4 flex items-center justify-between">
-                <h2 class="card-title">Requisiciones Recientes</h2>
-                <a href="{{ url('/requisiciones') }}"
-                    class="link-more">
-                    Ver todas
-                    <x-lucide-arrow-right class="w-3 h-3" />
-                </a>
-            </div>
+        <x-card>
+            <x-card.header title="Requisiciones Recientes">
+                <x-slot:action>
+                    <a href="{{ url('/requisiciones') }}" class="link-more">
+                        Ver todas
+                        <x-lucide-arrow-right class="w-3 h-3" />
+                    </a>
+                </x-slot:action>
+            </x-card.header>
             @if($recentRequisitions->isEmpty())
-                <div class="p-8">
+                <x-card.body class="pt-2">
                     <x-empty-state icon="clipboard" title="Sin requisiciones" />
-                </div>
+                </x-card.body>
             @else
-            <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
+            <x-card.table>
+                <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
                 <thead>
                     <tr>
                         <th>Número</th>
@@ -272,8 +277,9 @@
                     @endfor
                 </tbody>
             </table>
+            </x-card.table>
             @endif
-        </div>
+        </x-card>
     </div>
     
     @script

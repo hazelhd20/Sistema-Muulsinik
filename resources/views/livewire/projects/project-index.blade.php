@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="md:card md:border md:border-border md:bg-surface-card md:shadow-sm md:rounded-lg w-full mt-4">
+    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm">
 
         @php
             $hasActiveFilters = !empty($search) || !empty($statusFilter) || !empty($periodFilter);
@@ -75,7 +75,7 @@
         <div class="relative">
             <div class="w-full">
                 {{-- Desktop View --}}
-                <div class="table-container table-integrated hidden md:block overflow-x-auto w-full">
+                <x-card.table class="hidden md:block">
                 @if($projects->isEmpty())
                     <div wire:loading.class="hidden" wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="folder" title="No se encontraron proyectos" message="No hay registros que coincidan con tu búsqueda." />
@@ -234,7 +234,7 @@
                             @endfor
                         </tbody>
                     </table>
-                </div>
+                </x-card.table>
 
                 {{-- Tarjetas Móviles (Mobile View) --}}
                 <div class="md:hidden flex flex-col gap-4 p-4">
@@ -400,11 +400,11 @@
 
         {{-- Pagination Footer (Card Footer on Desktop) --}}
         @if($projects->hasPages())
-            <div class="p-4 md:px-6 md:py-4 border-t border-border bg-surface-card md:rounded-b-lg">
+            <x-card.footer>
                 {{ $projects->links() }}
-            </div>
+            </x-card.footer>
         @endif
-    </div>
+    </x-card>
 
     {{-- Project Modal --}}
     @if($showModal)

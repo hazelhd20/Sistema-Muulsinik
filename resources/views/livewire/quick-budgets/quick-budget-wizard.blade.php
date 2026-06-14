@@ -9,7 +9,7 @@
 
     <div class="space-y-6">
         {{-- Header Details --}}
-        <div class="card p-6">
+        <x-card class="p-6">
             <h2 class="text-h2 text-text-primary mb-4">Información General</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-form-field label="Título de Cotización" required error="{{ $errors->first('title') }}">
@@ -33,11 +33,12 @@
                     </x-form-field>
                 </div>
             </div>
-        </div>
+        </x-card>
 
         {{-- Items List --}}
-        <div class="card mb-6">
-            <div class="flex items-center justify-between mb-4">
+        <x-card class="mb-6 overflow-hidden">
+            <div class="p-6 pb-2">
+                <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h2 class="text-h2 text-text-primary">Conceptos y Materiales</h2>
                     @if(count($items) > 0)
@@ -101,7 +102,7 @@
 
             {{-- Items Table --}}
             @if(count($items) > 0)
-                <div class="table-embedded hidden md:block">
+                <x-card.table class="hidden md:block w-full border-t border-border mt-4">
                     <table>
                         <thead>
                             <tr>
@@ -157,12 +158,12 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </x-card.table>
 
                 {{-- Formulario de conceptos (Mobile) --}}
-                <div class="md:hidden flex flex-col gap-4 mt-4">
+                <div class="md:hidden flex flex-col divide-y divide-border border-t border-border mt-4">
                     @foreach($items as $index => $item)
-                        <div class="bg-surface-card border border-border rounded-xl p-4 relative" wire:key="mobile-item-{{ $index }}">
+                        <div class="p-4 relative transition-colors hover:bg-surface-hover/30" wire:key="mobile-item-{{ $index }}">
                             <button type="button" wire:click="removeItem({{ $index }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
                                 <x-lucide-x class="w-5 h-5" />
                             </button>
@@ -211,14 +212,16 @@
                     @endforeach
                 </div>
             @else
-                <x-empty-state icon="package-search" title="No hay conceptos en la cotización"
-                    message="Busca un producto arriba o agrega un concepto manual."
-                    class="border border-dashed border-border rounded-xl py-10" />
+                <div class="p-6 pt-0">
+                    <x-empty-state icon="package-search" title="No hay conceptos en la cotización"
+                        message="Busca un producto arriba o agrega un concepto manual."
+                        class="border border-dashed border-border rounded-xl py-10" />
+                </div>
             @endif
 
             {{-- Totals --}}
             @if(!empty($items))
-                <div class="flex justify-end mt-4">
+                <x-card.footer class="flex justify-end bg-surface-main">
                     <x-totals-summary>
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Costo Directo (Subtotal)</span>
@@ -238,9 +241,9 @@
                                 class="text-h3 font-bold text-text-primary tabular-nums">${{ number_format($this->grand_total, 2) }}</span>
                         </div>
                     </x-totals-summary>
-                </div>
+                </x-card.footer>
             @endif
-        </div>
+        </x-card>
 
         {{-- Footer --}}
         <div class="flex justify-end pt-6">

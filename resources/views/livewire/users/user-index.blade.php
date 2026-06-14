@@ -60,9 +60,8 @@
     @endif
 
     {{-- Users Table --}}
-    <div class="relative">
-        <div class="w-full">
-            <div class="table-container hidden md:block">
+    <x-card class="relative overflow-hidden mb-6">
+        <x-card.table class="hidden md:block w-full">
                 @if($users->isEmpty())
                     <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
@@ -179,17 +178,17 @@
                             @endfor
                         </tbody>
                     </table>
-            </div>
+        </x-card.table>
 
+        <div class="md:hidden p-0">
             {{-- Tarjetas Móviles (Mobile View) --}}
-            <div class="md:hidden flex flex-col gap-4 mt-2">
-                <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+            <div class="flex flex-col">
+                <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="flex flex-col divide-y divide-border border-t border-border">
                     @if($users->isNotEmpty())
                         @foreach($users as $user)
-                            <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
-                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                            <div class="p-4 flex flex-col gap-3 relative transition-colors hover:bg-surface-hover/30"
+                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''"
                                  wire:key="user-mobile-card-{{ $user->id }}">
-                                
                                 <div class="flex justify-between items-start gap-2">
                                     <div class="flex items-start gap-3">
                                         <div class="pt-1">
@@ -267,16 +266,16 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                        <div class="p-8">
                             <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
                         </div>
                     @endif
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col divide-y divide-border border-t border-border">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-1"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
@@ -299,30 +298,39 @@
                 </div>
             </div>
         </div>
-        
-        {{-- Bulk Actions Bar --}}
-        <x-bulk-actions-bar>
-            <x-button
-                @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Usuarios',
-                    description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })"
-                variant="danger"
-                icon="trash-2">
-                Eliminar
-            </x-button>
-        </x-bulk-actions-bar>
 
-    </div>
-    
+        {{-- Bulk Actions & Pagination --}}
+        @if($users->hasPages() || count($selectedRows) > 0)
+            <x-card.footer class="flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="w-full sm:w-auto">
+                    <x-bulk-actions-bar>
+                        <x-button
+                            @click="$dispatch('confirm-action', {
+                                title: 'Eliminar Usuarios',
+                                description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
+                                confirmLabel: 'Eliminar',
+                                variant: 'danger',
+                                action: 'bulkDelete',
+                                params: []
+                            })"
+                            variant="danger"
+                            icon="trash-2">
+                            Eliminar
+                        </x-button>
+                    </x-bulk-actions-bar>
+                </div>
+
+                @if($users->hasPages())
+                    <div class="w-full sm:w-auto overflow-x-auto">
+                        {{ $users->links(data: ['scrollTo' => false]) }}
+                    </div>
+                @endif
+            </x-card.footer>
+        @endif
+    </x-card>
+
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />
-
-    <div class="mt-4">{{ $users->links() }}</div>
 
     {{-- Modal Unificado Crear/Editar Usuario --}}
     @if($showModal)

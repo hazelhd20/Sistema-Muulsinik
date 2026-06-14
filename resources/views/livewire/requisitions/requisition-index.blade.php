@@ -109,9 +109,9 @@
 
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
     {{-- Requisitions Table --}}
-    <div class="relative">
+    <x-card class="mt-0 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm">
         <div class="w-full">
-            <div class="table-container hidden md:block">
+            <x-card.table class="hidden md:block">
                 @if($requisitions->isEmpty())
                     <div wire:loading.class="hidden" wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
@@ -316,7 +316,7 @@
                             @endfor
                         </tbody>
                     </table>
-            </div>
+                </x-card.table>
 
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="md:hidden flex flex-col gap-4 mt-2">
@@ -409,9 +409,13 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="mt-4">{{ $requisitions->links() }}</div>
+        
+        @if($requisitions->hasPages())
+        <x-card.footer>
+            {{ $requisitions->links() }}
+        </x-card.footer>
+        @endif
+    </x-card>
     </div>
 
 
