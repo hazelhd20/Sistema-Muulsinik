@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 mb-6">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
         @php
             $activeCount = $categoryFilter ? 1 : 0;
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -17,11 +17,13 @@
 
         @if($suppliers->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="md:rounded-t-lg md:bg-surface-card">
+            <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     {{-- Search: compact width --}}
-                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o RFC..." />
+                    <div class="flex-1 min-w-0">
+                        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o RFC..." />
+                    </div>
 
                     {{-- Filters Popover --}}
                     <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
@@ -202,77 +204,71 @@
                     </table>
         </x-card.table>
 
-        <div class="md:hidden p-4 flex flex-col gap-4">
+        <div class="md:hidden flex flex-col gap-4 mt-2">
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="flex flex-col">
                 <div wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($suppliers->isNotEmpty())
                         @foreach($suppliers as $supplier)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors"
-                                 :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''"
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                 :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                  wire:key="supplier-mobile-card-{{ $supplier->id }}">
-                                <div class="flex justify-between items-start gap-2">
-                                    <div class="flex items-start gap-3">
-                                        <div class="pt-0.5">
-                                            <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
-                                        </div>
-                                        <div class="min-w-0">
-                                            <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="font-bold text-text-primary text-body">{{ $supplier->trade_name }}</span>
-                                            </div>
-                                            @if($supplier->rfc)
-                                                <p class="text-xs text-text-secondary mt-0.5 font-mono">{{ $supplier->rfc }}</p>
-                                            @endif
-                                        </div>
+                                 
+                                {{-- Cabecera de la Fila --}}
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
+                                        <span class="font-bold text-text-primary text-base truncate">{{ $supplier->trade_name }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <x-dropdown align="right" width="48">
+                                            <x-slot name="trigger">
+                                                <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
+                                                    <x-lucide-more-vertical class="w-5 h-5" />
+                                                </button>
+                                            </x-slot>
+                                            <x-slot name="content">
+                                                <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">Ver vendedores</x-dropdown-link>
+                                                <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                            </x-slot>
+                                        </x-dropdown>
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
-                                    <div>
-                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Categoría</p>
-                                        @if($supplier->category)
-                                            <x-dynamic-badge :value="$supplier->category" />
-                                        @else
-                                            <span class="text-text-muted">—</span>
-                                        @endif
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Vendedores</p>
-                                        <span class="inline-flex items-center gap-1.5 text-xs text-text-secondary justify-end">
-                                            <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
-                                            {{ $supplier->vendors_count }}
+                                {{-- Contenido Indentado --}}
+                                <div class="pl-8 flex flex-col gap-3">
+                                    {{-- Subtítulo --}}
+                                    <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+                                        <span class="flex items-center gap-1.5 truncate">
+                                            <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
+                                            <span class="truncate font-mono">{{ $supplier->rfc ?? 'Sin RFC' }}</span>
+                                        </span>
+                                        <span class="flex items-center gap-1.5">
+                                            <x-lucide-users class="w-3.5 h-3.5 shrink-0" />
+                                            <span>{{ $supplier->vendors_count }} vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}</span>
                                         </span>
                                     </div>
-                                    @if($supplier->notes)
-                                        <div class="col-span-2 flex items-start gap-1.5 mt-1 pt-2 border-t border-border/50">
-                                            <x-lucide-sticky-note class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
-                                            <span class="text-text-secondary line-clamp-2">{{ $supplier->notes }}</span>
+
+                                    {{-- Datos y Detalles --}}
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div>
+                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
+                                            @if($supplier->category)
+                                                <x-dynamic-badge :value="$supplier->category" />
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
                                         </div>
-                                    @endif
-                                </div>
-
-                                <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                                    <x-dropdown align="right" width="48">
-                                        <x-slot name="trigger">
-                                            <x-button variant="secondary" class="w-full justify-center">
-                                                <x-lucide-more-horizontal class="w-4 h-4" />
-                                                <span class="ml-2">Opciones</span>
-                                            </x-button>
-                                        </x-slot>
-
-                                        <x-slot name="content">
-                                            <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">
-                                                Ver vendedores
-                                            </x-dropdown-link>
-                                            <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
-                                                Editar
-                                            </x-dropdown-link>
-                                            <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
-                                                wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                                Eliminar
-                                            </x-dropdown-link>
-                                        </x-slot>
-                                    </x-dropdown>
+                                        @if($supplier->notes)
+                                            <div class="col-span-2 mt-1">
+                                                <div class="flex items-start gap-1.5">
+                                                    <x-lucide-sticky-note class="w-3.5 h-3.5 mt-0.5 text-text-muted shrink-0" />
+                                                    <span class="text-xs text-text-secondary line-clamp-2">{{ $supplier->notes }}</span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -288,34 +284,29 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative transition-colors opacity-{{ 100 - ($i * 15) }}">
-                            <div class="flex justify-between items-start gap-2">
-                                <div class="flex items-start gap-3">
-                                    <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
-                                    <div class="min-w-0">
-                                        <x-skeleton class="h-5 w-32 rounded mb-1.5" />
-                                        <x-skeleton class="h-3 w-24 rounded" />
+                        <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                    <x-skeleton class="h-5 w-40 rounded" />
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <x-skeleton class="w-7 h-7 rounded-md" />
+                                </div>
+                            </div>
+                            <div class="pl-8 flex flex-col gap-3">
+                                <div class="flex gap-3">
+                                    <x-skeleton class="h-3 w-28 rounded" />
+                                    <x-skeleton class="h-3 w-20 rounded" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    <div>
+                                        <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                        <x-skeleton class="h-5 w-24 rounded-full" />
                                     </div>
                                 </div>
-                            </div>
-                            <div class="bg-surface-hover/50 p-3 rounded-xl border border-border/50 flex flex-col gap-2">
-                                <div class="flex justify-between">
-                                    <x-skeleton class="h-3 w-16 rounded" />
-                                    <x-skeleton class="h-3 w-16 rounded" />
-                                </div>
-                                <div class="flex justify-between">
-                                    <x-skeleton class="h-4 w-20 rounded" />
-                                    <x-skeleton class="h-4 w-8 rounded" />
-                                </div>
-                                <div class="pt-2 border-t border-border/50 mt-1">
-                                    <x-skeleton class="h-3 w-full rounded mb-1" />
-                                    <x-skeleton class="h-3 w-2/3 rounded" />
-                                </div>
-                            </div>
-                            <div class="flex justify-end pt-2 border-t border-border mt-1">
-                                <x-skeleton class="h-9 w-full rounded-md" />
                             </div>
                         </div>
                     @endfor
@@ -349,7 +340,7 @@
                 {{ $suppliers->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
-    </x-card>
+    </div>
 
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />

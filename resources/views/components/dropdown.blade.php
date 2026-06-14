@@ -30,7 +30,7 @@ switch ($width) {
 }
 @endphp
 
-<div class="relative"
+<div {{ $attributes->merge(['class' => 'relative inline-flex']) }}
      x-data="{
         open: false,
         id: $id('dropdown-menu')

@@ -11,7 +11,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 mb-6">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
         @php
             $activeCount = ($roleFilter ? 1 : 0) + ($statusFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -19,11 +19,13 @@
 
         @if($users->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="md:rounded-t-lg md:bg-surface-card">
+            <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     {{-- Search --}}
-                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o correo..." />
+                    <div class="flex-1 min-w-0">
+                        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre o correo..." />
+                    </div>
 
                     {{-- Filters Popover --}}
                     <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
@@ -198,88 +200,78 @@
                     </table>
         </x-card.table>
 
-        <div class="md:hidden p-4 flex flex-col gap-4">
+        <div class="md:hidden flex flex-col gap-4 mt-2">
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="flex flex-col">
                 <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($users->isNotEmpty())
                         @foreach($users as $user)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors"
-                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''"
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                  wire:key="user-mobile-card-{{ $user->id }}">
-                                <div class="flex justify-between items-start gap-2">
-                                    <div class="flex items-start gap-3">
-                                        <div class="pt-1">
-                                            <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
-                                        </div>
-                                        <div class="shrink-0 pt-0.5">
-                                            @if($user->avatar)
-                                                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-10 h-10 rounded-full object-cover border border-border shadow-sm">
-                                            @else
-                                                <div class="w-10 h-10 rounded-full bg-primary-100 text-primary-700 border border-primary-200 flex items-center justify-center font-bold shadow-sm">
-                                                    {{ substr($user->name, 0, 1) }}
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="font-bold text-text-primary text-body">{{ $user->name }}</span>
-                                            </div>
-                                            <p class="text-xs text-text-secondary mt-0.5 truncate">{{ $user->email }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
-                                    <div>
-                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Rol</p>
-                                        @if($user->role)
-                                            <x-dynamic-badge :value="$user->role->name" />
+                                 
+                                {{-- Cabecera de la Fila --}}
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
+                                        @if($user->avatar)
+                                            <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover border border-border shadow-sm shrink-0">
                                         @else
-                                            <span class="text-text-muted">—</span>
+                                            <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 border border-primary-200 flex items-center justify-center font-bold shadow-sm shrink-0 text-xs">
+                                                {{ substr($user->name, 0, 1) }}
+                                            </div>
                                         @endif
+                                        <span class="font-bold text-text-primary text-base truncate">{{ $user->name }}</span>
                                     </div>
-                                    <div class="flex flex-col items-end">
-                                        <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1 text-right">Estado</p>
+                                    <div class="flex items-center gap-2 shrink-0">
                                         <x-status-badge :status="$user->active ? 'activo' : 'inactivo'" :map="['activo' => 'success', 'inactivo' => 'danger']" />
-                                    </div>
-                                    <div class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
-                                        <div class="flex items-center gap-1.5 text-text-secondary">
-                                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
-                                            <span>Registro: {{ $user->created_at->format('d/m/Y') }}</span>
-                                        </div>
+                                        
+                                        <x-dropdown align="right" width="48">
+                                            <x-slot name="trigger">
+                                                <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
+                                                    <x-lucide-more-vertical class="w-5 h-5" />
+                                                </button>
+                                            </x-slot>
+                                            <x-slot name="content">
+                                                @if(auth()->user()->hasPermission('usuarios.editar'))
+                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                @endif
+                                                @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
+                                                    <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">{{ $user->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
+                                                @endif
+                                                @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                                    <x-dropdown-link as="button" wire:click="deleteUser({{ $user->id }})" wire:confirm="¿Eliminar este usuario? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                @endif
+                                            </x-slot>
+                                        </x-dropdown>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                                    <x-dropdown align="right" width="48">
-                                        <x-slot name="trigger">
-                                            <x-button variant="secondary" class="w-full justify-center">
-                                                <x-lucide-more-horizontal class="w-4 h-4" />
-                                                <span class="ml-2">Opciones</span>
-                                            </x-button>
-                                        </x-slot>
+                                {{-- Contenido Indentado --}}
+                                <div class="pl-8 flex flex-col gap-3">
+                                    {{-- Subtítulo --}}
+                                    <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+                                        <span class="flex items-center gap-1.5 truncate">
+                                            <x-lucide-mail class="w-3.5 h-3.5 shrink-0" />
+                                            <span class="truncate">{{ $user->email }}</span>
+                                        </span>
+                                        <span class="flex items-center gap-1.5">
+                                            <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
+                                            <span>{{ $user->created_at->format('d/m/Y') }}</span>
+                                        </span>
+                                    </div>
 
-                                        <x-slot name="content">
-                                            @if(auth()->user()->hasPermission('usuarios.editar'))
-                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">
-                                                    Editar
-                                                </x-dropdown-link>
+                                    {{-- Datos Financieros / Detalles --}}
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div class="col-span-2">
+                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Rol</p>
+                                            @if($user->role)
+                                                <x-dynamic-badge :value="$user->role->name" />
+                                            @else
+                                                <span class="text-text-muted">—</span>
                                             @endif
-                                            
-                                            @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
-                                                <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">
-                                                    {{ $user->active ? 'Desactivar' : 'Activar' }}
-                                                </x-dropdown-link>
-                                            @endif
-                                            @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                <x-dropdown-link as="button" wire:click="deleteUser({{ $user->id }})"
-                                                    wire:confirm="¿Eliminar este usuario? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                                    Eliminar
-                                                </x-dropdown-link>
-                                            @endif
-                                        </x-slot>
-                                    </x-dropdown>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -295,25 +287,31 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative transition-colors opacity-{{ 100 - ($i * 15) }}">
-                            <div class="flex justify-between items-start gap-2">
-                                <div class="flex items-start gap-3">
-                                    <div class="pt-1"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
-                                    <x-skeleton class="w-10 h-10 rounded-full" />
-                                    <div class="min-w-0 flex-1">
-                                        <x-skeleton class="h-5 w-32 rounded mb-1.5" />
-                                        <x-skeleton class="h-3 w-40 rounded" />
-                                    </div>
+                        <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                    <x-skeleton class="w-8 h-8 rounded-full shrink-0" />
+                                    <x-skeleton class="h-5 w-32 rounded" />
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <x-skeleton class="h-6 w-20 rounded-full shrink-0" />
+                                    <x-skeleton class="w-7 h-7 rounded-md" />
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center bg-surface-hover/50 p-3 rounded-xl border border-border/50">
-                                <x-skeleton class="h-4 w-16 rounded" />
-                                <x-skeleton class="h-6 w-20 rounded-full" />
-                            </div>
-                            <div class="flex justify-end pt-2 border-t border-border mt-1">
-                                <x-skeleton class="h-9 w-full rounded-md" />
+                            <div class="pl-8 flex flex-col gap-3">
+                                <div class="flex gap-3">
+                                    <x-skeleton class="h-3 w-28 rounded" />
+                                    <x-skeleton class="h-3 w-20 rounded" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    <div class="col-span-2">
+                                        <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                        <x-skeleton class="h-5 w-24 rounded-full" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endfor
@@ -347,7 +345,7 @@
                 {{ $users->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
-    </x-card>
+    </div>
 
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />

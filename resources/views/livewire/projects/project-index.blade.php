@@ -258,64 +258,65 @@
                                     wire:key="project-mobile-row-{{ $project->id }}">
                                     
                                     {{-- Cabecera de la Fila --}}
-                                    <div class="flex items-start gap-3">
-                                        <div class="pt-0.5">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
+                                            <span class="font-bold text-text-primary text-base truncate">{{ $project->name }}</span>
                                         </div>
-                                        <div class="min-w-0 flex-1">
-                                            <div class="flex items-center justify-between gap-2">
-                                                <span class="font-bold text-text-primary text-body truncate">{{ $project->name }}</span>
-                                                <div class="flex items-center gap-2 shrink-0">
-                                                    <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
-                                                    
-                                                    <x-dropdown align="right" width="48">
-                                                        <x-slot name="trigger">
-                                                            <button class="p-1 rounded-md text-text-muted hover:bg-border-light hover:text-text-primary transition-colors focus:outline-none">
-                                                                <x-lucide-more-vertical class="w-5 h-5" />
-                                                            </button>
-                                                        </x-slot>
-                                                        <x-slot name="content">
-                                                            <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">Ver detalle</x-dropdown-link>
-                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                            <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})" wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
-                                                        </x-slot>
-                                                    </x-dropdown>
-                                                </div>
-                                            </div>
-                                            <div class="text-xs text-text-muted mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                                <span class="flex items-center gap-1.5 truncate">
-                                                    <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
-                                                    <span class="truncate">{{ $project->client ?? 'Sin cliente' }}</span>
-                                                </span>
-                                                <span class="flex items-center gap-1.5">
-                                                    <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
-                                                    <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
-                                                </span>
-                                            </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                                            
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
+                                                        <x-lucide-more-vertical class="w-5 h-5" />
+                                                    </button>
+                                                </x-slot>
+                                                <x-slot name="content">
+                                                    <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">Ver detalle</x-dropdown-link>
+                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                    <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})" wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                </x-slot>
+                                            </x-dropdown>
                                         </div>
                                     </div>
 
-                                    {{-- Datos Financieros --}}
-                                    <div class="pl-8 grid grid-cols-2 gap-x-4 gap-y-3 mt-1">
-                                        <div>
-                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Presupuesto</p>
-                                            <p class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
+                                    {{-- Contenido Indentado --}}
+                                    <div class="pl-8 flex flex-col gap-3">
+                                        {{-- Subtítulo --}}
+                                        <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+                                            <span class="flex items-center gap-1.5 truncate">
+                                                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
+                                                <span class="truncate">{{ $project->client ?? 'Sin cliente' }}</span>
+                                            </span>
+                                            <span class="flex items-center gap-1.5">
+                                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
+                                                <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                                            </span>
                                         </div>
-                                        <div>
-                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Gastado</p>
-                                            <p class="text-small text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
-                                        </div>
-                                        <div class="col-span-2">
-                                            <div class="flex justify-between items-center mb-1.5">
-                                                <span class="text-[10px] text-text-muted font-medium">Ejecución</span>
-                                                <span class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+
+                                        {{-- Datos Financieros --}}
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                            <div>
+                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Presupuesto</p>
+                                                <p class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
                                             </div>
-                                            <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
-                                                @php
-                                                    $percent = min($project->budget_used_percent, 100);
-                                                    $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
-                                                @endphp
-                                                <div class="{{ $barColor }} h-full rounded-full transition-all" style="width: {{ $percent }}%"></div>
+                                            <div>
+                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Gastado</p>
+                                                <p class="text-small text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <div class="flex justify-between items-center mb-1.5">
+                                                    <span class="text-[10px] text-text-muted uppercase font-semibold">Ejecución</span>
+                                                    <span class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+                                                </div>
+                                                <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
+                                                    @php
+                                                        $percent = min($project->budget_used_percent, 100);
+                                                        $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
+                                                    @endphp
+                                                    <div class="{{ $barColor }} h-full rounded-full transition-all" style="width: {{ $percent }}%"></div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -342,35 +343,41 @@
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
                             <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
-                                <div class="flex items-start gap-3">
-                                    <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center justify-between gap-2">
+                                    {{-- Cabecera de la Fila --}}
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
                                             <x-skeleton class="h-5 w-32 rounded" />
-                                            <div class="flex items-center gap-2">
-                                                <x-skeleton class="h-6 w-16 rounded-full shrink-0" />
-                                                <x-skeleton class="w-5 h-5 rounded-md shrink-0" />
-                                            </div>
                                         </div>
-                                        <div class="mt-2 flex flex-wrap gap-2">
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <x-skeleton class="h-6 w-16 rounded-full" />
+                                            <x-skeleton class="w-5 h-5 rounded-md" />
+                                        </div>
+                                    </div>
+
+                                    {{-- Contenido Indentado --}}
+                                    <div class="pl-8 flex flex-col gap-3">
+                                        {{-- Subtítulo --}}
+                                        <div class="flex flex-wrap gap-2">
                                             <x-skeleton class="h-3 w-24 rounded" />
                                             <x-skeleton class="h-3 w-20 rounded" />
                                         </div>
+
+                                        {{-- Datos Financieros --}}
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                            <div>
+                                                <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
+                                                <x-skeleton class="h-4 w-20 rounded" />
+                                            </div>
+                                            <div>
+                                                <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
+                                                <x-skeleton class="h-4 w-20 rounded" />
+                                            </div>
+                                            <div class="col-span-2">
+                                                <x-skeleton class="h-1.5 w-full rounded-full" />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="pl-8 grid grid-cols-2 gap-x-4 gap-y-3 mt-1">
-                                    <div>
-                                        <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
-                                        <x-skeleton class="h-4 w-20 rounded" />
-                                    </div>
-                                    <div>
-                                        <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
-                                        <x-skeleton class="h-4 w-20 rounded" />
-                                    </div>
-                                    <div class="col-span-2">
-                                        <x-skeleton class="h-1.5 w-full rounded-full" />
-                                    </div>
-                                </div>
                             </div>
                         @endfor
                     </div>

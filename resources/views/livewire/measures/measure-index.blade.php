@@ -9,17 +9,19 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 mb-6">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
         @php
             $hasActiveFilters = !empty($search);
         @endphp
 
         @if($measures->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="md:rounded-t-lg md:bg-surface-card">
+            <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
-                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
+                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+                    <div class="flex-1 min-w-0">
+                        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
+                    </div>
                 </div>
             </div> {{-- End Header Group --}}
         @endif
@@ -149,65 +151,56 @@
                     </table>
             </x-card.table>
 
-        <div class="md:hidden p-4 flex flex-col gap-4">
+        <div class="md:hidden flex flex-col gap-4 mt-2">
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="flex flex-col">
                 <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($measures->isNotEmpty())
                         @foreach($measures as $measure)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors"
-                                 :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''"
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                 :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                  wire:key="measure-mobile-card-{{ $measure->id }}">
-                                
-                                <div class="flex justify-between items-start gap-2">
-                                    <div class="flex items-start gap-3">
-                                        <div class="pt-0.5">
-                                            <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
-                                        </div>
-                                        <div class="min-w-0">
-                                            <div class="flex items-center gap-2 flex-wrap mb-1">
-                                                <span class="font-bold text-text-primary text-body">{{ $measure->name }}</span>
-                                                @if($measure->abbreviation)
-                                                    <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
-                                                @endif
-                                            </div>
-                                            <p class="text-xs text-text-secondary mt-1">
-                                                @if($measure->products_count > 0)
-                                                    <span class="text-info-600 font-medium">{{ $measure->products_count }} productos</span>
-                                                @else
-                                                    <span class="text-text-muted">Sin productos</span>
-                                                @endif
-                                            </p>
-                                        </div>
+                                 
+                                {{-- Cabecera de la Fila --}}
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
+                                        <span class="font-bold text-text-primary text-base truncate">{{ $measure->name }}</span>
+                                        @if($measure->abbreviation)
+                                            <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <x-dropdown align="right" width="48">
+                                            <x-slot name="trigger">
+                                                <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
+                                                    <x-lucide-more-vertical class="w-5 h-5" />
+                                                </button>
+                                            </x-slot>
+                                            <x-slot name="content">
+                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                <x-dropdown-link as="button" wire:click="delete({{ $measure->id }})" wire:confirm="¿Eliminar esta medida? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                            </x-slot>
+                                        </x-dropdown>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-between mt-1 pt-2 border-t border-border/50 text-small">
-                                    <div class="flex items-center gap-1.5 text-text-secondary">
-                                        <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
+                                {{-- Contenido Indentado --}}
+                                <div class="pl-8 flex flex-col gap-3">
+                                    <div class="flex flex-col gap-2">
+                                        <p class="text-[10px] text-text-muted uppercase font-semibold">Productos</p>
+                                        <div>
+                                            @if($measure->products_count > 0)
+                                                <x-badge variant="info">{{ $measure->products_count }} productos</x-badge>
+                                            @else
+                                                <x-badge variant="secondary">Sin productos</x-badge>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-xs text-text-secondary">
+                                        <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted shrink-0" />
                                         <span>Registro: {{ $measure->created_at->format('d/m/Y') }}</span>
                                     </div>
-                                </div>
-
-                                <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                                    <x-dropdown align="right" width="48">
-                                        <x-slot name="trigger">
-                                            <x-button variant="secondary" class="w-full justify-center">
-                                                <x-lucide-more-horizontal class="w-4 h-4" />
-                                                <span class="ml-2">Opciones</span>
-                                            </x-button>
-                                        </x-slot>
-
-                                        <x-slot name="content">
-                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">
-                                                Editar
-                                            </x-dropdown-link>
-                                            <x-dropdown-link as="button" wire:click="delete({{ $measure->id }})"
-                                                wire:confirm="¿Eliminar esta medida? Esta acción no puede deshacerse." danger="true" icon="trash-2">
-                                                Eliminar
-                                            </x-dropdown-link>
-                                        </x-slot>
-                                    </x-dropdown>
                                 </div>
                             </div>
                         @endforeach
@@ -223,23 +216,25 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
-                    @for($i = 0; $i < 5; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative transition-colors opacity-{{ 100 - ($i * 15) }}">
-                            <div class="flex justify-between items-start gap-2">
-                                <div class="flex items-start gap-3">
-                                    <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
-                                    <div class="min-w-0">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <x-skeleton class="h-5 w-24 rounded" />
-                                            <x-skeleton class="h-5 w-12 rounded-full" />
-                                        </div>
-                                        <x-skeleton class="h-4 w-24 rounded-full mt-1" />
-                                    </div>
+                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
+                    @for($i = 0; $i < 4; $i++)
+                        <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                    <x-skeleton class="h-5 w-24 rounded" />
+                                    <x-skeleton class="h-5 w-12 rounded-full" />
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <x-skeleton class="w-7 h-7 rounded-md" />
                                 </div>
                             </div>
-                            <div class="flex justify-end pt-2 border-t border-border mt-1">
-                                <x-skeleton class="h-9 w-full rounded-md" />
+                            <div class="pl-8 flex flex-col gap-3">
+                                <div>
+                                    <x-skeleton class="h-2 w-16 rounded mb-1.5" />
+                                    <x-skeleton class="h-5 w-24 rounded-full" />
+                                </div>
+                                <x-skeleton class="h-4 w-32 rounded" />
                             </div>
                         </div>
                     @endfor
@@ -272,7 +267,7 @@
                 </div>
             </x-card.footer>
         @endif
-    </x-card>
+    </div>
 
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />
