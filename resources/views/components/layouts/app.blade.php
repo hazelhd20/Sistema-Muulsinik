@@ -52,13 +52,12 @@
         SIDEBAR — Industrial Premium Minimal
         ══════════════════════════════════════ --}}
         <aside class="fixed inset-y-0 left-0 z-50 w-[15rem] bg-surface-sidebar flex flex-col
-                   border-r border-border
                    transition-transform duration-200 ease-out
                    lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shrink-0"
             :class="mobileSidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full lg:translate-x-0'">
 
             {{-- Brand ──────────────────────────────── --}}
-            <div class="flex items-center justify-center h-14 border-b border-border shrink-0 px-5">
+            <div class="flex items-center justify-center h-14 shrink-0 px-5">
                 <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain"
                     style="height: var(--logo-size);">
             </div>
@@ -150,7 +149,7 @@
             </nav>
 
             {{-- Bottom ──────────────────────────────── --}}
-            <div class="px-3 py-3 border-t border-border space-y-0.5 shrink-0">
+            <div class="px-3 py-3 space-y-0.5 shrink-0">
 
                 {{-- User profile row --}}
                 <div class="flex items-center gap-2.5 px-2.5 py-2 mb-1">
@@ -189,7 +188,7 @@
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition-opacity duration-150" x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" @click="mobileSidebarOpen = false"
-            class="fixed inset-0 z-45 bg-black/20 backdrop-blur-[2px] lg:hidden" x-cloak></div>
+            class="fixed inset-0 z-45 bg-black/40 backdrop-blur-[2px] lg:hidden" x-cloak></div>
 
         {{-- ══════════════════════════════════════
         MAIN CONTENT AREA
@@ -197,7 +196,7 @@
         <div class="flex-1 flex flex-col min-w-0">
 
             {{-- Top Bar ──────────────────────────── --}}
-            <header class="sticky top-0 z-35 bg-surface-main border-b border-border">
+            <header class="sticky top-0 z-35 bg-surface-card">
                 <div class="flex items-center justify-between h-14 px-5 lg:px-6 max-w-screen-2xl mx-auto w-full">
 
                     {{-- Left: Hamburger (mobile) --}}
