@@ -91,22 +91,37 @@
                     <div class="px-6 pt-6 pb-4">
                         <x-skeleton class="h-4 w-40 rounded" />
                     </div>
-                    <div class="flex-1 px-4 md:px-6 pb-4">
-                        <div class="space-y-4 mt-2">
-                            @for($i = 0; $i < 5; $i++)
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center gap-3">
-                                        <x-skeleton class="w-6 h-6 rounded-lg" />
-                                        <div>
-                                            <x-skeleton class="h-4 w-32 mb-1 rounded" />
+                    <x-card.table class="flex-1 w-full">
+                        <table class="w-full table-fixed min-w-[500px]">
+                            <colgroup>
+                                <col class="w-14">
+                                <col class="w-[40%]">
+                                <col class="w-[30%]">
+                                <col class="w-[30%]">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th><x-skeleton class="h-4 w-4 rounded" /></th>
+                                    <th><x-skeleton class="h-4 w-24 rounded" /></th>
+                                    <th class="text-right"><x-skeleton class="h-4 w-20 ml-auto rounded" /></th>
+                                    <th class="text-right"><x-skeleton class="h-4 w-16 ml-auto rounded" /></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for($i = 0; $i < 5; $i++)
+                                    <tr>
+                                        <td><x-skeleton class="h-6 w-6 rounded-lg" /></td>
+                                        <td>
+                                            <x-skeleton class="h-4 w-32 mb-1.5 rounded" />
                                             <x-skeleton class="h-3 w-20 rounded" />
-                                        </div>
-                                    </div>
-                                    <x-skeleton class="h-4 w-24 rounded" />
-                                </div>
-                            @endfor
-                        </div>
-                    </div>
+                                        </td>
+                                        <td class="text-right"><x-skeleton class="h-4 w-16 ml-auto rounded" /></td>
+                                        <td class="text-right"><x-skeleton class="h-4 w-16 ml-auto rounded" /></td>
+                                    </tr>
+                                @endfor
+                            </tbody>
+                        </table>
+                    </x-card.table>
                 </x-card>
             </div>
         </div>
@@ -117,7 +132,15 @@
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
             <x-card.table class="flex-1 w-full">
-                <table>
+                <table class="w-full table-fixed min-w-[800px]">
+                    <colgroup>
+                        <col class="w-16">
+                        <col class="w-[30%]">
+                        <col class="w-[20%]">
+                        <col class="w-24">
+                        <col class="w-20">
+                        <col class="w-[15%]">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>
@@ -150,7 +173,14 @@
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
             <x-card.table class="flex-1 w-full">
-                <table>
+                <table class="w-full table-fixed min-w-[800px]">
+                    <colgroup>
+                        <col class="w-16">
+                        <col class="w-[30%]">
+                        <col class="w-[30%]">
+                        <col class="w-28">
+                        <col class="w-28">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>
@@ -182,7 +212,16 @@
                     <x-skeleton class="h-4 w-48 rounded" />
                 </div>
                 <x-card.table class="flex-1 w-full">
-                    <table>
+                    <table class="w-full table-fixed min-w-[700px]">
+                        <colgroup>
+                            <col class="w-16">
+                            <col class="w-[45%]">
+                            <col class="w-32">
+                            <col class="w-24">
+                            <col class="w-24">
+                            <col class="w-28">
+                            <col class="w-28">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th class="w-12"><x-skeleton class="h-4 w-4 rounded" /></th>

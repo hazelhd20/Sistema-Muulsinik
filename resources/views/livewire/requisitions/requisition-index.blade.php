@@ -31,7 +31,7 @@
 
     <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
         {{-- Unified Datagrid Card Container --}}
-        <x-card class="mt-0 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm">
+        <x-card class="mt-0">
             @php
                 $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
                 $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -417,10 +417,14 @@
                                 </div>
                             @endforeach
                         @elseif($hasActiveFilters)
-                            <x-empty-state icon="search" title="No se encontraron requisiciones" message="Intenta ajustar tus filtros de búsqueda." />
+                            <div class="p-12">
+                                <x-empty-state icon="search" title="No se encontraron requisiciones" message="Intenta ajustar tus filtros de búsqueda." />
+                            </div>
                         @else
-                            <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                                message="Crea una requisición o sube una cotización para comenzar." />
+                            <div class="p-12">
+                                <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                                    message="Crea una requisición o sube una cotización para comenzar." />
+                            </div>
                         @endif
                     </div>
 
@@ -429,8 +433,7 @@
                         wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <div
-                                class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex justify-between items-start gap-2">
                                     <div class="flex items-start gap-3">
                                         <x-skeleton class="w-4 h-4 rounded mt-0.5" />

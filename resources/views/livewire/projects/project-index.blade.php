@@ -9,19 +9,20 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
 
         @php
             $hasActiveFilters = !empty($search) || !empty($statusFilter) || !empty($periodFilter);
         @endphp
         @if($projects->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="md:rounded-t-lg md:bg-surface-card">
+            <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div
-                    class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
+                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     {{-- Search --}}
-                    <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
+                    <div class="flex-1 min-w-0">
+                        <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
+                    </div>
 
                     {{-- Filters Popover --}}
                     @php
@@ -246,94 +247,77 @@
                 </x-card.table>
 
                 {{-- Tarjetas Móviles (Mobile View) --}}
-                <div class="md:hidden flex flex-col gap-4 p-4">
+                <div class="md:hidden flex flex-col gap-4 mt-2">
                     <div wire:loading.class="hidden"
                         wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
                         class="flex flex-col gap-4">
                         @if($projects->isNotEmpty())
                             @foreach($projects as $project)
-                                <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors"
+                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
                                     :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                                    wire:key="project-mobile-card-{{ $project->id }}">
-                                    <div class="flex justify-between items-start gap-2">
-                                        <div class="flex items-start gap-3">
-                                            <div class="pt-0.5">
-                                                <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
-                                            </div>
-                                            <div class="min-w-0">
-                                                <div class="flex items-center gap-2 flex-wrap">
-                                                    <span
-                                                        class="font-bold text-text-primary text-body">{{ $project->name }}</span>
-                                                </div>
-                                                <p class="text-xs text-text-secondary mt-1 truncate">
-                                                    {{ $project->client ?? 'Sin cliente' }}
-                                                </p>
-                                            </div>
+                                    wire:key="project-mobile-row-{{ $project->id }}">
+                                    
+                                    {{-- Cabecera de la Fila --}}
+                                    <div class="flex items-start gap-3">
+                                        <div class="pt-0.5">
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                         </div>
-                                        <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
-                                            <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="font-bold text-text-primary text-body truncate">{{ $project->name }}</span>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                                                    
+                                                    <x-dropdown align="right" width="48">
+                                                        <x-slot name="trigger">
+                                                            <button class="p-1 rounded-md text-text-muted hover:bg-border-light hover:text-text-primary transition-colors focus:outline-none">
+                                                                <x-lucide-more-vertical class="w-5 h-5" />
+                                                            </button>
+                                                        </x-slot>
+                                                        <x-slot name="content">
+                                                            <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">Ver detalle</x-dropdown-link>
+                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                            <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})" wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                        </x-slot>
+                                                    </x-dropdown>
+                                                </div>
+                                            </div>
+                                            <div class="text-xs text-text-muted mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                <span class="flex items-center gap-1.5 truncate">
+                                                    <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
+                                                    <span class="truncate">{{ $project->client ?? 'Sin cliente' }}</span>
+                                                </span>
+                                                <span class="flex items-center gap-1.5">
+                                                    <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
+                                                    <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="grid grid-cols-2 gap-2 text-xs text-text-muted bg-surface-main p-3 rounded-xl border border-border/50">
+                                    {{-- Datos Financieros --}}
+                                    <div class="pl-8 grid grid-cols-2 gap-x-4 gap-y-3 mt-1">
                                         <div>
-                                            <p class="mb-0.5 text-[10px] uppercase font-semibold">Presupuesto</p>
-                                            <span
-                                                class="font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</span>
+                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Presupuesto</p>
+                                            <p class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
                                         </div>
                                         <div>
-                                            <p class="mb-0.5 text-[10px] uppercase font-semibold">Gastado</p>
-                                            <span
-                                                class="text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</span>
+                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Gastado</p>
+                                            <p class="text-small text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
                                         </div>
-                                        <div class="col-span-2 mt-1">
-                                            <div class="flex justify-between items-center mb-1">
-                                                <span class="text-[10px] font-medium text-text-secondary">Ejecución</span>
-                                                <span
-                                                    class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+                                        <div class="col-span-2">
+                                            <div class="flex justify-between items-center mb-1.5">
+                                                <span class="text-[10px] text-text-muted font-medium">Ejecución</span>
+                                                <span class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                                             </div>
-                                            <div class="w-full h-1.5 bg-surface-hover rounded-full overflow-hidden">
+                                            <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
                                                 @php
                                                     $percent = min($project->budget_used_percent, 100);
                                                     $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
                                                 @endphp
-                                                <div class="{{ $barColor }} h-full rounded-full transition-all"
-                                                    style="width: {{ $percent }}%"></div>
+                                                <div class="{{ $barColor }} h-full rounded-full transition-all" style="width: {{ $percent }}%"></div>
                                             </div>
                                         </div>
-                                        <div class="flex items-center gap-1.5 col-span-2 mt-1">
-                                            <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
-                                            <span>Inicio: {{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                                        <x-dropdown align="right" width="48">
-                                            <x-slot name="trigger">
-                                                <x-button variant="secondary" class="w-full justify-center">
-                                                    <x-lucide-more-horizontal class="w-4 h-4" />
-                                                    <span class="ml-2">Opciones</span>
-                                                </x-button>
-                                            </x-slot>
-
-                                            <x-slot name="content">
-                                                <x-dropdown-link as="button"
-                                                    @click="$dispatch('open-project-detail', { id: {{ $project->id }} })"
-                                                    icon="eye">
-                                                    Ver detalle
-                                                </x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})"
-                                                    icon="pencil">
-                                                    Editar
-                                                </x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})"
-                                                    wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse."
-                                                    danger="true" icon="trash-2">
-                                                    Eliminar
-                                                </x-dropdown-link>
-                                            </x-slot>
-                                        </x-dropdown>
                                     </div>
                                 </div>
                             @endforeach
@@ -357,41 +341,35 @@
                         wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <div
-                                class="card p-4 flex flex-col gap-3 relative overflow-hidden bg-surface-main opacity-{{ 100 - ($i * 15) }}">
-                                <div class="flex justify-between items-start gap-2">
-                                    <div class="flex items-start gap-3">
-                                        <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
-                                        <div class="min-w-0">
-                                            <x-skeleton class="h-5 w-32 rounded mb-1.5" />
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                                <div class="flex items-start gap-3">
+                                    <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <x-skeleton class="h-5 w-32 rounded" />
+                                            <div class="flex items-center gap-2">
+                                                <x-skeleton class="h-6 w-16 rounded-full shrink-0" />
+                                                <x-skeleton class="w-5 h-5 rounded-md shrink-0" />
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 flex flex-wrap gap-2">
                                             <x-skeleton class="h-3 w-24 rounded" />
+                                            <x-skeleton class="h-3 w-20 rounded" />
                                         </div>
                                     </div>
-                                    <x-skeleton class="h-6 w-20 rounded-full shrink-0" />
                                 </div>
-                                <div
-                                    class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                                <div class="pl-8 grid grid-cols-2 gap-x-4 gap-y-3 mt-1">
                                     <div>
-                                        <x-skeleton class="h-3 w-20 rounded mb-1.5" />
+                                        <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
                                         <x-skeleton class="h-4 w-20 rounded" />
                                     </div>
                                     <div>
-                                        <x-skeleton class="h-3 w-16 rounded mb-1.5" />
+                                        <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
                                         <x-skeleton class="h-4 w-20 rounded" />
                                     </div>
-                                    <div class="col-span-2 mt-1">
-                                        <div class="flex justify-between mb-1.5">
-                                            <x-skeleton class="h-3 w-12 rounded" />
-                                            <x-skeleton class="h-3 w-8 rounded" />
-                                        </div>
+                                    <div class="col-span-2">
                                         <x-skeleton class="h-1.5 w-full rounded-full" />
                                     </div>
-                                    <div class="col-span-2 mt-1 pt-2 border-t border-border/50">
-                                        <x-skeleton class="h-4 w-32 rounded" />
-                                    </div>
-                                </div>
-                                <div class="flex justify-end pt-2 border-t border-border mt-1">
-                                    <x-skeleton class="h-9 w-full rounded-md" />
                                 </div>
                             </div>
                         @endfor
@@ -421,7 +399,7 @@
                 {{ $projects->links() }}
             </x-card.footer>
         @endif
-    </x-card>
+    </div>
 
     {{-- Project Modal --}}
     @if($showModal)

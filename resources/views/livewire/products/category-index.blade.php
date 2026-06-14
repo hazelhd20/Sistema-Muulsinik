@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
+    <x-card class="mt-4 mb-6">
         @php
             $hasActiveFilters = !empty($search);
         @endphp
@@ -198,11 +198,11 @@
                             </div>
                         @endforeach
                     @elseif($hasActiveFilters)
-                        <div class="p-8">
+                        <div class="p-12">
                             <x-empty-state icon="search" title="No se encontraron categorías" message="Intenta ajustar tus filtros de búsqueda." />
                         </div>
                     @else
-                        <div class="p-8">
+                        <div class="p-12">
                             <x-empty-state icon="layers" title="No se encontraron categorías." />
                         </div>
                     @endif
@@ -211,7 +211,7 @@
                 {{-- Skeletons Móviles --}}
                 <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 5; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="card p-4 flex flex-col gap-3 relative transition-colors opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-0.5"><x-skeleton class="w-4 h-4 rounded-sm" /></div>

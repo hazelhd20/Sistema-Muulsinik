@@ -8,7 +8,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
+    <x-card class="mt-4 mb-6">
         @php
             $activeCount = $periodFilter ? 1 : 0;
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -62,13 +62,13 @@
 
         <div class="relative">
             <div wire:loading.class="hidden" wire:target="search, periodFilter, previousPage, nextPage, gotoPage" class="w-full">
-                @if($budgets->isEmpty() && !$hasActiveFilters)
-                    <div class="p-8">
-                        <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
-                            message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
-                    </div>
-                @endif
                 <x-card.table class="hidden md:block w-full">
+                    @if($budgets->isEmpty() && !$hasActiveFilters)
+                        <div class="p-8">
+                            <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
+                                message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
+                        </div>
+                    @endif
                     <table class="w-full table-fixed min-w-[1100px] {{ $budgets->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}">
                         <colgroup>
                             <col class="w-14">           {{-- Checkbox --}}
@@ -227,11 +227,11 @@
                 @endforeach
             </div>
             @elseif($hasActiveFilters)
-                <div class="p-8 border-t border-border">
+                <div class="p-12">
                     <x-empty-state icon="search" title="No se encontraron cotizaciones" message="Intenta ajustar tus filtros de búsqueda." />
                 </div>
             @else
-                <div class="p-8 border-t border-border">
+                <div class="p-12">
                     <x-empty-state icon="calculator" title="No hay cotizaciones registradas"
                         message="Crea una cotización rápida para trabajos menores o presupuestos ágiles." />
                 </div>
@@ -299,23 +299,32 @@
             </x-card.table>
 
             {{-- Skeletons Móviles --}}
-            <div class="md:hidden flex flex-col divide-y divide-border border-t border-border">
+            <div wire:loading.class.remove="hidden" wire:target="search, periodFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 p-4">
                 @for($i = 0; $i < 4; $i++)
-                    <div class="p-4 flex flex-col gap-3 relative bg-surface-main">
+                    <div class="card p-4 flex flex-col gap-3 relative overflow-hidden transition-colors opacity-{{ 100 - ($i * 15) }}">
                         <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <x-skeleton class="h-5 w-32 rounded" />
-                                <x-skeleton class="h-3 w-24 rounded mt-1.5" />
+                            <div class="flex items-start gap-3">
+                                <div class="pt-0.5">
+                                    <x-skeleton class="w-4 h-4 rounded-sm" />
+                                </div>
+                                <div class="min-w-0">
+                                    <x-skeleton class="h-5 w-32 rounded mb-1.5" />
+                                    <x-skeleton class="h-3 w-24 rounded" />
+                                </div>
                             </div>
-                            <x-skeleton class="h-5 w-20 rounded" />
+                            <x-skeleton class="h-6 w-20 rounded" />
                         </div>
-                        <div class="flex justify-between items-center bg-surface-hover/50 p-3 rounded-xl border border-border/50">
-                            <x-skeleton class="h-4 w-24 rounded" />
-                            <x-skeleton class="h-4 w-16 rounded" />
+                        <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50">
+                            <div>
+                                <x-skeleton class="h-3 w-12 rounded mb-1.5" />
+                                <x-skeleton class="h-4 w-8 rounded" />
+                            </div>
+                            <div class="col-span-2 mt-1 pt-2 border-t border-border/50">
+                                <x-skeleton class="h-4 w-32 rounded" />
+                            </div>
                         </div>
-                        <div class="flex justify-end gap-1 pt-3 border-t border-border/50 mt-1">
-                            <x-skeleton class="h-8 w-8 rounded" />
-                            <x-skeleton class="h-8 w-8 rounded" />
+                        <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
+                            <x-skeleton class="h-9 w-24 rounded-md" />
                         </div>
                     </div>
                 @endfor

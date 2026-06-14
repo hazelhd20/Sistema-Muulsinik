@@ -11,7 +11,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 border-x-0 rounded-none md:border-x md:rounded-[10px] shadow-none md:shadow-sm mb-6">
+    <x-card class="mt-4 mb-6">
         @php
             $activeCount = ($roleFilter ? 1 : 0) + ($statusFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -284,11 +284,11 @@
                             </div>
                         @endforeach
                     @elseif($hasActiveFilters)
-                        <div class="p-8">
+                        <div class="p-12">
                             <x-empty-state icon="search" title="No se encontraron usuarios" message="Intenta ajustar tus filtros de búsqueda." />
                         </div>
                     @else
-                        <div class="p-8">
+                        <div class="p-12">
                             <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
                         </div>
                     @endif
@@ -297,7 +297,7 @@
                 {{-- Skeletons Móviles --}}
                 <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative bg-surface-main opacity-{{ 100 - ($i * 15) }}">
+                        <div class="card p-4 flex flex-col gap-3 relative transition-colors opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex items-start gap-3">
                                     <div class="pt-1"><x-skeleton class="w-4 h-4 rounded-sm" /></div>
