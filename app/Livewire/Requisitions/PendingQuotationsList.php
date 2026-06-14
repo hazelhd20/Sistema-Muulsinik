@@ -4,17 +4,14 @@ namespace App\Livewire\Requisitions;
 
 use App\Models\Quotation;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class PendingQuotationsList extends Component
 {
-    public function dismissQuotation(int $quotationId): void
+    #[On('refresh-pending-quotations')]
+    public function refreshList(): void
     {
-        $quotation = Quotation::find($quotationId);
-        if ($quotation) {
-            $quotation->update(['is_orphan' => true]);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Borrador descartado.']);
-            $this->dispatch('quotation-dismissed');
-        }
+        // Just trigger render
     }
 
     public function render()

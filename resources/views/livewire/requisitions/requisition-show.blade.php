@@ -1,6 +1,6 @@
 <div>
     {{-- ─── Header con acciones de workflow ─── --}}
-    <x-page-header subtitle="Requisiciones">
+    <x-page-header subtitle="Requisiciones" backUrl="{{ route('requisiciones.index') }}">
         <x-slot:title>
             <div class="flex items-center gap-3">
                 {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
@@ -11,9 +11,6 @@
         </x-slot:title>
         <x-slot:actions>
             {{-- Acciones secundarias siempre visibles --}}
-            <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
-                Volver
-            </x-button>
             <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary" icon="printer">
                 Imprimir
             </x-button>

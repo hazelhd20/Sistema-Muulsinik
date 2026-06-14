@@ -1,11 +1,8 @@
 <div>
-    {{-- Page Header --}}
-    <x-page-header subtitle="Requisiciones" title="Nueva Requisición Manual">
-        <x-slot:actions>
-            <x-button href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
-                Volver
-            </x-button>
-        </x-slot:actions>
+    <x-page-header 
+        subtitle="Requisiciones" 
+        title="Nueva Requisición Manual" 
+        backUrl="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}">
     </x-page-header>
 
     <form wire:submit="createRequisition" class="space-y-6">

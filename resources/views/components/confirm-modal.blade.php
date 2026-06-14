@@ -79,16 +79,18 @@
             }
         },
 
-        close() {
-            if (this.loading) return;
+        forceClose() {
+            this.loading = false;
             this.show = false;
         }
     }"
     @confirm-action.window="open($event.detail)"
+    @close-confirm-modal.window="forceClose()"
+    x-on:livewire:navigating.window="forceClose()"
     x-show="show"
     x-cloak
     x-trap.noscroll.inert="show"
-    @keydown.escape.window="close()"
+    @keydown.escape.window="forceClose()"
     class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6"
     role="dialog"
     aria-modal="true"

@@ -216,10 +216,26 @@ class RequisitionIndex extends Component
         $this->rejectionComment = '';
     }
 
+    public function dismissQuotation(int $quotationId): void
+    {
+        $quotation = Quotation::find($quotationId);
+        if ($quotation) {
+            $quotation->update(['is_orphan' => true]);
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Borrador descartado.']);
+            $this->dispatch('refresh-pending-quotations')->to(PendingQuotationsList::class);
+        }
+    }
+
     public function deleteRequisition(int $id): void
     {
-        Requisition::findOrFail($id)->delete();
-        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición eliminada.']);
+        $requisition = Requisition::findOrFail($id);
+        
+        // Descartar cotizaciones ligadas para que no revivan en la bandeja de borradores
+        $requisition->quotations()->update(['is_orphan' => true]);
+        
+        $requisition->delete();
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición eliminada con éxito.']);
+        $this->resetPage();
     }
 
     /** Aprobación masiva de requisiciones seleccionadas en estado pendiente. */
@@ -269,6 +285,9 @@ class RequisitionIndex extends Component
 
             return;
         }
+
+        // Descartar cotizaciones ligadas de todas las requisiciones seleccionadas
+        \App\Models\Quotation::whereIn('requisition_id', $deletableIds)->update(['is_orphan' => true]);
 
         Requisition::whereIn('id', $deletableIds)->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletableIds) . ' requisición(es) eliminada(s).']);

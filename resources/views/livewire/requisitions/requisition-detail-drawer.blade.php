@@ -142,8 +142,7 @@
                             description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
                             confirmLabel: 'Aprobar',
                             variant: 'success',
-                            action: 'approve',
-                            params: [{{ $detailRequisition->id }}]
+                            onConfirmCallback: () => $wire.approve({{ $detailRequisition->id }})
                         })"
                         variant="success" icon="check-circle">
                         Aprobar
@@ -162,7 +161,4 @@
 
     {{-- Modal de Rechazo (extraído a partial compartido) --}}
     @include('livewire.requisitions._reject-modal')
-
-    {{-- Confirmación global para Aprobar --}}
-    <x-confirm-modal />
 </div>

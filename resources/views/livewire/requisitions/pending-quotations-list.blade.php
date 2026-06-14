@@ -94,6 +94,4 @@
         </div>
     @endif
 
-    {{-- Diálogo de confirmación (para descartar borradores) --}}
-    <x-confirm-modal />
 </div>
