@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -25,6 +26,9 @@ class RequisitionIndex extends Component
     use WithSorting;
 
     public string $search = '';
+
+    #[Url]
+    public string $tab = 'todas';
 
     public string $statusFilter = '';
 
@@ -141,7 +145,7 @@ class RequisitionIndex extends Component
     /** Abrir modal de rechazo en lote. */
     public function openBulkRejectModal(): void
     {
-        if (! auth()->user()->hasPermission('requisiciones.aprobar') && ! auth()->user()->hasPermission('*')) {
+        if (!auth()->user()->hasPermission('requisiciones.aprobar') && !auth()->user()->hasPermission('*')) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
 
             return;
@@ -192,7 +196,7 @@ class RequisitionIndex extends Component
 
             if ($successCount > 0) {
                 $this->dispatch('notification-received');
-                $this->dispatch('toast', ['icon' => 'success', 'message' => $successCount.' requisición(es) rechazada(s).']);
+                $this->dispatch('toast', ['icon' => 'success', 'message' => $successCount . ' requisición(es) rechazada(s).']);
             }
             $this->selectedRows = [];
         } else {
@@ -247,7 +251,7 @@ class RequisitionIndex extends Component
 
         if ($successCount > 0) {
             $this->dispatch('notification-received');
-            $this->dispatch('toast', ['icon' => 'success', 'message' => $successCount.' requisición(es) aprobada(s).']);
+            $this->dispatch('toast', ['icon' => 'success', 'message' => $successCount . ' requisición(es) aprobada(s).']);
         }
         $this->selectedRows = [];
     }
@@ -267,7 +271,7 @@ class RequisitionIndex extends Component
         }
 
         Requisition::whereIn('id', $deletableIds)->delete();
-        $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletableIds).' requisición(es) eliminada(s).']);
+        $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletableIds) . ' requisición(es) eliminada(s).']);
         $this->selectedRows = [];
     }
 
@@ -286,7 +290,7 @@ class RequisitionIndex extends Component
 
         $headers = [
             'Content-type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename=requisiciones_export_'.now()->format('Ymd_His').'.csv',
+            'Content-Disposition' => 'attachment; filename=requisiciones_export_' . now()->format('Ymd_His') . '.csv',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
@@ -302,7 +306,7 @@ class RequisitionIndex extends Component
 
             foreach ($requisitions as $req) {
                 fputcsv($file, [
-                    $req->number ?? 'REQ-'.str_pad($req->id, 5, '0', STR_PAD_LEFT),
+                    $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT),
                     $req->project->name ?? '—',
                     $req->date?->format('d/m/Y') ?? '—',
                     $req->creator->name ?? '—',
@@ -318,7 +322,7 @@ class RequisitionIndex extends Component
 
         $this->selectedRows = []; // Limpiar selección tras exportación
 
-        return response()->streamDownload($callback, 'requisiciones_resumen_'.now()->format('Ymd_His').'.csv', $headers);
+        return response()->streamDownload($callback, 'requisiciones_resumen_' . now()->format('Ymd_His') . '.csv', $headers);
     }
 
     /** Exportación masiva de requisiciones seleccionadas a formato CSV (Detallado con Ítems). */
@@ -335,7 +339,7 @@ class RequisitionIndex extends Component
 
         $headers = [
             'Content-type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename=requisiciones_detallado_'.now()->format('Ymd_His').'.csv',
+            'Content-Disposition' => 'attachment; filename=requisiciones_detallado_' . now()->format('Ymd_His') . '.csv',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
@@ -350,22 +354,36 @@ class RequisitionIndex extends Component
             fputcsv($file, $columns);
 
             foreach ($requisitions as $req) {
-                $folio = $req->number ?? 'REQ-'.str_pad($req->id, 5, '0', STR_PAD_LEFT);
+                $folio = $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT);
                 $project = $req->project->name ?? '—';
                 $date = $req->date?->format('d/m/Y') ?? '—';
                 $vendor = $req->vendor->name ?? '—';
-                
+
                 // Si no tiene ítems, exportar al menos la cabecera
                 if ($req->items->isEmpty()) {
                     fputcsv($file, [
-                        $folio, $project, $date, $vendor, $req->total, ucfirst($req->status), 
-                        '—', '—', '—', '—', '—'
+                        $folio,
+                        $project,
+                        $date,
+                        $vendor,
+                        $req->total,
+                        ucfirst($req->status),
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        '—'
                     ]);
                 } else {
                     foreach ($req->items as $item) {
                         $productName = $item->product ? $item->product->canonical_name : $item->description;
                         fputcsv($file, [
-                            $folio, $project, $date, $vendor, $req->total, ucfirst($req->status),
+                            $folio,
+                            $project,
+                            $date,
+                            $vendor,
+                            $req->total,
+                            ucfirst($req->status),
                             $productName,
                             $item->quantity,
                             $item->measure->name ?? '—',
@@ -379,7 +397,7 @@ class RequisitionIndex extends Component
         };
 
         $this->selectedRows = [];
-        return response()->streamDownload($callback, 'requisiciones_detallado_'.now()->format('Ymd_His').'.csv', $headers);
+        return response()->streamDownload($callback, 'requisiciones_detallado_' . now()->format('Ymd_His') . '.csv', $headers);
     }
 
     /** Exportación masiva de requisiciones seleccionadas a PDFs en un archivo ZIP (Asíncrono). */
@@ -400,7 +418,7 @@ class RequisitionIndex extends Component
     public function getListeners(): array
     {
         $userId = auth()->id();
-        
+
         $listeners = [];
 
         if ($userId) {
@@ -424,11 +442,11 @@ class RequisitionIndex extends Component
     public function render()
     {
         $requisitions = Requisition::with(['project', 'vendor', 'creator', 'quotations'])->withCount('items')
-            ->when($this->search, fn ($q) => $q->where(fn ($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
-            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-            ->when($this->projectFilter, fn ($q) => $q->where('project_id', $this->projectFilter))
-            ->when($this->creatorFilter, fn ($q) => $q->where('created_by', $this->creatorFilter))
-            ->when($this->vendorFilter, fn ($q) => $q->where('vendor_id', $this->vendorFilter))
+            ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
+            ->when($this->creatorFilter, fn($q) => $q->where('created_by', $this->creatorFilter))
+            ->when($this->vendorFilter, fn($q) => $q->where('vendor_id', $this->vendorFilter))
             ->when($this->periodFilter, function ($q) {
                 match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),

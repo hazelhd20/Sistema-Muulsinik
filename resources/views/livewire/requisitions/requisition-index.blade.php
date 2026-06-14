@@ -1,12 +1,13 @@
-<div x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
-    x-init="totalOnPage = {{ $requisitions->count() }}; init()">
+<div x-data="{ tab: @entangle('tab').live }" x-on:livewire:navigated.window="tab = $wire.tab">
+    <div x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
+        x-init="totalOnPage = {{ $requisitions->count() }}; init()">
     {{-- Header --}}
     <x-page-header subtitle="Compras" title="Requisiciones">
         <x-slot:actions>
-            <x-button href="{{ route('requisiciones.manual') }}" variant="secondary" icon="plus" wire:navigate>
+            <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus" wire:navigate>
                 Nueva Manual
             </x-button>
-            <x-button href="{{ route('requisiciones.upload') }}" variant="primary" icon="scan-line">
+            <x-button href="{{ route('requisiciones.upload', ['source' => $tab]) }}" variant="primary" icon="scan-line" wire:navigate>
                 Subir Cotización
             </x-button>
         </x-slot:actions>
@@ -14,10 +15,10 @@
 
     {{-- Tabs de Navegación --}}
     <div class="tab-nav mb-6">
-        <button @click="activeTab = 'todas'" :class="activeTab === 'todas' ? 'active' : ''" class="tab-btn">
+        <button @click="tab = 'todas'" :class="tab === 'todas' ? 'active' : ''" class="tab-btn">
             Requisiciones
         </button>
-        <button @click="activeTab = 'borradores'" :class="activeTab === 'borradores' ? 'active' : ''" class="tab-btn">
+        <button @click="tab = 'borradores'" :class="tab === 'borradores' ? 'active' : ''" class="tab-btn">
             Borradores y Procesos
             @if($pendingQuotations->count() > 0)
                 <span class="badge badge-primary ml-1">{{ $pendingQuotations->count() }}</span>
@@ -25,11 +26,11 @@
         </button>
     </div>
 
-    <div x-show="activeTab === 'borradores'" x-cloak wire:key="tab-borradores">
+    <div x-show="tab === 'borradores'" x-cloak wire:key="tab-borradores">
         <livewire:requisitions.pending-quotations-list />
     </div>
 
-    <div x-show="activeTab === 'todas'" x-cloak wire:key="tab-todas-table">
+    <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table">
         {{-- Unified Datagrid Card Container --}}
         <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
             @php
@@ -586,4 +587,5 @@
 
     {{-- ═══════ PREVIEW MODAL ═══════ --}}
     <x-preview-modal />
+</div>
 </div>

@@ -2,7 +2,7 @@
     {{-- Page Header --}}
     <x-page-header subtitle="Requisiciones" title="Nueva Requisición Manual">
         <x-slot:actions>
-            <x-button href="{{ route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
+            <x-button href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
                 Volver
             </x-button>
         </x-slot:actions>

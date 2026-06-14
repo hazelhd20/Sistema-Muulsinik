@@ -8,6 +8,7 @@
     'title'       => 'Arrastra tu archivo aquí',
     'subtitle'    => 'o haz clic para seleccionar',
     'inputId'     => 'file-input-' . uniqid(),
+    'multiple'    => false,
 ])
 
 @php
@@ -17,16 +18,15 @@
 <div
     x-data="{
         isDragging: false,
-        fileName: null,
-        fileSize: null,
-        fileExt: null,
+        files: [],
         uploading: false,
         progress: 0,
         showPreview: false,
         previewUrl: null,
         previewType: null,
-        get iconData() {
-            const ext = (this.fileExt || '').toLowerCase();
+        
+        getIconData(ext) {
+            const e = (ext || '').toLowerCase();
             const map = {
                 jpg:  { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
                 jpeg: { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
@@ -36,70 +36,108 @@
                 xlsx: { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-primary-50' },
                 xls:  { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-primary-50' },
             };
-            return map[ext] || { icon: 'file', color: 'text-text-secondary', bg: 'bg-surface-hover' };
+            return map[e] || { icon: 'file', color: 'text-text-secondary', bg: 'bg-surface-hover' };
         },
+        
         handleFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            this.fileName = file.name;
-            this.fileSize = (file.size / 1024).toFixed(1);
-            this.fileExt  = file.name.split('.').pop();
-            if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-            this.previewUrl = URL.createObjectURL(file);
-            this.previewType = file.type;
-            this.$nextTick(() => this.renderFileIcon());
+            const selectedFiles = Array.from(e.target.files);
+            if (!selectedFiles.length) return;
+            
+            const isMultiple = {{ $multiple ? 'true' : 'false' }};
+            const newFiles = selectedFiles.map(file => ({
+                name: file.name,
+                size: (file.size / 1024).toFixed(1),
+                ext: file.name.split('.').pop(),
+                type: file.type,
+                url: URL.createObjectURL(file),
+                originalFile: file
+            }));
+
+            if (isMultiple) {
+                this.files.forEach(f => { if(f.url) URL.revokeObjectURL(f.url); });
+                this.files = newFiles;
+            } else {
+                this.files.forEach(f => { if(f.url) URL.revokeObjectURL(f.url); });
+                this.files = [newFiles[0]];
+            }
         },
-        get canPreview() {
-            if (!this.previewType) return false;
-            return this.previewType.startsWith('image/') || this.previewType === 'application/pdf';
+        
+        canPreview(fileObj) {
+            if (!fileObj.type) return false;
+            return fileObj.type.startsWith('image/') || fileObj.type === 'application/pdf';
         },
-        openPreview() {
-            if (this.canPreview) this.showPreview = true;
+        
+        openPreview(fileObj) {
+            if (this.canPreview(fileObj)) {
+                this.previewUrl = fileObj.url;
+                this.previewType = fileObj.type;
+                this.showPreview = true;
+            }
         },
+        
         closePreview() {
             this.showPreview = false;
         },
-        // El renderizado de iconos ahora lo hace Alpine con x-show en la vista
-        renderFileIcon() {},
+        
         resetState() {
-            this.fileName = null;
-            this.fileSize = null;
-            this.fileExt = null;
+            this.files.forEach(f => { if(f.url) URL.revokeObjectURL(f.url); });
+            this.files = [];
             if (this.$refs.fileInput) this.$refs.fileInput.value = '';
-            if (this.previewUrl) { URL.revokeObjectURL(this.previewUrl); this.previewUrl = null; this.previewType = null; }
             this.showPreview = false;
+            this.previewUrl = null;
+            this.previewType = null;
         },
-        removeFile() {
-            this.resetState();
+        
+        removeFile(index = 0) {
+            const file = this.files[index];
+            if (!file) return;
+            this.files.splice(index, 1);
+            
             @if($wireModel)
-                @this.set('{{ $wireModel }}', null);
+                if (this.$wire) {
+                    if ({{ $multiple ? 'true' : 'false' }}) {
+                        this.$dispatch('file-removed', { index: index, name: file.name });
+                    } else {
+                        @this.set('{{ $wireModel }}', null);
+                        this.$dispatch('file-removed');
+                    }
+                }
+            @else
+                this.$dispatch('file-removed', { index: index, name: file.name });
             @endif
-            this.$dispatch('file-removed');
+            
+            if (this.files.length === 0) {
+                this.resetState();
+            }
         },
+        
         init() {
             @if($wireModel)
                 if (this.$wire) {
                     this.$watch('$wire.{{ $wireModel }}', (value) => {
-                        if (!value) this.resetState();
+                        if (!value || (Array.isArray(value) && value.length === 0)) {
+                            this.resetState();
+                        }
                     });
                 }
             @endif
         }
     }"
-    {{ $attributes->whereDoesntStartWith('wire:model')->except(['accept','maxSize','hint','variant','formats','icon','title','subtitle','inputId']) }}
+    {{ $attributes->whereDoesntStartWith('wire:model')->except(['accept','maxSize','hint','variant','formats','icon','title','subtitle','inputId', 'multiple']) }}
 >
     {{-- ── Hidden real input ── --}}
     <input
         x-ref="fileInput"
         id="{{ $inputId }}"
         type="file"
+        {{ $multiple ? 'multiple' : '' }}
         wire:model="{{ $wireModel }}"
         accept="{{ $accept }}"
         class="hidden"
         @change="handleFile($event)"
         x-on:livewire-upload-start="uploading = true; progress = 0"
         x-on:livewire-upload-progress="progress = $event.detail.progress"
-        x-on:livewire-upload-finish="uploading = false; $nextTick(() => renderFileIcon())"
+        x-on:livewire-upload-finish="uploading = false;"
         x-on:livewire-upload-error="uploading = false"
     >
 
@@ -110,78 +148,88 @@
             x-on:dragleave.prevent="isDragging = false"
             x-on:drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
             @click="$refs.fileInput.click()"
-            class="relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer"
+            class="relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer"
             :class="isDragging
-                ? 'border-primary-500 bg-primary-50/50 scale-[1.02]'
-                : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/20'"
+                ? 'border-primary-500 bg-primary-50/30 scale-[1.02] shadow-sm'
+                : 'border-border-strong hover:border-primary-400 hover:bg-surface-main/30'"
         >
             <div class="flex flex-col items-center gap-4">
-                <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center">
-                    <x-dynamic-component :component="'lucide-' . $icon" class="w-8 h-8 text-primary-600" wire:ignore />
+                <div class="w-14 h-14 rounded-full bg-surface-main/60 border border-border/40 flex items-center justify-center shadow-sm transition-transform duration-300" :class="isDragging ? '-translate-y-1' : ''">
+                    <x-dynamic-component :component="'lucide-' . $icon" class="w-6 h-6 text-primary-500" stroke-width="1.5" wire:ignore />
                 </div>
                 <div>
-                    <p class="text-h3 text-text-primary">{{ $title }}</p>
-                    <p class="text-body text-text-muted mt-1">{{ $subtitle }}</p>
+                    <p class="text-body font-medium text-text-primary tracking-tight">{{ $title }}</p>
+                    <p class="text-small text-text-muted mt-1 font-light">{{ $subtitle }}</p>
                 </div>
 
                 @if(!empty($formats))
-                    <div class="flex items-center gap-3 mt-2">
+                    <div class="flex items-center gap-2 mt-2">
                         @foreach($formats as $fmt)
                             @php
                                 $fmtColors = match(strtoupper($fmt)) {
-                                    'PDF'          => 'bg-danger-light text-danger',
-                                    'XLSX', 'XLS'  => 'bg-primary-50 text-primary-600',
-                                    'JPG', 'PNG', 'JPEG' => 'bg-info-light text-info',
-                                    default        => 'bg-surface-hover text-text-secondary',
+                                    'PDF'          => 'bg-danger-light text-danger border-danger-border',
+                                    'XLSX', 'XLS'  => 'bg-success-light text-success border-success-border',
+                                    'JPG', 'PNG', 'JPEG' => 'bg-info-light text-info border-info-border',
+                                    default        => 'bg-surface-hover text-text-muted border-border',
+                                };
+                                $fmtIcon = match(strtoupper($fmt)) {
+                                    'PDF'          => 'file-text',
+                                    'XLSX', 'XLS'  => 'file-spreadsheet',
+                                    'JPG', 'PNG', 'JPEG' => 'image',
+                                    default        => 'file',
                                 };
                             @endphp
-                            <span class="px-3 py-1 rounded-lg {{ $fmtColors }} text-xs font-medium">{{ strtoupper($fmt) }}</span>
+                            <span class="px-2.5 py-1 rounded-md border {{ $fmtColors }} text-[10px] font-medium tracking-wide flex items-center gap-1 shadow-sm">
+                                <x-dynamic-component :component="'lucide-' . $fmtIcon" class="w-3 h-3" stroke-width="2" wire:ignore />
+                                {{ strtoupper($fmt) }}
+                            </span>
                         @endforeach
                     </div>
                 @endif
 
-                <p class="text-xs text-text-muted mt-1">Máximo {{ $maxSize }}</p>
+                <p class="text-[11px] text-text-muted mt-2 font-medium tracking-wide uppercase">Máximo {{ $maxSize }}</p>
             </div>
         </div>
 
-        {{-- File selected card (dropzone) --}}
-        <div
-            x-show="fileName"
-            x-cloak
-            x-effect="if (fileExt) $nextTick(() => renderFileIcon())"
-            class="mt-4 p-3.5 rounded-xl bg-surface-card border border-border shadow-sm"
-        >
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                     :class="iconData.bg">
-                    <div :class="iconData.color" class="flex items-center justify-center">
-                        <x-lucide-image x-show="iconData.icon === 'image'" class="w-5 h-5" x-cloak />
-                        <x-lucide-file-text x-show="iconData.icon === 'file-text'" class="w-5 h-5" x-cloak />
-                        <x-lucide-file-spreadsheet x-show="iconData.icon === 'file-spreadsheet'" class="w-5 h-5" x-cloak />
-                        <x-lucide-file x-show="iconData.icon === 'file'" class="w-5 h-5" x-cloak />
-                    </div>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
-                    <p x-show="!uploading" class="text-xs text-text-muted"><span x-text="fileSize"></span> KB</p>
-                    <div x-show="uploading" class="flex items-center gap-2 mt-1">
-                        <div class="flex-1 h-1.5 bg-primary-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-primary-600 rounded-full transition-all duration-300" :style="'width:' + progress + '%'"></div>
+        {{-- File selected cards (dropzone) --}}
+        <div class="flex flex-col gap-3 mt-4">
+            <template x-for="(file, index) in files" :key="index">
+                <div
+                    class="p-4 rounded-2xl bg-surface-card border border-border/60 shadow-sm transition-all animate-fade-in-up"
+                >
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-black/5 shadow-sm"
+                             :class="getIconData(file.ext).bg">
+                            <div :class="getIconData(file.ext).color" class="flex items-center justify-center">
+                                <x-lucide-image x-show="getIconData(file.ext).icon === 'image'" class="w-6 h-6" x-cloak />
+                                <x-lucide-file-text x-show="getIconData(file.ext).icon === 'file-text'" class="w-6 h-6" x-cloak />
+                                <x-lucide-file-spreadsheet x-show="getIconData(file.ext).icon === 'file-spreadsheet'" class="w-6 h-6" x-cloak />
+                                <x-lucide-file x-show="getIconData(file.ext).icon === 'file'" class="w-6 h-6" x-cloak />
+                            </div>
                         </div>
-                        <span class="text-xs text-primary-600 font-medium tabular-nums shrink-0" x-text="progress + '%'"></span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-small font-semibold text-text-primary truncate tracking-tight" x-text="file.name"></p>
+                            <p x-show="!uploading" class="text-xs text-text-muted mt-0.5 font-medium"><span x-text="file.size"></span> KB</p>
+                            <div x-show="uploading" class="flex items-center gap-3 mt-1.5">
+                                <div class="flex-1 h-1.5 bg-primary-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary-600 rounded-full transition-all duration-300" :style="'width:' + progress + '%'"></div>
+                                </div>
+                                <span class="text-[11px] text-primary-600 font-bold tabular-nums shrink-0" x-text="progress + '%'"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0 pl-2">
+                            <button x-show="canPreview(file) && !uploading" type="button" @click="openPreview(file)"
+                                class="btn-icon-primary" title="Vista previa">
+                                <x-lucide-eye class="w-4 h-4" wire:ignore />
+                            </button>
+                            <button type="button" @click="removeFile(index)"
+                                class="btn-icon-danger" title="Eliminar archivo">
+                                <x-lucide-trash-2 class="w-4 h-4" wire:ignore />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-1 shrink-0">
-                    <button x-show="canPreview && !uploading" type="button" @click="openPreview()"
-                        class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-primary-600 transition" title="Vista previa">
-                        <x-lucide-eye class="w-4 h-4" wire:ignore />
-                    </button>
-                    <button type="button" @click="removeFile()"
-                        class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-danger transition">
-                        <x-lucide-x class="w-4 h-4" wire:ignore />
-                    </button>
-                </div>
-            </div>
+            </template>
         </div>
 
     @elseif($variant === 'compact-inline')

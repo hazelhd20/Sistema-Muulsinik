@@ -12,11 +12,15 @@ use App\Services\RequisitionItemResolverService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class ManualRequisition extends Component
 {
     public ManualRequisitionForm $form;
+
+    #[Url]
+    public string $source = '';
 
     // Search for products (pattern from QuickBudgetWizard)
     public string $searchQuery = '';
@@ -110,7 +114,12 @@ class ManualRequisition extends Component
         );
 
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición creada como borrador.']);
-        $this->redirect(route('requisiciones.index'), navigate: true);
+        
+        $redirectUrl = $this->source === 'borradores'
+            ? route('requisiciones.index', ['tab' => 'borradores'])
+            : route('requisiciones.index');
+            
+        $this->redirect($redirectUrl, navigate: true);
     }
 
     #[Layout('components.layouts.app')]

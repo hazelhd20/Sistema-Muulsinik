@@ -28,7 +28,7 @@
 @endphp
 
 @if($href)
-    <a href="{{ $href }}" {{ $attributes->merge(['class' => $baseClasses]) }}>
+    <a href="{!! $href !!}" {{ $attributes->merge(['class' => $baseClasses]) }}>
         @if($icon)
             <x-dynamic-component :component="'lucide-' . $icon" class="{{ $iconClass }}" />
         @endif

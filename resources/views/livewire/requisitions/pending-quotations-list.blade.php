@@ -74,7 +74,7 @@
                         />
 
                         <x-button
-                            href="{{ route('requisiciones.upload', ['id' => $pq->id]) }}"
+                            href="{{ route('requisiciones.upload', ['ids' => [$pq->id], 'source' => 'borradores']) }}"
                             variant="secondary"
                             :iconRight="'arrow-right'"
                             wire:navigate

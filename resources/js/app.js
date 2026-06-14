@@ -69,7 +69,6 @@ document.addEventListener("alpine:init", () => {
 // Gestiona: tabs, preview modal, filtros, selección masiva
 document.addEventListener("alpine:init", () => {
     Alpine.data("requisitionIndex", (selectedRows, pageStatuses = {}) => ({
-        activeTab: "todas",
         showFilters: false,
         
         statuses: pageStatuses,

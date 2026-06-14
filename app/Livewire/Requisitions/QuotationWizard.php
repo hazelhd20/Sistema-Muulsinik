@@ -38,10 +38,17 @@ class QuotationWizard extends Component
     public int $step = 1;
 
     /* ── Paso 1: Upload ──────────────────────────────── */
-    public $file;
+    public $files = [];
 
-    #[Url(as: 'id')]
-    public ?int $quotationId = null;
+    #[Url(as: 'ids')]
+    public array $quotationIds = [];
+
+    #[Url]
+    public string $source = '';
+
+    public ?int $activeQuotationId = null;
+
+    public array $completedQuotationIds = [];
 
     /* ── Paso 2: Processing status ───────────────────── */
     public string $processingStatus = 'pending';
@@ -135,8 +142,8 @@ class QuotationWizard extends Component
 
     public function autoSaveDraft(): void
     {
-        if ($this->quotationId) {
-            $quotation = Quotation::find($this->quotationId);
+        if ($this->activeQuotationId) {
+            $quotation = Quotation::find($this->activeQuotationId);
             if ($quotation) {
                 $quotation->update([
                     'draft_state' => [
@@ -160,27 +167,70 @@ class QuotationWizard extends Component
     {
         $this->date = now()->format('Y-m-d');
 
-        if ($this->quotationId) {
-            $quotation = Quotation::find($this->quotationId);
-            if ($quotation) {
-                $this->processingStatus = $quotation->status;
-                if ($quotation->isCompleted()) {
-                    if (! empty($quotation->draft_state)) {
-                        $this->loadFromDraftState($quotation->draft_state);
-                        $this->rawText = $quotation->raw_text ?? '';
+        if (! empty($this->quotationIds)) {
+            $quotations = Quotation::whereIn('id', $this->quotationIds)->get();
+            if ($quotations->isNotEmpty()) {
+                $allCompleted = true;
+                $anyFailed = false;
+
+                foreach ($quotations as $quotation) {
+                    if ($quotation->isFailed()) {
+                        $anyFailed = true;
+                        $this->errorMessage = "El archivo {$quotation->original_filename} falló: {$quotation->error_message}";
+                    }
+                    if (!$quotation->isCompleted() && !$quotation->isFailed()) {
+                        $allCompleted = false;
+                    }
+                }
+
+                if ($anyFailed) {
+                    $this->processingStatus = 'failed';
+                    $this->step = 2;
+                } elseif ($allCompleted) {
+                    $this->processingStatus = 'completed';
+                    // Activar el primer tab incompleto
+                    $nextId = null;
+                    foreach ($this->quotationIds as $id) {
+                        if (!in_array($id, $this->completedQuotationIds)) {
+                            $nextId = $id;
+                            break;
+                        }
+                    }
+                    if ($nextId) {
+                        $this->setActiveTab($nextId);
                         $this->step = 3;
                     } else {
-                        $this->loadParsedData($quotation);
-                        $this->step = 3;
+                        // Todos guardados
+                        $redirectUrl = $this->source === 'borradores'
+                            ? route('requisiciones.index', ['tab' => 'borradores'])
+                            : route('requisiciones.index');
+                        $this->redirect($redirectUrl, navigate: true);
                     }
-                } elseif ($quotation->isProcessing() || $quotation->status === 'pending') {
-                    $this->step = 2;
-                } elseif ($quotation->isFailed()) {
-                    $this->errorMessage = $quotation->error_message;
+                } else {
+                    $this->processingStatus = 'processing';
                     $this->step = 2;
                 }
             } else {
-                $this->quotationId = null;
+                $this->quotationIds = [];
+            }
+        }
+    }
+
+    public function setActiveTab($quotationId): void
+    {
+        if ($this->activeQuotationId && $this->activeQuotationId !== $quotationId) {
+            $this->autoSaveDraft();
+        }
+
+        $this->activeQuotationId = $quotationId;
+        $quotation = Quotation::find($quotationId);
+        
+        if ($quotation) {
+            if (! empty($quotation->draft_state)) {
+                $this->loadFromDraftState($quotation->draft_state);
+                $this->rawText = $quotation->raw_text ?? '';
+            } else {
+                $this->loadParsedData($quotation);
             }
         }
     }
@@ -189,96 +239,97 @@ class QuotationWizard extends Component
      *  PASO 1 — Upload del archivo
      * ═══════════════════════════════════════════════════ */
 
-    public function updatedFile(): void
+    public function updatedFiles(): void
     {
-        if (! $this->file) {
+        if (! $this->files || !is_array($this->files)) {
             return;
         }
 
         $this->validate([
-            'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            'files.*' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
         ], [
-            'file.max' => 'El archivo no debe superar los 20 MB.',
-            'file.mimes' => 'Formatos permitidos: PDF, JPG, PNG, XLSX.',
+            'files.*.max' => 'Ningún archivo debe superar los 20 MB.',
+            'files.*.mimes' => 'Formatos permitidos: PDF, JPG, PNG, XLSX.',
         ]);
+    }
+
+    public function removeUploadedFile($index): void
+    {
+        if (is_array($this->files)) {
+            unset($this->files[$index]);
+            $this->files = array_values($this->files);
+        } else {
+            $this->files = [];
+        }
     }
 
     public function processUpload(): void
     {
-        try {
-            $this->validate([
-                'file' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
-            ]);
+        $this->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+        ]);
 
-            if (! $this->file || ! $this->file->exists()) {
-                throw new \Exception('El archivo temporal ya no existe.');
-            }
-
-            // Guardar el archivo en storage
-            $path = $this->file->store('quotations', 'local');
-            $originalName = $this->file->getClientOriginalName();
-            $extension = strtolower($this->file->getClientOriginalExtension());
-            $mimeType = $this->file->getMimeType();
-
-            // Crear registro de cotización
-            $quotation = Quotation::create([
-                'project_id' => $this->projectId ?: null,
-                'file_path' => $path,
-                'file_type' => $mimeType,
-                'original_filename' => $originalName,
-                'status' => 'pending',
-                'uploaded_by' => auth()->id(),
-            ]);
-        } catch (\Exception $e) {
-            // Capturar errores de Flysystem (archivo no encontrado en temp)
-            if (str_contains($e->getMessage(), 'Unable to retrieve') || str_contains($e->getMessage(), 'file_size')) {
-                $this->addError('file', 'El archivo temporal ha expirado o ya no es válido. Por favor, selecciónalo de nuevo.');
-                $this->file = null;
-
-                return;
-            }
-            throw $e;
-        }
-
-        $this->quotationId = $quotation->id;
-
-        // Determinar si el procesamiento es síncrono o asíncrono
+        $this->quotationIds = [];
         $factory = app(DocumentParserFactory::class);
-        $filePath = Storage::disk('local')->path($path);
-        $resolution = $factory->resolve($filePath, $mimeType, $extension);
 
-        if ($resolution['async']) {
-            // OCR → despachar Job y pasar al paso de espera
-            ProcessQuotationJob::dispatch($quotation->id);
-            $this->processingStatus = 'processing';
-            $this->step = 2;
-        } else {
-            // Síncrono → procesar inline
-            $quotation->update(['status' => 'processing']);
-
+        foreach ($this->files as $file) {
             try {
-                $result = $resolution['parser']->parse($filePath);
+                if (! $file || ! $file->exists()) {
+                    continue;
+                }
 
-                $quotation->update([
-                    'status' => 'completed',
-                    'raw_text' => $result['raw_text'] ?? null,
-                    'raw_parsed_data' => $result,
-                    'processed_at' => now(),
+                $path = $file->store('quotations', 'local');
+                $originalName = $file->getClientOriginalName();
+                $extension = strtolower($file->getClientOriginalExtension());
+                $mimeType = $file->getMimeType();
+
+                $quotation = Quotation::create([
+                    'project_id' => $this->projectId ?: null,
+                    'file_path' => $path,
+                    'file_type' => $mimeType,
+                    'original_filename' => $originalName,
+                    'status' => 'pending',
+                    'uploaded_by' => auth()->id(),
                 ]);
 
-                $this->loadParsedData($quotation->fresh());
-                $this->step = 3;
+                $this->quotationIds[] = $quotation->id;
 
-            } catch (\Throwable $e) {
-                $quotation->update([
-                    'status' => 'failed',
-                    'error_message' => $e->getMessage(),
-                ]);
-                $this->processingStatus = 'failed';
-                $this->errorMessage = $e->getMessage();
-                $this->step = 2;
+                $filePath = Storage::disk('local')->path($path);
+                $resolution = $factory->resolve($filePath, $mimeType, $extension);
+
+                if ($resolution['async']) {
+                    ProcessQuotationJob::dispatch($quotation->id);
+                } else {
+                    $quotation->update(['status' => 'processing']);
+                    try {
+                        $result = $resolution['parser']->parse($filePath);
+                        $quotation->update([
+                            'status' => 'completed',
+                            'raw_text' => $result['raw_text'] ?? null,
+                            'raw_parsed_data' => $result,
+                            'processed_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        $quotation->update([
+                            'status' => 'failed',
+                            'error_message' => $e->getMessage(),
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                if (str_contains($e->getMessage(), 'Unable to retrieve') || str_contains($e->getMessage(), 'file_size')) {
+                    $this->addError('files', 'Un archivo temporal expiró. Por favor, vuelve a subir los archivos.');
+                    $this->files = [];
+                    return;
+                }
+                throw $e;
             }
         }
+
+        $this->step = 2;
+        $this->processingStatus = 'processing';
+        $this->checkProcessingStatus();
     }
 
     /* ═══════════════════════════════════════════════════
@@ -287,22 +338,41 @@ class QuotationWizard extends Component
 
     public function checkProcessingStatus(): void
     {
-        if (! $this->quotationId) {
+        if (empty($this->quotationIds)) {
             return;
         }
 
-        $quotation = Quotation::find($this->quotationId);
-        if (! $quotation) {
-            return;
+        $quotations = Quotation::whereIn('id', $this->quotationIds)->get();
+        $allCompleted = true;
+        $anyFailed = false;
+
+        foreach ($quotations as $quotation) {
+            if ($quotation->isFailed()) {
+                $anyFailed = true;
+                $this->errorMessage = "El archivo {$quotation->original_filename} falló: {$quotation->error_message}";
+            }
+            if (!$quotation->isCompleted() && !$quotation->isFailed()) {
+                $allCompleted = false;
+            }
         }
 
-        $this->processingStatus = $quotation->status;
-
-        if ($quotation->isCompleted()) {
-            $this->loadParsedData($quotation);
-            $this->step = 3;
-        } elseif ($quotation->isFailed()) {
-            $this->errorMessage = $quotation->error_message ?? 'Error desconocido durante el procesamiento.';
+        if ($anyFailed) {
+            $this->processingStatus = 'failed';
+        } elseif ($allCompleted) {
+            $this->processingStatus = 'completed';
+            $nextId = null;
+            foreach ($this->quotationIds as $id) {
+                if (!in_array($id, $this->completedQuotationIds)) {
+                    $nextId = $id;
+                    break;
+                }
+            }
+            if ($nextId) {
+                $this->setActiveTab($nextId);
+                $this->step = 3;
+            }
+        } else {
+            $this->processingStatus = 'processing';
         }
     }
 
@@ -311,21 +381,19 @@ class QuotationWizard extends Component
      */
     public function retryProcessing(): void
     {
-        if (! $this->quotationId) {
+        if (empty($this->quotationIds)) {
             return;
         }
 
-        $quotation = Quotation::find($this->quotationId);
-        if (! $quotation) {
-            return;
+        $quotations = Quotation::whereIn('id', $this->quotationIds)->where('status', 'failed')->get();
+        foreach ($quotations as $quotation) {
+            $quotation->update([
+                'status' => 'pending',
+                'error_message' => null,
+            ]);
+            ProcessQuotationJob::dispatch($quotation->id);
         }
 
-        $quotation->update([
-            'status' => 'pending',
-            'error_message' => null,
-        ]);
-
-        ProcessQuotationJob::dispatch($quotation->id);
         $this->processingStatus = 'processing';
         $this->errorMessage = null;
     }
@@ -335,15 +403,10 @@ class QuotationWizard extends Component
      */
     public function continueManually(): void
     {
-        if ($this->quotationId) {
-            $quotation = Quotation::find($this->quotationId);
-            if ($quotation) {
-                // Forzar el paso al formulario con datos vacíos o los que se hayan extraído
-                $this->loadParsedData($quotation);
-            }
+        if (!empty($this->quotationIds)) {
+            Quotation::whereIn('id', $this->quotationIds)->where('status', 'failed')->update(['status' => 'completed']);
+            $this->checkProcessingStatus();
         }
-        $this->step = 3;
-        $this->processingStatus = 'completed';
     }
 
     /* ═══════════════════════════════════════════════════
@@ -803,18 +866,35 @@ class QuotationWizard extends Component
         );
 
         // Vincular la cotización con la requisición
-        if ($this->quotationId) {
-            $quotation = Quotation::find($this->quotationId);
+        if ($this->activeQuotationId) {
+            $quotation = Quotation::find($this->activeQuotationId);
             if ($quotation) {
                 $quotation->update([
                     'requisition_id' => $requisition->id,
                     'supplier_id' => $requisition->vendor?->supplier_id,
                 ]);
             }
+            $this->completedQuotationIds[] = $this->activeQuotationId;
         }
 
-        session()->flash('success', 'Requisición creada exitosamente desde cotización.');
-        $this->redirect(route('requisiciones.index'), navigate: true);
+        $nextId = null;
+        foreach ($this->quotationIds as $id) {
+            if (!in_array($id, $this->completedQuotationIds)) {
+                $nextId = $id;
+                break;
+            }
+        }
+
+        if ($nextId) {
+            $this->setActiveTab($nextId);
+            session()->flash('success', 'Requisición creada. Por favor revisa la siguiente cotización.');
+        } else {
+            session()->flash('success', '¡Todas las requisiciones han sido creadas con éxito!');
+            $redirectUrl = $this->source === 'borradores'
+                ? route('requisiciones.index', ['tab' => 'borradores'])
+                : route('requisiciones.index');
+            $this->redirect($redirectUrl, navigate: true);
+        }
     }
 
     /**
@@ -823,8 +903,10 @@ class QuotationWizard extends Component
     public function resetWizard(): void
     {
         $this->step = 1;
-        $this->file = null;
-        $this->quotationId = null;
+        $this->files = [];
+        $this->quotationIds = [];
+        $this->activeQuotationId = null;
+        $this->completedQuotationIds = [];
         $this->processingStatus = 'pending';
         $this->errorMessage = null;
         $this->supplierName = '';
@@ -1078,7 +1160,7 @@ class QuotationWizard extends Component
         }
 
         // El modelo Quotation se carga aquí para evitar queries en la vista
-        $quotation = $this->quotationId ? Quotation::find($this->quotationId) : null;
+        $quotation = $this->activeQuotationId ? Quotation::find($this->activeQuotationId) : null;
 
         return view('livewire.requisitions.quotation-wizard', compact(
             'projects',
