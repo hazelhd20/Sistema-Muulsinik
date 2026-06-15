@@ -56,6 +56,7 @@ class ManualRequisitionForm extends Form
     public function addProduct(array $product)
     {
         $this->items[] = [
+            'id' => uniqid(),
             'name' => $product['name'],
             'quantity' => 1,
             'unit' => $product['unit'],
@@ -67,6 +68,7 @@ class ManualRequisitionForm extends Form
     public function addManualItem()
     {
         $this->items[] = [
+            'id' => uniqid(),
             'name' => '',
             'quantity' => 1,
             'unit' => 'pza',

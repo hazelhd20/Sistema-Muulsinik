@@ -55,7 +55,7 @@
     @if($step === 1)
         <div class="max-w-2xl mx-auto">
             <div class="bg-surface-card rounded-2xl border border-border/40 shadow-sm p-8 transition-all duration-300">
-                <x-file-input wire:model="files" :multiple="true" variant="dropzone" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB"
+                <x-file-input wire:model="uploadQueue" :multiple="true" variant="dropzone" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB"
                     :formats="['PDF', 'XLSX', 'JPG', 'PNG']" title="Arrastra tus cotizaciones aquí"
                     subtitle="o haz clic para seleccionar archivos" inputId="file-upload-input" />
 
@@ -318,7 +318,7 @@
                                         };
                                     @endphp
                                     <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
-                                        wire:key="item-row-{{ $i }}">
+                                        wire:key="item-row-{{ $item['id'] ?? $i }}">
                                         {{-- Nombre / Producto --}}
                                         <td class="pl-6 pr-4 py-4">
                                             @php
@@ -440,7 +440,7 @@
                                 $hasCatConflict = isset($item['conflict']['category']);
                                 $hasUnitConflict = isset($item['conflict']['unit']);
                             @endphp
-                            <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
+                            <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
                                 <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
                                     <x-lucide-x class="w-5 h-5" />
                                 </button>

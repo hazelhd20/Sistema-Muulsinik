@@ -25,6 +25,11 @@
         previewUrl: null,
         previewType: null,
         
+        get fileName() { return this.files.length ? this.files[0].name : null; },
+        get fileSize() { return this.files.length ? this.files[0].size : null; },
+        get fileExt() { return this.files.length ? this.files[0].ext : null; },
+        get iconData() { return this.getIconData(this.fileExt); },
+        
         getIconData(ext) {
             const e = (ext || '').toLowerCase();
             const map = {
@@ -54,11 +59,15 @@
             }));
 
             if (isMultiple) {
-                this.files.forEach(f => { if(f.url) URL.revokeObjectURL(f.url); });
-                this.files = newFiles;
+                // Filtrar archivos que ya estén en la lista (mismo nombre y tamaño)
+                const existingNames = this.files.map(f => f.name + '_' + f.size);
+                const uniqueNewFiles = newFiles.filter(f => !existingNames.includes(f.name + '_' + f.size))
+                                               .map(f => ({ ...f, isUploading: true }));
+                
+                this.files.push(...uniqueNewFiles);
             } else {
                 this.files.forEach(f => { if(f.url) URL.revokeObjectURL(f.url); });
-                this.files = [newFiles[0]];
+                this.files = [ { ...newFiles[0], isUploading: true } ];
             }
         },
         
@@ -96,10 +105,10 @@
             @if($wireModel)
                 if (this.$wire) {
                     if ({{ $multiple ? 'true' : 'false' }}) {
-                        this.$dispatch('file-removed', { index: index, name: file.name });
+                        this.$wire.dispatch('file-removed', { index: index, name: file.name });
                     } else {
                         @this.set('{{ $wireModel }}', null);
-                        this.$dispatch('file-removed');
+                        this.$wire.dispatch('file-removed');
                     }
                 }
             @else
@@ -115,8 +124,10 @@
             @if($wireModel)
                 if (this.$wire) {
                     this.$watch('$wire.{{ $wireModel }}', (value) => {
-                        if (!value || (Array.isArray(value) && value.length === 0)) {
-                            this.resetState();
+                        if (!{{ $multiple ? 'true' : 'false' }}) {
+                            if (!value || (Array.isArray(value) && value.length === 0)) {
+                                this.resetState();
+                            }
                         }
                     });
                 }
@@ -137,21 +148,21 @@
         @change="handleFile($event)"
         x-on:livewire-upload-start="uploading = true; progress = 0"
         x-on:livewire-upload-progress="progress = $event.detail.progress"
-        x-on:livewire-upload-finish="uploading = false;"
-        x-on:livewire-upload-error="uploading = false"
+        x-on:livewire-upload-finish="uploading = false; files.forEach(f => f.isUploading = false);"
+        x-on:livewire-upload-error="uploading = false; files.forEach(f => f.isUploading = false);"
     >
 
     @if($variant === 'dropzone')
         {{-- ═══════ DROPZONE VARIANT ═══════ --}}
         <div
-            x-on:dragover.prevent="isDragging = true"
+            x-on:dragover.prevent="if(!uploading) isDragging = true"
             x-on:dragleave.prevent="isDragging = false"
-            x-on:drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
-            @click="$refs.fileInput.click()"
+            x-on:drop.prevent="if(uploading) return; isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
+            @click="if(!uploading) $refs.fileInput.click()"
             class="relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer"
             :class="isDragging
                 ? 'border-primary-500 bg-primary-50/30 scale-[1.02] shadow-sm'
-                : 'border-border-strong hover:border-primary-400 hover:bg-surface-main/30'"
+                : (uploading ? 'border-border bg-surface-main/50 cursor-not-allowed opacity-70' : 'border-border-strong hover:border-primary-400 hover:bg-surface-main/30')"
         >
             <div class="flex flex-col items-center gap-4">
                 <div class="w-14 h-14 rounded-full bg-surface-main/60 border border-border/40 flex items-center justify-center shadow-sm transition-transform duration-300" :class="isDragging ? '-translate-y-1' : ''">
@@ -192,11 +203,9 @@
         </div>
 
         {{-- File selected cards (dropzone) --}}
-        <div class="flex flex-col gap-3 mt-4">
-            <template x-for="(file, index) in files" :key="index">
-                <div
-                    class="p-4 rounded-2xl bg-surface-card border border-border/60 shadow-sm transition-all animate-fade-in-up"
-                >
+        <div class="flex flex-col gap-3 mt-4" wire:ignore>
+            <template x-for="(file, index) in files" :key="file.name + '_' + file.size">
+                <div class="py-3 px-4 rounded-xl bg-surface-main/30 border border-border/40 hover:bg-surface-main/60 transition-all animate-fade-in-up">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-black/5 shadow-sm"
                              :class="getIconData(file.ext).bg">
@@ -209,8 +218,8 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="text-small font-semibold text-text-primary truncate tracking-tight" x-text="file.name"></p>
-                            <p x-show="!uploading" class="text-xs text-text-muted mt-0.5 font-medium"><span x-text="file.size"></span> KB</p>
-                            <div x-show="uploading" class="flex items-center gap-3 mt-1.5">
+                            <p x-show="!file.isUploading" class="text-xs text-text-muted mt-0.5 font-medium"><span x-text="file.size"></span> KB</p>
+                            <div x-show="file.isUploading" class="flex items-center gap-3 mt-1.5">
                                 <div class="flex-1 h-1.5 bg-primary-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-primary-600 rounded-full transition-all duration-300" :style="'width:' + progress + '%'"></div>
                                 </div>
@@ -218,11 +227,11 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0 pl-2">
-                            <button x-show="canPreview(file) && !uploading" type="button" @click="openPreview(file)"
+                            <button x-show="canPreview(file) && !file.isUploading" type="button" @click.stop="openPreview(file)"
                                 class="btn-icon-primary" title="Vista previa">
                                 <x-lucide-eye class="w-4 h-4" wire:ignore />
                             </button>
-                            <button type="button" @click="removeFile(index)"
+                            <button x-show="!file.isUploading" type="button" @click.stop="removeFile(index)"
                                 class="btn-icon-danger" title="Eliminar archivo">
                                 <x-lucide-trash-2 class="w-4 h-4" wire:ignore />
                             </button>

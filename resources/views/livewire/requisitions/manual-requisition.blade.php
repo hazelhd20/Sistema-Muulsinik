@@ -133,7 +133,7 @@
                                     $total = $subtotal + $iva;
                                 @endphp
                                 <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
-                                    wire:key="item-row-{{ $i }}">
+                                    wire:key="item-row-{{ $item['id'] ?? $i }}">
                                     <td class="pl-6 pr-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
                                             class="input text-small w-full"
@@ -190,7 +190,7 @@
                             $iva = round($subtotal * 0.16, 2);
                             $total = $subtotal + $iva;
                         @endphp
-                        <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $i }}">
+                        <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
                             <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
                                 <x-lucide-x class="w-5 h-5" />
                             </button>

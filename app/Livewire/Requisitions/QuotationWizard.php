@@ -39,6 +39,30 @@ class QuotationWizard extends Component
 
     /* ── Paso 1: Upload ──────────────────────────────── */
     public $files = [];
+    public $uploadQueue = []; // Cola temporal para las subidas
+
+    public function updatedUploadQueue()
+    {
+        $this->validate([
+            'uploadQueue.*' => 'file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+        ]);
+
+        foreach ($this->uploadQueue as $file) {
+            $this->files[] = $file;
+        }
+
+        // Limpiar la cola para permitir nuevas subidas
+        $this->uploadQueue = [];
+    }
+
+    #[\Livewire\Attributes\On('file-removed')]
+    public function removeFile($index = null)
+    {
+        if ($index !== null && isset($this->files[$index])) {
+            unset($this->files[$index]);
+            $this->files = array_values($this->files); // Reindexar
+        }
+    }
 
     #[Url(as: 'ids')]
     public array $quotationIds = [];
@@ -561,6 +585,7 @@ class QuotationWizard extends Component
             $suggestedUnit = $item['unit'] ?? 'pza';
 
             $this->items[] = [
+                'id' => uniqid(),
                 'name' => $item['name'] ?? '',
                 'quantity' => $item['quantity'] ?? 0,
                 'unit' => ($existingProduct && $existingProduct->measure_id)
@@ -809,6 +834,7 @@ class QuotationWizard extends Component
     public function addItem(): void
     {
         $this->items[] = [
+            'id' => uniqid(),
             'name' => '',
             'quantity' => 1,
             'unit' => 'pza',
