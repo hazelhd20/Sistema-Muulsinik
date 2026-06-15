@@ -102,10 +102,7 @@
                         </p>
                     </div>
 
-                    <div class="inline-flex items-center gap-2 text-[11px] text-text-muted bg-surface-main/60 border border-border/40 rounded-full px-4 py-2 font-medium tracking-wide">
-                        <x-lucide-sparkles class="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                        <span>PROCESAMIENTO EN SEGUNDO PLANO</span>
-                    </div>
+                    <x-status-chip icon="sparkles" color="primary">Procesamiento en segundo plano</x-status-chip>
 
                     <div class="mt-8 flex justify-center">
                         <x-button href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" variant="secondary" icon="arrow-left" class="text-xs bg-transparent border-transparent hover:bg-surface-hover/50 shadow-none text-text-muted hover:text-text-primary" wire:navigate>
@@ -126,12 +123,9 @@
                         <p class="text-small text-text-muted mb-6">No fue posible extraer los datos del documento automáticamente.</p>
 
                         {{-- Caja de mensaje de error con color semántico --}}
-                        <div class="w-full flex gap-3 items-start bg-danger-50/50 border border-danger-border/60 rounded-xl px-4 py-3.5 mb-8 text-left">
-                            <x-lucide-info class="w-4 h-4 text-danger mt-0.5 shrink-0" wire:ignore />
-                            <p class="text-xs text-danger-800 leading-relaxed">
-                                {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
-                            </p>
-                        </div>
+                        <x-feedback-alert variant="danger" icon="info" class="mb-8">
+                            {{ $errorMessage ?? 'Ocurrió un error inesperado durante el procesamiento.' }}
+                        </x-feedback-alert>
 
                         {{-- Botones con jerarquía clara --}}
                         <div class="flex flex-col w-full gap-3">
