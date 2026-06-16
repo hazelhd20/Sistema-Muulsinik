@@ -4,8 +4,10 @@ namespace App\Livewire\QuickBudgets;
 
 use App\Livewire\Concerns\WithSorting;
 use App\Models\QuickBudget;
+use App\Repositories\QuickBudgetRepository;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -13,10 +15,16 @@ class QuickBudgetIndex extends Component
 {
     use WithPagination, WithSorting;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $periodFilter = '';
+
+    #[Url(history: true)]
     public string $statusFilter = '';
+
+    #[Url(history: true)]
     public string $userFilter = '';
 
     public array $selectedRows = [];
@@ -30,9 +38,9 @@ class QuickBudgetIndex extends Component
         $this->allSelected = false;
     }
 
-    public function deleteBudget(int $id): void
+    public function deleteBudget(int $id, QuickBudgetRepository $repository): void
     {
-        QuickBudget::findOrFail($id)->delete();
+        $repository->delete($id);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Cotización eliminada.']);
         $this->selectedRows = array_diff($this->selectedRows, [$id]);
     }
@@ -47,13 +55,13 @@ class QuickBudgetIndex extends Component
         }
     }
 
-    public function bulkDelete(): void
+    public function bulkDelete(QuickBudgetRepository $repository): void
     {
         if (empty($this->selectedRows)) {
             return;
         }
 
-        QuickBudget::whereIn('id', $this->selectedRows)->delete();
+        $repository->bulkDelete($this->selectedRows);
 
         if (count($this->selectedRows) > 0) {
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($this->selectedRows) . ' cotización(es) eliminada(s) exitosamente.']);

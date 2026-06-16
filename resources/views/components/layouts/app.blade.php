@@ -67,27 +67,27 @@
 
                 <p class="nav-section-label">Principal</p>
 
-                <a href="{{ url('/dashboard') }}" wire:navigate.hover class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
+                <a href="{{ url('/dashboard') }}" wire:navigate class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
                     <x-lucide-layout-dashboard class="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>Dashboard</span>
                 </a>
 
                 @if(auth()->user()->hasPermission('proyectos.ver'))
-                    <a href="{{ url('/proyectos') }}" wire:navigate.hover class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
+                    <a href="{{ url('/proyectos') }}" wire:navigate class="nav-link {{ request()->is('proyectos*') ? 'active' : '' }}">
                         <x-lucide-hard-hat class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Proyectos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('gastos.ver'))
-                    <a href="{{ url('/gastos') }}" wire:navigate.hover class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
+                    <a href="{{ url('/gastos') }}" wire:navigate class="nav-link {{ request()->is('gastos*') ? 'active' : '' }}">
                         <x-lucide-wallet class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Gastos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('requisiciones.ver'))
-                    <a href="{{ url('/requisiciones') }}" wire:navigate.hover
+                    <a href="{{ url('/requisiciones') }}" wire:navigate
                         class="nav-link {{ request()->is('requisiciones*') ? 'active' : '' }}">
                         <x-lucide-clipboard-list class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Requisiciones</span>
@@ -95,7 +95,7 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
-                    <a href="{{ route('cotizador.index') }}" wire:navigate.hover
+                    <a href="{{ route('cotizador.index') }}" wire:navigate
                         class="nav-link {{ request()->routeIs('cotizador.*') ? 'active' : '' }}">
                         <x-lucide-calculator class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Cotizador</span>
@@ -105,7 +105,7 @@
                 <p class="nav-section-label mt-4">Administración</p>
 
                 @if(auth()->user()->hasPermission('usuarios.ver'))
-                    <a href="{{ url('/usuarios') }}" wire:navigate.hover
+                    <a href="{{ url('/usuarios') }}" wire:navigate
                         class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
                         <x-lucide-users class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Usuarios</span>
@@ -113,7 +113,7 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('proveedores.ver'))
-                    <a href="{{ url('/proveedores') }}" wire:navigate.hover
+                    <a href="{{ url('/proveedores') }}" wire:navigate
                         class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
                         <x-lucide-truck class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Proveedores</span>
@@ -121,7 +121,7 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('reportes.ver'))
-                    <a href="{{ url('/reportes') }}" wire:navigate.hover class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
+                    <a href="{{ url('/reportes') }}" wire:navigate class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
                         <x-lucide-bar-chart-3 class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Reportes</span>
                     </a>
@@ -130,18 +130,18 @@
                 <p class="nav-section-label mt-4">Catálogos</p>
 
                 @if(auth()->user()->hasPermission('productos.ver'))
-                    <a href="{{ url('/productos') }}" wire:navigate.hover class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
+                    <a href="{{ url('/productos') }}" wire:navigate class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
                         <x-lucide-package class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Productos</span>
                     </a>
                 @endif
 
                 @if(auth()->user()->hasPermission('catalogos.ver'))
-                    <a href="{{ url('/medidas') }}" wire:navigate.hover class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
+                    <a href="{{ url('/medidas') }}" wire:navigate class="nav-link {{ request()->is('medidas*') ? 'active' : '' }}">
                         <x-lucide-ruler class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Medidas</span>
                     </a>
-                    <a href="{{ url('/categorias') }}" wire:navigate.hover class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
+                    <a href="{{ url('/categorias') }}" wire:navigate class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
                         <x-lucide-layers class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Categorías</span>
                     </a>

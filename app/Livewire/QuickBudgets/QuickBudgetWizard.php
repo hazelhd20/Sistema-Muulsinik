@@ -2,9 +2,13 @@
 
 namespace App\Livewire\QuickBudgets;
 
+use App\DTOs\QuickBudgetDTO;
+use App\Models\Category;
+use App\Models\Measure;
 use App\Models\Product;
 use App\Models\QuickBudget;
 use App\Models\QuickBudgetItem;
+use App\Repositories\QuickBudgetRepository;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -166,7 +170,7 @@ class QuickBudgetWizard extends Component
         return round($subtotal + $margin, 2);
     }
 
-    public function save()
+    public function save(QuickBudgetRepository $repository)
     {
         $this->validate([
             'title' => 'required|string|max:255',
@@ -177,40 +181,17 @@ class QuickBudgetWizard extends Component
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () {
-            $budget = QuickBudget::updateOrCreate(
-                ['id' => $this->budgetId],
-                [
-                    'title' => $this->title,
-                    'description' => $this->description,
-                    'client' => $this->client,
-                    'subtotal' => $this->subtotal,
-                    'tax_amount' => 0, // Simplified for quick budgets
-                    'total' => $this->subtotal,
-                    'margin_percent' => $this->marginPercent,
-                    'grand_total' => $this->grand_total,
-                    'created_by' => auth()->id(),
-                ]
-            );
+        $dto = QuickBudgetDTO::fromArray([
+            'title' => $this->title,
+            'description' => $this->description,
+            'client' => $this->client,
+            'marginPercent' => $this->marginPercent,
+            'items' => $this->items,
+        ], auth()->id());
 
-            // Delete old items if updating
-            if ($this->budgetId) {
-                QuickBudgetItem::where('quick_budget_id', $this->budgetId)->delete();
-            }
+        $budget = $repository->save($this->budgetId, $dto);
 
-            foreach ($this->items as $item) {
-                QuickBudgetItem::create([
-                    'quick_budget_id' => $budget->id,
-                    'product_id' => $item['product_id'],
-                    'concept' => $item['concept'],
-                    'measure_id' => $item['measure_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'line_total' => $item['line_total'],
-                ]);
-            }
-        });
-
+        $this->budgetId = $budget->id;
         session()->flash('success', 'Cotización guardada exitosamente.');
 
         return $this->redirect(route('cotizador.index'), navigate: true);

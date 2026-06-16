@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class QuickBudgetItem extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'quick_budget_id', 'product_id', 'concept',
         'measure_id', 'quantity', 'unit_price', 'line_total',

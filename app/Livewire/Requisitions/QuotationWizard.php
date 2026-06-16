@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\DTOs\QuotationDTO;
 use App\Jobs\ProcessQuotationJob;
 use App\Models\Category;
 use App\Models\Measure;
@@ -10,6 +11,7 @@ use App\Models\Project;
 use App\Models\Quotation;
 use App\Models\Supplier;
 use App\Models\Vendor;
+use App\Repositories\QuotationRepository;
 use App\Services\DataNormalizerService;
 use App\Services\DiscountNormalizerService;
 use App\Services\DocumentParsers\DocumentParserFactory;
@@ -36,6 +38,7 @@ class QuotationWizard extends Component
 
     /* ── Estado del Wizard ───────────────────────────── */
     public int $step = 1;
+    public bool $isProcessing = false;
 
     /* ── Paso 1: Upload ──────────────────────────────── */
     public $files = [];
@@ -301,7 +304,7 @@ class QuotationWizard extends Component
         }
     }
 
-    public function processUpload(): void
+    public function processUpload(QuotationRepository $repository): void
     {
         $this->validate([
             'files' => 'required|array|min:1',
@@ -317,23 +320,14 @@ class QuotationWizard extends Component
                     continue;
                 }
 
-                $path = $file->store('quotations', 'local');
-                $originalName = $file->getClientOriginalName();
-                $extension = strtolower($file->getClientOriginalExtension());
-                $mimeType = $file->getMimeType();
-
-                $quotation = Quotation::create([
-                    'project_id' => $this->projectId ?: null,
-                    'file_path' => $path,
-                    'file_type' => $mimeType,
-                    'original_filename' => $originalName,
-                    'status' => 'pending',
-                    'uploaded_by' => auth()->id(),
-                ]);
+                $dto = QuotationDTO::fromFile($file, $this->projectId ?: null, auth()->id());
+                $quotation = $repository->uploadAndCreate($dto);
 
                 $this->quotationIds[] = $quotation->id;
-
-                $filePath = Storage::disk('local')->path($path);
+                
+                $filePath = $file->getRealPath();
+                $mimeType = $file->getMimeType();
+                $extension = $file->getClientOriginalExtension();
                 $resolution = $factory->resolve($filePath, $mimeType, $extension);
 
                 if ($resolution['async']) {
@@ -356,18 +350,25 @@ class QuotationWizard extends Component
                     }
                 }
             } catch (\Exception $e) {
-                if (str_contains($e->getMessage(), 'Unable to retrieve') || str_contains($e->getMessage(), 'file_size')) {
-                    $this->addError('files', 'Un archivo temporal expiró. Por favor, vuelve a subir los archivos.');
-                    $this->files = [];
-                    return;
-                }
-                throw $e;
+                // Capturar el error de Magic Bytes o de creación
+                $this->dispatch('toast', ['icon' => 'error', 'message' => $e->getMessage()]);
+                // Si el archivo falla, no seguimos procesando este archivo en particular
+                continue;
             }
         }
 
-        $this->step = 2;
-        $this->processingStatus = 'processing';
-        $this->checkProcessingStatus();
+        // Si se subieron archivos exitosamente, comenzamos a verificarlos
+        if (count($this->quotationIds) > 0) {
+            $this->isProcessing = true;
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Archivos subidos, analizando...']);
+            $this->step = 2;
+            $this->processingStatus = 'processing';
+            $this->checkProcessingStatus();
+        } else {
+            // Si ninguno pasó, reseteamos
+            $this->files = [];
+            $this->uploadQueue = [];
+        }
     }
 
     /* ═══════════════════════════════════════════════════
