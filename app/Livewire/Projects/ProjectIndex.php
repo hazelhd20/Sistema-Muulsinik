@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Projects;
 
+use App\DTOs\ProjectDTO;
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
-use App\Models\Expense;
 use App\Models\Project;
-use App\Models\Quotation;
-use App\Models\Requisition;
+use App\Repositories\ProjectRepository;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,10 +18,13 @@ class ProjectIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
 
+    #[Url(history: true)]
     public string $periodFilter = '';
 
     public array $selectedRows = [];
@@ -87,14 +90,14 @@ class ProjectIndex extends Component
         $this->showModal = true;
     }
 
-    public function saveProject(): void
+    public function saveProject(ProjectRepository $repository): void
     {
         if ($this->editingId) {
             if ($this->denyUnless('proyectos.editar', 'No tienes permiso para editar proyectos.')) {
                 return;
             }
 
-            $this->validate([
+            $validated = $this->validate([
                 'name' => 'required|min:3|max:255',
                 'description' => 'nullable|max:1000',
                 'client' => 'nullable|max:255',
@@ -104,22 +107,15 @@ class ProjectIndex extends Component
                 'status' => 'required|in:activo,en_pausa,completado,cancelado',
             ]);
 
-            Project::findOrFail($this->editingId)->update([
-                'name' => $this->name,
-                'description' => $this->description,
-                'client' => $this->client,
-                'budget' => $this->budget,
-                'start_date' => $this->startDate ?: null,
-                'end_date' => $this->endDate ?: null,
-                'status' => $this->status,
-            ]);
+            $dto = ProjectDTO::fromArray($validated);
+            $repository->update($this->editingId, $dto);
             $message = 'Proyecto actualizado correctamente.';
         } else {
             if ($this->denyUnless('proyectos.crear', 'No tienes permiso para crear proyectos.')) {
                 return;
             }
 
-            $this->validate([
+            $validated = $this->validate([
                 'name' => 'required|min:3|max:255',
                 'description' => 'nullable|max:1000',
                 'client' => 'nullable|max:255',
@@ -128,15 +124,8 @@ class ProjectIndex extends Component
                 'endDate' => 'nullable|date|after_or_equal:startDate',
             ]);
 
-            Project::create([
-                'name' => $this->name,
-                'description' => $this->description,
-                'client' => $this->client,
-                'budget' => $this->budget,
-                'start_date' => $this->startDate ?: null,
-                'end_date' => $this->endDate ?: null,
-                'status' => 'activo',
-            ]);
+            $dto = ProjectDTO::fromArray($validated);
+            $repository->create($dto);
             $message = 'Proyecto creado exitosamente.';
         }
 
@@ -145,25 +134,17 @@ class ProjectIndex extends Component
         $this->dispatch('toast', ['icon' => 'success', 'message' => $message]);
     }
 
-    public function deleteProject(int $projectId): void
+    public function deleteProject(int $projectId, ProjectRepository $repository): void
     {
         if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.')) {
             return;
         }
 
-        $project = Project::findOrFail($projectId);
-
-        $hasDependencies = Requisition::where('project_id', $projectId)->exists() ||
-            Expense::where('project_id', $projectId)->exists() ||
-            Quotation::where('project_id', $projectId)->exists();
-
-        if ($hasDependencies) {
+        if (!$repository->delete($projectId)) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el proyecto tiene requisiciones, cotizaciones o gastos asociados.']);
-
             return;
         }
 
-        $project->delete();
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proyecto eliminado.']);
         $this->selectedRows = array_diff($this->selectedRows, [$projectId]);
     }
@@ -178,7 +159,7 @@ class ProjectIndex extends Component
         }
     }
 
-    public function bulkDelete(): void
+    public function bulkDelete(ProjectRepository $repository): void
     {
         if ($this->denyUnless('proyectos.eliminar', 'No tienes permiso para eliminar proyectos.')) {
             return;
@@ -188,19 +169,12 @@ class ProjectIndex extends Component
             return;
         }
 
-        // Check for dependencies
-        $usedInRequisitions = Requisition::whereIn('project_id', $this->selectedRows)->pluck('project_id')->toArray();
-        $usedInExpenses = Expense::whereIn('project_id', $this->selectedRows)->pluck('project_id')->toArray();
-        $usedInQuotations = Quotation::whereIn('project_id', $this->selectedRows)->pluck('project_id')->toArray();
+        $projectsToDelete = $repository->bulkDelete($this->selectedRows);
+        $notDeletedCount = count($this->selectedRows) - count($projectsToDelete);
 
-        $usedProjects = array_unique(array_merge($usedInRequisitions, $usedInExpenses, $usedInQuotations));
-        $projectsToDelete = array_diff($this->selectedRows, $usedProjects);
-
-        if (count($usedProjects) > 0) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos proyectos no pudieron ser eliminados porque tienen dependencias.']);
+        if ($notDeletedCount > 0) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => "{$notDeletedCount} proyecto(s) no pudieron ser eliminados porque tienen dependencias."]);
         }
-
-        Project::whereIn('id', $projectsToDelete)->delete();
 
         if (count($projectsToDelete) > 0) {
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($projectsToDelete) . ' proyecto(s) eliminado(s) exitosamente.']);

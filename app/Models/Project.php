@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
 
@@ -22,7 +23,7 @@ use Laravel\Scout\Searchable;
  */
 class Project extends Model
 {
-    use Searchable;
+    use Searchable, SoftDeletes;
 
     protected $fillable = [
         'name', 'description', 'client', 'budget',
@@ -66,24 +67,27 @@ class Project extends Model
         return $this->hasMany(ExpenseAllocation::class);
     }
 
-    protected ?float $totalExpensesCache = null;
-
-    /** Gasto total acumulado del proyecto (Directo + Distribuido + Requisiciones Aprobadas). */
+    /** Gasto total acumulado del proyecto. Obtenido desde la columna de caché materializada. */
     public function getTotalExpensesAttribute(): float
     {
-        if ($this->totalExpensesCache !== null) {
-            return $this->totalExpensesCache;
-        }
+        return (float) $this->total_expenses_cache;
+    }
 
+    /** 
+     * Recalcula el gasto total directamente desde la base de datos y actualiza la caché.
+     * Útil para Observers o comandos de mantenimiento.
+     */
+    public function recalculateTotalExpensesCache(): void
+    {
         $direct = (float) $this->expenses()->sum('amount');
         $distributed = (float) $this->expenseAllocations()->sum('amount');
 
-        $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+        $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
             ->where('requisitions.project_id', $this->id)
             ->where('requisitions.status', 'aprobada')
             ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
-        return $this->totalExpensesCache = $direct + $distributed + $requisitions;
+        $this->updateQuietly(['total_expenses_cache' => $direct + $distributed + $requisitions]);
     }
 
     /** Gasto total del proyecto en un período específico (Directo + Distribuido + Requisiciones Aprobadas). */

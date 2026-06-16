@@ -2,16 +2,17 @@
 
 namespace App\Livewire\Expenses;
 
+use App\DTOs\ExpenseDTO;
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\Expense;
-use App\Models\ExpenseAllocation;
 use App\Models\Project;
 use App\Models\User;
-use App\Notifications\BudgetAlert;
-use Illuminate\Support\Facades\Notification;
+use App\Repositories\ExpenseRepository;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -20,14 +21,19 @@ class ExpenseIndex extends Component
 {
     use EnforcesPermissions, WithFileUploads, WithPagination, WithSorting;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $projectFilter = '';
 
+    #[Url(history: true)]
     public string $categoryFilter = '';
 
+    #[Url(history: true)]
     public string $periodFilter = '';
 
+    #[Url(history: true)]
     public string $userFilter = '';
 
     public array $selectedRows = [];
@@ -102,13 +108,13 @@ class ExpenseIndex extends Component
 
     public bool $isDistributed = false;
 
-    public function createExpense(): void
+    public function createExpense(ExpenseRepository $repository): void
     {
         if ($this->denyUnless('gastos.crear', 'No tienes permiso para registrar gastos.')) {
             return;
         }
 
-        $this->validate([
+        $validated = $this->validate([
             'concept' => 'required|min:3|max:255',
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
@@ -117,55 +123,35 @@ class ExpenseIndex extends Component
             'receiptFile' => 'nullable|file|max:20480|mimes:jpg,jpeg,png,pdf',
         ]);
 
-        $receiptPath = null;
-        if ($this->receiptFile) {
-            $receiptPath = $this->receiptFile->store('receipts', 'public');
+        try {
+            $dto = ExpenseDTO::fromArray([
+                'concept' => $this->concept,
+                'amount' => $this->amount,
+                'date' => $this->date,
+                'category' => $this->category,
+                'projectId' => $this->projectId,
+                'isDistributed' => $this->isDistributed,
+                'receiptFile' => $this->receiptFile,
+            ], auth()->id());
+
+            $repository->create($dto);
+
+            $this->showCreateModal = false;
+            $this->resetForm();
+            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto registrado correctamente.']);
+        } catch (\Exception $e) {
+            Log::error('Error creating expense: ' . $e->getMessage());
+            $this->dispatch('toast', ['icon' => 'error', 'message' => $e->getMessage()]);
         }
-
-        $expense = Expense::create([
-            'concept' => $this->concept,
-            'amount' => $this->amount,
-            'date' => $this->date,
-            'category' => $this->category,
-            'project_id' => $this->isDistributed ? null : $this->projectId,
-            'is_distributed' => $this->isDistributed,
-            'user_id' => auth()->id(),
-            'receipt_file' => $receiptPath,
-        ]);
-
-        if ($this->isDistributed) {
-            $activeProjects = Project::where('status', 'activo')->get();
-            $count = $activeProjects->count();
-            if ($count > 0) {
-                $amountPerProject = round($this->amount / $count, 2);
-                $percentage = round(100 / $count, 2);
-                foreach ($activeProjects as $project) {
-                    ExpenseAllocation::create([
-                        'expense_id' => $expense->id,
-                        'project_id' => $project->id,
-                        'amount' => $amountPerProject,
-                        'percentage' => $percentage,
-                    ]);
-                    // Verificar alertas de presupuesto para cada proyecto
-                    $this->checkBudgetAlerts($project);
-                }
-            }
-        } else {
-            $this->checkBudgetAlerts($expense->project);
-        }
-
-        $this->showCreateModal = false;
-        $this->resetForm();
-        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto registrado correctamente.']);
     }
 
-    public function deleteExpense(int $expenseId): void
+    public function deleteExpense(int $expenseId, ExpenseRepository $repository): void
     {
         if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) {
             return;
         }
 
-        Expense::findOrFail($expenseId)->delete();
+        $repository->delete($expenseId);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Gasto eliminado.']);
         $this->selectedRows = array_diff($this->selectedRows, [$expenseId]);
     }
@@ -180,7 +166,7 @@ class ExpenseIndex extends Component
         }
     }
 
-    public function bulkDelete(): void
+    public function bulkDelete(ExpenseRepository $repository): void
     {
         if ($this->denyUnless('gastos.eliminar', 'No tienes permiso para eliminar gastos.')) {
             return;
@@ -190,7 +176,7 @@ class ExpenseIndex extends Component
             return;
         }
 
-        Expense::whereIn('id', $this->selectedRows)->delete();
+        $repository->bulkDelete($this->selectedRows);
 
         if (count($this->selectedRows) > 0) {
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($this->selectedRows) . ' gasto(s) eliminado(s) exitosamente.']);
@@ -200,35 +186,7 @@ class ExpenseIndex extends Component
         $this->allSelected = false;
     }
 
-    /** Verificar umbrales de presupuesto del proyecto (RF-GASTO-03). */
-    private function checkBudgetAlerts(Project $project): void
-    {
-        $percent = $project->budget_used_percent;
 
-        $severity = null;
-        $message = null;
-
-        if ($percent >= 100) {
-            $severity = 'danger';
-            $message = "⚠️ ALERTA: El proyecto \"{$project->name}\" ha superado el 100% del presupuesto asignado.";
-        } elseif ($percent >= 90) {
-            $severity = 'warning';
-            $message = "⚠️ PRECAUCIÓN: El proyecto \"{$project->name}\" ha alcanzado el 90% del presupuesto.";
-        } elseif ($percent >= 70) {
-            $severity = 'info';
-            $message = "📊 AVISO: El proyecto \"{$project->name}\" ha alcanzado el 70% del presupuesto.";
-        }
-
-        if ($severity) {
-            $this->dispatch('toast', ['icon' => $severity === 'danger' ? 'error' : ($severity === 'info' ? 'info' : 'warning'), 'message' => $message]);
-
-            if ($percent >= 80) { // Database alert threshold defined in BudgetAlert
-                $admins = User::with('role')->get()->filter(fn ($u) => $u->hasPermission('gastos.ver') || $u->hasPermission('*'));
-                Notification::send($admins, new BudgetAlert($project, $percent, $percent >= 100 ? 'danger' : 'warning'));
-                $this->dispatch('notification-received');
-            }
-        }
-    }
 
     private function resetForm(): void
     {

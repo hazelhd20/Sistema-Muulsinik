@@ -85,6 +85,18 @@ class Requisition extends Model
                 $requisition->saveQuietly();
             }
         });
+
+        static::saved(function ($requisition) {
+            if ($requisition->wasChanged('status') || $requisition->status === 'aprobada') {
+                $requisition->project?->recalculateTotalExpensesCache();
+            }
+        });
+
+        static::deleted(function ($requisition) {
+            if ($requisition->status === 'aprobada') {
+                $requisition->project?->recalculateTotalExpensesCache();
+            }
+        });
     }
 
     public function project(): BelongsTo

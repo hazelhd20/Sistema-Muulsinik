@@ -4,9 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model
 {
+    use SoftDeletes;
+
+    protected static function booted()
+    {
+        static::saved(function ($expense) {
+            $expense->project?->recalculateTotalExpensesCache();
+        });
+
+        static::deleted(function ($expense) {
+            $expense->project?->recalculateTotalExpensesCache();
+        });
+    }
     protected $fillable = [
         'concept', 'amount', 'date', 'category',
         'project_id', 'is_distributed', 'user_id', 'receipt_file',
