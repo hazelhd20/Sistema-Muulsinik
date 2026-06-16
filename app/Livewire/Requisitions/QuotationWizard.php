@@ -44,7 +44,7 @@ class QuotationWizard extends Component
     public function updatedUploadQueue()
     {
         $this->validate([
-            'uploadQueue.*' => 'file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            'uploadQueue.*' => 'file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel|mimes:pdf,jpg,jpeg,png,xlsx,xls',
         ]);
 
         foreach ($this->uploadQueue as $file) {
@@ -78,6 +78,20 @@ class QuotationWizard extends Component
     public string $processingStatus = 'pending';
 
     public ?string $errorMessage = null;
+
+    #[Computed]
+    public function processingProgress(): int
+    {
+        if (empty($this->quotationIds)) {
+            return 0;
+        }
+
+        $quotations = Quotation::whereIn('id', $this->quotationIds)->get();
+        $total = $quotations->count();
+        $completed = $quotations->filter(fn($q) => $q->isCompleted() || $q->isFailed())->count();
+        
+        return $total > 0 ? (int) (($completed / $total) * 100) : 0;
+    }
 
     /* ── Paso 3: Formulario editable ─────────────────── */
     public $projectId = '';
@@ -270,7 +284,7 @@ class QuotationWizard extends Component
         }
 
         $this->validate([
-            'files.*' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            'files.*' => 'required|file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel|mimes:pdf,jpg,jpeg,png,xlsx,xls',
         ], [
             'files.*.max' => 'Ningún archivo debe superar los 20 MB.',
             'files.*.mimes' => 'Formatos permitidos: PDF, JPG, PNG, XLSX.',
@@ -291,7 +305,7 @@ class QuotationWizard extends Component
     {
         $this->validate([
             'files' => 'required|array|min:1',
-            'files.*' => 'required|file|max:20480|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+            'files.*' => 'required|file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel|mimes:pdf,jpg,jpeg,png,xlsx,xls',
         ]);
 
         $this->quotationIds = [];

@@ -96,10 +96,16 @@
                             </div>
                         </div>
                         <h2 class="text-h3 font-medium text-text-primary mb-2 tracking-tight">Analizando documento</h2>
-                        <p class="text-small text-text-muted max-w-xs mx-auto leading-relaxed">
+                        <p class="text-small text-text-muted max-w-xs mx-auto leading-relaxed mb-4">
                             Extrayendo datos con inteligencia artificial.<br>
                             Puede tomar hasta 30 segundos.
                         </p>
+                        
+                        {{-- Progress Bar --}}
+                        <div class="w-full max-w-xs mx-auto bg-border/40 rounded-full h-1.5 mb-2 overflow-hidden">
+                            <div class="bg-primary-600 h-1.5 rounded-full transition-all duration-500 ease-out" style="width: {{ $this->processingProgress }}%"></div>
+                        </div>
+                        <p class="text-xs text-text-muted tracking-wide font-medium">{{ $this->processingProgress }}% completado</p>
                     </div>
 
                     <x-status-chip icon="sparkles" color="primary">Procesamiento en segundo plano</x-status-chip>

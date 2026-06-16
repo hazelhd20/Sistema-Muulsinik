@@ -329,214 +329,34 @@ input[type="search"]::-webkit-search-results-decoration {
     }
 
     /* ── Primary Button ── */
-    .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4375rem;
-        padding: 0.4375rem 1rem;
-        min-height: 2.25rem;
-        background-color: var(--color-primary-600);
-        color: #fff;
-        font-weight: 600;
-        font-size: var(--font-size-small);
-        line-height: 1.5;
-        border-radius: 0.4375rem;
-        transition:
-            background-color 120ms,
-            box-shadow 120ms;
-        cursor: pointer;
-        border: 1px solid transparent;
-        position: relative;
-        white-space: nowrap;
-        letter-spacing: 0.005em;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-primary:hover {
-        background-color: var(--color-primary-700);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
-            0 0 0 3px color-mix(in srgb, var(--color-primary-600) 12%, transparent);
-    }
-
-    .btn-primary:active {
-        background-color: var(--color-primary-800);
-        box-shadow: none;
-    }
-
-    .btn-primary:disabled,
-    .btn-primary.disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
+    .btn-primary { @apply inline-flex items-center justify-center gap-1.5 px-4 min-h-[2.25rem] bg-primary-600 text-white font-semibold text-[length:var(--font-size-small)] rounded-md transition-all duration-150 shadow-sm border border-transparent whitespace-nowrap cursor-pointer tracking-wide; }
+.btn-primary:hover { @apply bg-primary-700 ring-4 ring-primary-600/10; }
+.btn-primary:active { @apply bg-primary-800 shadow-none; }
+.btn-primary:disabled, .btn-primary.disabled { @apply opacity-55 cursor-not-allowed shadow-none; }
 
     /* ── Danger Button ── */
-    .btn-danger {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4375rem;
-        padding: 0.4375rem 1rem;
-        min-height: 2.25rem;
-        background-color: var(--color-danger);
-        color: #fff;
-        font-weight: 600;
-        font-size: var(--font-size-small);
-        line-height: 1.5;
-        border-radius: 0.4375rem;
-        transition:
-            background-color 120ms,
-            box-shadow 120ms;
-        cursor: pointer;
-        border: 1px solid transparent;
-        position: relative;
-        white-space: nowrap;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-danger:hover {
-        background-color: var(--color-danger-hover);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
-            0 0 0 3px color-mix(in srgb, var(--color-danger) 12%, transparent);
-    }
-
-    .btn-danger:active {
-        background-color: var(--color-danger-active);
-        box-shadow: none;
-    }
-
-    .btn-danger:disabled,
-    .btn-danger.disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
+    .btn-danger { @apply inline-flex items-center justify-center gap-1.5 px-4 min-h-[2.25rem] bg-danger text-white font-semibold text-[length:var(--font-size-small)] rounded-md transition-all duration-150 shadow-sm border border-transparent whitespace-nowrap cursor-pointer tracking-wide; }
+.btn-danger:hover { @apply bg-danger-hover ring-4 ring-danger/10; }
+.btn-danger:active { @apply bg-danger-active shadow-none; }
+.btn-danger:disabled, .btn-danger.disabled { @apply opacity-55 cursor-not-allowed shadow-none; }
 
     /* ── Success Button ── */
-    .btn-success {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4375rem;
-        padding: 0.4375rem 1rem;
-        min-height: 2.25rem;
-        background-color: var(--color-success);
-        color: #fff;
-        font-weight: 600;
-        font-size: var(--font-size-small);
-        line-height: 1.5;
-        border-radius: 0.4375rem;
-        transition:
-            background-color 120ms,
-            box-shadow 120ms;
-        cursor: pointer;
-        border: 1px solid transparent;
-        position: relative;
-        white-space: nowrap;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-success:hover {
-        background-color: var(--color-success-hover);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
-            0 0 0 3px color-mix(in srgb, var(--color-success) 12%, transparent);
-    }
-
-    .btn-success:active {
-        background-color: var(--color-success-active);
-        box-shadow: none;
-    }
-
-    .btn-success:disabled,
-    .btn-success.disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
+    .btn-success { @apply inline-flex items-center justify-center gap-1.5 px-4 min-h-[2.25rem] bg-success text-white font-semibold text-[length:var(--font-size-small)] rounded-md transition-all duration-150 shadow-sm border border-transparent whitespace-nowrap cursor-pointer tracking-wide; }
+.btn-success:hover { @apply bg-success-hover ring-4 ring-success/10; }
+.btn-success:active { @apply bg-success-active shadow-none; }
+.btn-success:disabled, .btn-success.disabled { @apply opacity-55 cursor-not-allowed shadow-none; }
 
     /* ── Warning Button ── */
-    .btn-warning {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4375rem;
-        padding: 0.4375rem 1rem;
-        min-height: 2.25rem;
-        background-color: var(--color-warning);
-        color: #fff;
-        font-weight: 600;
-        font-size: var(--font-size-small);
-        line-height: 1.5;
-        border-radius: 0.4375rem;
-        transition:
-            background-color 120ms,
-            box-shadow 120ms;
-        cursor: pointer;
-        border: 1px solid transparent;
-        position: relative;
-        white-space: nowrap;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-warning:hover {
-        background-color: var(--color-warning-hover);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
-            0 0 0 3px color-mix(in srgb, var(--color-warning) 12%, transparent);
-    }
-
-    .btn-warning:active {
-        background-color: var(--color-warning-active);
-        box-shadow: none;
-    }
-
-    .btn-warning:disabled,
-    .btn-warning.disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
+    .btn-warning { @apply inline-flex items-center justify-center gap-1.5 px-4 min-h-[2.25rem] bg-warning text-white font-semibold text-[length:var(--font-size-small)] rounded-md transition-all duration-150 shadow-sm border border-transparent whitespace-nowrap cursor-pointer tracking-wide; }
+.btn-warning:hover { @apply bg-warning-hover ring-4 ring-warning/10; }
+.btn-warning:active { @apply bg-warning-active shadow-none; }
+.btn-warning:disabled, .btn-warning.disabled { @apply opacity-55 cursor-not-allowed shadow-none; }
 
     /* ── Secondary Button ── */
-    .btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4375rem;
-        padding: 0.4375rem 1rem;
-        min-height: 2.25rem;
-        background-color: var(--color-surface-card);
-        color: var(--color-text-primary);
-        font-weight: 500;
-        font-size: var(--font-size-small);
-        line-height: 1.5;
-        border-radius: 0.4375rem;
-        border: 1px solid var(--color-border);
-        transition:
-            background-color 120ms,
-            border-color 120ms,
-            box-shadow 120ms;
-        cursor: pointer;
-        position: relative;
-        white-space: nowrap;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-secondary:hover {
-        background-color: var(--color-surface-hover);
-        border-color: var(--color-border-strong);
-    }
-
-    .btn-secondary:active {
-        background-color: #eef0f4;
-    }
-
-    .btn-secondary:disabled,
-    .btn-secondary.disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
+    .btn-secondary { @apply inline-flex items-center justify-center gap-1.5 px-4 min-h-[2.25rem] bg-surface-card text-text-primary font-medium text-[length:var(--font-size-small)] rounded-md border border-border transition-all duration-150 shadow-sm cursor-pointer whitespace-nowrap; }
+.btn-secondary:hover { @apply bg-surface-hover border-border-strong; }
+.btn-secondary:active { @apply bg-surface-hover/70; }
+.btn-secondary:disabled, .btn-secondary.disabled { @apply opacity-55 cursor-not-allowed shadow-none; }
 
     /* ── Input ── */
     .input {
@@ -760,29 +580,11 @@ input[type="search"]::-webkit-search-results-decoration {
         border-collapse: collapse;
     }
 
-    .table-container th {
-        text-align: left;
-        padding: 0.625rem 1.125rem;
-        font-size: var(--font-size-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.07em;
-        border-bottom: 1px solid var(--color-border);
-        background-color: var(--color-surface-th);
-    }
+    .table-container th { @apply text-left px-4 py-2.5 text-xs font-semibold text-text-muted uppercase tracking-wider bg-surface-main/30 border-b border-border/40; }
 
-    .table-container td {
-        padding: 0.8125rem 1.125rem;
-        font-size: var(--font-size-body);
-        color: var(--color-text-primary);
-        border-bottom: 1px solid var(--color-border-light);
-        vertical-align: middle;
-    }
+    .table-container td { @apply px-4 py-3 text-[length:var(--font-size-body)] text-text-primary border-b border-border-light/50 align-middle; }
 
-    .table-container tbody tr:last-child td {
-        border-bottom: none;
-    }
+    .table-container tbody tr:last-child td { @apply border-b-0; }
 
     .table-container tbody tr {
         transition: background-color 150ms ease-in-out;
@@ -1248,30 +1050,11 @@ input[type="search"]::-webkit-search-results-decoration {
         border-collapse: collapse;
     }
 
-    .table-embedded th {
-        text-align: left;
-        padding: 0.5rem 0.875rem;
-        font-size: var(--font-size-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        background-color: var(--color-surface-th);
-        border-bottom: 1px solid var(--color-border);
-        white-space: nowrap;
-    }
+    .table-embedded th { @apply text-left px-3 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-surface-main/30 border-b border-border/40 whitespace-nowrap; }
 
-    .table-embedded td {
-        padding: 0.5625rem 0.875rem;
-        font-size: var(--font-size-body);
-        color: var(--color-text-primary);
-        border-bottom: 1px solid var(--color-border-light);
-        vertical-align: middle;
-    }
+    .table-embedded td { @apply px-3 py-2.5 text-[length:var(--font-size-body)] text-text-primary border-b border-border-light/50 align-middle; }
 
-    .table-embedded tbody tr:last-child td {
-        border-bottom: none;
-    }
+    .table-embedded tbody tr:last-child td { @apply border-b-0; }
 
     .table-embedded tbody tr {
         transition: background-color 80ms;

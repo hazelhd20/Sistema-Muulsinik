@@ -8,10 +8,14 @@ use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Models\Vendor;
 use App\Notifications\RequisitionPendingApproval;
 use App\Notifications\RequisitionStatusChanged;
+use App\Repositories\RequisitionRepository;
 use App\Services\RequisitionWorkflowService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -30,20 +34,25 @@ class RequisitionIndex extends Component
     #[Url]
     public string $tab = 'todas';
 
+    #[Url]
     public string $statusFilter = '';
 
+    #[Url]
     public string $projectFilter = '';
 
+    #[Url]
     public string $periodFilter = '';
 
+    #[Url]
     public string $creatorFilter = '';
 
+    #[Url]
     public string $vendorFilter = '';
 
     // Selección masiva
     public array $selectedRows = [];
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function canApproveSelection(): bool
     {
         if (empty($this->selectedRows)) {
@@ -460,27 +469,22 @@ class RequisitionIndex extends Component
     #[Title('Requisiciones')]
     public function render()
     {
-        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'quotations'])->withCount('items')
-            ->when($this->search, fn($q) => $q->where(fn($sq) => $sq->where('number', 'like', "%{$this->search}%")->orWhere('annotations', 'like', "%{$this->search}%")))
-            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
-            ->when($this->projectFilter, fn($q) => $q->where('project_id', $this->projectFilter))
-            ->when($this->creatorFilter, fn($q) => $q->where('created_by', $this->creatorFilter))
-            ->when($this->vendorFilter, fn($q) => $q->where('vendor_id', $this->vendorFilter))
-            ->when($this->periodFilter, function ($q) {
-                match ($this->periodFilter) {
-                    'this_month' => $q->whereMonth('date', now()->month)->whereYear('date', now()->year),
-                    'last_month' => $q->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year),
-                    'this_quarter' => $q->whereBetween('date', [now()->startOfQuarter(), now()->endOfQuarter()]),
-                    'this_year' => $q->whereYear('date', now()->year),
-                    default => null,
-                };
-            })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(10);
+        $repository = app(RequisitionRepository::class);
+        $requisitions = $repository->getPaginatedWithFilters(
+            search: $this->search,
+            statusFilter: $this->statusFilter,
+            projectFilter: $this->projectFilter,
+            creatorFilter: $this->creatorFilter,
+            vendorFilter: $this->vendorFilter,
+            periodFilter: $this->periodFilter,
+            sortField: $this->sortField,
+            sortDirection: $this->sortDirection,
+            perPage: 10
+        );
 
-        $projects = Project::where('status', 'activo')->orderBy('name')->get();
-        $creators = User::orderBy('name')->get();
-        $vendors = Supplier::orderBy('trade_name')->get();
+        $projects = cache()->rememberForever('projects.activos.array', fn() => Project::where('status', 'activo')->orderBy('name')->pluck('name', 'id')->toArray());
+        $creators = cache()->remember('users.all.array', 3600, fn() => User::orderBy('name')->pluck('name', 'id')->toArray());
+        $vendors = cache()->rememberForever('suppliers.all.array', fn() => Supplier::orderBy('trade_name')->pluck('trade_name', 'id')->toArray());
 
         $pendingQuotations = Quotation::whereNull('requisition_id')
             ->where('is_orphan', false)

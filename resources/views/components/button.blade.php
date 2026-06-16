@@ -5,6 +5,7 @@
     'icon' => null,
     'iconRight' => null,
     'target' => null, // para wire:target
+    'ariaLabel' => null,
 ])
 
 @php
@@ -25,10 +26,11 @@
 
     $isIconButton = str_starts_with($variant, 'icon');
     $iconClass = $isIconButton ? 'w-4 h-4' : 'w-4 h-4 shrink-0';
+    $computedAriaLabel = $ariaLabel ?? $attributes->get('aria-label') ?? $attributes->get('title') ?? ($isIconButton && $slot->isEmpty() ? 'Icon button' : null);
 @endphp
 
 @if($href)
-    <a href="{!! $href !!}" {{ $attributes->merge(['class' => $baseClasses]) }}>
+    <a href="{!! $href !!}" {{ $attributes->merge(['class' => $baseClasses]) }} @if($computedAriaLabel) aria-label="{{ $computedAriaLabel }}" @endif>
         @if($icon)
             <x-dynamic-component :component="'lucide-' . $icon" class="{{ $iconClass }}" />
         @endif
@@ -41,7 +43,8 @@
     </a>
 @else
     <button type="{{ $type }}" {{ $attributes->merge(['class' => $baseClasses]) }}
-        @if($target) wire:loading.attr="disabled" wire:target="{{ $target }}" @endif>
+        @if($target) wire:loading.attr="disabled" wire:target="{{ $target }}" @endif
+        @if($computedAriaLabel) aria-label="{{ $computedAriaLabel }}" @endif>
 
         @if($target)
             <span wire:loading.class="opacity-0" wire:target="{{ $target }}" class="inline-flex items-center gap-1.5 transition-opacity">

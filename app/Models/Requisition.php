@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\BroadcastsEvents;
 use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Requisition extends Model
 {
-    use BroadcastsEvents, Searchable, HasFactory;
+    use BroadcastsEvents, Searchable, HasFactory, SoftDeletes;
 
     public function toSearchableArray(): array
     {
@@ -64,6 +65,8 @@ class Requisition extends Model
         'approved_by',
         'rejection_comment',
         'date',
+        'cached_subtotal',
+        'cached_total',
     ];
 
     protected $casts = [
@@ -119,9 +122,12 @@ class Requisition extends Model
         return $this->hasMany(RequisitionActivity::class)->latest();
     }
 
-    /** Subtotal estimado (sin IVA). Usa totales del proveedor cuando existen. */
+    /** Subtotal estimado (sin IVA). Usa totales materializados si existen. */
     public function getSubtotalAttribute(): float
     {
+        if ($this->cached_subtotal > 0) {
+            return (float) $this->cached_subtotal;
+        }
         return (float) $this->items->sum(fn ($item) => $item->line_subtotal_computed);
     }
 
@@ -131,17 +137,37 @@ class Requisition extends Model
         return (float) $this->items->sum(fn ($item) => (float) ($item->tax_amount ?? 0));
     }
 
-    /** Total estimado de la requisición (subtotal + IVA). Usa totales del proveedor cuando existen. */
+    /** Total estimado de la requisición. Usa totales materializados si existen. */
     public function getTotalAttribute(): float
     {
-        // Si todos los ítems tienen line_total del proveedor, usar la suma directa
-        // para evitar acumulación de errores de redondeo
+        if ($this->cached_total > 0) {
+            return (float) $this->cached_total;
+        }
+
         $allHaveLineTotal = $this->items->every(fn ($item) => $item->line_total !== null);
 
-        if ($allHaveLineTotal) {
+        if ($allHaveLineTotal && $this->items->isNotEmpty()) {
             return (float) $this->items->sum(fn ($item) => (float) $item->line_total);
         }
 
         return round($this->subtotal + $this->tax_amount, 2);
+    }
+
+    /**
+     * Recalcula y materializa los totales en la base de datos.
+     */
+    public function recalculateTotals(): void
+    {
+        $subtotal = (float) $this->items->sum(fn ($item) => $item->line_subtotal_computed);
+        
+        $allHaveLineTotal = $this->items->every(fn ($item) => $item->line_total !== null);
+        $total = $allHaveLineTotal && $this->items->isNotEmpty()
+            ? (float) $this->items->sum(fn ($item) => (float) $item->line_total)
+            : round($subtotal + $this->tax_amount, 2);
+
+        $this->updateQuietly([
+            'cached_subtotal' => $subtotal,
+            'cached_total' => $total,
+        ]);
     }
 }

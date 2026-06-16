@@ -56,17 +56,17 @@
                             </x-form-field>
 
                             <x-form-field label="Proyecto">
-                                <x-custom-select x-model="filterProject" :options="$projects->pluck('name', 'id')->toArray()"
+                                <x-custom-select x-model="filterProject" :options="$projects"
                                     placeholder="Todos los proyectos" />
                             </x-form-field>
 
                             <x-form-field label="Creador">
-                                <x-custom-select x-model="filterCreator" :options="$creators->pluck('name', 'id')->toArray()"
+                                <x-custom-select x-model="filterCreator" :options="$creators"
                                     placeholder="Todos los creadores" />
                             </x-form-field>
 
                             <x-form-field label="Proveedor">
-                                <x-custom-select x-model="filterVendor" :options="$vendors->pluck('trade_name', 'id')->toArray()"
+                                <x-custom-select x-model="filterVendor" :options="$vendors"
                                     placeholder="Todos los proveedores" />
                             </x-form-field>
 
@@ -98,15 +98,15 @@
                                     wire:click="$set('statusFilter', '')" />
                             @endif
                             @if($projectFilter)
-                                <x-filter-chip label="Proyecto" :value="$projects->firstWhere('id', $projectFilter)?->name ?? 'Desconocido'"
+                                <x-filter-chip label="Proyecto" :value="$projects[$projectFilter] ?? 'Desconocido'"
                                     wire:click="$set('projectFilter', '')" />
                             @endif
                             @if($creatorFilter)
-                                <x-filter-chip label="Creador" :value="$creators->firstWhere('id', $creatorFilter)?->name ?? 'Desconocido'"
+                                <x-filter-chip label="Creador" :value="$creators[$creatorFilter] ?? 'Desconocido'"
                                     wire:click="$set('creatorFilter', '')" />
                             @endif
                             @if($vendorFilter)
-                                <x-filter-chip label="Proveedor" :value="$vendors->firstWhere('id', $vendorFilter)?->trade_name ?? 'Desconocido'" wire:click="$set('vendorFilter', '')" />
+                                <x-filter-chip label="Proveedor" :value="$vendors[$vendorFilter] ?? 'Desconocido'" wire:click="$set('vendorFilter', '')" />
                             @endif
                             @if($periodFilter)
                                 @php

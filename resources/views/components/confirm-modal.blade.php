@@ -104,7 +104,7 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         @click="close()"
+         @click="forceClose()"
          aria-hidden="true"></div>
 
     {{-- ── Panel ── --}}
@@ -151,7 +151,7 @@
 
                 {{-- Cancelar --}}
                 <button type="button"
-                        @click="close()"
+                        @click="forceClose()"
                         :disabled="loading"
                         class="btn-secondary"
                         x-text="cancelLabel"></button>
