@@ -4,11 +4,14 @@ namespace App\Livewire\Measures;
 
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
+use App\DTOs\MeasureDTO;
 use App\Models\Measure;
 use App\Models\Product;
 use App\Models\RequisitionItem;
+use App\Repositories\MeasureRepository;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,6 +19,7 @@ class MeasureIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
+    #[Url(history: true)]
     public string $search = '';
 
     public string $name = '';
@@ -71,17 +75,17 @@ class MeasureIndex extends Component
 
         $this->validate();
 
+        $dto = new MeasureDTO(
+            name: $this->name,
+            abbreviation: $this->abbreviation ?: null,
+            id: $this->editingId,
+        );
+
+        app(MeasureRepository::class)->save($dto);
+
         if ($this->editingId) {
-            Measure::findOrFail($this->editingId)->update([
-                'name' => $this->name,
-                'abbreviation' => $this->abbreviation ?: null,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida actualizada exitosamente.']);
         } else {
-            Measure::create([
-                'name' => $this->name,
-                'abbreviation' => $this->abbreviation ?: null,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida creada exitosamente.']);
         }
 
@@ -105,7 +109,7 @@ class MeasureIndex extends Component
             return;
         }
 
-        $measure->delete();
+        app(MeasureRepository::class)->delete($id);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida eliminada exitosamente.']);
         
         $this->selectedRows = array_diff($this->selectedRows, [$id]);
@@ -143,7 +147,7 @@ class MeasureIndex extends Component
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunas medidas no pudieron ser eliminadas porque están en uso.']);
         }
 
-        Measure::whereIn('id', $measuresToDelete)->delete();
+        app(MeasureRepository::class)->bulkDelete($measuresToDelete);
 
         if (count($measuresToDelete) > 0) {
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($measuresToDelete) . ' medida(s) eliminada(s) exitosamente.']);

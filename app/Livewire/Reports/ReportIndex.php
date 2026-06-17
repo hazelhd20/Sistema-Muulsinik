@@ -12,14 +12,18 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class ReportIndex extends Component
 {
+    #[Url(history: true)]
     public string $period = 'month';
 
+    #[Url(history: true)]
     public string $projectFilter = '';
 
+    #[Url(history: true)]
     public string $activeTab = 'overview';
 
     public function updatedPeriod(): void

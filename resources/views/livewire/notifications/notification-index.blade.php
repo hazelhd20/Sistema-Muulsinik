@@ -21,8 +21,7 @@
 
             @if(!$this->notifications->isEmpty())
                 <x-button
-                    wire:click="deleteAll"
-                    wire:confirm="¿Eliminar todas las notificaciones? Esta acción no puede deshacerse."
+                    type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar todas las notificaciones? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteAll' })"
                     variant="secondary"
                     class="text-danger hover:bg-danger-light hover:border-danger/50"
                 >
@@ -197,3 +196,4 @@
         </div>
     </div>
 </div>
+<x-confirm-modal />

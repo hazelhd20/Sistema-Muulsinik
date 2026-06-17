@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Measure extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['name', 'abbreviation'];
 
     protected static function booted()

@@ -360,7 +360,6 @@ class QuotationWizard extends Component
         // Si se subieron archivos exitosamente, comenzamos a verificarlos
         if (count($this->quotationIds) > 0) {
             $this->isProcessing = true;
-            $this->dispatch('toast', ['icon' => 'success', 'message' => 'Archivos subidos, analizando...']);
             $this->step = 2;
             $this->processingStatus = 'processing';
             $this->checkProcessingStatus();

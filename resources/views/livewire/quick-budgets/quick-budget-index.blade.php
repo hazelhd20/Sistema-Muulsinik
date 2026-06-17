@@ -138,8 +138,7 @@
                                                     <x-dropdown-link href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}" icon="edit-2" wire:navigate>
                                                         Editar
                                                     </x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="deleteBudget({{ $budget->id }})"
-                                                        wire:confirm="¿Eliminar esta cotización? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })" danger="true" icon="trash-2">
                                                         Eliminar
                                                     </x-dropdown-link>
                                                 </x-slot>
@@ -216,8 +215,7 @@
                                     <x-dropdown-link href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}" icon="edit-2" wire:navigate>
                                         Editar
                                     </x-dropdown-link>
-                                    <x-dropdown-link as="button" wire:click="deleteBudget({{ $budget->id }})"
-                                        wire:confirm="¿Eliminar esta cotización? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })" danger="true" icon="trash-2">
                                         Eliminar
                                     </x-dropdown-link>
                                 </x-slot>

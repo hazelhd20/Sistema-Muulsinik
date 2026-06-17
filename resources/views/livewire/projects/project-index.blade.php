@@ -194,8 +194,7 @@
                                                             Editar
                                                         </x-dropdown-link>
                                                         <x-dropdown-link as="button"
-                                                            wire:click="deleteProject({{ $project->id }})"
-                                                            wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse."
+                                                            type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proyecto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProject', params: [{{ $project->id }}] })"
                                                             danger="true" icon="trash-2">
                                                             Eliminar
                                                         </x-dropdown-link>
@@ -275,7 +274,7 @@
                                                 <x-slot name="content">
                                                     <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">Ver detalle</x-dropdown-link>
                                                     <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="deleteProject({{ $project->id }})" wire:confirm="¿Eliminar este proyecto? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proyecto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProject', params: [{{ $project->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                                 </x-slot>
                                             </x-dropdown>
                                         </div>
@@ -456,3 +455,4 @@
 
     <livewire:projects.project-detail-drawer />
 </div>
+<x-confirm-modal />

@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vendor extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['supplier_id', 'name', 'phone', 'email'];
 
     protected static function booted()

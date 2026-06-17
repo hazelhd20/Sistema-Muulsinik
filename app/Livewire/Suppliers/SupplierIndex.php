@@ -4,10 +4,14 @@ namespace App\Livewire\Suppliers;
 
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
+use App\DTOs\SupplierDTO;
+use App\DTOs\VendorDTO;
 use App\Models\Quotation;
 use App\Models\RequisitionItem;
 use App\Models\Supplier;
 use App\Models\Vendor;
+use App\Repositories\SupplierRepository;
+use App\Repositories\VendorRepository;
 use App\Services\DataNormalizerService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -19,9 +23,10 @@ class SupplierIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
-    #[Url(as: 'search')]
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $categoryFilter = '';
 
     public array $selectedRows = [];
@@ -44,6 +49,8 @@ class SupplierIndex extends Component
     public string $category = '';
 
     public string $notes = '';
+
+    public bool $active = true;
 
     // Campos vendedor
     public bool $showAddVendor = false;
@@ -78,6 +85,7 @@ class SupplierIndex extends Component
         $this->rfc = $supplier->rfc ?? '';
         $this->category = $supplier->category ?? '';
         $this->notes = $supplier->notes ?? '';
+        $this->active = $supplier->active ?? true;
 
         $this->showCreateModal = true;
     }
@@ -110,23 +118,21 @@ class SupplierIndex extends Component
             return;
         }
 
+        $dto = new SupplierDTO(
+            trade_name: $this->tradeName,
+            legal_name: $this->legalName ?: null,
+            rfc: $this->rfc ?: null,
+            category: $this->category ?: null,
+            notes: $this->notes ?: null,
+            active: $this->active,
+            id: $this->editingSupplierId,
+        );
+
+        app(SupplierRepository::class)->save($dto);
+
         if ($this->editingSupplierId) {
-            Supplier::findOrFail($this->editingSupplierId)->update([
-                'trade_name' => $this->tradeName,
-                'legal_name' => $this->legalName ?: null,
-                'rfc' => $this->rfc ?: null,
-                'category' => $this->category ?: null,
-                'notes' => $this->notes ?: null,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor actualizado correctamente.']);
         } else {
-            Supplier::create([
-                'trade_name' => $this->tradeName,
-                'legal_name' => $this->legalName ?: null,
-                'rfc' => $this->rfc ?: null,
-                'category' => $this->category ?: null,
-                'notes' => $this->notes ?: null,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor registrado correctamente.']);
         }
 
@@ -169,20 +175,19 @@ class SupplierIndex extends Component
             'vendorEmail' => 'nullable|email|max:255',
         ]);
 
+        $dto = new VendorDTO(
+            supplier_id: $this->viewingSupplierId,
+            name: $this->vendorName,
+            phone: $this->vendorPhone ?: null,
+            email: $this->vendorEmail ?: null,
+            id: $this->editingVendorId,
+        );
+
+        app(VendorRepository::class)->save($dto);
+
         if ($this->editingVendorId) {
-            Vendor::findOrFail($this->editingVendorId)->update([
-                'name' => $this->vendorName,
-                'phone' => $this->vendorPhone ?: null,
-                'email' => $this->vendorEmail ?: null,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Vendedor actualizado.']);
         } else {
-            Vendor::create([
-                'supplier_id' => $this->viewingSupplierId,
-                'name' => $this->vendorName,
-                'phone' => $this->vendorPhone ?: null,
-                'email' => $this->vendorEmail ?: null,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Vendedor agregado.']);
         }
 
@@ -199,7 +204,7 @@ class SupplierIndex extends Component
             return;
         }
 
-        Vendor::findOrFail($vendorId)->delete();
+        app(VendorRepository::class)->delete($vendorId);
     }
 
     public function deleteSupplier(int $supplierId): void
@@ -219,7 +224,7 @@ class SupplierIndex extends Component
             return;
         }
 
-        $supplier->delete();
+        app(SupplierRepository::class)->delete($supplierId);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor eliminado.']);
         $this->selectedRows = array_diff($this->selectedRows, [$supplierId]);
     }
@@ -255,14 +260,27 @@ class SupplierIndex extends Component
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos proveedores no pudieron ser eliminados porque están en uso.']);
         }
 
-        Supplier::whereIn('id', $suppliersToDelete)->delete();
-
         if (count($suppliersToDelete) > 0) {
+            foreach ($suppliersToDelete as $sid) {
+                app(SupplierRepository::class)->delete($sid);
+            }
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($suppliersToDelete) . ' proveedor(es) eliminado(s) exitosamente.']);
         }
 
         $this->selectedRows = [];
         $this->allSelected = false;
+    }
+
+    public function toggleActiveSupplier(int $id): void
+    {
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para editar proveedores.')) {
+            return;
+        }
+
+        $supplier = app(SupplierRepository::class)->toggleActive($id);
+
+        $status = $supplier->active ? 'activado' : 'desactivado';
+        $this->dispatch('toast', ['icon' => 'success', 'message' => "Proveedor {$status} correctamente."]);
     }
 
     private function resetForm(): void
@@ -273,6 +291,7 @@ class SupplierIndex extends Component
         $this->rfc = '';
         $this->category = '';
         $this->notes = '';
+        $this->active = true;
     }
 
     #[Layout('components.layouts.app')]

@@ -4,12 +4,15 @@ namespace App\Livewire\Users;
 
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
+use App\DTOs\UserDTO;
 use App\Models\Role;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,10 +20,13 @@ class UserIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $roleFilter = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
 
     public array $selectedRows = [];
@@ -109,13 +115,15 @@ class UserIndex extends Component
             'active' => 'boolean',
         ]);
 
-        User::create([
-            'name' => $this->name,
-            'email' => $this->email,
-            'password' => Hash::make($this->password),
-            'role_id' => $this->role_id,
-            'active' => $this->active,
-        ]);
+        $dto = new UserDTO(
+            name: $this->name,
+            email: $this->email,
+            role_id: (int)$this->role_id,
+            active: $this->active,
+            password: $this->password,
+        );
+
+        app(UserRepository::class)->save($dto);
 
         $this->showModal = false;
         $this->resetForm();
@@ -136,19 +144,16 @@ class UserIndex extends Component
             'active' => 'boolean',
         ]);
 
-        $user = User::findOrFail($this->editingId);
-        $data = [
-            'name' => $this->name,
-            'email' => $this->email,
-            'role_id' => $this->role_id,
-            'active' => $this->active,
-        ];
+        $dto = new UserDTO(
+            name: $this->name,
+            email: $this->email,
+            role_id: (int)$this->role_id,
+            active: $this->active,
+            password: $this->password ?: null,
+            id: $this->editingId,
+        );
 
-        if (! empty($this->password)) {
-            $data['password'] = Hash::make($this->password);
-        }
-
-        $user->update($data);
+        app(UserRepository::class)->save($dto);
 
         $this->showModal = false;
         $this->resetForm();
@@ -167,7 +172,7 @@ class UserIndex extends Component
             return;
         }
 
-        User::findOrFail($id)->delete();
+        app(UserRepository::class)->delete($id);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Usuario eliminado.']);
         $this->selectedRows = array_diff($this->selectedRows, [$id]);
     }
@@ -221,8 +226,7 @@ class UserIndex extends Component
             return;
         }
 
-        $user = User::findOrFail($id);
-        $user->update(['active' => ! $user->active]);
+        $user = app(UserRepository::class)->toggleActive($id);
 
         $status = $user->active ? 'activado' : 'desactivado';
         $this->dispatch('toast', ['icon' => 'success', 'message' => "Usuario {$status} correctamente."]);

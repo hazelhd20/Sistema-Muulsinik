@@ -15,38 +15,41 @@
     }
 }">
     {{-- ═══════ WIZARD HEADER ═══════ --}}
-    <x-page-header subtitle="Requisiciones" title="Subir Cotización" backUrl="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" />
+    <x-page-header subtitle="Requisiciones" title="Subir Cotización"
+        backUrl="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" />
 
     {{-- Sequence-style Step Indicator --}}
     <div class="flex justify-center mb-10 mt-4" wire:ignore.self>
         <div class="flex items-center w-full max-w-2xl relative">
             {{-- Background track line --}}
-            <div class="absolute bottom-[11px] left-[16.66%] right-[16.66%] h-[2px] bg-border/40 z-0 rounded-full"></div>
-            
+            <div class="absolute bottom-[11px] left-[16.66%] right-[16.66%] h-[2px] bg-border/40 z-0 rounded-full">
+            </div>
+
             {{-- Active track line (dynamic width based on step) --}}
             <div class="absolute bottom-[11px] left-[16.66%] h-[2px] bg-primary-600 z-0 rounded-full transition-all duration-700 ease-in-out"
-                 style="width: {{ ($step - 1) * 33.33 }}%;"></div>
+                style="width: {{ ($step - 1) * 33.33 }}%;"></div>
 
             @foreach([1 => 'Subir archivo', 2 => 'Procesando', 3 => 'Revisar y guardar'] as $num => $label)
-                <div wire:key="step-indicator-{{ $num }}" class="relative z-10 flex flex-col items-center flex-1">
-                    {{-- Label (Top) --}}
-                    <span class="text-[11px] font-semibold tracking-wider uppercase mb-3 transition-colors duration-300 {{ $step === $num ? 'text-primary-600' : ($step > $num ? 'text-text-primary' : 'text-text-muted') }}">
-                        {{ $label }}
-                    </span>
-                    
-                    {{-- Dot Container (Center) - acts as a mask over the lines --}}
-                    <div class="w-6 h-6 rounded-full bg-surface-main flex items-center justify-center">
-                        {{-- Dot / Icon --}}
-                        <div class="transition-all duration-500 ease-out flex items-center justify-center 
-                                   {{ $step > $num ? 'w-5 h-5 rounded-full bg-primary-600 text-white shadow-sm' : 
-                                      ($step === $num ? 'w-3.5 h-3.5 rounded-full bg-primary-600 ring-4 ring-primary-50' : 
-                                      'w-2 h-2 rounded-full bg-border/60') }}">
-                            @if($step > $num)
-                                <x-lucide-check class="w-3 h-3" stroke-width="3" wire:ignore />
-                            @endif
+                    <div wire:key="step-indicator-{{ $num }}" class="relative z-10 flex flex-col items-center flex-1">
+                        {{-- Label (Top) --}}
+                        <span
+                            class="text-[11px] font-semibold tracking-wider uppercase mb-3 transition-colors duration-300 {{ $step === $num ? 'text-primary-600' : ($step > $num ? 'text-text-primary' : 'text-text-muted') }}">
+                            {{ $label }}
+                        </span>
+
+                        {{-- Dot Container (Center) - acts as a mask over the lines --}}
+                        <div class="w-6 h-6 rounded-full bg-surface-main flex items-center justify-center">
+                            {{-- Dot / Icon --}}
+                            <div class="transition-all duration-500 ease-out flex items-center justify-center 
+                                                           {{ $step > $num ? 'w-5 h-5 rounded-full bg-primary-600 text-white shadow-sm' :
+                ($step === $num ? 'w-3.5 h-3.5 rounded-full bg-primary-600 ring-4 ring-primary-50' :
+                    'w-2 h-2 rounded-full bg-border/60') }}">
+                                @if($step > $num)
+                                    <x-lucide-check class="w-3 h-3" stroke-width="3" wire:ignore />
+                                @endif
+                            </div>
                         </div>
                     </div>
-                </div>
             @endforeach
         </div>
     </div>
@@ -55,17 +58,18 @@
     @if($step === 1)
         <div class="max-w-2xl mx-auto">
             <div class="bg-surface-card rounded-2xl border border-border/40 shadow-sm p-8 transition-all duration-300">
-                <x-file-input wire:model="uploadQueue" :multiple="true" variant="dropzone" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB"
-                    :formats="['PDF', 'XLSX', 'JPG', 'PNG']" title="Arrastra tus cotizaciones aquí"
-                    subtitle="o haz clic para seleccionar archivos" inputId="file-upload-input" />
+                <x-file-input wire:model="uploadQueue" :multiple="true" variant="dropzone"
+                    accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB" :formats="['PDF', 'XLSX', 'JPG', 'PNG']"
+                    title="Arrastra tus cotizaciones aquí" subtitle="o haz clic para seleccionar archivos"
+                    inputId="file-upload-input" />
 
                 {{-- Process Button --}}
                 @if(!empty($files) && !$errors->has('files'))
                     <div class="mt-8 animate-fade-in-up">
                         <x-button wire:key="process-btn" x-data="{ visible: true }" x-show="visible"
-                            @file-removed.window="visible = false" type="button"
-                            wire:click="processUpload" wire:loading.attr="disabled" target="processUpload"
-                            variant="primary" class="w-full text-small font-medium tracking-wide py-2.5 rounded-xl shadow-sm" icon="scan-line">
+                            @file-removed.window="visible = false" type="button" wire:click="processUpload"
+                            wire:loading.attr="disabled" target="processUpload" variant="primary"
+                            class="w-full text-small font-medium tracking-wide py-2.5 rounded-xl shadow-sm" icon="scan-line">
                             Procesar Documentos
                         </x-button>
                     </div>
@@ -77,19 +81,23 @@
 
     {{-- ═══════ PASO 2: PROCESAMIENTO ═══════ --}}
     @if($step === 2)
-        <div @if($processingStatus === 'processing' || $processingStatus === 'pending') wire:poll.2s.visible="checkProcessingStatus" @endif>
-            <div class="max-w-lg mx-auto bg-surface-card rounded-2xl border border-border/40 shadow-sm p-10 text-center transition-all duration-300" x-data>
+        <div @if($processingStatus === 'processing' || $processingStatus === 'pending')
+        wire:poll.2s.visible="checkProcessingStatus" @endif>
+            <div class="max-w-lg mx-auto bg-surface-card rounded-2xl border border-border/40 shadow-sm p-10 text-center transition-all duration-300"
+                x-data>
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Minimalist Premium Loader --}}
                     <div class="mb-8">
                         <div class="relative w-16 h-16 mx-auto mb-8">
                             {{-- Outer breathing ring --}}
-                            <div class="absolute inset-0 rounded-full border-2 border-primary-200 bg-primary-50/30 animate-ping opacity-60" style="animation-duration: 2s;"></div>
+                            <div class="absolute inset-0 rounded-full border-2 border-primary-200 bg-primary-50/30 animate-ping opacity-60"
+                                style="animation-duration: 2s;"></div>
                             {{-- Inner Track --}}
                             <div class="absolute inset-0 rounded-full border-2 border-border/40"></div>
                             {{-- Spinning Arch --}}
-                            <div class="absolute inset-0 rounded-full border-2 border-primary-600 border-r-transparent border-b-transparent animate-spin" style="animation-duration: 1s;"></div>
-                            
+                            <div class="absolute inset-0 rounded-full border-2 border-primary-600 border-r-transparent border-b-transparent animate-spin"
+                                style="animation-duration: 1s;"></div>
+
                             {{-- Central icon --}}
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <x-lucide-file-search class="w-6 h-6 text-primary-600" />
@@ -100,18 +108,16 @@
                             Extrayendo datos con inteligencia artificial.<br>
                             Puede tomar hasta 30 segundos.
                         </p>
-                        
-                        {{-- Progress Bar --}}
-                        <div class="w-full max-w-xs mx-auto bg-border/40 rounded-full h-1.5 mb-2 overflow-hidden">
-                            <div class="bg-primary-600 h-1.5 rounded-full transition-all duration-500 ease-out" style="width: {{ $this->processingProgress }}%"></div>
-                        </div>
-                        <p class="text-xs text-text-muted tracking-wide font-medium">{{ $this->processingProgress }}% completado</p>
                     </div>
 
                     <x-status-chip icon="sparkles" color="primary">Procesamiento en segundo plano</x-status-chip>
 
                     <div class="mt-8 flex justify-center">
-                        <x-button href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" variant="secondary" icon="arrow-left" class="text-xs bg-transparent border-transparent hover:bg-surface-hover/50 shadow-none text-text-muted hover:text-text-primary" wire:navigate>
+                        <x-button
+                            href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}"
+                            variant="secondary" icon="arrow-left"
+                            class="text-xs bg-transparent border-transparent hover:bg-surface-hover/50 shadow-none text-text-muted hover:text-text-primary"
+                            wire:navigate>
                             Volver mientras se procesa
                         </x-button>
                     </div>
@@ -120,13 +126,15 @@
                     {{-- Error state --}}
                     <div class="flex flex-col items-center max-w-sm mx-auto text-center py-2">
                         {{-- Ícono de error con borde semántico --}}
-                        <div class="w-14 h-14 rounded-full bg-danger-50/50 border border-danger-border flex items-center justify-center mb-6 shrink-0 shadow-sm">
+                        <div
+                            class="w-14 h-14 rounded-full bg-danger-50/50 border border-danger-border flex items-center justify-center mb-6 shrink-0 shadow-sm">
                             <x-lucide-alert-triangle class="w-6 h-6 text-danger" stroke-width="1.5" wire:ignore />
                         </div>
 
                         {{-- Título y descripción --}}
                         <h2 class="text-h3 font-medium text-text-primary mb-2 tracking-tight">Error al procesar</h2>
-                        <p class="text-small text-text-muted mb-6">No fue posible extraer los datos del documento automáticamente.</p>
+                        <p class="text-small text-text-muted mb-6">No fue posible extraer los datos del documento
+                            automáticamente.</p>
 
                         {{-- Caja de mensaje de error con color semántico --}}
                         <x-feedback-alert variant="danger" icon="info" class="mb-8">
@@ -136,21 +144,27 @@
                         {{-- Botones con jerarquía clara --}}
                         <div class="flex flex-col w-full gap-3">
                             {{-- Acción principal --}}
-                            <x-button wire:click="retryProcessing" variant="primary" class="w-full group shadow-sm rounded-xl py-2.5" icon="refresh-cw" iconClass="transition-transform group-hover:rotate-180 duration-500">
+                            <x-button wire:click="retryProcessing" variant="primary"
+                                class="w-full group shadow-sm rounded-xl py-2.5" icon="refresh-cw"
+                                iconClass="transition-transform group-hover:rotate-180 duration-500">
                                 Reintentar extracción
                             </x-button>
                             {{-- Separador visual --}}
                             <div class="flex items-center gap-3 my-1">
                                 <div class="flex-1 h-px bg-border/50"></div>
-                                <span class="text-[11px] font-medium tracking-wide uppercase text-text-muted whitespace-nowrap">opciones manuales</span>
+                                <span
+                                    class="text-[11px] font-medium tracking-wide uppercase text-text-muted whitespace-nowrap">opciones
+                                    manuales</span>
                                 <div class="flex-1 h-px bg-border/50"></div>
                             </div>
                             {{-- Acciones secundarias --}}
                             <div class="grid grid-cols-2 gap-3">
-                                <x-button wire:click="continueManually" variant="secondary" class="w-full rounded-xl bg-surface-main/50 text-xs shadow-none border-border/50">
+                                <x-button wire:click="continueManually" variant="secondary"
+                                    class="w-full rounded-xl bg-surface-main/50 text-xs shadow-none border-border/50">
                                     Llenar a mano
                                 </x-button>
-                                <x-button wire:click="resetWizard" variant="secondary" class="w-full rounded-xl bg-surface-main/50 text-xs shadow-none border-border/50">
+                                <x-button wire:click="resetWizard" variant="secondary"
+                                    class="w-full rounded-xl bg-surface-main/50 text-xs shadow-none border-border/50">
                                     Otro archivo
                                 </x-button>
                             </div>
@@ -171,12 +185,11 @@
                         $isCompleted = in_array($id, $completedQuotationIds);
                         $isActive = $activeQuotationId === $id;
                     @endphp
-                    <button type="button" wire:click="setActiveTab({{ $id }})" 
-                        @class([
-                            'whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm transition-colors',
-                            'border-primary-500 text-primary-600' => $isActive,
-                            'border-transparent text-text-muted hover:text-text-primary hover:border-border-strong' => !$isActive,
-                        ])>
+                    <button type="button" wire:click="setActiveTab({{ $id }})" @class([
+                        'whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'border-primary-500 text-primary-600' => $isActive,
+                        'border-transparent text-text-muted hover:text-text-primary hover:border-border-strong' => !$isActive,
+                    ])>
                         <span class="flex items-center gap-2">
                             @if($isCompleted)
                                 <x-lucide-check-circle class="w-4 h-4 text-success" wire:ignore />
@@ -188,7 +201,7 @@
             </nav>
         </div>
 
-        <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}">            {{-- General Info --}}
+        <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
             <div class="bg-surface-card rounded-2xl border border-border/40 shadow-sm mb-6">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <h3 class="font-medium text-text-primary tracking-tight">Información General</h3>
@@ -204,70 +217,72 @@
 
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <x-form-field label="Proyecto" :required="true" :error="$errors->first('projectId')">
-                        <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
-                            placeholder="Seleccionar proyecto..." />
-                    </x-form-field>
+                        <x-form-field label="Proyecto" :required="true" :error="$errors->first('projectId')">
+                            <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
+                                placeholder="Seleccionar proyecto..." />
+                        </x-form-field>
 
-                    <x-form-field label="Proveedor" :error="$errors->first('supplierName')">
-                        <div class="relative w-full">
-                            <x-custom-combobox wire:model.live="supplierName"
-                                :options="$suppliers->pluck('trade_name')->toArray()" placeholder="Nombre del proveedor..."
-                                class="w-full" inputClass="{{ isset($supplierMatch['status']) ? 'pr-8' : '' }}">
-                            </x-custom-combobox>
-                            @if(($supplierMatch['status'] ?? '') === 'new')
-                                <x-lucide-plus-circle
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
+                        <x-form-field label="Proveedor" :error="$errors->first('supplierName')">
+                            <div class="relative w-full">
+                                <x-custom-combobox wire:model.live="supplierName"
+                                    :options="$suppliers->pluck('trade_name')->toArray()"
+                                    placeholder="Nombre del proveedor..." class="w-full"
+                                    inputClass="{{ isset($supplierMatch['status']) ? 'pr-8' : '' }}">
+                                </x-custom-combobox>
+                                @if(($supplierMatch['status'] ?? '') === 'new')
+                                    <x-lucide-plus-circle
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
                                         title="Se creará como nuevo proveedor" wire:ignore />
-                            @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
-                                <x-lucide-sparkles
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
-                                    title="Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%" wire:ignore />
-                            @elseif(($supplierMatch['status'] ?? '') === 'exact')
-                                <x-lucide-check-circle-2
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
+                                @elseif(($supplierMatch['status'] ?? '') === 'fuzzy')
+                                    <x-lucide-sparkles
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
+                                        title="Similitud {{ round(($supplierMatch['confidence'] ?? 0) * 100) }}%" wire:ignore />
+                                @elseif(($supplierMatch['status'] ?? '') === 'exact')
+                                    <x-lucide-check-circle-2
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
                                         title="Proveedor existente" wire:ignore />
-                            @endif
-                        </div>
-                    </x-form-field>
+                                @endif
+                            </div>
+                        </x-form-field>
 
-                    <x-form-field label="Tienda / Sucursal" :error="$errors->first('storeName')">
-                        <input wire:model="storeName" type="text" class="input" placeholder="Sucursal (opcional)">
-                    </x-form-field>
+                        <x-form-field label="Tienda / Sucursal" :error="$errors->first('storeName')">
+                            <input wire:model="storeName" type="text" class="input" placeholder="Sucursal (opcional)">
+                        </x-form-field>
 
-                    <x-form-field label="Fecha" :required="true" :error="$errors->first('date')">
-                        <x-date-picker wire:model="date" />
-                    </x-form-field>
+                        <x-form-field label="Fecha" :required="true" :error="$errors->first('date')">
+                            <x-date-picker wire:model="date" />
+                        </x-form-field>
 
-                    <x-form-field label="Vendedor" :error="$errors->first('vendorName')">
-                        <div class="relative w-full">
-                            <x-custom-combobox wire:model.live="vendorName" :options="$vendors->pluck('name')->toArray()"
-                                placeholder="Nombre del vendedor..." class="w-full"
-                                inputClass="{{ isset($vendorMatch['status']) ? 'pr-8' : '' }}">
-                            </x-custom-combobox>
-                            @if(($vendorMatch['status'] ?? '') === 'new')
-                                <x-lucide-plus-circle
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
+                        <x-form-field label="Vendedor" :error="$errors->first('vendorName')">
+                            <div class="relative w-full">
+                                <x-custom-combobox wire:model.live="vendorName"
+                                    :options="$vendors->pluck('name')->toArray()" placeholder="Nombre del vendedor..."
+                                    class="w-full" inputClass="{{ isset($vendorMatch['status']) ? 'pr-8' : '' }}">
+                                </x-custom-combobox>
+                                @if(($vendorMatch['status'] ?? '') === 'new')
+                                    <x-lucide-plus-circle
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warning pointer-events-none"
                                         title="Se creará como nuevo vendedor" wire:ignore />
-                            @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
-                                <x-lucide-sparkles
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
-                                    title="Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%" wire:ignore />
-                            @elseif(($vendorMatch['status'] ?? '') === 'exact')
-                                <x-lucide-check-circle-2
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
+                                @elseif(($vendorMatch['status'] ?? '') === 'fuzzy')
+                                    <x-lucide-sparkles
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-500 pointer-events-none"
+                                        title="Similitud {{ round(($vendorMatch['confidence'] ?? 0) * 100) }}%" wire:ignore />
+                                @elseif(($vendorMatch['status'] ?? '') === 'exact')
+                                    <x-lucide-check-circle-2
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-success pointer-events-none"
                                         title="Vendedor existente" wire:ignore />
-                            @endif
-                        </div>
-                    </x-form-field>
-                </div>
+                                @endif
+                            </div>
+                        </x-form-field>
+                    </div>
 
-                <div class="md:col-span-3">
-                    <x-form-field label="Anotaciones" :error="$errors->first('annotations')" class="mt-4">
-                        <textarea wire:model="annotations" class="input w-full bg-surface-main/30 border-border/50 focus:bg-surface-card" rows="2"
-                            placeholder="Anotaciones de la requisición (opcional)..."></textarea>
-                    </x-form-field>
-                </div>
+                    <div class="md:col-span-3">
+                        <x-form-field label="Anotaciones" :error="$errors->first('annotations')" class="mt-4">
+                            <textarea wire:model="annotations"
+                                class="input w-full bg-surface-main/30 border-border/50 focus:bg-surface-card" rows="2"
+                                placeholder="Anotaciones de la requisición (opcional)..."></textarea>
+                        </x-form-field>
+                    </div>
                 </div>
             </div>
 
@@ -278,22 +293,26 @@
                     <div class="flex items-center gap-3">
                         <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
-                            <span class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md border border-border/50">{{ count($items) }} {{ count($items) === 1 ? 'artículo' : 'artículos' }}</span>
+                            <span
+                                class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md border border-border/50">{{ count($items) }}
+                                {{ count($items) === 1 ? 'artículo' : 'artículos' }}</span>
                         @endif
                     </div>
                     <div>
-                        <x-button wire:click="addItem" variant="secondary" icon="plus" class="text-xs shadow-none border-border/50 bg-surface-main hover:bg-surface-hover">
+                        <x-button wire:click="addItem" variant="secondary" icon="plus"
+                            class="text-xs shadow-none border-border/50 bg-surface-main hover:bg-surface-hover">
                             Agregar producto
                         </x-button>
                     </div>
                 </div>
 
-                    @if(count($items) > 0)
+                @if(count($items) > 0)
                     {{-- Tabla de productos (Desktop) --}}
                     <div class="hidden md:block w-full overflow-x-auto">
                         <table class="w-full text-left table-inputs-compact">
                             <thead>
-                                <tr class="bg-surface-main/30 border-b border-border/40 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                                <tr
+                                    class="bg-surface-main/30 border-b border-border/40 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                                     <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[26%]">Producto</th>
                                     <th class="px-4 py-3 whitespace-nowrap w-[13%]">Categoría</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap w-[8%]">Cant.</th>
@@ -313,7 +332,7 @@
                                         $productBorder = match (true) {
                                             $productStatus === 'exact' => 'border-success/30 bg-success/5',
                                             $productStatus === 'fuzzy' => 'border-primary-500/30 bg-primary-50/5',
-                                            $productStatus === 'new'   => 'border-warning/30 bg-warning/5',
+                                            $productStatus === 'new' => 'border-warning/30 bg-warning/5',
                                             default => '',
                                         };
                                     @endphp
@@ -322,10 +341,10 @@
                                         {{-- Nombre / Producto --}}
                                         <td class="pl-6 pr-4 py-4">
                                             @php
-                                                $isFuzzyPending      = isset($item['product_confirmed'])
+                                                $isFuzzyPending = isset($item['product_confirmed'])
                                                     && !$item['product_confirmed']
                                                     && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
-                                                $productStatus       = $item['_match']['product']['status'] ?? '';
+                                                $productStatus = $item['_match']['product']['status'] ?? '';
                                                 $hasProductIndicator = $isFuzzyPending || in_array($productStatus, ['exact', 'new']);
                                             @endphp
                                             <div class="relative">
@@ -354,19 +373,18 @@
                                         {{-- Categoría --}}
                                         <td class="px-4 py-4">
                                             @php $hasCatConflict = isset($item['conflict']['category']); @endphp
-                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i" triggerRight="right-8">
+                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i"
+                                                triggerRight="right-8">
                                                 <x-custom-select wire:model.live="items.{{ $i }}.category_id"
                                                     :options="$categories->pluck('name', 'id')->toArray()"
-                                                    placeholder="Sin categoría"
-                                                    textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
+                                                    placeholder="Sin categoría" textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
                                             </x-conflict-popover>
                                         </td>
 
                                         {{-- Cantidad --}}
                                         <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
-                                                step="0.01"
-                                                class="input input-inline text-center tabular-nums text-small w-full"
+                                                step="0.01" class="input input-inline text-center tabular-nums text-small w-full"
                                                 placeholder="0">
                                         </td>
 
@@ -385,8 +403,7 @@
                                         {{-- Precio Unitario --}}
                                         <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
-                                                step="0.01"
-                                                class="input input-inline text-right tabular-nums text-small w-full"
+                                                step="0.01" class="input input-inline text-right tabular-nums text-small w-full"
                                                 placeholder="0.00">
                                             @if(($item['discount_percent'] ?? 0) > 0)
                                                 <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs">
@@ -414,7 +431,8 @@
 
                                         {{-- Delete --}}
                                         <td class="pr-6 pl-4 py-4 text-center">
-                                            <x-button type="button" wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <x-button type="button" wire:click="removeItem({{ $i }})" variant="icon-danger"
+                                                icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </td>
                                     </tr>
                                 @endforeach
@@ -432,7 +450,7 @@
                                 $productBorder = match (true) {
                                     $productStatus === 'exact' => 'border-success/30 bg-success/5',
                                     $productStatus === 'fuzzy' => 'border-primary-500/30 bg-primary-50/5',
-                                    $productStatus === 'new'   => 'border-warning/30 bg-warning/5',
+                                    $productStatus === 'new' => 'border-warning/30 bg-warning/5',
                                     default => '',
                                 };
                                 $isFuzzyPending = isset($item['product_confirmed']) && !$item['product_confirmed'] && ($item['_match']['product']['status'] ?? '') === 'fuzzy';
@@ -440,11 +458,13 @@
                                 $hasCatConflict = isset($item['conflict']['category']);
                                 $hasUnitConflict = isset($item['conflict']['unit']);
                             @endphp
-                            <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
-                                <button type="button" wire:click="removeItem({{ $i }})" class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
+                            <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative"
+                                wire:key="mobile-item-{{ $item['id'] ?? $i }}">
+                                <button type="button" wire:click="removeItem({{ $i }})"
+                                    class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
                                     <x-lucide-x class="w-5 h-5" />
                                 </button>
-                                
+
                                 <div class="flex flex-col gap-3">
                                     <div class="pr-8">
                                         <div class="relative">
@@ -455,11 +475,13 @@
                                             </x-conflict-popover>
                                             @if(!$isFuzzyPending)
                                                 @if($productStatus === 'exact')
-                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10" title="Confirmado">
+                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
+                                                        title="Confirmado">
                                                         <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
                                                     </div>
                                                 @elseif($productStatus === 'new')
-                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10" title="Nuevo producto">
+                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
+                                                        title="Nuevo producto">
                                                         <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
                                                     </div>
                                                 @endif
@@ -470,11 +492,11 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs text-text-muted mb-1 block">Categoría</label>
-                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i" triggerRight="right-8">
+                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i"
+                                                triggerRight="right-8">
                                                 <x-custom-select wire:model.live="items.{{ $i }}.category_id"
                                                     :options="$categories->pluck('name', 'id')->toArray()"
-                                                    placeholder="Sin categoría"
-                                                    textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
+                                                    placeholder="Sin categoría" textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
                                             </x-conflict-popover>
                                         </div>
                                         <div>
@@ -482,8 +504,7 @@
                                             <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
                                                 <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
                                                     :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
-                                                    placeholder="Unidad"
-                                                    inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
+                                                    placeholder="Unidad" inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
                                                 </x-custom-combobox>
                                             </x-conflict-popover>
                                         </div>
@@ -492,24 +513,26 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="text-xs text-text-muted mb-1 block">Cantidad</label>
-                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
-                                                class="input w-full" placeholder="0">
+                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
+                                                step="0.01" class="input w-full" placeholder="0">
                                         </div>
                                         <div>
                                             <label class="text-xs text-text-muted mb-1 block">Precio U.</label>
-                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
-                                                class="input w-full" placeholder="0.00">
+                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
+                                                step="0.01" class="input w-full" placeholder="0.00">
                                         </div>
                                     </div>
 
                                     <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
                                         <div class="flex justify-between items-center">
                                             <span class="text-small text-text-muted">Subtotal</span>
-                                            <span class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
+                                            <span
+                                                class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
                                         </div>
                                         <div class="flex justify-between items-center">
                                             <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
-                                            <span class="font-bold text-text-primary tabular-nums">${{ number_format($itemTotal, 2, '.', ',') }}</span>
+                                            <span
+                                                class="font-bold text-text-primary tabular-nums">${{ number_format($itemTotal, 2, '.', ',') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -532,20 +555,23 @@
                                 @if($hasAnyDiscount)
                                     <div class="flex items-center justify-between text-small">
                                         <span class="text-text-muted">Subtotal bruto</span>
-                                        <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
+                                        <span
+                                            class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                     </div>
                                     <div class="flex items-center justify-between text-small text-success">
                                         <span class="flex items-center gap-1.5 font-medium">
                                             <x-lucide-tag class="w-3.5 h-3.5" wire:ignore />
                                             Descuento total
                                         </span>
-                                        <span class="font-semibold tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
+                                        <span
+                                            class="font-semibold tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
                                     </div>
                                     <div class="h-px bg-border/40 my-1"></div>
                                 @endif
                                 <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">Subtotal s/IVA</span>
-                                    <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
+                                    <span
+                                        class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">IVA (16%)</span>
@@ -556,15 +582,18 @@
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
                                 <span class="text-body font-semibold text-text-primary">Total final</span>
-                                <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                <span
+                                    class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
-                            
+
                             {{-- Botón de Acción --}}
                             <div class="pt-6 mt-6">
-                                <x-button type="submit" variant="primary" class="w-full py-3 rounded-xl shadow-sm text-small tracking-wide" target="saveRequisition" icon="check-circle">
+                                <x-button type="submit" variant="primary"
+                                    class="w-full py-3 rounded-xl shadow-sm text-small tracking-wide" target="saveRequisition"
+                                    icon="check-circle">
                                     Confirmar y Crear Requisición
                                 </x-button>
                             </div>

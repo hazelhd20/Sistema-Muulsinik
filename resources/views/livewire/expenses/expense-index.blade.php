@@ -166,8 +166,7 @@
                                                             Ver comprobante
                                                         </x-dropdown-link>
                                                     @endif
-                                                    <x-dropdown-link as="button" wire:click="deleteExpense({{ $expense->id }})"
-                                                        wire:confirm="¿Eliminar este gasto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">
                                                         Eliminar
                                                     </x-dropdown-link>
                                                 </x-slot>
@@ -237,7 +236,7 @@
                                                     @if($expense->receipt_file)
                                                         <x-dropdown-link href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" icon="file-text">Ver comprobante</x-dropdown-link>
                                                     @endif
-                                                    <x-dropdown-link as="button" wire:click="deleteExpense({{ $expense->id }})" wire:confirm="¿Eliminar este gasto? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                                 </x-slot>
                                             </x-dropdown>
                                         </div>
@@ -423,3 +422,4 @@
         </x-modal>
     @endif
 </div>
+<x-confirm-modal />

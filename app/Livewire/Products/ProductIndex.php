@@ -4,10 +4,12 @@ namespace App\Livewire\Products;
 
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
+use App\DTOs\ProductDTO;
 use App\Models\Category;
 use App\Models\Measure;
 use App\Models\Product;
 use App\Models\RequisitionItem;
+use App\Repositories\ProductRepository;
 use App\Models\Supplier;
 use App\Services\DataNormalizerService;
 use Livewire\Attributes\Layout;
@@ -21,11 +23,13 @@ class ProductIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
-    #[Url(as: 'search')]
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $categoryFilter = '';
 
+    #[Url(history: true)]
     public string $measureFilter = '';
 
     public array $selectedRows = [];
@@ -112,25 +116,22 @@ class ProductIndex extends Component
 
         if ($existingByNormalized) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'Ya existe un producto similar: "'.$existingByNormalized->canonical_name.'". Usa el catálogo existente.']);
-
             return;
         }
 
+        $dto = new ProductDTO(
+            canonical_name: $this->canonicalName,
+            measure_id: $this->measureId,
+            description: $this->description ?: null,
+            category_id: $this->categoryId,
+            id: $this->editingId,
+        );
+
+        app(ProductRepository::class)->save($dto);
+
         if ($this->editingId) {
-            Product::findOrFail($this->editingId)->update([
-                'canonical_name' => $this->canonicalName,
-                'measure_id' => $this->measureId,
-                'description' => $this->description ?: null,
-                'category_id' => $this->categoryId,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto actualizado correctamente.']);
         } else {
-            Product::create([
-                'canonical_name' => $this->canonicalName,
-                'measure_id' => $this->measureId,
-                'description' => $this->description ?: null,
-                'category_id' => $this->categoryId,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto registrado en el catálogo maestro.']);
         }
 
@@ -148,11 +149,10 @@ class ProductIndex extends Component
 
         if (RequisitionItem::where('product_id', $productId)->exists()) {
             $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar: el producto está siendo utilizado en una requisición.']);
-
             return;
         }
 
-        $product->delete();
+        app(ProductRepository::class)->delete($productId);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto eliminado del catálogo.']);
         $this->selectedRows = array_diff($this->selectedRows, [$productId]);
     }
@@ -186,9 +186,8 @@ class ProductIndex extends Component
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos productos no pudieron ser eliminados porque están en uso.']);
         }
 
-        Product::whereIn('id', $productsToDelete)->delete();
-
         if (count($productsToDelete) > 0) {
+            app(ProductRepository::class)->bulkDelete($productsToDelete);
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($productsToDelete) . ' producto(s) eliminado(s) exitosamente.']);
         }
 

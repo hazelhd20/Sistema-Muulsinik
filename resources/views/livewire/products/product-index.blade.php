@@ -151,8 +151,7 @@
                                                         <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
                                                             Editar
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="deleteProduct({{ $product->id }})"
-                                                            wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">
                                                             Eliminar
                                                         </x-dropdown-link>
                                                     </x-slot>
@@ -219,7 +218,7 @@
                                             <x-slot name="content">
                                                 <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">Ver detalles</x-dropdown-link>
                                                 <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="deleteProduct({{ $product->id }})" wire:confirm="¿Eliminar este producto? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                             </x-slot>
                                         </x-dropdown>
                                     </div>

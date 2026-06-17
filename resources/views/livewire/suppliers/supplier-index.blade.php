@@ -160,8 +160,7 @@
                                                         <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
                                                             Editar
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})"
-                                                            wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })" danger="true" icon="trash-2">
                                                             Eliminar
                                                         </x-dropdown-link>
                                                     </x-slot>
@@ -230,7 +229,7 @@
                                             <x-slot name="content">
                                                 <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">Ver vendedores</x-dropdown-link>
                                                 <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                             </x-slot>
                                         </x-dropdown>
                                     </div>
@@ -399,7 +398,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 <x-button wire:click="openEditVendor({{ $vendor->id }})" variant="icon-primary" icon="edit-2" title="Editar" />
-                                <x-button wire:click="deleteVendor({{ $vendor->id }})" wire:confirm="¿Eliminar este vendedor? Esta acción no puede deshacerse."
+                                <x-button type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este vendedor? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteVendor', params: [{{ $vendor->id }}] })"
                                     variant="icon-danger" icon="trash-2" title="Eliminar" />
                             </div>
                         </div>

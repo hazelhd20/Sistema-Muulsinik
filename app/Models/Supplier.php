@@ -6,14 +6,15 @@ use App\Services\DataNormalizerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supplier extends Model
 {
-    use Searchable;
+    use Searchable, SoftDeletes;
 
     protected $fillable = [
         'trade_name', 'normalized_name', 'legal_name', 'rfc',
-        'category', 'notes',
+        'category', 'active', 'notes',
     ];
 
     /**

@@ -4,9 +4,12 @@ namespace App\Livewire\Products;
 
 use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
+use App\DTOs\CategoryDTO;
 use App\Models\Category;
 use App\Models\Product;
+use App\Repositories\CategoryRepository;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,6 +18,7 @@ class CategoryIndex extends Component
 {
     use EnforcesPermissions, WithPagination, WithSorting;
 
+    #[Url(history: true)]
     public string $search = '';
 
     public string $name = '';
@@ -68,15 +72,16 @@ class CategoryIndex extends Component
             'name' => 'required|string|max:255|unique:categories,name,'.$this->editingId,
         ]);
 
+        $dto = new CategoryDTO(
+            name: $this->name,
+            id: $this->editingId,
+        );
+
+        app(CategoryRepository::class)->save($dto);
+
         if ($this->editingId) {
-            Category::findOrFail($this->editingId)->update([
-                'name' => $this->name,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría actualizada exitosamente.']);
         } else {
-            Category::create([
-                'name' => $this->name,
-            ]);
             $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría creada exitosamente.']);
         }
 
@@ -99,7 +104,7 @@ class CategoryIndex extends Component
             return;
         }
 
-        $category->delete();
+        app(CategoryRepository::class)->delete($id);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Categoría eliminada exitosamente.']);
         
         $this->selectedRows = array_diff($this->selectedRows, [$id]);
@@ -134,7 +139,7 @@ class CategoryIndex extends Component
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunas categorías no pudieron ser eliminadas porque están en uso.']);
         }
 
-        Category::whereIn('id', $categoriesToDelete)->delete();
+        app(CategoryRepository::class)->bulkDelete($categoriesToDelete->toArray());
 
         if ($categoriesToDelete->count() > 0) {
             $this->dispatch('toast', ['icon' => 'success', 'message' => $categoriesToDelete->count() . ' categoría(s) eliminada(s) exitosamente.']);

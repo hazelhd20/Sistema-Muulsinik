@@ -157,8 +157,7 @@
                                                                 @endif
 
                                                                 @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                                    <x-dropdown-link as="button" wire:click="deleteUser({{ $user->id }})"
-                                                                        wire:confirm="¿Eliminar este usuario? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este usuario? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteUser', params: [{{ $user->id }}] })" danger="true" icon="trash-2">
                                                                         Eliminar
                                                                     </x-dropdown-link>
                                                                 @endif
@@ -240,7 +239,7 @@
                                                     <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">{{ $user->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
                                                 @endif
                                                 @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                    <x-dropdown-link as="button" wire:click="deleteUser({{ $user->id }})" wire:confirm="¿Eliminar este usuario? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este usuario? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteUser', params: [{{ $user->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                                 @endif
                                             </x-slot>
                                         </x-dropdown>

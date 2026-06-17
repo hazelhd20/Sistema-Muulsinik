@@ -110,8 +110,7 @@
                                                         <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">
                                                             Editar
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="delete({{ $measure->id }})"
-                                                            wire:confirm="¿Eliminar esta medida? Esta acción no puede deshacerse." danger="true" icon="trash-2">
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">
                                                             Eliminar
                                                         </x-dropdown-link>
                                                     </x-slot>
@@ -179,7 +178,7 @@
                                             </x-slot>
                                             <x-slot name="content">
                                                 <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="delete({{ $measure->id }})" wire:confirm="¿Eliminar esta medida? Esta acción no puede deshacerse." danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                             </x-slot>
                                         </x-dropdown>
                                     </div>
