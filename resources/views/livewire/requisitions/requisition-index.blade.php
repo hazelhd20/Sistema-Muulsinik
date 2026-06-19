@@ -1,559 +1,375 @@
 <div x-data="{ tab: @entangle('tab').live }" x-on:livewire:navigated.window="tab = $wire.tab">
-    <div x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
-        x-init="totalOnPage = {{ $requisitions->count() }}; init()">
-    {{-- Header --}}
-    <x-page-header subtitle="Compras" title="Requisiciones">
-        <x-slot:actions>
-            <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus" wire:navigate>
-                Nueva Manual
-            </x-button>
-            <x-button href="{{ route('requisiciones.upload', ['source' => $tab]) }}" variant="primary" icon="scan-line" wire:navigate>
-                Subir Cotización
-            </x-button>
-        </x-slot:actions>
-    </x-page-header>
+    <div>
+        {{-- Header --}}
+        <x-page-header subtitle="Compras" title="Requisiciones">
+            <x-slot:actions>
+                <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus"
+                    wire:navigate>
+                    Nueva Manual
+                </x-button>
+                <x-button href="{{ route('requisiciones.upload', ['source' => $tab]) }}" variant="primary"
+                    icon="scan-line" wire:navigate>
+                    Subir Cotización
+                </x-button>
+            </x-slot:actions>
+        </x-page-header>
 
-    {{-- Tabs de Navegación --}}
-    <div class="tab-nav mb-6">
-        <button @click="tab = 'todas'" :class="tab === 'todas' ? 'active' : ''" class="tab-btn">
-            Requisiciones
-        </button>
-        <button @click="tab = 'borradores'" :class="tab === 'borradores' ? 'active' : ''" class="tab-btn">
-            Borradores y Procesos
-            @if($pendingQuotations->count() > 0)
-                <span class="badge badge-primary ml-1">{{ $pendingQuotations->count() }}</span>
-            @endif
-        </button>
-    </div>
+        {{-- Tabs de Navegación --}}
+        <div class="tab-nav mb-6">
+            <button @click="tab = 'todas'" :class="tab === 'todas' ? 'active' : ''" class="tab-btn">
+                Requisiciones
+            </button>
+            <button @click="tab = 'borradores'" :class="tab === 'borradores' ? 'active' : ''" class="tab-btn">
+                Borradores y Procesos
+                @if($pendingQuotations->count() > 0)
+                    <span class="badge badge-primary ml-1">{{ $pendingQuotations->count() }}</span>
+                @endif
+            </button>
+        </div>
 
-    <div x-show="tab === 'borradores'" x-cloak wire:key="tab-borradores">
-        <livewire:requisitions.pending-quotations-list />
-    </div>
+        <div x-show="tab === 'borradores'" x-cloak wire:key="tab-borradores">
+            <livewire:requisitions.pending-quotations-list />
+        </div>
 
-    <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table">
-        {{-- Unified Datagrid Card Container --}}
-        <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
-            @php
-                $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
-                $hasActiveFilters = !empty($search) || $activeCount > 0;
-            @endphp
+        <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table" 
+             x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
+             x-init="totalOnPage = {{ $requisitions->count() }}; init()">
+            {{-- Unified Datagrid Card Container --}}
+            <div
+                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
+                @php
+                    $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
+                    $hasActiveFilters = !empty($search) || $activeCount > 0;
+                @endphp
 
-            @if($requisitions->isNotEmpty() || $hasActiveFilters)
-                {{-- Header Group (Search + Filters + Chips) --}}
-                <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
-                    {{-- Filters Bar --}}
-                    <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
-                        {{-- Search: compact width --}}
-                        <div class="flex-1 min-w-0">
-                            <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar requisición..." />
-                        </div>
+                @if($requisitions->isNotEmpty() || $hasActiveFilters)
+                    {{-- Header Group (Search + Filters + Chips) --}}
+                    <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+                        {{-- Filters Bar --}}
+                        <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+                            {{-- Search: compact width --}}
+                            <div class="flex-1 min-w-0">
+                                <x-search-input wire:model.live.debounce.300ms="search"
+                                    placeholder="Buscar requisición..." />
+                            </div>
 
-                        {{-- Filters Popover --}}
-                        <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
-                            <x-form-field label="Estado">
-                                <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']"
-                                    placeholder="Todos los estados" />
-                            </x-form-field>
+                            {{-- Filters Popover --}}
+                            <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
+                                <x-form-field label="Estado">
+                                    <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada']"
+                                        placeholder="Todos los estados" />
+                                </x-form-field>
 
-                            <x-form-field label="Proyecto">
-                                <x-custom-select x-model="filterProject" :options="$projects"
-                                    placeholder="Todos los proyectos" />
-                            </x-form-field>
+                                <x-form-field label="Proyecto">
+                                    <x-custom-select x-model="filterProject" :options="$projects"
+                                        placeholder="Todos los proyectos" />
+                                </x-form-field>
 
-                            <x-form-field label="Creador">
-                                <x-custom-select x-model="filterCreator" :options="$creators"
-                                    placeholder="Todos los creadores" />
-                            </x-form-field>
+                                <x-form-field label="Creador">
+                                    <x-custom-select x-model="filterCreator" :options="$creators"
+                                        placeholder="Todos los creadores" />
+                                </x-form-field>
 
-                            <x-form-field label="Proveedor">
-                                <x-custom-select x-model="filterVendor" :options="$vendors"
-                                    placeholder="Todos los proveedores" />
-                            </x-form-field>
+                                <x-form-field label="Proveedor">
+                                    <x-custom-select x-model="filterVendor" :options="$vendors"
+                                        placeholder="Todos los proveedores" />
+                                </x-form-field>
 
-                            <x-form-field label="Período">
-                                <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
-                                    placeholder="Todos los períodos" />
-                            </x-form-field>
+                                <x-form-field label="Período">
+                                    <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año', 'custom' => 'Rango personalizado']" placeholder="Todos los períodos" />
+                                </x-form-field>
 
-                            <x-slot name="footer">
-                                <button type="button" @click="clearFilters()"
-                                    class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
-                                    Limpiar todo
-                                </button>
-                                <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                                    Aplicar Filtros
-                                </x-button>
-                            </x-slot>
-                        </x-filters-popover>
-                    </div>
-
-                    {{-- Active Chips Row --}}
-                    @if($activeCount > 0)
-                        <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
-                            @if($statusFilter)
-                                @php
-                                    $statusNames = ['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada'];
-                                @endphp
-                                <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter"
-                                    wire:click="$set('statusFilter', '')" />
-                            @endif
-                            @if($projectFilter)
-                                <x-filter-chip label="Proyecto" :value="$projects[$projectFilter] ?? 'Desconocido'"
-                                    wire:click="$set('projectFilter', '')" />
-                            @endif
-                            @if($creatorFilter)
-                                <x-filter-chip label="Creador" :value="$creators[$creatorFilter] ?? 'Desconocido'"
-                                    wire:click="$set('creatorFilter', '')" />
-                            @endif
-                            @if($vendorFilter)
-                                <x-filter-chip label="Proveedor" :value="$vendors[$vendorFilter] ?? 'Desconocido'" wire:click="$set('vendorFilter', '')" />
-                            @endif
-                            @if($periodFilter)
-                                @php
-                                    $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
-                                @endphp
-                                <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter"
-                                    wire:click="$set('periodFilter', '')" />
-                            @endif
-                        </div>
-                    @endif
-                </div> {{-- End Header Group --}}
-            @endif
-
-            <div class="relative">
-                <div class="w-full">
-                <x-card.table class="hidden md:block">
-                    @if($requisitions->isEmpty() && !$hasActiveFilters)
-                        <div wire:loading.class="hidden"
-                            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-                            class="p-8">
-                            <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                                message="Crea una requisición o sube una cotización para comenzar." />
-                        </div>
-                    @endif
-                    <table class="w-full table-fixed min-w-[1200px] {{ $requisitions->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}" @if($requisitions->isEmpty())
-                        wire:loading.class.remove="hidden"
-                        wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-                    @endif>
-                        <colgroup>
-                            <col class="w-14">           {{-- Checkbox --}}
-                            <col class="w-[12%]">        {{-- Folio --}}
-                            <col class="w-[22%]">        {{-- Proyecto --}}
-                            <col class="w-[10%]">        {{-- Fecha --}}
-                            <col class="w-[12%]">        {{-- Creador --}}
-                            <col class="w-[16%]">        {{-- Proveedor --}}
-                            <col class="w-[8%]">         {{-- Total --}}
-                            <col class="w-[8%]">         {{-- Estado --}}
-                            <col class="w-24">           {{-- Acciones --}}
-                        </colgroup>
-                        <thead class="bg-surface-main/50 border-b border-border">
-                            <tr>
-                                <th class="actions text-center pl-4 pr-2">
-                                    <input type="checkbox"
-                                        class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $requisitions->pluck('id')->join(',') }}])" />
-                                </th>
-                                <x-sortable-header field="number" label="Folio" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th>Creador</th>
-                                <th>Proveedor</th>
-                                <x-sortable-header field="total" label="Total" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" align="right" class="numeric" />
-                                <x-sortable-header field="status" label="Estado" :sortField="$sortField"
-                                    :sortDirection="$sortDirection" />
-                                <th class="actions text-right pr-4">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody wire:loading.class="hidden"
-                            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage">
-                            @if($requisitions->isEmpty() && $hasActiveFilters)
-                                <tr>
-                                    <td colspan="9" class="p-8">
-                                        <x-empty-state icon="search" title="No se encontraron requisiciones" message="Intenta ajustar tus filtros de búsqueda." />
-                                    </td>
-                                </tr>
-                            @else
-                                @foreach($requisitions as $req)
-                                <tr wire:key="requisition-row-{{ $req->id }}"
-                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
-                                    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="actions text-center pl-4 pr-2" @click.stop>
-                                        <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
-                                    </td>
-                                    <td class="font-semibold text-text-primary truncate max-w-0" title="{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}">
-                                        {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
-                                    </td>
-                                    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->project->name ?? '—' }}">
-                                        {{ $req->project->name ?? '—' }}
-                                    </td>
-                                    <td class="text-text-secondary">
-                                        {{ $req->date?->format('d/m/Y') }}
-                                    </td>
-                                    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->creator->name ?? '—' }}">
-                                        {{ $req->creator->name ?? '—' }}
-                                    </td>
-                                    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->vendor?->name ?? '—' }}">
-                                        {{ $req->vendor?->name ?? '—' }}
-                                    </td>
-                                    <td class="text-right font-semibold tabular-nums text-text-primary numeric">
-                                        ${{ number_format($req->total, 2, '.', ',') }}
-                                    </td>
-                                    <td class="py-3">
-                                        <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
-                                        @if($req->status === 'rechazada' && $req->rejection_comment)
-                                            <p class="text-[10px] text-danger mt-1 truncate max-w-0"
-                                                title="{{ $req->rejection_comment }}">
-                                                {{ $req->rejection_comment }}
-                                            </p>
-                                        @endif
-                                    </td>
-                                    <td class="actions pr-4 py-3" @click.stop>
-                                        <div class="flex items-center justify-end">
-                                            <x-dropdown align="right" width="48">
-                                                <x-slot name="trigger">
-                                                    <x-button variant="icon" icon="more-vertical"
-                                                        class="text-text-muted hover:text-text-primary"
-                                                        aria-label="Opciones" title="Opciones" />
-                                                </x-slot>
-
-                                                <x-slot name="content">
-                                                    <x-dropdown-link as="button" type="button"
-                                                        @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })"
-                                                        icon="eye">
-                                                        Ver detalles
-                                                    </x-dropdown-link>
-
-                                                    @if($req->quotations->isNotEmpty())
-                                                        @php
-                                                            $firstQuot = $req->quotations->first();
-                                                            $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                                            $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                                        @endphp
-                                                        <x-dropdown-link as="button" type="button"
-                                                            @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')"
-                                                            icon="file-search">
-                                                            Ver cotización
-                                                        </x-dropdown-link>
-                                                    @endif
-
-                                                    <x-dropdown-link as="a"
-                                                        href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank"
-                                                        icon="file-down">
-                                                        Descargar PDF
-                                                    </x-dropdown-link>
-
-                                                    @if($req->status === 'borrador' && $req->created_by === auth()->id())
-                                                        <div class="border-t border-border my-1"></div>
-                                                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', {
-                                                                                title: 'Aprobar Requisición',
-                                                                                description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.',
-                                                                                confirmLabel: 'Aprobar',
-                                                                                variant: 'success',
-                                                                                action: 'submitForApproval',
-                                                                                params: [{{ $req->id }}]
-                                                                            })" icon="check-circle" success="true">
-                                                                Aprobar
-                                                            </x-dropdown-link>
-                                                        @else
-                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', {
-                                                                                title: 'Solicitar Aprobación',
-                                                                                description: 'La requisición será enviada a los aprobadores del sistema.',
-                                                                                confirmLabel: 'Enviar a aprobación',
-                                                                                variant: 'primary',
-                                                                                action: 'submitForApproval',
-                                                                                params: [{{ $req->id }}]
-                                                                            })" icon="send">
-                                                                Solicitar aprobación
-                                                            </x-dropdown-link>
-                                                        @endif
-                                                    @endif
-
-                                                    @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                        <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', {
-                                                                        title: 'Aprobar Requisición',
-                                                                        description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                                                                        confirmLabel: 'Aprobar',
-                                                                        variant: 'success',
-                                                                        action: 'approve',
-                                                                        params: [{{ $req->id }}]
-                                                                    })" icon="check-circle" success="true">
-                                                            Aprobar
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button"
-                                                            wire:click="openRejectModal({{ $req->id }})" danger="true"
-                                                            icon="x-circle">
-                                                            Rechazar
-                                                        </x-dropdown-link>
-                                                    @endif
-
-                                                    @if(in_array($req->status, ['borrador', 'rechazada']))
-                                                        <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', {
-                                                                        title: 'Eliminar Requisición',
-                                                                        description: 'Esta acción es permanente y no se puede deshacer.',
-                                                                        confirmLabel: 'Eliminar',
-                                                                        variant: 'danger',
-                                                                        action: 'deleteRequisition',
-                                                                        params: [{{ $req->id }}]
-                                                                    })" danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
-                                                    @endif
-                                                </x-slot>
-                                            </x-dropdown>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            @endif
-                        </tbody>
-                        <tbody wire:loading.class.remove="hidden"
-                            wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-                            class="hidden">
-                            @for($i = 0; $i < 5; $i++)
-                                <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="text-center">
-                                        <x-skeleton class="w-4 h-4 rounded mx-auto" />
-                                    </td>
-                                    <td>
-                                        <x-skeleton class="h-4 rounded w-16" />
-                                    </td>
-                                    <td>
-                                        <x-skeleton class="h-4 rounded w-24" />
-                                    </td>
-                                    <td>
-                                        <x-skeleton class="h-4 rounded w-20" />
-                                    </td>
-                                    <td>
-                                        <x-skeleton class="h-4 rounded w-24" />
-                                    </td>
-                                    <td>
-                                        <x-skeleton class="h-4 rounded w-32" />
-                                    </td>
-                                    <td class="text-right">
-                                        <x-skeleton class="h-4 rounded w-20 ml-auto" />
-                                    </td>
-                                    <td>
-                                        <x-skeleton class="h-6 rounded w-20" />
-                                    </td>
-                                    <td class="text-right">
-                                        <div class="flex justify-end gap-1">
-                                            <x-skeleton class="w-8 h-8 rounded" />
-                                            <x-skeleton class="w-8 h-8 rounded" />
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endfor
-                        </tbody>
-                    </table>
-                </x-card.table>
-
-                {{-- Tarjetas Móviles (Mobile View) --}}
-                <div class="md:hidden flex flex-col gap-4 mt-2">
-                    <div wire:loading.class="hidden"
-                        wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-                        class="flex flex-col gap-4">
-                        @if($requisitions->isNotEmpty())
-                            @foreach($requisitions as $req)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                     :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                                     wire:key="req-mobile-card-{{ $req->id }}">
-                                     
-                                    {{-- Cabecera de la Fila --}}
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3 min-w-0">
-                                            <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
-                                            <span class="font-bold text-text-primary text-base truncate">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
-                                            <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
-                                        </div>
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <x-dropdown align="right" width="48">
-                                                <x-slot name="trigger">
-                                                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
-                                                        <x-lucide-more-vertical class="w-5 h-5" />
-                                                    </button>
-                                                </x-slot>
-                                                <x-slot name="content">
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">Ver detalles</x-dropdown-link>
-                                                    @if($req->quotations->isNotEmpty())
-                                                        @php
-                                                            $firstQuot = $req->quotations->first();
-                                                            $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
-                                                            $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
-                                                        @endphp
-                                                        <x-dropdown-link as="button" type="button" @click="openPreview('{{ $fileUrl }}', '{{ $mime }}')" icon="file-search">Ver cotización</x-dropdown-link>
-                                                    @endif
-                                                    <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">Descargar PDF</x-dropdown-link>
-                                                    @if($req->status === 'borrador' && $req->created_by === auth()->id())
-                                                        <div class="border-t border-border my-1"></div>
-                                                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.', confirmLabel: 'Aprobar', variant: 'success', action: 'submitForApproval', params: [{{ $req->id }}] })" icon="check-circle" success="true">Aprobar</x-dropdown-link>
-                                                        @else
-                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Solicitar Aprobación', description: 'La requisición será enviada a los aprobadores del sistema.', confirmLabel: 'Enviar a aprobación', variant: 'primary', action: 'submitForApproval', params: [{{ $req->id }}] })" icon="send">Solicitar aprobación</x-dropdown-link>
-                                                        @endif
-                                                    @endif
-                                                    @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                                                        <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Cambiará a estado Aprobada y se notificará al solicitante.', confirmLabel: 'Aprobar', variant: 'success', action: 'approve', params: [{{ $req->id }}] })" icon="check-circle" success="true">Aprobar</x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">Rechazar</x-dropdown-link>
-                                                    @endif
-                                                    @if(in_array($req->status, ['borrador', 'rechazada']))
-                                                        <div class="border-t border-border my-1"></div>
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Requisición', description: 'Esta acción es permanente y no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteRequisition', params: [{{ $req->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
-                                                    @endif
-                                                </x-slot>
-                                            </x-dropdown>
-                                        </div>
-                                    </div>
-
-                                    {{-- Contenido Indentado --}}
-                                    <div class="pl-8 flex flex-col gap-3">
-                                        {{-- Subtítulo --}}
-                                        <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
-                                            <span class="flex items-center gap-1.5 truncate">
-                                                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
-                                                <span class="truncate">{{ $req->creator->name ?? '—' }}</span>
-                                            </span>
-                                            <span class="flex items-center gap-1.5">
-                                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
-                                                <span>{{ $req->date?->format('d/m/Y') }}</span>
-                                            </span>
-                                        </div>
-
-                                        {{-- Datos Financieros / Detalles --}}
-                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                            <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Proyecto</p>
-                                                <p class="text-small text-text-primary truncate" title="{{ $req->project->name ?? 'Sin proyecto' }}">{{ $req->project->name ?? 'Sin proyecto' }}</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Proveedor</p>
-                                                <p class="text-small text-text-primary truncate" title="{{ $req->vendor?->name ?? 'Sin proveedor' }}">{{ $req->vendor?->name ?? 'Sin proveedor' }}</p>
-                                            </div>
-                                            <div class="col-span-2">
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Total</p>
-                                                <p class="font-bold text-text-primary tabular-nums">${{ number_format($req->total, 2, '.', ',') }}</p>
-                                            </div>
-                                        </div>
-
-                                        @if($req->status === 'rechazada' && $req->rejection_comment)
-                                            <div class="bg-danger-50 text-danger-700 text-xs p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
-                                                <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
-                                                <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
-                                            </div>
-                                        @endif
+                                <div x-show="filterPeriod === 'custom'" x-collapse class="col-span-full mt-2">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <x-form-field label="Desde">
+                                            <x-date-picker x-model="filterDateFrom" :options="['maxDate' => 'today']"
+                                                placeholder="Fecha inicio" />
+                                        </x-form-field>
+                                        <x-form-field label="Hasta">
+                                            <x-date-picker x-model="filterDateTo" :options="['maxDate' => 'today']"
+                                                placeholder="Fecha fin" />
+                                        </x-form-field>
                                     </div>
                                 </div>
-                            @endforeach
-                        @elseif($hasActiveFilters)
-                            <div class="p-12">
-                                <x-empty-state icon="search" title="No se encontraron requisiciones" message="Intenta ajustar tus filtros de búsqueda." />
-                            </div>
-                        @else
-                            <div class="p-12">
-                                <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
-                                    message="Crea una requisición o sube una cotización para comenzar." />
+
+                                <x-slot name="footer">
+                                    <button type="button" @click="clearFilters()"
+                                        class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                                        Limpiar todo
+                                    </button>
+                                    <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                        Aplicar Filtros
+                                    </x-button>
+                                </x-slot>
+                            </x-filters-popover>
+                        </div>
+
+                        {{-- Active Chips Row --}}
+                        @if($activeCount > 0)
+                            <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                                @if($statusFilter)
+                                    @php
+                                        $statusNames = ['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada'];
+                                    @endphp
+                                    <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter"
+                                        wire:click="$set('statusFilter', '')" />
+                                @endif
+                                @if($projectFilter)
+                                    <x-filter-chip label="Proyecto" :value="$projects[$projectFilter] ?? 'Desconocido'"
+                                        wire:click="$set('projectFilter', '')" />
+                                @endif
+                                @if($creatorFilter)
+                                    <x-filter-chip label="Creador" :value="$creators[$creatorFilter] ?? 'Desconocido'"
+                                        wire:click="$set('creatorFilter', '')" />
+                                @endif
+                                @if($vendorFilter)
+                                    <x-filter-chip label="Proveedor" :value="$vendors[$vendorFilter] ?? 'Desconocido'"
+                                        wire:click="$set('vendorFilter', '')" />
+                                @endif
+                                @if($periodFilter)
+                                    @php
+                                        $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año', 'custom' => 'Personalizado'];
+                                        $periodLabel = $periodNames[$periodFilter] ?? $periodFilter;
+                                        if ($periodFilter === 'custom' && ($dateFrom || $dateTo)) {
+                                            $periodLabel .= ' (' . ($dateFrom ?: 'Inicio') . ' - ' . ($dateTo ?: 'Hoy') . ')';
+                                        }
+                                    @endphp
+                                    <x-filter-chip label="Período" :value="$periodLabel"
+                                        wire:click="$set('periodFilter', ''); $set('dateFrom', ''); $set('dateTo', '')" />
+                                @endif
+
+                                @if($activeCount > 1)
+                                    <button wire:click="clearAllFilters"
+                                        class="text-xs font-medium text-text-muted hover:text-danger-600 transition-colors ml-auto flex items-center gap-1">
+                                        <x-lucide-eraser class="w-3.5 h-3.5" /> Limpiar todo
+                                    </button>
+                                @endif
                             </div>
                         @endif
-                    </div>
+                    </div> {{-- End Header Group --}}
+                @endif
 
-                    {{-- Skeletons Móviles --}}
-                    <div wire:loading.class.remove="hidden"
-                        wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
-                        class="hidden flex flex-col gap-4 mt-2">
-                        @for($i = 0; $i < 4; $i++)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
-                                        <x-skeleton class="h-5 w-24 rounded" />
-                                        <x-skeleton class="h-5 w-20 rounded-full" />
-                                    </div>
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        <x-skeleton class="w-7 h-7 rounded-md" />
-                                    </div>
+                <div class="relative">
+                    <div class="w-full">
+                        <x-card.table class="hidden md:block">
+                            @if($requisitions->isEmpty() && !$hasActiveFilters)
+                                <div wire:loading.class="hidden"
+                                    wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
+                                    class="p-8">
+                                    <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                                        message="Crea una requisición o sube una cotización para comenzar." />
                                 </div>
-                                <div class="pl-8 flex flex-col gap-3">
-                                    <div class="flex gap-3">
-                                        <x-skeleton class="h-3 w-28 rounded" />
-                                        <x-skeleton class="h-3 w-20 rounded" />
+                            @endif
+                            <table
+                                class="w-full table-fixed min-w-[1200px] {{ $requisitions->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
+                                @if($requisitions->isEmpty()) wire:loading.class.remove="hidden"
+                                    wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
+                                @endif>
+                                <colgroup>
+                                    <col class="w-14"> {{-- Checkbox --}}
+                                    <col class="w-[12%]"> {{-- Folio --}}
+                                    <col class="w-[22%]"> {{-- Proyecto --}}
+                                    <col class="w-[10%]"> {{-- Fecha --}}
+                                    <col class="w-[12%]"> {{-- Creador --}}
+                                    <col class="w-[16%]"> {{-- Proveedor --}}
+                                    <col class="w-[8%]"> {{-- Total --}}
+                                    <col class="w-[8%]"> {{-- Estado --}}
+                                    <col class="w-24"> {{-- Acciones --}}
+                                </colgroup>
+                                <thead class="bg-surface-main/50 border-b border-border">
+                                    <tr>
+                                        <th class="actions text-center pl-4 pr-2">
+                                            <x-table-checkbox 
+                                                x-bind:checked="allSelected"
+                                                @change="toggleAll({{ json_encode($requisitions->pluck('id')->toArray()) }})"
+                                            />
+                                        </th>
+                                        <x-sortable-header field="number" label="Folio" :sortField="$sortField"
+                                            :sortDirection="$sortDirection" />
+                                        <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField"
+                                            :sortDirection="$sortDirection" />
+                                        <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
+                                            :sortDirection="$sortDirection" />
+                                        <th>Creador</th>
+                                        <th>Proveedor</th>
+                                        <x-sortable-header field="total" label="Total" :sortField="$sortField"
+                                            :sortDirection="$sortDirection" align="right" class="numeric" />
+                                        <x-sortable-header field="status" label="Estado" :sortField="$sortField"
+                                            :sortDirection="$sortDirection" />
+                                        <th class="actions text-right pr-4">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody wire:loading.class="hidden"
+                                    wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage">
+                                    @if($requisitions->isEmpty() && $hasActiveFilters)
+                                        <tr>
+                                            <td colspan="9" class="p-8">
+                                                <x-empty-state icon="search" title="No se encontraron requisiciones"
+                                                    message="Intenta ajustar tus filtros de búsqueda." />
+                                            </td>
+                                        </tr>
+                                    @else
+                                        @foreach($requisitions as $req)
+                                            <x-requisitions.table-row :req="$req" />
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                                <tbody wire:loading.class.remove="hidden"
+                                    wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
+                                    class="hidden">
+                                    @for($i = 0; $i < 5; $i++)
+                                        <tr class="opacity-{{ 100 - ($i * 15) }}">
+                                            <td class="text-center">
+                                                <x-skeleton class="w-4 h-4 rounded mx-auto" />
+                                            </td>
+                                            <td>
+                                                <x-skeleton class="h-4 rounded w-16" />
+                                            </td>
+                                            <td>
+                                                <x-skeleton class="h-4 rounded w-24" />
+                                            </td>
+                                            <td>
+                                                <x-skeleton class="h-4 rounded w-20" />
+                                            </td>
+                                            <td>
+                                                <x-skeleton class="h-4 rounded w-24" />
+                                            </td>
+                                            <td>
+                                                <x-skeleton class="h-4 rounded w-32" />
+                                            </td>
+                                            <td class="text-right">
+                                                <x-skeleton class="h-4 rounded w-20 ml-auto" />
+                                            </td>
+                                            <td>
+                                                <x-skeleton class="h-6 rounded w-20" />
+                                            </td>
+                                            <td class="text-right">
+                                                <div class="flex justify-end gap-1">
+                                                    <x-skeleton class="w-8 h-8 rounded" />
+                                                    <x-skeleton class="w-8 h-8 rounded" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endfor
+                                </tbody>
+                            </table>
+                        </x-card.table>
+
+                        {{-- Tarjetas Móviles (Mobile View) --}}
+                        <div class="md:hidden flex flex-col gap-4 mt-2">
+                            <div wire:loading.class="hidden"
+                                wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
+                                class="flex flex-col gap-4">
+                                @if($requisitions->isNotEmpty())
+                                    @foreach($requisitions as $req)
+                                        <x-requisitions.mobile-card :req="$req" />
+                                    @endforeach
+                                @elseif($hasActiveFilters)
+                                    <div class="p-12">
+                                        <x-empty-state icon="search" title="No se encontraron requisiciones"
+                                            message="Intenta ajustar tus filtros de búsqueda." />
                                     </div>
-                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                        <div>
-                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
-                                            <x-skeleton class="h-4 w-24 rounded" />
-                                        </div>
-                                        <div>
-                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
-                                            <x-skeleton class="h-4 w-24 rounded" />
-                                        </div>
-                                        <div class="col-span-2">
-                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
-                                            <x-skeleton class="h-5 w-16 rounded" />
-                                        </div>
+                                @else
+                                    <div class="p-12">
+                                        <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
+                                            message="Crea una requisición o sube una cotización para comenzar." />
                                     </div>
-                                </div>
+                                @endif
                             </div>
-                        @endfor
-                    </div>
-                </div>
-                </div>
 
-                {{-- Bulk Actions Bar --}}
-                <x-bulk-actions-bar>
-                    @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                        <div x-show="canApproveSelection" x-cloak class="flex items-center gap-2">
-                            <x-button @click="$dispatch('confirm-action', {
-                                        title: 'Aprobar Seleccionadas',
-                                        description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
-                                        confirmLabel: 'Aprobar seleccionadas',
-                                        variant: 'success',
-                                        action: 'approveSelected',
-                                        params: []
-                                    })" variant="success" icon="check-circle">
-                                Aprobar
-                            </x-button>
-                            <x-button wire:click="openBulkRejectModal" variant="warning" icon="x-octagon" target="openBulkRejectModal">
-                                Rechazar
-                            </x-button>
+                            {{-- Skeletons Móviles --}}
+                            <div wire:loading.class.remove="hidden"
+                                wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
+                                class="hidden flex flex-col gap-4 mt-2">
+                                @for($i = 0; $i < 4; $i++)
+                                    <div
+                                        class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                                <x-skeleton class="h-5 w-24 rounded" />
+                                                <x-skeleton class="h-5 w-20 rounded-full" />
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <x-skeleton class="w-7 h-7 rounded-md" />
+                                            </div>
+                                        </div>
+                                        <div class="pl-8 flex flex-col gap-3">
+                                            <div class="flex gap-3">
+                                                <x-skeleton class="h-3 w-28 rounded" />
+                                                <x-skeleton class="h-3 w-20 rounded" />
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                                <div>
+                                                    <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                                    <x-skeleton class="h-4 w-24 rounded" />
+                                                </div>
+                                                <div>
+                                                    <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                                    <x-skeleton class="h-4 w-24 rounded" />
+                                                </div>
+                                                <div class="col-span-2">
+                                                    <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                                    <x-skeleton class="h-5 w-16 rounded" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
                         </div>
-                    @endif
+                    </div>
 
-                    <div class="h-8 w-px bg-border mx-1 hidden sm:block"></div>
+                    {{-- Bulk Actions Bar --}}
+                    <x-bulk-actions-bar>
+                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                            <div x-show="canApproveSelection" x-cloak class="flex items-center gap-2">
+                                <x-button @click="$dispatch('confirm-action', {
+                                            title: 'Aprobar Seleccionadas',
+                                            description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
+                                            confirmLabel: 'Aprobar seleccionadas',
+                                            variant: 'success',
+                                            action: 'approveSelected',
+                                            params: []
+                                        })" variant="success" icon="check-circle">
+                                    Aprobar
+                                </x-button>
+                                <x-button wire:click="openBulkRejectModal" variant="warning" icon="x-octagon"
+                                    target="openBulkRejectModal">
+                                    Rechazar
+                                </x-button>
+                            </div>
+                        @endif
 
-                    {{-- Menú de Exportación --}}
-                    <x-dropdown align="top" width="56">
-                        <x-slot name="trigger">
-                            <x-button variant="secondary" icon="file-down"
-                                wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed" wire:loading.attr="disabled">
-                                <span wire:loading.remove
-                                    wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportar</span>
-                                <span wire:loading
-                                    wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportando...</span>
-                            </x-button>
-                        </x-slot>
-                        <x-slot name="content">
-                            <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
-                                Resumen (CSV)
-                            </x-dropdown-link>
-                            <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
-                                Detallado con Ítems (CSV)
-                            </x-dropdown-link>
-                            <div class="border-t border-border my-1"></div>
-                            <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
-                                PDFs en ZIP
-                            </x-dropdown-link>
-                        </x-slot>
-                    </x-dropdown>
+                        <div class="h-8 w-px bg-border mx-1 hidden sm:block"></div>
 
-                    <x-button @click="$dispatch('confirm-action', {
+                        {{-- Menú de Exportación --}}
+                        <x-dropdown align="top" width="56">
+                            <x-slot name="trigger">
+                                <x-button variant="secondary" icon="file-down"
+                                    wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed"
+                                    wire:loading.attr="disabled">
+                                    <span wire:loading.remove
+                                        wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportar</span>
+                                    <span wire:loading
+                                        wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportando...</span>
+                                </x-button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
+                                    Resumen (CSV)
+                                </x-dropdown-link>
+                                <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
+                                    Detallado con Ítems (CSV)
+                                </x-dropdown-link>
+                                <div class="border-t border-border my-1"></div>
+                                <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
+                                    PDFs en ZIP
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+
+                        <x-button @click="$dispatch('confirm-action', {
                             title: 'Eliminar Seleccionadas',
                             description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
                             confirmLabel: 'Eliminar',
@@ -561,30 +377,28 @@
                             action: 'deleteSelected',
                             params: []
                         })" variant="danger" icon="trash-2">
-                        Eliminar
-                    </x-button>
-                </x-bulk-actions-bar>
+                            Eliminar
+                        </x-button>
+                    </x-bulk-actions-bar>
+                </div>
+
+                @if($requisitions->hasPages())
+                    <x-card.footer>
+                        {{ $requisitions->links() }}
+                    </x-card.footer>
+                @endif
             </div>
-
-            @if($requisitions->hasPages())
-                <x-card.footer>
-                    {{ $requisitions->links() }}
-                </x-card.footer>
-            @endif
         </div>
+
+        {{-- Reject Modal (RF-REQ-09: extraído a partial compartido) --}}
+        @include('livewire.requisitions._reject-modal')
+
+        {{-- Drawer de Detalle Rápido --}}
+        <livewire:requisitions.requisition-detail-drawer />
+
+        {{-- Diálogo de confirmación global --}}
+        {{-- ═══════ PREVIEW MODAL ═══════ --}}
+        <x-preview-modal />
     </div>
-
-
-
-    {{-- Reject Modal (RF-REQ-09: extraído a partial compartido) --}}
-    @include('livewire.requisitions._reject-modal')
-
-    {{-- Drawer de Detalle Rápido --}}
-    <livewire:requisitions.requisition-detail-drawer />
-
-    {{-- Diálogo de confirmación global --}}
-{{-- ═══════ PREVIEW MODAL ═══════ --}}
-    <x-preview-modal />
-</div>
     <x-confirm-modal />
 </div>

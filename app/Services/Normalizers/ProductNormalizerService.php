@@ -28,6 +28,17 @@ public function normalizeProductName(string $rawName): string
         return $name;
     }
 
+    private function stripProductCodes(string $name): string
+    {
+        // Fase 3: Eliminar códigos SKU — estrategia de "proteger y eliminar"
+        // Eliminar códigos SKU típicos (ej: "A-1234", "CBE-001") al inicio del nombre
+        $name = preg_replace('/^[A-Z0-9]{1,4}\-\d{3,}\s+/', '', $name);
+        
+        // Eliminar SKUs numéricos puros muy largos al inicio (ej: "10020304")
+        $name = preg_replace('/^\d{5,}\s+/', '', $name);
+
+        return trim($name);
+    }
 
 
 public function findMatchingProduct(string $rawName): ?array

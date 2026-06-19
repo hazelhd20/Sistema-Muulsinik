@@ -1,19 +1,4 @@
-<div x-data="{
-    showPreviewModal: false,
-    previewUrl: null,
-    previewType: null,
-    isPdf() {
-        return this.previewType === 'application/pdf' || (this.previewUrl && this.previewUrl.toLowerCase().includes('.pdf'));
-    },
-    isImage() {
-        return (this.previewType && this.previewType.startsWith('image/')) || (this.previewUrl && this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i));
-    },
-    openServerPreview(url, mimeType) {
-        this.previewUrl = url;
-        this.previewType = mimeType;
-        this.showPreviewModal = true;
-    }
-}">
+<div x-data="{}">
     {{-- ═══════ WIZARD HEADER ═══════ --}}
     <x-page-header subtitle="Requisiciones" title="Subir Cotización"
         backUrl="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" />
@@ -208,7 +193,7 @@
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
                         <x-button type="button"
-                            @click="openServerPreview('{{ route('file.preview', ['path' => $quotation->file_path]) }}', '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}')"
+                            @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
                             variant="secondary" icon="file-search" class="text-xs shadow-none border-border/50">
                             Ver documento original
                         </x-button>

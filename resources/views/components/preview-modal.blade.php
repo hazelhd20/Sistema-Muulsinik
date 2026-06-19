@@ -1,4 +1,16 @@
-<div x-show="showPreviewModal" x-cloak
+<div x-data="{ 
+        showPreviewModal: false, 
+        previewUrl: null, 
+        previewType: null,
+        isPdf() { return this.previewType === 'application/pdf' || (this.previewUrl && this.previewUrl.toLowerCase().includes('.pdf')); },
+        isImage() { return (this.previewType && this.previewType.startsWith('image/')) || (this.previewUrl && this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i)); }
+    }"
+    @open-preview.window="
+        previewUrl = $event.detail.url;
+        previewType = $event.detail.type;
+        showPreviewModal = true;
+    "
+    x-show="showPreviewModal" x-cloak
     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
     @keydown.escape.window="showPreviewModal = false">
     <div class="modal-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px]" @click="showPreviewModal = false"></div>

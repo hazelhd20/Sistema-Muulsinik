@@ -659,53 +659,12 @@ class QuotationWizard extends Component
      * @param  int  $index  Índice del ítem en $this->items
      * @param  string  $field  'category' | 'unit' | 'both'
      */
-    public function resolveProductConflict(int $index, string $field): void
+    public function resolveProductConflict(int $index, string $field, \App\Actions\Requisitions\ResolveProductConflictAction $action): void
     {
         $item = $this->items[$index] ?? null;
-        if (! $item || empty($item['product_id']) || empty($item['conflict'])) {
-            return;
-        }
+        if (! $item) return;
 
-        $product = Product::find($item['product_id']);
-        if (! $product) {
-            return;
-        }
-
-        $conflict = $item['conflict'];
-        $updates = [];
-
-        if (($field === 'category' || $field === 'both') && isset($conflict['category'])) {
-            $updates['category_id'] = $conflict['category']['suggested_id'];
-            $this->items[$index]['category_id'] = $conflict['category']['suggested_id'];
-            $this->items[$index]['category_name'] = $conflict['category']['suggested'];
-            unset($this->items[$index]['conflict']['category']);
-        }
-
-        if (($field === 'unit' || $field === 'both') && isset($conflict['unit'])) {
-            $normalizer = app(DataNormalizerService::class);
-            $suggestedUnit = $conflict['unit']['suggested'];
-            $measure = Measure::where('abbreviation', $suggestedUnit)->first();
-            if (! $measure) {
-                // Usar unit_name del hint de la IA si está disponible
-                $aiUnitName = $item['_match']['measure']['unit_name'] ?? null;
-                $measure = Measure::create([
-                    'name' => $normalizer->getUnitName($suggestedUnit, $aiUnitName),
-                    'abbreviation' => $suggestedUnit,
-                ]);
-            }
-            $updates['measure_id'] = $measure->id;
-            $this->items[$index]['unit'] = $suggestedUnit;
-            unset($this->items[$index]['conflict']['unit']);
-        }
-
-        if (! empty($updates)) {
-            $product->update($updates);
-        }
-
-        // Limpiar el conflicto si ya no quedan campos en conflicto
-        if (empty($this->items[$index]['conflict'])) {
-            $this->items[$index]['conflict'] = null;
-        }
+        $this->items[$index] = $action->execute($item, $field);
     }
 
     /**

@@ -4,6 +4,39 @@ import "flatpickr/dist/flatpickr.min.css";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 flatpickr.localize(Spanish);
 window.flatpickr = flatpickr;
+document.addEventListener('alpine:init', () => {
+    Alpine.data('datePicker', (config = {}) => ({
+        value: config.value || '',
+        picker: null,
+        init() {
+            this.picker = flatpickr(this.$refs.input, {
+                defaultDate: this.value,
+                dateFormat: 'Y-m-d',
+                ...config.options,
+                onChange: (selectedDates, dateStr) => {
+                    this.value = dateStr;
+                    this.$dispatch('input', dateStr);
+                },
+                onClose: (selectedDates, dateStr, instance) => {
+                    setTimeout(() => {
+                        instance.input.blur();
+                    }, 0);
+                }
+            });
+
+            this.$watch('value', (newValue) => {
+                if (this.picker && newValue !== this.picker.input.value) {
+                    this.picker.setDate(newValue);
+                }
+            });
+        },
+        destroy() {
+            if (this.picker) {
+                this.picker.destroy();
+            }
+        }
+    }));
+});
 
 document.addEventListener("alpine:init", () => {
     // Estandarización de Gráficas con Chart.js
@@ -73,42 +106,22 @@ document.addEventListener("alpine:init", () => {
         
         statuses: pageStatuses,
 
-        // -- Preview Modal --
-        showPreviewModal: false,
-        previewUrl: null,
-        previewType: null,
-        isPdf() {
-            return (
-                this.previewType === "application/pdf" ||
-                (this.previewUrl &&
-                    this.previewUrl.toLowerCase().includes(".pdf"))
-            );
-        },
-        isImage() {
-            return (
-                (this.previewType && this.previewType.startsWith("image/")) ||
-                (this.previewUrl &&
-                    this.previewUrl.match(/\.(jpeg|jpg|gif|png)$/i))
-            );
-        },
-        openPreview(url, mimeType) {
-            this.previewUrl = url;
-            this.previewType = mimeType;
-            this.showPreviewModal = true;
-        },
-
         // -- Filtros (sincronizados con $wire Livewire) --
         filterStatus: "",
         filterProject: "",
         filterCreator: "",
         filterVendor: "",
         filterPeriod: "",
+        filterDateFrom: "",
+        filterDateTo: "",
         initFilters() {
             this.filterStatus = this.$wire.statusFilter || "";
             this.filterProject = this.$wire.projectFilter || "";
             this.filterCreator = this.$wire.creatorFilter || "";
             this.filterVendor = this.$wire.vendorFilter || "";
             this.filterPeriod = this.$wire.periodFilter || "";
+            this.filterDateFrom = this.$wire.dateFrom || "";
+            this.filterDateTo = this.$wire.dateTo || "";
         },
         applyFilters() {
             if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
@@ -116,6 +129,8 @@ document.addEventListener("alpine:init", () => {
             if (this.$wire.creatorFilter !== this.filterCreator) this.$wire.set("creatorFilter", this.filterCreator);
             if (this.$wire.vendorFilter !== this.filterVendor) this.$wire.set("vendorFilter", this.filterVendor);
             if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
+            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
+            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
         },
         clearFilters() {
             this.filterStatus = "";
@@ -123,6 +138,8 @@ document.addEventListener("alpine:init", () => {
             this.filterCreator = "";
             this.filterVendor = "";
             this.filterPeriod = "";
+            this.filterDateFrom = "";
+            this.filterDateTo = "";
             this.applyFilters();
         },
 
@@ -161,23 +178,31 @@ document.addEventListener("alpine:init", () => {
         filterCategory: "",
         filterPeriod: "",
         filterUser: "",
+        filterDateFrom: "",
+        filterDateTo: "",
         initFilters() {
             this.filterProject = this.$wire.projectFilter || "";
             this.filterCategory = this.$wire.categoryFilter || "";
             this.filterPeriod = this.$wire.periodFilter || "";
             this.filterUser = this.$wire.userFilter || "";
+            this.filterDateFrom = this.$wire.dateFrom || "";
+            this.filterDateTo = this.$wire.dateTo || "";
         },
         applyFilters() {
             if (this.$wire.projectFilter !== this.filterProject) this.$wire.set("projectFilter", this.filterProject);
             if (this.$wire.categoryFilter !== this.filterCategory) this.$wire.set("categoryFilter", this.filterCategory);
             if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
             if (this.$wire.userFilter !== this.filterUser) this.$wire.set("userFilter", this.filterUser);
+            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
+            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
         },
         clearFilters() {
             this.filterProject = "";
             this.filterCategory = "";
             this.filterPeriod = "";
             this.filterUser = "";
+            this.filterDateFrom = "";
+            this.filterDateTo = "";
             this.applyFilters();
         },
         get allSelected() {
@@ -201,17 +226,25 @@ document.addEventListener("alpine:init", () => {
         totalOnPage: 0,
         filterStatus: "",
         filterPeriod: "",
+        filterDateFrom: "",
+        filterDateTo: "",
         initFilters() {
             this.filterStatus = this.$wire.statusFilter || "";
             this.filterPeriod = this.$wire.periodFilter || "";
+            this.filterDateFrom = this.$wire.dateFrom || "";
+            this.filterDateTo = this.$wire.dateTo || "";
         },
         applyFilters() {
             if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
             if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
+            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
+            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
         },
         clearFilters() {
             this.filterStatus = "";
             this.filterPeriod = "";
+            this.filterDateFrom = "";
+            this.filterDateTo = "";
             this.applyFilters();
         },
         get allSelected() {
@@ -334,20 +367,28 @@ document.addEventListener("alpine:init", () => {
         filterStatus: "",
         filterPeriod: "",
         filterUser: "",
+        filterDateFrom: "",
+        filterDateTo: "",
         initFilters() {
             this.filterStatus = this.$wire.statusFilter || "";
             this.filterPeriod = this.$wire.periodFilter || "";
             this.filterUser = this.$wire.userFilter || "";
+            this.filterDateFrom = this.$wire.dateFrom || "";
+            this.filterDateTo = this.$wire.dateTo || "";
         },
         applyFilters() {
             if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
             if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
             if (this.$wire.userFilter !== this.filterUser) this.$wire.set("userFilter", this.filterUser);
+            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
+            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
         },
         clearFilters() {
             this.filterStatus = "";
             this.filterPeriod = "";
             this.filterUser = "";
+            this.filterDateFrom = "";
+            this.filterDateTo = "";
             this.applyFilters();
         },
         get allSelected() {
@@ -383,3 +424,5 @@ document.addEventListener("alpine:init", () => {
     }));
 
 });
+
+

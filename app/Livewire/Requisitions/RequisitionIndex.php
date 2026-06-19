@@ -16,6 +16,8 @@ use App\Services\RequisitionWorkflowService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use App\Actions\Requisitions\ExportRequisitionsCsvAction;
+use App\Enums\RequisitionStatus;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -44,6 +46,12 @@ class RequisitionIndex extends Component
     public string $periodFilter = '';
 
     #[Url(history: true)]
+    public string $dateFrom = '';
+
+    #[Url(history: true)]
+    public string $dateTo = '';
+
+    #[Url(history: true)]
     public string $creatorFilter = '';
 
     #[Url(history: true)]
@@ -60,7 +68,7 @@ class RequisitionIndex extends Component
         }
 
         return Requisition::whereIn('id', $this->selectedRows)
-            ->where('status', 'pendiente')
+            ->where('status', RequisitionStatus::PENDING->value)
             ->exists();
     }
 
@@ -79,34 +87,23 @@ class RequisitionIndex extends Component
         // Esto simplemente forzará un re-render del componente index
     }
 
-    public function updatedSearch(): void
+    public function updated($property): void
     {
-        $this->resetPage();
+        $filterProperties = [
+            'search', 'statusFilter', 'projectFilter', 'periodFilter', 
+            'creatorFilter', 'vendorFilter', 'dateFrom', 'dateTo'
+        ];
+
+        if (in_array($property, $filterProperties)) {
+            $this->resetPage();
+        }
     }
 
-    public function updatedStatusFilter(): void
+    public function clearAllFilters(): void
     {
+        $this->reset(['search', 'statusFilter', 'projectFilter', 'periodFilter', 'creatorFilter', 'vendorFilter', 'dateFrom', 'dateTo']);
         $this->resetPage();
-    }
-
-    public function updatedProjectFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatedPeriodFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatedCreatorFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatedVendorFilter(): void
-    {
-        $this->resetPage();
+        $this->selectedRows = [];
     }
 
     /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente).
@@ -161,7 +158,7 @@ class RequisitionIndex extends Component
         }
 
         $pendingIds = Requisition::whereIn('id', $this->selectedRows)
-            ->where('status', 'pendiente')
+            ->where('status', RequisitionStatus::PENDING->value)
             ->pluck('id')
             ->toArray();
 
@@ -188,7 +185,7 @@ class RequisitionIndex extends Component
 
         if ($this->isBulkReject) {
             $pendingIds = Requisition::whereIn('id', $this->selectedRows)
-                ->where('status', 'pendiente')
+                ->where('status', RequisitionStatus::PENDING->value)
                 ->pluck('id')
                 ->toArray();
 
@@ -253,7 +250,7 @@ class RequisitionIndex extends Component
         $user = auth()->user();
 
         $pendingIds = Requisition::whereIn('id', $this->selectedRows)
-            ->where('status', 'pendiente')
+            ->where('status', RequisitionStatus::PENDING->value)
             ->pluck('id')
             ->toArray();
 
@@ -285,7 +282,7 @@ class RequisitionIndex extends Component
     public function deleteSelected(): void
     {
         $deletableIds = Requisition::whereIn('id', $this->selectedRows)
-            ->whereIn('status', ['borrador', 'rechazada'])
+            ->whereIn('status', [RequisitionStatus::DRAFT->value, RequisitionStatus::REJECTED->value])
             ->pluck('id')
             ->toArray();
 
@@ -304,128 +301,29 @@ class RequisitionIndex extends Component
     }
 
     /** Exportación masiva de requisiciones seleccionadas a formato CSV (Resumen). */
-    public function exportCsvSummary()
+    public function exportCsvSummary(ExportRequisitionsCsvAction $action)
     {
         if (empty($this->selectedRows)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
-
             return;
         }
 
-        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'approver'])
-            ->whereIn('id', $this->selectedRows)
-            ->get();
-
-        $headers = [
-            'Content-type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename=requisiciones_export_' . now()->format('Ymd_His') . '.csv',
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
-        ];
-
-        $columns = ['Folio', 'Proyecto', 'Fecha', 'Creador', 'Proveedor', 'Total', 'Estado', 'Aprobado Por'];
-
-        $callback = function () use ($requisitions, $columns) {
-            $file = fopen('php://output', 'w');
-            // Añadir BOM de UTF-8 para compatibilidad nativa con Excel en español
-            fwrite($file, "\xEF\xBB\xBF");
-            fputcsv($file, $columns);
-
-            foreach ($requisitions as $req) {
-                fputcsv($file, [
-                    $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT),
-                    $req->project->name ?? '—',
-                    $req->date?->format('d/m/Y') ?? '—',
-                    $req->creator->name ?? '—',
-                    $req->vendor->name ?? '—',
-                    $req->total,
-                    ucfirst($req->status),
-                    $req->approver->name ?? '—',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        $this->selectedRows = []; // Limpiar selección tras exportación
-
-        return response()->streamDownload($callback, 'requisiciones_resumen_' . now()->format('Ymd_His') . '.csv', $headers);
+        $response = $action->execute($this->selectedRows, 'summary');
+        $this->selectedRows = [];
+        return $response;
     }
 
     /** Exportación masiva de requisiciones seleccionadas a formato CSV (Detallado con Ítems). */
-    public function exportCsvDetailed()
+    public function exportCsvDetailed(ExportRequisitionsCsvAction $action)
     {
         if (empty($this->selectedRows)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
             return;
         }
 
-        $requisitions = Requisition::with(['project', 'vendor', 'creator', 'approver', 'items.product', 'items.measure'])
-            ->whereIn('id', $this->selectedRows)
-            ->get();
-
-        $headers = [
-            'Content-type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename=requisiciones_detallado_' . now()->format('Ymd_His') . '.csv',
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
-        ];
-
-        // Columnas incluyendo los ítems
-        $columns = ['Folio Requisición', 'Proyecto', 'Fecha Req', 'Proveedor Req', 'Total Req', 'Estado Req', 'Producto/Servicio', 'Cantidad', 'Medida', 'Precio Unitario', 'Subtotal Ítem'];
-
-        $callback = function () use ($requisitions, $columns) {
-            $file = fopen('php://output', 'w');
-            fwrite($file, "\xEF\xBB\xBF"); // BOM para UTF-8 en Excel
-            fputcsv($file, $columns);
-
-            foreach ($requisitions as $req) {
-                $folio = $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT);
-                $project = $req->project->name ?? '—';
-                $date = $req->date?->format('d/m/Y') ?? '—';
-                $vendor = $req->vendor->name ?? '—';
-
-                // Si no tiene ítems, exportar al menos la cabecera
-                if ($req->items->isEmpty()) {
-                    fputcsv($file, [
-                        $folio,
-                        $project,
-                        $date,
-                        $vendor,
-                        $req->total,
-                        ucfirst($req->status),
-                        '—',
-                        '—',
-                        '—',
-                        '—',
-                        '—'
-                    ]);
-                } else {
-                    foreach ($req->items as $item) {
-                        $productName = $item->product ? $item->product->canonical_name : $item->description;
-                        fputcsv($file, [
-                            $folio,
-                            $project,
-                            $date,
-                            $vendor,
-                            $req->total,
-                            ucfirst($req->status),
-                            $productName,
-                            $item->quantity,
-                            $item->measure->name ?? '—',
-                            $item->unit_price,
-                            $item->subtotal
-                        ]);
-                    }
-                }
-            }
-            fclose($file);
-        };
-
+        $response = $action->execute($this->selectedRows, 'detailed');
         $this->selectedRows = [];
-        return response()->streamDownload($callback, 'requisiciones_detallado_' . now()->format('Ymd_His') . '.csv', $headers);
+        return $response;
     }
 
     /** Exportación masiva de requisiciones seleccionadas a PDFs en un archivo ZIP (Asíncrono). */
@@ -477,6 +375,8 @@ class RequisitionIndex extends Component
             creatorFilter: $this->creatorFilter,
             vendorFilter: $this->vendorFilter,
             periodFilter: $this->periodFilter,
+            dateFrom: $this->dateFrom,
+            dateTo: $this->dateTo,
             sortField: $this->sortField,
             sortDirection: $this->sortDirection,
             perPage: 10
@@ -486,17 +386,7 @@ class RequisitionIndex extends Component
         $creators = cache()->remember('users.all.array', 3600, fn() => User::orderBy('name')->pluck('name', 'id')->toArray());
         $vendors = cache()->rememberForever('suppliers.all.array', fn() => Supplier::orderBy('trade_name')->pluck('trade_name', 'id')->toArray());
 
-        $pendingQuotations = Quotation::whereNull('requisition_id')
-            ->where('is_orphan', false)
-            ->where(function ($query) {
-                $query->whereIn('status', ['pending', 'processing'])
-                    ->orWhere(function ($q) {
-                        $q->whereIn('status', ['completed', 'failed'])
-                            ->where('created_at', '>=', now()->subDays(7));
-                    });
-            })
-            ->orderByDesc('created_at')
-            ->get();
+        $pendingQuotations = Quotation::pendingInbox()->orderByDesc('created_at')->get();
 
         return view('livewire.requisitions.requisition-index', compact(
             'requisitions',

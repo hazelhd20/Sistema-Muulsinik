@@ -34,9 +34,20 @@
                         </x-form-field>
 
                         <x-form-field label="Período (Creación)">
-                            <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año']"
+                            <x-custom-select x-model="filterPeriod" :options="['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año', 'custom' => 'Rango personalizado']"
                                 placeholder="Todos los períodos" />
                         </x-form-field>
+
+                        <div x-show="filterPeriod === 'custom'" x-collapse>
+                            <div class="grid grid-cols-2 gap-4 mt-2">
+                                <x-form-field label="Desde">
+                                    <x-date-picker x-model="filterDateFrom" :options="['maxDate' => 'today']" placeholder="Fecha inicio" />
+                                </x-form-field>
+                                <x-form-field label="Hasta">
+                                    <x-date-picker x-model="filterDateTo" :options="['maxDate' => 'today']" placeholder="Fecha fin" />
+                                </x-form-field>
+                            </div>
+                        </div>
 
                         <x-slot name="footer">
                             <button type="button" @click="clearFilters()"
@@ -62,10 +73,20 @@
                         @endif
                         @if($periodFilter)
                             @php
-                                $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año'];
+                                $periodNames = ['this_month' => 'Este mes', 'last_month' => 'Mes anterior', 'this_quarter' => 'Este trimestre', 'this_year' => 'Este año', 'custom' => 'Personalizado'];
+                                $periodLabel = $periodNames[$periodFilter] ?? $periodFilter;
+                                if ($periodFilter === 'custom' && ($dateFrom || $dateTo)) {
+                                    $periodLabel .= ' (' . ($dateFrom ?: 'Inicio') . ' - ' . ($dateTo ?: 'Hoy') . ')';
+                                }
                             @endphp
-                            <x-filter-chip label="Período" :value="$periodNames[$periodFilter] ?? $periodFilter"
-                                wire:click="$set('periodFilter', '')" />
+                            <x-filter-chip label="Período" :value="$periodLabel"
+                                wire:click="$set('periodFilter', ''); $set('dateFrom', ''); $set('dateTo', '')" />
+                        @endif
+
+                        @if($activeCount > 1)
+                            <button wire:click="clearAllFilters" class="text-xs font-medium text-text-muted hover:text-danger-600 transition-colors ml-auto flex items-center gap-1">
+                                <x-lucide-eraser class="w-3.5 h-3.5" /> Limpiar todo
+                            </button>
                         @endif
                     </div>
                 @endif

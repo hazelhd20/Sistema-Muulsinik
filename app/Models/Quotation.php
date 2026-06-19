@@ -62,4 +62,23 @@ class Quotation extends Model
     {
         return $this->status === 'processing';
     }
+
+    /* ── Scopes ────────────────────────────────────────── */
+
+    /**
+     * Scope para obtener las cotizaciones "borradores/pendientes"
+     * que se muestran en el inbox del usuario.
+     */
+    public function scopePendingInbox($query)
+    {
+        return $query->whereNull('requisition_id')
+            ->where('is_orphan', false)
+            ->where(function ($q) {
+                $q->whereIn('status', ['pending', 'processing'])
+                  ->orWhere(function ($subQ) {
+                      $subQ->whereIn('status', ['completed', 'failed'])
+                           ->where('created_at', '>=', now()->subDays(7));
+                  });
+            });
+    }
 }

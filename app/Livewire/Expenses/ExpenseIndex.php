@@ -34,6 +34,12 @@ class ExpenseIndex extends Component
     public string $periodFilter = '';
 
     #[Url(history: true)]
+    public string $dateFrom = '';
+
+    #[Url(history: true)]
+    public string $dateTo = '';
+
+    #[Url(history: true)]
     public string $userFilter = '';
 
     public array $selectedRows = [];
@@ -88,6 +94,28 @@ class ExpenseIndex extends Component
 
     public function updatedPeriodFilter(): void
     {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function updatedDateFrom(): void
+    {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function updatedDateTo(): void
+    {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function clearAllFilters(): void
+    {
+        $this->reset(['search', 'projectFilter', 'categoryFilter', 'periodFilter', 'userFilter', 'dateFrom', 'dateTo']);
         $this->resetPage();
         $this->selectedRows = [];
         $this->allSelected = false;
@@ -210,7 +238,16 @@ class ExpenseIndex extends Component
             ->when($this->userFilter, fn ($q) => $q->where('user_id', $this->userFilter))
             ->when($this->periodFilter, function ($q) {
                 $now = now();
-                match ($this->periodFilter) {
+                if ($this->periodFilter === 'custom') {
+                    if ($this->dateFrom) {
+                        $q->whereDate('date', '>=', $this->dateFrom);
+                    }
+                    if ($this->dateTo) {
+                        $q->whereDate('date', '<=', $this->dateTo);
+                    }
+                    return $q;
+                }
+                return match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('date', $now->month)->whereYear('date', $now->year),
                     'last_month' => $q->whereMonth('date', $now->subMonth()->month)->whereYear('date', $now->subMonth()->year),
                     'this_quarter' => $q->whereRaw('QUARTER(date) = ?', [$now->quarter])->whereYear('date', $now->year),

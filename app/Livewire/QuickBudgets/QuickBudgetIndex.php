@@ -22,6 +22,12 @@ class QuickBudgetIndex extends Component
     public string $periodFilter = '';
 
     #[Url(history: true)]
+    public string $dateFrom = '';
+
+    #[Url(history: true)]
+    public string $dateTo = '';
+
+    #[Url(history: true)]
     public string $statusFilter = '';
 
     #[Url(history: true)]
@@ -33,6 +39,35 @@ class QuickBudgetIndex extends Component
 
     public function updatedSearch(): void
     {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function updatedPeriodFilter(): void
+    {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function updatedDateFrom(): void
+    {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function updatedDateTo(): void
+    {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function clearAllFilters(): void
+    {
+        $this->reset(['search', 'periodFilter', 'statusFilter', 'userFilter', 'dateFrom', 'dateTo']);
         $this->resetPage();
         $this->selectedRows = [];
         $this->allSelected = false;
@@ -85,7 +120,16 @@ class QuickBudgetIndex extends Component
             })
             ->when($this->periodFilter, function ($q) {
                 $now = now();
-                match ($this->periodFilter) {
+                if ($this->periodFilter === 'custom') {
+                    if ($this->dateFrom) {
+                        $q->whereDate('created_at', '>=', $this->dateFrom);
+                    }
+                    if ($this->dateTo) {
+                        $q->whereDate('created_at', '<=', $this->dateTo);
+                    }
+                    return $q;
+                }
+                return match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year),
                     'last_month' => $q->whereMonth('created_at', $now->subMonth()->month)->whereYear('created_at', $now->subMonth()->year),
                     'this_quarter' => $q->whereRaw('QUARTER(created_at) = ?', [$now->quarter])->whereYear('created_at', $now->year),
