@@ -10,16 +10,7 @@ class Expense extends Model
 {
     use SoftDeletes;
 
-    protected static function booted()
-    {
-        static::saved(function ($expense) {
-            $expense->project?->recalculateTotalExpensesCache();
-        });
 
-        static::deleted(function ($expense) {
-            $expense->project?->recalculateTotalExpensesCache();
-        });
-    }
     protected $fillable = [
         'concept', 'amount', 'date', 'category',
         'project_id', 'is_distributed', 'user_id', 'receipt_file',

@@ -347,9 +347,7 @@
     </div>
 
     {{-- Delete / Action Modals --}}
-    <x-confirm-modal />
-
-    {{-- Modal Unificado Crear/Editar Usuario --}}
+{{-- Modal Unificado Crear/Editar Usuario --}}
     @if($showModal)
         <x-modal show="showModal" :title="$editingId ? 'Editar Usuario' : 'Nuevo Usuario'">
             <form wire:submit="saveUser" class="p-5 space-y-4" autocomplete="off">
@@ -393,4 +391,5 @@
             </form>
         </x-modal>
     @endif
+    <x-confirm-modal />
 </div>

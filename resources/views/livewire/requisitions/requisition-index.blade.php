@@ -583,9 +583,8 @@
     <livewire:requisitions.requisition-detail-drawer />
 
     {{-- Diálogo de confirmación global --}}
-    <x-confirm-modal />
-
-    {{-- ═══════ PREVIEW MODAL ═══════ --}}
+{{-- ═══════ PREVIEW MODAL ═══════ --}}
     <x-preview-modal />
 </div>
+    <x-confirm-modal />
 </div>

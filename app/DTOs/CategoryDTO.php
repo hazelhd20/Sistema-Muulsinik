@@ -17,4 +17,13 @@ class CategoryDTO
             id: $data['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'id' => $this->id,
+        ];
+    }
 }
+

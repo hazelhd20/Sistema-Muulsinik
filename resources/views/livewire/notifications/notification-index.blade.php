@@ -195,5 +195,5 @@
             </div>
         </div>
     </div>
+    <x-confirm-modal />
 </div>
-<x-confirm-modal />

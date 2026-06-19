@@ -73,21 +73,12 @@ class Project extends Model
         return (float) $this->total_expenses_cache;
     }
 
-    /** 
-     * Recalcula el gasto total directamente desde la base de datos y actualiza la caché.
-     * Útil para Observers o comandos de mantenimiento.
+    /**
+     * @deprecated Use ProjectCacheService::recalculateTotalExpenses() instead.
      */
     public function recalculateTotalExpensesCache(): void
     {
-        $direct = (float) $this->expenses()->sum('amount');
-        $distributed = (float) $this->expenseAllocations()->sum('amount');
-
-        $requisitions = (float) \App\Models\RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-            ->where('requisitions.project_id', $this->id)
-            ->where('requisitions.status', 'aprobada')
-            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
-
-        $this->updateQuietly(['total_expenses_cache' => $direct + $distributed + $requisitions]);
+        app(\App\Services\ProjectCacheService::class)->recalculateTotalExpenses($this);
     }
 
     /** Gasto total del proyecto en un período específico (Directo + Distribuido + Requisiciones Aprobadas). */

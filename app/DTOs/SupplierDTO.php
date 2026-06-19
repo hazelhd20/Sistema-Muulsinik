@@ -27,4 +27,18 @@ class SupplierDTO
             id: $data['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'trade_name' => $this->trade_name,
+            'legal_name' => $this->legal_name,
+            'rfc' => $this->rfc,
+            'category' => $this->category,
+            'notes' => $this->notes,
+            'active' => $this->active,
+            'id' => $this->id,
+        ];
+    }
 }
+

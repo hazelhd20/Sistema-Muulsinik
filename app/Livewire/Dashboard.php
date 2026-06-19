@@ -43,19 +43,30 @@ class Dashboard extends Component
         $recentRequisitions = Requisition::with(['project', 'creator'])->latest()->take(5)->get();
 
         // Datos para gráfico de gastos mensuales (últimos 6 meses) (Directo + Requisiciones Aprobadas)
+        $startDate = now()->subMonths(5)->startOfMonth();
+        $endDate = now()->endOfMonth();
+
+        $directExpenses = Expense::selectRaw('DATE_TRUNC(\'month\', date) as month_date, SUM(amount) as total')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE_TRUNC(\'month\', date)'))
+            ->get()
+            ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
+
+        $requisitionExpenses = RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            ->selectRaw('DATE_TRUNC(\'month\', requisitions.created_at) as month_date, SUM(COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))) as total')
+            ->where('requisitions.status', 'aprobada')
+            ->whereBetween('requisitions.created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE_TRUNC(\'month\', requisitions.created_at)'))
+            ->get()
+            ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
+
         $monthlyExpenses = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
+            $key = $date->format('Y-m');
 
-            $direct = (float) Expense::whereMonth('date', $date->month)
-                ->whereYear('date', $date->year)
-                ->sum('amount');
-
-            $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                ->where('requisitions.status', 'aprobada')
-                ->whereMonth('requisitions.created_at', $date->month)
-                ->whereYear('requisitions.created_at', $date->year)
-                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $direct = (float) ($directExpenses[$key]->total ?? 0);
+            $requisitions = (float) ($requisitionExpenses[$key]->total ?? 0);
 
             $monthlyExpenses[] = [
                 'month' => $date->translatedFormat('M'),

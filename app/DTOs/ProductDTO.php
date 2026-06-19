@@ -23,4 +23,16 @@ class ProductDTO
             id: $data['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'canonical_name' => $this->canonical_name,
+            'measure_id' => $this->measure_id,
+            'description' => $this->description,
+            'category_id' => $this->category_id,
+            'id' => $this->id,
+        ];
+    }
 }
+

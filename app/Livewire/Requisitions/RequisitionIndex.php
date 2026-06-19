@@ -31,22 +31,22 @@ class RequisitionIndex extends Component
 
     public string $search = '';
 
-    #[Url]
+    #[Url(history: true)]
     public string $tab = 'todas';
 
-    #[Url]
+    #[Url(history: true)]
     public string $statusFilter = '';
 
-    #[Url]
+    #[Url(history: true)]
     public string $projectFilter = '';
 
-    #[Url]
+    #[Url(history: true)]
     public string $periodFilter = '';
 
-    #[Url]
+    #[Url(history: true)]
     public string $creatorFilter = '';
 
-    #[Url]
+    #[Url(history: true)]
     public string $vendorFilter = '';
 
     // Selección masiva

@@ -63,6 +63,7 @@ class GlobalSearch extends Component
             // Buscar requisiciones
             $requisitions = Requisition::search($this->query)
                 ->take(self::RESULTS_LIMIT)
+                ->query(fn ($query) => $query->with('project'))
                 ->get()
                 ->map(fn ($item) => [
                     'id' => $item->id,
@@ -111,6 +112,7 @@ class GlobalSearch extends Component
             // Buscar productos
             $products = Product::search($this->query)
                 ->take(self::RESULTS_LIMIT)
+                ->query(fn ($query) => $query->with('category'))
                 ->get()
                 ->map(fn ($item) => [
                     'id' => $item->id,

@@ -269,9 +269,7 @@
     </div>
 
     {{-- Delete / Action Modals --}}
-    <x-confirm-modal />
-
-    {{-- Create / Edit Modal --}}
+{{-- Create / Edit Modal --}}
     @if ($showCreateModal)
         <x-modal show="showCreateModal" :title="$editingId ? 'Editar Medida' : 'Nueva Medida'" maxWidth="md">
             <form wire:submit="save" class="p-5 space-y-4">
@@ -290,4 +288,5 @@
             </form>
         </x-modal>
     @endif
+    <x-confirm-modal />
 </div>

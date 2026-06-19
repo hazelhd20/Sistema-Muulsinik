@@ -338,9 +338,7 @@
     </div>
 
     {{-- Delete / Action Modals --}}
-    <x-confirm-modal />
-
-    {{-- Create Product Modal --}}
+{{-- Create Product Modal --}}
     @if($showCreateModal)
         <x-modal show="showCreateModal" :title="$editingId ? 'Editar Producto' : 'Nuevo Producto'" maxWidth="md">
             <form wire:submit="saveProduct" class="p-5 space-y-4">
@@ -372,4 +370,5 @@
 
     <livewire:products.product-detail-drawer />
 
+    <x-confirm-modal />
 </div>

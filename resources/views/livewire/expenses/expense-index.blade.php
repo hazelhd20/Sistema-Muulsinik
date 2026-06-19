@@ -360,66 +360,64 @@
     </div>
 
     {{-- Create Modal --}}
-    @if($showCreateModal)
-        <x-modal show="showCreateModal" title="Registrar Gasto">
-            <form wire:submit="createExpense" class="p-5 space-y-4">
-                <x-form-field label="Concepto" required error="{{ $errors->first('concept') }}">
-                    <input wire:model="concept" type="text" class="input" placeholder="Ej. Compra de cemento">
+    <x-modal show="showCreateModal" title="Registrar Gasto">
+        <form wire:submit="createExpense" class="p-5 space-y-4">
+            <x-form-field label="Concepto" required error="{{ $errors->first('concept') }}">
+                <input wire:model="concept" type="text" class="input" placeholder="Ej. Compra de cemento">
+            </x-form-field>
+
+            <div class="grid grid-cols-2 gap-4">
+                <x-form-field label="Monto" required error="{{ $errors->first('amount') }}">
+                    <input wire:model="amount" type="number" step="0.01" class="input" placeholder="0.00">
                 </x-form-field>
+                <x-form-field label="Fecha" required error="{{ $errors->first('date') }}">
+                    <x-date-picker wire:model="date" />
+                </x-form-field>
+            </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <x-form-field label="Monto" required error="{{ $errors->first('amount') }}">
-                        <input wire:model="amount" type="number" step="0.01" class="input" placeholder="0.00">
-                    </x-form-field>
-                    <x-form-field label="Fecha" required error="{{ $errors->first('date') }}">
-                        <x-date-picker wire:model="date" />
-                    </x-form-field>
-                </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col relative">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="label">Proyecto *</label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="checkbox" wire:model.live="isDistributed" id="isDistributed"
+                                class="rounded border-border accent-primary-600 focus:ring-primary-500 w-3 h-3">
+                            <label for="isDistributed"
+                                class="text-[10px] uppercase font-bold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
+                                (Activos)</label>
+                        </div>
+                    </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col relative">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label class="label">Proyecto *</label>
-                            <div class="flex items-center gap-1.5">
-                                <input type="checkbox" wire:model.live="isDistributed" id="isDistributed"
-                                    class="rounded border-border accent-primary-600 focus:ring-primary-500 w-3 h-3">
-                                <label for="isDistributed"
-                                    class="text-[10px] uppercase font-bold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
-                                    (Activos)</label>
+                    <x-form-field :error="$errors->first('projectId')">
+                        <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
+                            <div x-show="!distributed">
+                                <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
+                                    placeholder="Seleccionar..." />
+                            </div>
+                            <div x-show="distributed"
+                                class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
+                                style="display: none;">
+                                <x-lucide-split class="w-4 h-4 mr-2" /> Gasto distribuido
                             </div>
                         </div>
-
-                        <x-form-field :error="$errors->first('projectId')">
-                            <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
-                                <div x-show="!distributed">
-                                    <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
-                                        placeholder="Seleccionar..." />
-                                </div>
-                                <div x-show="distributed"
-                                    class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
-                                    style="display: none;">
-                                    <x-lucide-split class="w-4 h-4 mr-2" /> Gasto distribuido
-                                </div>
-                            </div>
-                        </x-form-field>
-                    </div>
-                    <x-form-field label="Categoría" required error="{{ $errors->first('category') }}">
-                        <x-custom-select wire:model="category" :options="$categories" placeholder="Seleccionar..." />
                     </x-form-field>
                 </div>
-
-                <x-form-field label="Comprobante (opcional)">
-                    <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile" accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
+                <x-form-field label="Categoría" required error="{{ $errors->first('category') }}">
+                    <x-custom-select wire:model="category" :options="$categories" placeholder="Seleccionar..." />
                 </x-form-field>
+            </div>
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
-                    <x-button type="submit" variant="primary" target="createExpense">
-                        Registrar Gasto
-                    </x-button>
-                </div>
-            </form>
-        </x-modal>
-    @endif
+            <x-form-field label="Comprobante (opcional)">
+                <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile" accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
+            </x-form-field>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-border">
+                <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                <x-button type="submit" variant="primary" target="createExpense">
+                    Registrar Gasto
+                </x-button>
+            </div>
+        </form>
+    </x-modal>
+    <x-confirm-modal />
 </div>
-<x-confirm-modal />

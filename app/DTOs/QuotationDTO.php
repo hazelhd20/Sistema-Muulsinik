@@ -21,4 +21,14 @@ readonly class QuotationDTO
             file: $file,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'project_id' => $this->project_id,
+            'uploaded_by' => $this->uploaded_by,
+            'file' => $this->file,
+        ];
+    }
 }
+

@@ -6,49 +6,24 @@ use App\DTOs\SupplierDTO;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\DB;
 
-class SupplierRepository
+class SupplierRepository extends BaseRepository
 {
+    protected string $modelClass = Supplier::class;
+
     /**
      * @param SupplierDTO $dto
      * @return Supplier
      */
     public function save(SupplierDTO $dto): Supplier
     {
-        return DB::transaction(function () use ($dto) {
-            if ($dto->id) {
-                $supplier = Supplier::findOrFail($dto->id);
-                $supplier->update([
-                    'trade_name' => $dto->trade_name,
-                    'legal_name' => $dto->legal_name,
-                    'rfc' => $dto->rfc,
-                    'category' => $dto->category,
-                    'notes' => $dto->notes,
-                    'active' => $dto->active,
-                ]);
-            } else {
-                $supplier = Supplier::create([
-                    'trade_name' => $dto->trade_name,
-                    'legal_name' => $dto->legal_name,
-                    'rfc' => $dto->rfc,
-                    'category' => $dto->category,
-                    'notes' => $dto->notes,
-                    'active' => $dto->active,
-                ]);
-            }
-
-            return $supplier;
-        });
-    }
-
-    /**
-     * @param int $id
-     * @return void
-     */
-    public function delete(int $id): void
-    {
-        DB::transaction(function () use ($id) {
-            Supplier::findOrFail($id)->delete();
-        });
+        return $this->saveRecord([
+            'trade_name' => $dto->trade_name,
+            'legal_name' => $dto->legal_name,
+            'rfc' => $dto->rfc,
+            'category' => $dto->category,
+            'notes' => $dto->notes,
+            'active' => $dto->active,
+        ], $dto->id);
     }
 
     /**

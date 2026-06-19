@@ -248,8 +248,12 @@ class UserIndex extends Component
     public function render()
     {
         $users = User::with('role')
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
-                ->orWhere('email', 'like', "%{$this->search}%"))
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('name', 'ilike', "%{$this->search}%")
+                          ->orWhere('email', 'ilike', "%{$this->search}%");
+                });
+            })
             ->when($this->roleFilter, fn ($q) => $q->where('role_id', $this->roleFilter))
             ->when($this->statusFilter, function ($q) {
                 if ($this->statusFilter === 'active') {

@@ -201,8 +201,12 @@ class ProjectIndex extends Component
     public function render()
     {
         $projects = Project::query()
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
-                ->orWhere('client', 'like', "%{$this->search}%"))
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('name', 'ilike', "%{$this->search}%")
+                          ->orWhere('client', 'ilike', "%{$this->search}%");
+                });
+            })
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->periodFilter, function ($q) {
                 $now = now();

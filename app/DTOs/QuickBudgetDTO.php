@@ -36,4 +36,17 @@ readonly class QuickBudgetDTO
             items: $items,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'title' => $this->title,
+            'description' => $this->description,
+            'client' => $this->client,
+            'margin_percent' => $this->margin_percent,
+            'created_by' => $this->created_by,
+            'items' => $this->items,
+        ];
+    }
 }
+

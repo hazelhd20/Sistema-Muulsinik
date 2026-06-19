@@ -210,7 +210,7 @@ class ProductIndex extends Component
     {
         $products = Product::query()
             ->with(['category', 'measure'])
-            ->when($this->search, fn ($q) => $q->where('canonical_name', 'like', "%{$this->search}%"))
+            ->when($this->search, fn ($q) => $q->where('canonical_name', 'ilike', "%{$this->search}%"))
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
             ->when($this->measureFilter, fn ($q) => $q->where('measure_id', $this->measureFilter))
             ->orderBy($this->sortField, $this->sortDirection)

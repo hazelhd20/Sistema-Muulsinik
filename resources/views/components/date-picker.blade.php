@@ -35,7 +35,7 @@
                     setTimeout(initPicker, 50);
                 }
             };
-            initPicker();
+            this.$nextTick(() => initPicker());
         }
     }"
 >

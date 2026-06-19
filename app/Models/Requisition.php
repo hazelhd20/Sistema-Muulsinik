@@ -73,31 +73,7 @@ class Requisition extends Model
         'date' => 'date',
     ];
 
-    protected static function booted()
-    {
-        static::created(function ($requisition) {
-            if (empty($requisition->number)) {
-                $projectPrefix = 'PRJ';
-                if ($requisition->project) {
-                    $projectPrefix = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $requisition->project->name), 0, 3));
-                }
-                $requisition->number = sprintf('%s%d-REQ%04d', $projectPrefix, $requisition->project_id, $requisition->id);
-                $requisition->saveQuietly();
-            }
-        });
 
-        static::saved(function ($requisition) {
-            if ($requisition->wasChanged('status') || $requisition->status === 'aprobada') {
-                $requisition->project?->recalculateTotalExpensesCache();
-            }
-        });
-
-        static::deleted(function ($requisition) {
-            if ($requisition->status === 'aprobada') {
-                $requisition->project?->recalculateTotalExpensesCache();
-            }
-        });
-    }
 
     public function project(): BelongsTo
     {

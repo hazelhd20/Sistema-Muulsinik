@@ -10,16 +10,7 @@ class ExpenseAllocation extends Model
 {
     use SoftDeletes;
 
-    protected static function booted()
-    {
-        static::saved(function ($allocation) {
-            $allocation->project?->recalculateTotalExpensesCache();
-        });
 
-        static::deleted(function ($allocation) {
-            $allocation->project?->recalculateTotalExpensesCache();
-        });
-    }
     protected $fillable = [
         'expense_id',
         'project_id',

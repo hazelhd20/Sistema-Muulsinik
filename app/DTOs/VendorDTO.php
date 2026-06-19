@@ -23,4 +23,16 @@ class VendorDTO
             id: $data['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'supplier_id' => $this->supplier_id,
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'id' => $this->id,
+        ];
+    }
 }
+

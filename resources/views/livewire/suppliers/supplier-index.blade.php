@@ -342,9 +342,7 @@
     </div>
 
     {{-- Delete / Action Modals --}}
-    <x-confirm-modal />
-
-    {{-- Create/Edit Supplier Modal --}}
+{{-- Create/Edit Supplier Modal --}}
     @if($showCreateModal)
         <x-modal show="showCreateModal" :title="$editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor'">
             <form wire:submit="saveSupplier" class="p-5 space-y-4">
@@ -437,4 +435,5 @@
             </div>
         </x-modal>
     @endif
+    <x-confirm-modal />
 </div>

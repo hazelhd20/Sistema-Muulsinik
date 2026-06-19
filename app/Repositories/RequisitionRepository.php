@@ -25,7 +25,7 @@ class RequisitionRepository
             ->query(function ($query) use (
                 $statusFilter, $projectFilter, $creatorFilter, $vendorFilter, $periodFilter, $sortField, $sortDirection
             ) {
-                $query->with(['project', 'vendor', 'creator', 'quotations', 'items.product', 'items.measure'])
+                $query->with(['project', 'vendor', 'creator', 'quotations', 'items.product', 'items.measure', 'items.supplier'])
                     ->withCount('items')
                     ->when($statusFilter, fn($q) => $q->where('status', $statusFilter))
                     ->when($projectFilter, fn($q) => $q->where('project_id', $projectFilter))

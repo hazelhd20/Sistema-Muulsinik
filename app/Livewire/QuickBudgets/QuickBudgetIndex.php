@@ -76,9 +76,13 @@ class QuickBudgetIndex extends Component
     public function render()
     {
         $budgets = QuickBudget::query()
-            ->when($this->search, fn ($q) => $q->where('title', 'like', "%{$this->search}%")
-                ->orWhere('client', 'like', "%{$this->search}%")
-                ->orWhere('folio', 'like', "%{$this->search}%"))
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('title', 'ilike', "%{$this->search}%")
+                          ->orWhere('client', 'ilike', "%{$this->search}%")
+                          ->orWhere('folio', 'ilike', "%{$this->search}%");
+                });
+            })
             ->when($this->periodFilter, function ($q) {
                 $now = now();
                 match ($this->periodFilter) {

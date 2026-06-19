@@ -22,4 +22,16 @@ readonly class QuickBudgetItemDTO
             unit_price: (float) ($data['unit_price'] ?? 0),
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'product_id' => $this->product_id,
+            'concept' => $this->concept,
+            'measure_id' => $this->measure_id,
+            'quantity' => $this->quantity,
+            'unit_price' => $this->unit_price,
+        ];
+    }
 }
+

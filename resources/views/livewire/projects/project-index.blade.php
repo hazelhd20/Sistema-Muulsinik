@@ -408,8 +408,7 @@
     </div>
 
     {{-- Project Modal --}}
-    @if($showModal)
-        <x-modal show="showModal" :title="$editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'">
+    <x-modal show="showModal" :title="$editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'">
             <form wire:submit="saveProject" class="p-5 space-y-4">
                 <x-form-field label="Nombre del proyecto" required error="{{ $errors->first('name') }}">
                     <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
@@ -451,8 +450,7 @@
                 </div>
             </form>
         </x-modal>
-    @endif
 
-    <livewire:projects.project-detail-drawer />
+    <livewire:projects.project-detail-drawer wire:key="project-detail-drawer" />
+    <x-confirm-modal />
 </div>
-<x-confirm-modal />

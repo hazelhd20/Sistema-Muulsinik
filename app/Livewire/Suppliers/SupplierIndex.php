@@ -299,9 +299,13 @@ class SupplierIndex extends Component
     public function render()
     {
         $suppliers = Supplier::withCount('vendors')
-            ->when($this->search, fn ($q) => $q->where('trade_name', 'like', "%{$this->search}%")
-                ->orWhere('legal_name', 'like', "%{$this->search}%")
-                ->orWhere('rfc', 'like', "%{$this->search}%"))
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('trade_name', 'ilike', "%{$this->search}%")
+                          ->orWhere('legal_name', 'ilike', "%{$this->search}%")
+                          ->orWhere('rfc', 'ilike', "%{$this->search}%");
+                });
+            })
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(12);

@@ -9,14 +9,19 @@
      x-data="{
         query: '',
         init() {
-            // Inicializar con el valor actual del input (por si viene pre-cargado)
-            this.query = this.$refs.input.value;
+            // Wait for children to initialize so $refs.input is available
+            this.$nextTick(() => {
+                if (this.$refs.input) {
+                    this.query = this.$refs.input.value;
+                }
+            });
         },
         clear() {
             this.query = '';
-            this.$refs.input.value = '';
-            // Disparar evento para que Livewire actualice el estado
-            this.$refs.input.dispatchEvent(new Event('input'));
+            if (this.$refs.input) {
+                this.$refs.input.value = '';
+                this.$refs.input.dispatchEvent(new Event('input'));
+            }
         }
      }">
 

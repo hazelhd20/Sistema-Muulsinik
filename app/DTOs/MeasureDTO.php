@@ -19,4 +19,14 @@ class MeasureDTO
             id: $data['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'abbreviation' => $this->abbreviation,
+            'id' => $this->id,
+        ];
+    }
 }
+

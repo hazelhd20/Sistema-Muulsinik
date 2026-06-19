@@ -25,4 +25,17 @@ class UserDTO
             id: $data['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'role_id' => $this->role_id,
+            'active' => $this->active,
+            'password' => $this->password,
+            'id' => $this->id,
+        ];
+    }
 }
+
