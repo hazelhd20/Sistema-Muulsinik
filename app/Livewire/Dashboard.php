@@ -18,67 +18,89 @@ class Dashboard extends Component
     #[Title('Dashboard')]
     public function render()
     {
-        $totalProjects = Project::count();
-        $activeProjects = Project::where('status', 'activo')->count();
-        $requisitionsTotalAllTime = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-            ->where('requisitions.status', 'aprobada')
-            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
-        $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
+        $globalStats = \Illuminate\Support\Facades\Cache::remember('dashboard_global_stats', now()->addHours(1), function () {
+            return [
+                'totalProjects' => Project::count(),
+                'activeProjects' => Project::where('status', 'activo')->count(),
+                'pendingRequisitions' => Requisition::where('status', 'pendiente')->count(),
+                'approvedRequisitions' => Requisition::where('status', 'aprobada')->count(),
+                'totalSuppliers' => Supplier::count(),
+            ];
+        });
 
-        $requisitionsTotalThisMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-            ->where('requisitions.status', 'aprobada')
-            ->whereMonth('requisitions.created_at', now()->month)
-            ->whereYear('requisitions.created_at', now()->year)
-            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
-        $monthExpenses = (float) Expense::whereMonth('date', now()->month)
-            ->whereYear('date', now()->year)
-            ->sum('amount') + $requisitionsTotalThisMonth;
+        $financialStats = \Illuminate\Support\Facades\Cache::remember('dashboard_financial_stats', now()->addHours(1), function () {
+            $requisitionsTotalAllTime = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                ->where('requisitions.status', 'aprobada')
+                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
 
-        $pendingRequisitions = Requisition::where('status', 'pendiente')->count();
-        $approvedRequisitions = Requisition::where('status', 'aprobada')->count();
-        $totalSuppliers = Supplier::count();
+            $requisitionsTotalThisMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                ->where('requisitions.status', 'aprobada')
+                ->whereMonth('requisitions.created_at', now()->month)
+                ->whereYear('requisitions.created_at', now()->year)
+                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $monthExpenses = (float) Expense::whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->sum('amount') + $requisitionsTotalThisMonth;
 
+            return compact('totalExpenses', 'monthExpenses');
+        });
+
+        $monthlyExpenses = \Illuminate\Support\Facades\Cache::remember('dashboard_monthly_chart', now()->addHours(1), function () {
+            $startDate = now()->subMonths(5)->startOfMonth();
+            $endDate = now()->endOfMonth();
+
+            $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+            $dateTruncExpense = $driver === 'sqlite' ? "strftime('%Y-%m', date)" : "DATE_TRUNC('month', date)";
+            $dateTruncReq = $driver === 'sqlite' ? "strftime('%Y-%m', requisitions.created_at)" : "DATE_TRUNC('month', requisitions.created_at)";
+
+            $directExpenses = Expense::selectRaw("$dateTruncExpense as month_date, SUM(amount) as total")
+                ->whereBetween('date', [$startDate, $endDate])
+                ->groupBy(DB::raw($dateTruncExpense))
+                ->get()
+                ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
+
+            $requisitionExpenses = RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+                ->selectRaw("$dateTruncReq as month_date, SUM(COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))) as total")
+                ->where('requisitions.status', 'aprobada')
+                ->whereBetween('requisitions.created_at', [$startDate, $endDate])
+                ->groupBy(DB::raw($dateTruncReq))
+                ->get()
+                ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
+
+            $chartData = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $key = $date->format('Y-m');
+
+                $direct = (float) ($directExpenses[$key]->total ?? 0);
+                $requisitions = (float) ($requisitionExpenses[$key]->total ?? 0);
+
+                $chartData[] = [
+                    'month' => $date->translatedFormat('M'),
+                    'total' => $direct + $requisitions,
+                ];
+            }
+            return $chartData;
+        });
+
+        // Estas consultas se mantienen en tiempo real por su naturaleza
         $recentProjects = Project::latest()->take(5)->get();
         $recentExpenses = Expense::with(['project', 'user'])->latest()->take(5)->get();
         $recentRequisitions = Requisition::with(['project', 'creator'])->latest()->take(5)->get();
 
-        // Datos para gráfico de gastos mensuales (últimos 6 meses) (Directo + Requisiciones Aprobadas)
-        $startDate = now()->subMonths(5)->startOfMonth();
-        $endDate = now()->endOfMonth();
-
-        $directExpenses = Expense::selectRaw('DATE_TRUNC(\'month\', date) as month_date, SUM(amount) as total')
-            ->whereBetween('date', [$startDate, $endDate])
-            ->groupBy(DB::raw('DATE_TRUNC(\'month\', date)'))
-            ->get()
-            ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
-
-        $requisitionExpenses = RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-            ->selectRaw('DATE_TRUNC(\'month\', requisitions.created_at) as month_date, SUM(COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))) as total')
-            ->where('requisitions.status', 'aprobada')
-            ->whereBetween('requisitions.created_at', [$startDate, $endDate])
-            ->groupBy(DB::raw('DATE_TRUNC(\'month\', requisitions.created_at)'))
-            ->get()
-            ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
-
-        $monthlyExpenses = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $key = $date->format('Y-m');
-
-            $direct = (float) ($directExpenses[$key]->total ?? 0);
-            $requisitions = (float) ($requisitionExpenses[$key]->total ?? 0);
-
-            $monthlyExpenses[] = [
-                'month' => $date->translatedFormat('M'),
-                'total' => $direct + $requisitions,
-            ];
-        }
-
-        return view('livewire.dashboard', compact(
-            'totalProjects', 'activeProjects', 'totalExpenses',
-            'monthExpenses', 'pendingRequisitions', 'approvedRequisitions', 'totalSuppliers',
-            'recentProjects', 'recentExpenses', 'recentRequisitions',
-            'monthlyExpenses'
-        ));
+        return view('livewire.dashboard', [
+            'totalProjects' => $globalStats['totalProjects'],
+            'activeProjects' => $globalStats['activeProjects'],
+            'pendingRequisitions' => $globalStats['pendingRequisitions'],
+            'approvedRequisitions' => $globalStats['approvedRequisitions'],
+            'totalSuppliers' => $globalStats['totalSuppliers'],
+            'totalExpenses' => $financialStats['totalExpenses'],
+            'monthExpenses' => $financialStats['monthExpenses'],
+            'recentProjects' => $recentProjects,
+            'recentExpenses' => $recentExpenses,
+            'recentRequisitions' => $recentRequisitions,
+            'monthlyExpenses' => $monthlyExpenses,
+        ]);
     }
 }

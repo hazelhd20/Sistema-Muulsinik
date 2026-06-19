@@ -10,6 +10,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'pgsql') return;
+
         // projects
         DB::statement('CREATE INDEX IF NOT EXISTS idx_projects_name_trgm ON projects USING GIN (name gin_trgm_ops);');
         DB::statement('CREATE INDEX IF NOT EXISTS idx_projects_client_trgm ON projects USING GIN (client gin_trgm_ops);');
@@ -38,6 +40,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'pgsql') return;
+
         Schema::table('searchable_tables', function (Blueprint $table) {
             //
         });

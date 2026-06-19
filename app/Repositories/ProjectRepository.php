@@ -17,6 +17,7 @@ class ProjectRepository
      */
     public function create(ProjectDTO $dto): Project
     {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
         return Project::create($dto->toArray());
     }
 
@@ -27,6 +28,11 @@ class ProjectRepository
     {
         $project = Project::findOrFail($id);
         $project->update($dto->toArray());
+        
+        if ($project->wasChanged('status')) {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
+        }
+        
         return $project;
     }
 
@@ -41,7 +47,11 @@ class ProjectRepository
             return false;
         }
 
-        return Project::findOrFail($id)->delete();
+        $result = Project::findOrFail($id)->delete();
+        if ($result) {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
+        }
+        return $result;
     }
 
     /**
@@ -60,6 +70,7 @@ class ProjectRepository
 
         if (!empty($projectsToDelete)) {
             Project::whereIn('id', $projectsToDelete)->delete();
+            \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
         }
 
         return $projectsToDelete;

@@ -10,6 +10,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'pgsql') return;
         DB::statement('CREATE EXTENSION IF NOT EXISTS pg_trgm;');
     }
 
@@ -18,6 +19,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'pgsql') return;
         DB::statement('DROP EXTENSION IF EXISTS pg_trgm;');
     }
 };

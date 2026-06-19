@@ -216,9 +216,17 @@ class ProductIndex extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);
 
-        $suppliers = Supplier::orderBy('trade_name')->get();
-        $measures = Measure::pluck('name', 'id')->toArray();
-        $categories = Category::orderBy('name')->pluck('name', 'id')->toArray();
+        $suppliers = \Illuminate\Support\Facades\Cache::remember('catalog_suppliers', now()->addHours(12), function() {
+            return Supplier::orderBy('trade_name')->get();
+        });
+        
+        $measures = \Illuminate\Support\Facades\Cache::remember('catalog_measures', now()->addHours(12), function() {
+            return Measure::pluck('name', 'id')->toArray();
+        });
+        
+        $categories = \Illuminate\Support\Facades\Cache::remember('catalog_categories', now()->addHours(12), function() {
+            return Category::orderBy('name')->pluck('name', 'id')->toArray();
+        });
 
         return view('livewire.products.product-index', compact(
             'products',

@@ -25,6 +25,6 @@ class ProjectCacheService
             ->where('requisitions.status', 'aprobada')
             ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
-        $project->updateQuietly(['total_expenses_cache' => $direct + $distributed + $requisitions]);
+        $project->forceFill(['total_expenses_cache' => $direct + $distributed + $requisitions])->saveQuietly();
     }
 }

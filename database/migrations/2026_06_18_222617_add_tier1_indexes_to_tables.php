@@ -13,6 +13,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'pgsql') return;
+
         // Requisition Items
         if (Schema::hasTable('requisition_items')) {
             DB::statement('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_requisition_items_requisition_id ON requisition_items(requisition_id);');
@@ -63,6 +65,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'pgsql') return;
+
         if (Schema::hasTable('requisition_items')) {
             DB::statement('DROP INDEX CONCURRENTLY IF EXISTS idx_requisition_items_requisition_id;');
             DB::statement('DROP INDEX CONCURRENTLY IF EXISTS idx_requisition_items_product_id;');

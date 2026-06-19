@@ -9,6 +9,9 @@ class ExpenseObserver
 {
     public function saved(Expense $expense): void
     {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_financial_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart');
+        
         if ($expense->project) {
             app(ProjectCacheService::class)->recalculateTotalExpenses($expense->project);
         }
@@ -16,6 +19,9 @@ class ExpenseObserver
 
     public function deleted(Expense $expense): void
     {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_financial_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart');
+
         if ($expense->project) {
             app(ProjectCacheService::class)->recalculateTotalExpenses($expense->project);
         }

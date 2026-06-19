@@ -21,7 +21,12 @@ class RequisitionObserver
 
     public function saved(Requisition $requisition): void
     {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
+        
         if ($requisition->wasChanged('status') || $requisition->status === 'aprobada') {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_financial_stats');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart');
+            
             if ($requisition->project) {
                 app(ProjectCacheService::class)->recalculateTotalExpenses($requisition->project);
             }
@@ -30,7 +35,12 @@ class RequisitionObserver
 
     public function deleted(Requisition $requisition): void
     {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
+        
         if ($requisition->status === 'aprobada') {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_financial_stats');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart');
+            
             if ($requisition->project) {
                 app(ProjectCacheService::class)->recalculateTotalExpenses($requisition->project);
             }
