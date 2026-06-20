@@ -247,7 +247,7 @@
 
         {{-- Footer --}}
         <div class="flex justify-end pt-6">
-            <x-button type="submit" variant="primary" target="save">Guardar Presupuesto</x-button>
+            <x-button wire:click="save" variant="primary" target="save">Guardar Presupuesto</x-button>
         </div>
     </div>
 </div>

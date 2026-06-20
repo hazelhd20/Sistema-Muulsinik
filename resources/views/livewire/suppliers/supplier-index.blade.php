@@ -331,8 +331,6 @@
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
-        </div>
-
         {{-- Pagination Footer --}}
         @if($suppliers->hasPages())
             <x-card.footer>

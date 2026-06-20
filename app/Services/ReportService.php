@@ -109,33 +109,32 @@ class ReportService
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
 
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
             if ($projectFilter) {
                 $directMonth = (float) Expense::where('project_id', $projectFilter)
-                    ->whereMonth('date', $date->month)
-                    ->whereYear('date', $date->year)
+                    ->whereBetween('date', [$startOfMonth, $endOfMonth])
                     ->sum('amount');
 
                 $distributedMonth = (float) ExpenseAllocation::where('project_id', $projectFilter)
-                    ->whereHas('expense', fn ($q) => $q->whereMonth('date', $date->month)->whereYear('date', $date->year))
+                    ->whereHas('expense', fn ($q) => $q->whereBetween('date', [$startOfMonth, $endOfMonth]))
                     ->sum('amount');
 
                 $requisitionsMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                     ->where('requisitions.project_id', $projectFilter)
                     ->where('requisitions.status', 'aprobada')
-                    ->whereMonth('requisitions.created_at', $date->month)
-                    ->whereYear('requisitions.created_at', $date->year)
+                    ->whereBetween('requisitions.created_at', [$startOfMonth, $endOfMonth])
                     ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
                 $monthTotal = $directMonth + $distributedMonth + $requisitionsMonth;
             } else {
-                $directMonth = (float) Expense::whereMonth('date', $date->month)
-                    ->whereYear('date', $date->year)
+                $directMonth = (float) Expense::whereBetween('date', [$startOfMonth, $endOfMonth])
                     ->sum('amount');
 
                 $requisitionsMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
                     ->where('requisitions.status', 'aprobada')
-                    ->whereMonth('requisitions.created_at', $date->month)
-                    ->whereYear('requisitions.created_at', $date->year)
+                    ->whereBetween('requisitions.created_at', [$startOfMonth, $endOfMonth])
                     ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
 
                 $monthTotal = $directMonth + $requisitionsMonth;

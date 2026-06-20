@@ -7,8 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name') }}</title>
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800" rel="stylesheet" />
+
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

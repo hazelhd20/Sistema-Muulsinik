@@ -242,8 +242,6 @@
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
-        </div>
-
         @if($categories->hasPages())
             <x-card.footer class="flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="w-full sm:w-auto overflow-x-auto">

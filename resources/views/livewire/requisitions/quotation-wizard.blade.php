@@ -535,28 +535,25 @@
                         $subtotalBruto = $this->subtotalBruto();
                     @endphp
                     <div class="flex justify-end px-8 pt-8 pb-8 bg-surface-main/10 border-t border-border/40">
-                        <div class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
+                        <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                             <div class="flex flex-col gap-3">
                                 @if($hasAnyDiscount)
                                     <div class="flex items-center justify-between text-small">
                                         <span class="text-text-muted">Subtotal bruto</span>
-                                        <span
-                                            class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
+                                        <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                     </div>
                                     <div class="flex items-center justify-between text-small text-success">
                                         <span class="flex items-center gap-1.5 font-medium">
                                             <x-lucide-tag class="w-3.5 h-3.5" wire:ignore />
                                             Descuento total
                                         </span>
-                                        <span
-                                            class="font-semibold tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
+                                        <span class="font-semibold tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
                                     </div>
                                     <div class="h-px bg-border/40 my-1"></div>
                                 @endif
                                 <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">Subtotal s/IVA</span>
-                                    <span
-                                        class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
+                                    <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">IVA (16%)</span>
@@ -570,8 +567,7 @@
 
                             <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
                                 <span class="text-body font-semibold text-text-primary">Total final</span>
-                                <span
-                                    class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
 
                             {{-- Botón de Acción --}}
@@ -582,7 +578,7 @@
                                     Confirmar y Crear Requisición
                                 </x-button>
                             </div>
-                        </div>
+                        </x-totals-summary>
                     </div>
                 @else
                     <div class="px-6 pb-6">

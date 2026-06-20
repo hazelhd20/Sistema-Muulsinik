@@ -17,7 +17,7 @@
     </button>
 
     {{-- Dropdown de notificaciones --}}
-    <template x-teleport="body">
+
         <div x-show="open" x-cloak
             @click.outside="if (! $refs.trigger.contains($event.target)) open = false"
             x-anchor.bottom-end.offset.4="$refs.trigger"
@@ -59,7 +59,7 @@
                         $isUnread = is_null($notification['read_at']);
                     @endphp
 
-                    <div
+                    <div wire:key="notification-{{ $notification['id'] }}"
                         class="flex gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover transition-colors {{ $isUnread ? 'bg-primary-50/30' : '' }}">
                         {{-- Icono --}}
                         <div class="w-9 h-9 rounded-lg {{ $colorClasses }} flex items-center justify-center shrink-0">
@@ -120,5 +120,5 @@
             </div>
         @endif
     </div>
-    </template>
+
 </div>

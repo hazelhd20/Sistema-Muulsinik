@@ -31,9 +31,12 @@ class CategoryIndex extends Component
 
     public bool $allSelected = false;
 
-    protected $rules = [
-        'name' => 'required|string|max:255|unique:categories,name',
-    ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|string|max:255|unique:categories,name,' . $this->editingId,
+        ];
+    }
 
     public function updatingSearch()
     {
@@ -68,9 +71,9 @@ class CategoryIndex extends Component
             return;
         }
 
-        $this->validate([
-            'name' => 'required|string|max:255|unique:categories,name,'.$this->editingId,
-        ]);
+        $this->name = app(\App\Services\DataNormalizerService::class)->normalizeTitleCase($this->name);
+
+        $this->validate();
 
         $dto = new CategoryDTO(
             name: $this->name,
@@ -153,7 +156,7 @@ class CategoryIndex extends Component
     #[Title('Catálogo de Categorías')]
     public function render()
     {
-        $categories = Category::where('name', 'like', '%'.$this->search.'%')
+        $categories = Category::when($this->search, fn ($q) => $q->where('name', 'ilike', '%'.$this->search.'%'))
             ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(15);

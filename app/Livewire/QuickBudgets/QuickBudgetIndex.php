@@ -122,17 +122,17 @@ class QuickBudgetIndex extends Component
                 $now = now();
                 if ($this->periodFilter === 'custom') {
                     if ($this->dateFrom) {
-                        $q->whereDate('created_at', '>=', $this->dateFrom);
+                        $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
                     }
                     if ($this->dateTo) {
-                        $q->whereDate('created_at', '<=', $this->dateTo);
+                        $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
                     }
                     return $q;
                 }
                 return match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year),
                     'last_month' => $q->whereMonth('created_at', $now->subMonth()->month)->whereYear('created_at', $now->subMonth()->year),
-                    'this_quarter' => $q->whereRaw('QUARTER(created_at) = ?', [$now->quarter])->whereYear('created_at', $now->year),
+                    'this_quarter' => $q->whereBetween('created_at', [$now->copy()->firstOfQuarter(), $now->copy()->lastOfQuarter()]),
                     'this_year' => $q->whereYear('created_at', $now->year),
                     default => $q
                 };

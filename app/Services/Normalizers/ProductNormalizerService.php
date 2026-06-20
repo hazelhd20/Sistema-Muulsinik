@@ -160,7 +160,7 @@ public function findMatchingCategory(string $rawName): ?Category
                 if ($candidateNormalized === $normalized) {
                     return $candidate;
                 }
-                $similarity = $this->calculateSimilarity($normalized, $candidateNormalized);
+                $similarity = $this->fuzzy->calculateSimilarity($normalized, $candidateNormalized);
                 if ($similarity > $bestScore) {
                     $bestScore = $similarity;
                     $bestMatch = $candidate;

@@ -36,11 +36,10 @@ class Setting extends Model
      */
     public static function set(string $key, mixed $value, string $type = 'string'): void
     {
-        $setting = self::where('key', $key)->first();
-
-        if ($setting) {
-            $setting->update(['value' => $value, 'type' => $type]);
-        }
+        self::updateOrCreate(
+            ['key' => $key],
+            ['value' => $value, 'type' => $type]
+        );
 
         Cache::forget("setting_{$key}");
     }

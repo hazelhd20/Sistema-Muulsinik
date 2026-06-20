@@ -39,7 +39,8 @@
     x-modelable="value"
     {!! $attributes->whereStartsWith('wire:model') !!}
     {!! $attributes->whereStartsWith('x-model') !!}
-    class="relative {{ $attributes->except(['wire:model', 'wire:model.live', 'wire:model.defer', 'wire:model.blur', 'x-model'])->get('class') }}"
+    {{ $attributes->except(['wire:model', 'wire:model.live', 'wire:model.defer', 'wire:model.blur', 'x-model', 'class']) }}
+    class="relative {{ $attributes->get('class') }}"
 >
     <!-- Trigger -->
     <button

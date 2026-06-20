@@ -169,7 +169,7 @@
                 </x-card.body>
             @else
             <x-card.table>
-                <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
+                <table>
                 <thead>
                     <tr>
                         <th>Proyecto</th>
@@ -194,28 +194,6 @@
                     @endforeach
                 </tbody>
             </table>
-            
-            <table wire:loading.class.remove="hidden" class="hidden w-full">
-                <thead>
-                    <tr>
-                        <th>Proyecto</th>
-                        <th>Estado</th>
-                        <th class="text-right">Presupuesto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for($i=0; $i<3; $i++)
-                    <tr>
-                        <td>
-                            <x-skeleton class="h-4  rounded w-3/4 mb-1" />
-                            <x-skeleton class="h-3  rounded w-1/2" />
-                        </td>
-                        <td><x-skeleton class="h-6  rounded-full w-20" /></td>
-                        <td class="text-right"><x-skeleton class="h-4  rounded w-16 ml-auto" /></td>
-                    </tr>
-                    @endfor
-                </tbody>
-            </table>
             </x-card.table>
             @endif
         </x-card>
@@ -236,7 +214,7 @@
                 </x-card.body>
             @else
             <x-card.table>
-                <table wire:loading.class="hidden" wire:target="previousPage, nextPage, gotoPage">
+                <table>
                 <thead>
                     <tr>
                         <th>Número</th>
@@ -259,28 +237,6 @@
                             <td class="text-small text-text-secondary">{{ $req->project->name ?? '—' }}</td>
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-            
-            <table wire:loading.class.remove="hidden" class="hidden w-full">
-                <thead>
-                    <tr>
-                        <th>Número</th>
-                        <th>Estado</th>
-                        <th>Proyecto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for($i=0; $i<3; $i++)
-                    <tr>
-                        <td>
-                            <x-skeleton class="h-4 rounded w-24 mb-1" />
-                            <x-skeleton class="h-3 rounded w-16" />
-                        </td>
-                        <td><x-skeleton class="h-6 rounded-full w-20" /></td>
-                        <td><x-skeleton class="h-4 rounded w-32" /></td>
-                    </tr>
-                    @endfor
                 </tbody>
             </table>
             </x-card.table>

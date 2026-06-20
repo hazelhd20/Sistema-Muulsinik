@@ -13,13 +13,13 @@ class NotificationDropdown extends Component
 
     public bool $isOpen = false;
 
-    public Collection $notifications;
+    public array $notifications = [];
 
     public int $unreadCount = 0;
 
     public function mount(): void
     {
-        $this->notifications = collect();
+        $this->notifications = [];
         $this->loadNotifications();
     }
 
@@ -28,13 +28,13 @@ class NotificationDropdown extends Component
         $user = auth()->user();
 
         if (! $user) {
-            $this->notifications = collect();
+            $this->notifications = [];
             $this->unreadCount = 0;
 
             return;
         }
 
-        $this->notifications = collect($user->notifications()
+        $this->notifications = $user->notifications()
             ->latest()
             ->limit(self::MAX_NOTIFICATIONS)
             ->get()
@@ -50,7 +50,7 @@ class NotificationDropdown extends Component
                 'read_at' => $notification->read_at,
                 'created_at' => $notification->created_at->diffForHumans(),
                 'created_at_iso' => $notification->created_at->toISOString(),
-            ]));
+            ])->toArray();
 
         $this->unreadCount = $user->unreadNotifications()->count();
     }

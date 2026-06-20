@@ -327,8 +327,6 @@
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
-        </div>
-
         {{-- Pagination Footer --}}
         @if($products->hasPages())
             <x-card.footer>

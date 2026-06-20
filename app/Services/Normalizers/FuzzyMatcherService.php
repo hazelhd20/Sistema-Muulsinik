@@ -3,7 +3,7 @@ namespace App\Services\Normalizers;
 
 class FuzzyMatcherService
 {
-private function extractKeyTokens(string $normalized): array
+    public function extractKeyTokens(string $normalized): array
     {
         $stopwords = ['de', 'la', 'el', 'los', 'las', 'del', 'y', 'en', 'para', 'con', 'sin', 'por'];
         $tokens = explode(' ', $normalized);
@@ -14,7 +14,7 @@ private function extractKeyTokens(string $normalized): array
         ));
     }
 
-private function bestFuzzyMatch(
+    public function bestFuzzyMatch(
         iterable $candidates,
         string $normalized,
         float $threshold = 0.70,
@@ -47,7 +47,7 @@ private function bestFuzzyMatch(
         return null;
     }
 
-private function calculateSimilarity(string $a, string $b): float
+    public function calculateSimilarity(string $a, string $b): float
     {
         if ($a === $b) {
             return 1.0;

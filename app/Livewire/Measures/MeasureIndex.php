@@ -34,10 +34,13 @@ class MeasureIndex extends Component
 
     public bool $allSelected = false;
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'abbreviation' => 'nullable|string|max:50',
-    ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|string|max:255|unique:measures,name,' . $this->editingId,
+            'abbreviation' => 'nullable|string|max:50',
+        ];
+    }
 
     public function updatingSearch()
     {
@@ -72,6 +75,8 @@ class MeasureIndex extends Component
         if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
             return;
         }
+
+        $this->name = app(\App\Services\DataNormalizerService::class)->normalizeTitleCase($this->name);
 
         $this->validate();
 
@@ -161,9 +166,9 @@ class MeasureIndex extends Component
     #[Title('Catálogo de Medidas')]
     public function render()
     {
-        $measures = Measure::where(function ($q) {
-                $q->where('name', 'like', '%'.$this->search.'%')
-                  ->orWhere('abbreviation', 'like', '%'.$this->search.'%');
+        $measures = Measure::when($this->search, function ($q) {
+                $q->where('name', 'ilike', '%'.$this->search.'%')
+                  ->orWhere('abbreviation', 'ilike', '%'.$this->search.'%');
             })
             ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)

@@ -44,7 +44,10 @@ class ManualRequisition extends Component
         $measures = Measure::all()->keyBy('id');
 
         $this->searchResults = Product::with('measure', 'category')
-            ->where('canonical_name', 'like', "%{$this->searchQuery}%")
+            ->where(function ($query) {
+                $query->where('normalized_name', 'like', "%" . strtolower($this->searchQuery) . "%")
+                      ->orWhereRaw('LOWER(canonical_name) LIKE ?', ['%' . strtolower($this->searchQuery) . '%']);
+            })
             ->take(10)
             ->get()
             ->map(function ($product) {

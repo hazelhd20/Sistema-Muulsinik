@@ -68,29 +68,34 @@ class QuickBudgetWizard extends Component
             return;
         }
 
-        $this->searchResults = Product::with('measure', 'category')
-            ->where('canonical_name', 'like', "%{$this->searchQuery}%")
+        $products = Product::with('measure', 'category')
+            ->where('canonical_name', 'ilike', "%{$this->searchQuery}%")
             ->take(10)
-            ->get()
-            ->map(function ($product) {
-                // Find the latest purchase price for this product
-                $lastPrice = DB::table('requisition_items')
-                    ->join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                    ->where('requisition_items.product_id', $product->id)
-                    ->where('requisitions.status', 'aprobada')
-                    ->orderByDesc('requisitions.created_at')
-                    ->value('unit_price');
+            ->get();
 
-                return [
-                    'id' => $product->id,
-                    'name' => $product->canonical_name,
-                    'category' => $product->category ? $product->category->name : 'Sin categoría',
-                    'measure_id' => $product->measure_id,
-                    'measure_abbr' => $product->measure ? $product->measure->abbreviation : '—',
-                    'last_price' => $lastPrice ? (float) $lastPrice : 0,
-                ];
-            })
-            ->toArray();
+        $productIds = $products->pluck('id');
+
+        $latestPrices = DB::table('requisition_items')
+            ->join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
+            ->whereIn('requisition_items.product_id', $productIds)
+            ->where('requisitions.status', 'aprobada')
+            ->orderByDesc('requisitions.created_at')
+            ->get(['requisition_items.product_id', 'requisition_items.unit_price'])
+            ->groupBy('product_id')
+            ->map(fn($items) => $items->first()->unit_price);
+
+        $this->searchResults = $products->map(function ($product) use ($latestPrices) {
+            $lastPrice = $latestPrices->get($product->id);
+
+            return [
+                'id' => $product->id,
+                'name' => $product->canonical_name,
+                'category' => $product->category ? $product->category->name : 'Sin categoría',
+                'measure_id' => $product->measure_id,
+                'measure_abbr' => $product->measure ? $product->measure->abbreviation : '—',
+                'last_price' => $lastPrice ? (float) $lastPrice : 0,
+            ];
+        })->toArray();
     }
 
     public function addProduct($index)

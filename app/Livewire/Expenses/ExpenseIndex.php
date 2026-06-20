@@ -240,17 +240,17 @@ class ExpenseIndex extends Component
                 $now = now();
                 if ($this->periodFilter === 'custom') {
                     if ($this->dateFrom) {
-                        $q->whereDate('date', '>=', $this->dateFrom);
+                        $q->where('date', '>=', $this->dateFrom . ' 00:00:00');
                     }
                     if ($this->dateTo) {
-                        $q->whereDate('date', '<=', $this->dateTo);
+                        $q->where('date', '<=', $this->dateTo . ' 23:59:59');
                     }
                     return $q;
                 }
                 return match ($this->periodFilter) {
                     'this_month' => $q->whereMonth('date', $now->month)->whereYear('date', $now->year),
                     'last_month' => $q->whereMonth('date', $now->subMonth()->month)->whereYear('date', $now->subMonth()->year),
-                    'this_quarter' => $q->whereRaw('QUARTER(date) = ?', [$now->quarter])->whereYear('date', $now->year),
+                    'this_quarter' => $q->whereBetween('date', [$now->copy()->firstOfQuarter(), $now->copy()->lastOfQuarter()]),
                     'this_year' => $q->whereYear('date', $now->year),
                     default => $q,
                 };

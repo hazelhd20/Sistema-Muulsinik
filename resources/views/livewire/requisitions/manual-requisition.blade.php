@@ -57,11 +57,11 @@
 
             <div class="px-6 py-5">
                 {{-- Search Product --}}
-                <div x-data class="relative max-w-lg">
+                <div x-data="{ open: true }" class="relative max-w-lg" @click.outside="open = false">
                     <div class="relative">
                         <x-lucide-search
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input wire:model.live.debounce.300ms="searchQuery" type="text"
+                        <input wire:model.live.debounce.300ms="searchQuery" @focus="open = true" @input="open = true" type="text"
                             class="input w-full pl-10 border-border focus:border-primary-500 bg-surface-card"
                             placeholder="Buscar producto del catálogo para agregar...">
                         <div wire:loading wire:target="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -71,7 +71,7 @@
 
                     {{-- Dropdown Results --}}
                     @if(!empty($searchResults))
-                        <div class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
+                        <div x-show="open" x-cloak class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in">
                             <ul class="max-h-60 overflow-y-auto py-1">
                                 @foreach($searchResults as $index => $product)
                                     <li>
@@ -98,7 +98,7 @@
                             </ul>
                         </div>
                     @elseif(strlen($searchQuery) >= 2 && empty($searchResults))
-                        <div class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in p-4 text-center">
+                        <div x-show="open" x-cloak class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in p-4 text-center">
                             <p class="text-small text-text-muted">No se encontraron productos en el catálogo.</p>
                             <p class="text-xs text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
                                 Da clic en "Concepto Manual" para agregarlo tú mismo.
@@ -245,7 +245,7 @@
 
                 {{-- Totales (calculados en ManualRequisition::render()) --}}
                 <div class="flex justify-end px-6 pt-6 pb-8">
-                    <div class="w-full sm:w-1/2 md:w-1/3 min-w-[250px]">
+                    <x-totals-summary class="w-full sm:w-1/2 md:w-1/3">
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-small text-text-muted">Subtotal s/IVA</span>
                             <span class="text-small font-medium text-text-secondary tabular-nums">
@@ -269,7 +269,7 @@
                         <div class="flex justify-end pt-6 mt-6 border-t border-border/50">
                             <x-button type="submit" variant="primary" target="createRequisition">Crear Requisición</x-button>
                         </div>
-                    </div>
+                    </x-totals-summary>
                 </div>
             @else
                 <div class="px-6 pb-6">
