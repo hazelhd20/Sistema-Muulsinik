@@ -15,6 +15,13 @@ class ExpenseObserver
         if ($expense->project) {
             app(ProjectCacheService::class)->recalculateTotalExpenses($expense->project);
         }
+
+        if ($expense->wasChanged('project_id') && $expense->getOriginal('project_id')) {
+            $oldProject = \App\Models\Project::find($expense->getOriginal('project_id'));
+            if ($oldProject) {
+                app(ProjectCacheService::class)->recalculateTotalExpenses($oldProject);
+            }
+        }
     }
 
     public function deleted(Expense $expense): void

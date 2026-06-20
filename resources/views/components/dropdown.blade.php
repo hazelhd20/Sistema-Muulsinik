@@ -39,7 +39,7 @@ switch ($width) {
      @close.stop="open = false"
      @dropdown-opened.window="if ($event.detail.id !== id) open = false">
 
-    <div x-ref="trigger" @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" class="cursor-pointer inline-flex items-center">
+    <div x-ref="trigger" @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" :aria-expanded="open.toString()" class="cursor-pointer inline-flex items-center">
         {{ $trigger }}
     </div>
 

@@ -30,6 +30,13 @@ class RequisitionObserver
             if ($requisition->project) {
                 app(ProjectCacheService::class)->recalculateTotalExpenses($requisition->project);
             }
+
+            if ($requisition->wasChanged('project_id') && $requisition->getOriginal('project_id')) {
+                $oldProject = \App\Models\Project::find($requisition->getOriginal('project_id'));
+                if ($oldProject) {
+                    app(ProjectCacheService::class)->recalculateTotalExpenses($oldProject);
+                }
+            }
         }
     }
 

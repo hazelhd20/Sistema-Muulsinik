@@ -42,7 +42,7 @@ class User extends Authenticatable
     /** Verifica si el usuario tiene un permiso específico. */
     public function hasPermission(string $permission): bool
     {
-        if (! $this->role) {
+        if (!$this->role) {
             return false;
         }
 
@@ -67,8 +67,12 @@ class User extends Authenticatable
      */
     public static function getApprovers(): \Illuminate\Support\Collection
     {
-        return static::with('role')->get()->filter(
-            fn ($user) => $user->hasPermission('requisiciones.aprobar') || $user->hasPermission('*')
-        );
+        return static::with('role')
+            ->where('active', true)
+            ->whereHas('role', function ($query) {
+                $query->whereJsonContains('permissions', 'requisiciones.aprobar')
+                    ->orWhereJsonContains('permissions', '*');
+            })
+            ->get();
     }
 }

@@ -27,7 +27,6 @@
      class="fixed inset-0 z-[60] overflow-hidden"
      role="dialog" aria-modal="true"
      x-trap.noscroll="show"
-     @keydown.escape.window="show = false"
      @keydown.escape.window="$wire.set('{{ $show }}', false)"
      x-init="$watch('show', value => {
          if (value) {

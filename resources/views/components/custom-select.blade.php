@@ -47,6 +47,9 @@
         x-ref="trigger"
         type="button"
         @click="toggle()"
+        role="combobox"
+        aria-haspopup="listbox"
+        :aria-expanded="open.toString()"
         class="input flex items-center justify-between text-left w-full h-9"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
@@ -92,11 +95,13 @@
         </div>
 
         <!-- Options List -->
-        <div class="overflow-y-auto py-1 flex-1">
+        <div class="overflow-y-auto py-1 flex-1" role="listbox">
             @if($placeholder)
                 <div
                     @click="value = ''; close()"
                     x-show="search === ''"
+                    role="option"
+                    :aria-selected="(!value || value == '') ? 'true' : 'false'"
                     class="px-4 py-2.5 text-small cursor-pointer transition-colors"
                     :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-zinc-100'"
                 >
@@ -107,6 +112,8 @@
             <template x-for="(label, val) in filteredOptions" :key="val">
                 <div
                     @click="value = val; close()"
+                    role="option"
+                    :aria-selected="value == val ? 'true' : 'false'"
                     class="px-4 py-2.5 text-small cursor-pointer transition-colors flex items-center justify-between"
                     :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-zinc-100'"
                 >

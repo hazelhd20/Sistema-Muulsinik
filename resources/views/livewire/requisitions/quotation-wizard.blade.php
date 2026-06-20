@@ -144,12 +144,12 @@
                             </div>
                             {{-- Acciones secundarias --}}
                             <div class="grid grid-cols-2 gap-3">
-                                <x-button wire:click="continueManually" variant="secondary"
-                                    class="w-full rounded-xl bg-surface-main/50 text-xs shadow-none border-border/50">
+                                <x-button wire:click="continueManually" variant="soft"
+                                    class="w-full rounded-xl">
                                     Llenar a mano
                                 </x-button>
-                                <x-button wire:click="resetWizard" variant="secondary"
-                                    class="w-full rounded-xl bg-surface-main/50 text-xs shadow-none border-border/50">
+                                <x-button wire:click="resetWizard" variant="soft"
+                                    class="w-full rounded-xl">
                                     Otro archivo
                                 </x-button>
                             </div>

@@ -22,6 +22,8 @@ class RequisitionItem extends Model
         'supplier_id',
     ];
 
+    protected $touches = ['requisition'];
+
     protected $casts = [
         'quantity' => 'decimal:4',
         'unit_price' => 'decimal:2',

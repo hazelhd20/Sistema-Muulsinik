@@ -20,9 +20,10 @@
     };
 @endphp
 
-<th wire:click="sortBy('{{ $field }}')" {{ $attributes->merge(['class' => 'cursor-pointer group hover:bg-surface-hover/50 transition-colors']) }}>
+<th wire:click="sortBy('{{ $field }}')" 
+    {{ $attributes->merge(['class' => 'cursor-pointer group transition-colors ' . ($isActive ? 'bg-primary-50/50' : 'hover:bg-surface-hover/50')]) }}>
     <div class="flex items-center gap-1.5 {{ $alignClass }}">
-        <span class="{{ $isActive ? 'text-text-primary font-semibold' : '' }}">{{ $label }}</span>
+        <span class="{{ $isActive ? 'text-primary-800 font-semibold' : '' }}">{{ $label }}</span>
         <x-dynamic-component :component="'lucide-' . $icon" 
            class="w-3.5 h-3.5 {{ $isActive ? 'text-primary-600' : 'text-text-muted opacity-0 group-hover:opacity-100 transition-opacity' }}" />
     </div>

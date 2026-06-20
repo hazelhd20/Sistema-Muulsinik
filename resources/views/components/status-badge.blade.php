@@ -8,7 +8,6 @@
     $variant = $map[$status] ?? 'secondary';
 @endphp
 
-<span {{ $attributes->class(['badge', "badge-{$variant}"]) }}>
-    @if($dot)<span class="badge-dot"></span>@endif
+<x-badge :variant="$variant" :dot="$dot" {{ $attributes }}>
     {{ $slot->isNotEmpty() ? $slot : ucfirst(str_replace('_', ' ', $status)) }}
-</span>
+</x-badge>

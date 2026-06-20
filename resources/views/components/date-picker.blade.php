@@ -12,7 +12,7 @@
     })"
     {!! $attributes->whereStartsWith('x-model') !!}
     x-modelable="value"
-    wire:ignore.self
+    wire:ignore
 >
     @if($icon)
         <x-dynamic-component :component="'lucide-' . $icon" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted z-10" />

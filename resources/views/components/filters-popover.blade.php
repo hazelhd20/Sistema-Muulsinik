@@ -59,7 +59,7 @@
     class="relative inline-block text-left z-30"
 >
     {{-- ── Trigger ── --}}
-    <div x-ref="trigger" @click="toggle()">
+    <div x-ref="trigger" @click="toggle()" :aria-expanded="open.toString()">
         <x-button type="button" variant="secondary" icon="filter" class="shrink-0"
             x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': {{ $activeCount }} > 0 || open }">
             Filtros

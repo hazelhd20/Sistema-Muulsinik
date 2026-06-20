@@ -14,8 +14,7 @@
 
     {{-- Lucide Icons were replaced by blade-lucide-icons --}}
 
-    {{-- SweetAlert2 CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     {{-- Alpine Focus Plugin (RF-REQ-10: Focus Trap) --}}
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
@@ -247,6 +246,8 @@
     @endif
 
     @livewireScripts
+    <x-toast-container />
+    
     <script>
         // No redundant createIcons here, it's handled in app.js
         document.addEventListener('livewire:init', () => {
@@ -261,49 +262,7 @@
             });
         });
 
-        window.addEventListener('toast', event => {
-            const data = Array.isArray(event.detail) ? event.detail[0] : event.detail;
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                icon: data.icon || 'success',
-                title: data.title || data.message
-            });
-        });
 
-        document.addEventListener('click', e => {
-            let el = e.target.closest('[wire\\:confirm]');
-            if (el && !el.hasAttribute('data-confirmed')) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                
-                // Determinar la variante visual (danger si es acción destructiva)
-                let isDanger = el.getAttribute('wire:click')?.toLowerCase().includes('delete') 
-                            || el.classList.contains('text-danger') 
-                            || el.hasAttribute('danger')
-                            || el.getAttribute('wire:confirm').toLowerCase().includes('eliminar');
-
-                window.dispatchEvent(new CustomEvent('confirm-action', {
-                    detail: {
-                        title: '¿Estás seguro?',
-                        description: el.getAttribute('wire:confirm'),
-                        variant: isDanger ? 'danger' : 'warning',
-                        confirmLabel: 'Confirmar',
-                        onConfirmCallback: () => {
-                            el.setAttribute('data-confirmed', 'true');
-                            const orig = window.confirm;
-                            window.confirm = () => true;
-                            el.click();
-                            window.confirm = orig;
-                            el.removeAttribute('data-confirmed');
-                        }
-                    }
-                }));
-            }
-        }, true);
     </script>
 </body>
 

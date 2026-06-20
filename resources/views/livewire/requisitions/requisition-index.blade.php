@@ -94,7 +94,7 @@
 
                                 <x-slot name="footer">
                                     <button type="button" @click="clearFilters()"
-                                        class="text-small text-text-muted hover:text-text-primary transition-colors font-medium">
+                                        class="btn-link-muted">
                                         Limpiar todo
                                     </button>
                                     <x-button type="button" @click="applyFilters(); open = false" variant="primary">

@@ -128,6 +128,10 @@
         <input 
             x-ref="input"
             type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-haspopup="listbox"
+            :aria-expanded="open.toString()"
             x-model="value"
             @focus="openDropdown()"
             @input="openDropdown()"
@@ -170,11 +174,13 @@
             </div>
         @endif
 
-        <div class="py-1 flex-1 overflow-y-auto" x-ref="listbox">
+        <div class="py-1 flex-1 overflow-y-auto" x-ref="listbox" role="listbox">
             <template x-if="filteredOptions.length > 0">
                 <template x-for="(opt, index) in filteredOptions" :key="index">
                     <div
                         data-option
+                        role="option"
+                        :aria-selected="value == opt.value ? 'true' : 'false'"
                         @click="selectOption(opt)"
                         @mouseenter="activeIndex = index"
                         class="px-4 py-2.5 text-small cursor-pointer transition-colors"
