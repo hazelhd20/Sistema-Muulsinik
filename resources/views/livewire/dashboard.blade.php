@@ -4,7 +4,7 @@
     @endassets
 
     {{-- ── Page Header ──────────────────────────────────── --}}
-    <x-page-header subtitle="Panel de Control">
+    <x-page-header subtitle="Panel de Control" icon="layout-dashboard">
         <x-slot:heading>
             {{ explode(' ', auth()->user()->name ?? 'Usuario')[0] }},
             <span class="text-text-secondary font-normal">aquí está el resumen de hoy.</span>

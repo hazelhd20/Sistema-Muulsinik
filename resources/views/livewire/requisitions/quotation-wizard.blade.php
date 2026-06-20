@@ -1,7 +1,13 @@
 <div x-data="{}">
     {{-- ═══════ WIZARD HEADER ═══════ --}}
-    <x-page-header subtitle="Requisiciones" title="Subir Cotización"
-        backUrl="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}" />
+    @php
+        $breadcrumbs = [
+            ['label' => 'Inicio', 'url' => route('dashboard')],
+            ['label' => 'Requisiciones', 'url' => route('requisiciones.index')],
+            ['label' => 'Subir Cotización']
+        ];
+    @endphp
+    <x-page-header :breadcrumbs="$breadcrumbs" title="Subir Cotización" />
 
     {{-- Sequence-style Step Indicator --}}
     <div class="flex justify-center mb-10 mt-4" wire:ignore.self>

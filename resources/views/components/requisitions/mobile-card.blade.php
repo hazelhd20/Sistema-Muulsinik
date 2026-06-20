@@ -1,11 +1,11 @@
 @props(['req'])
 
-<div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+<div class="card p-0 flex flex-col relative transition-colors shadow-sm overflow-hidden"
+    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
     wire:key="req-mobile-card-{{ $req->id }}">
 
     {{-- Cabecera de la Fila --}}
-    <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/50 bg-surface-main/30">
         <div class="flex items-center gap-3 min-w-0">
             <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
             <span class="font-bold text-text-primary text-base truncate">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
@@ -14,7 +14,7 @@
         <div class="flex items-center gap-2 shrink-0">
             <x-dropdown align="right" width="48">
                 <x-slot name="trigger">
-                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
+                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-card hover:text-text-primary transition-colors focus:outline-none hover:shadow-sm border border-transparent hover:border-border">
                         <x-lucide-more-vertical class="w-5 h-5" />
                     </button>
                 </x-slot>
@@ -52,52 +52,53 @@
         </div>
     </div>
 
-    {{-- Contenido Indentado --}}
-    <div class="pl-8 flex flex-col gap-3">
+    {{-- Contenido Principal --}}
+    <div class="p-4 flex flex-col gap-4">
         {{-- Subtítulo --}}
-        <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-4 gap-y-2">
             <span class="flex items-center gap-1.5 truncate">
-                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
-                <span class="truncate">{{ $req->creator->name ?? '—' }}</span>
+                <x-lucide-user class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                <span class="truncate font-medium">{{ $req->creator->name ?? '—' }}</span>
             </span>
             <span class="flex items-center gap-1.5">
-                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
-                <span>{{ $req->date?->format('d/m/Y') }}</span>
+                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                <span class="font-medium">{{ $req->date?->format('d/m/Y') }}</span>
             </span>
         </div>
 
         {{-- Datos Financieros / Detalles --}}
-        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div class="grid grid-cols-2 gap-x-4 gap-y-4 pt-3 border-t border-border/50">
             <div>
-                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Proyecto</p>
-                <p class="text-small text-text-primary truncate" title="{{ $req->project->name ?? 'Sin proyecto' }}">
+                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Proyecto</p>
+                <p class="text-sm font-medium text-text-primary truncate" title="{{ $req->project->name ?? 'Sin proyecto' }}">
                     {{ $req->project->name ?? 'Sin proyecto' }}
                 </p>
             </div>
             <div>
-                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Proveedor</p>
+                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Proveedor</p>
                 @php
                     $proveedorName = $req->vendor?->supplier?->trade_name 
                         ?? $req->vendor?->name 
                         ?? $req->items->first()?->supplier?->trade_name 
                         ?? 'Sin proveedor';
                 @endphp
-                <p class="text-small text-text-primary truncate" title="{{ $proveedorName }}">
+                <p class="text-sm font-medium text-text-primary truncate" title="{{ $proveedorName }}">
                     {{ $proveedorName }}
-                </p>
-            </div>
-            <div class="col-span-2">
-                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Total</p>
-                <p class="font-bold text-text-primary tabular-nums">
-                    ${{ number_format($req->total, 2, '.', ',') }}
                 </p>
             </div>
         </div>
 
+        <div class="flex items-center justify-between pt-4 mt-1 border-t border-border/50">
+            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total</p>
+            <p class="font-bold text-lg text-text-primary tabular-nums">
+                ${{ number_format($req->total, 2, '.', ',') }}
+            </p>
+        </div>
+
         @if($req->status === 'rechazada' && $req->rejection_comment)
-            <div class="bg-danger-50 text-danger-700 text-xs p-2.5 rounded-lg border border-danger-200 mt-1 flex items-start gap-2">
+            <div class="bg-danger-50 text-danger-700 text-xs p-3 rounded-lg border border-danger-200 mt-2 flex items-start gap-2.5">
                 <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
-                <p class="leading-relaxed">{{ $req->rejection_comment }}</p>
+                <p class="leading-relaxed font-medium">{{ $req->rejection_comment }}</p>
             </div>
         @endif
     </div>

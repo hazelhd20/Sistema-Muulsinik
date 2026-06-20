@@ -1,6 +1,6 @@
 <div x-data="projectIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $projects->count() }}; init()">
     {{-- Header --}}
-    <x-page-header subtitle="Gestión" title="Proyectos">
+    <x-page-header subtitle="Gestión" title="Proyectos" icon="hard-hat">
         <x-slot:actions>
             <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nuevo Proyecto

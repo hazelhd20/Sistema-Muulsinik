@@ -1,6 +1,6 @@
 <div x-data="supplierIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $suppliers->count() }}; init()">
     {{-- Header --}}
-    <x-page-header subtitle="Red de suministro" title="Proveedores">
+    <x-page-header subtitle="Red de suministro" title="Proveedores" icon="truck">
         <x-slot:actions>
             <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Nuevo Proveedor

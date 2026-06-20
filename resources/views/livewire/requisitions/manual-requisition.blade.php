@@ -1,8 +1,12 @@
 <div>
-    <x-page-header 
-        subtitle="Requisiciones" 
-        title="Nueva Requisición Manual" 
-        backUrl="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}">
+    @php
+        $breadcrumbs = [
+            ['label' => 'Inicio', 'url' => route('dashboard')],
+            ['label' => 'Requisiciones', 'url' => route('requisiciones.index')],
+            ['label' => 'Nueva Manual']
+        ];
+    @endphp
+    <x-page-header :breadcrumbs="$breadcrumbs" title="Nueva Requisición (Manual)"> 
     </x-page-header>
 
     <form wire:submit="createRequisition" class="space-y-6">

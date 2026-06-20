@@ -1,9 +1,13 @@
 <div>
     {{-- ── Header ──────────────────────────────────────────── --}}
-    <x-page-header
-        subtitle="Proyectos"
-        title="{{ $project->name }}"
-    >
+    @php
+        $breadcrumbs = [
+            ['label' => 'Inicio', 'url' => route('dashboard')],
+            ['label' => 'Proyectos', 'url' => route('proyectos.index')],
+            ['label' => $project->name]
+        ];
+    @endphp
+    <x-page-header :breadcrumbs="$breadcrumbs" :status="$project->status ?? null">
         <x-slot:actions>
             <x-button href="{{ route('proyectos.index') }}" variant="secondary" icon="arrow-left" wire:navigate>
                 Volver

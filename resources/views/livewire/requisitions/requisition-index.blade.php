@@ -1,7 +1,7 @@
 <div x-data="{ tab: @entangle('tab').live }" x-on:livewire:navigated.window="tab = $wire.tab">
     <div>
         {{-- Header --}}
-        <x-page-header subtitle="Compras" title="Requisiciones">
+        <x-page-header subtitle="Compras" title="Requisiciones" icon="clipboard-list">
             <x-slot:actions>
                 <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus"
                     wire:navigate>
@@ -22,7 +22,7 @@
             <button @click="tab = 'borradores'" :class="tab === 'borradores' ? 'active' : ''" class="tab-btn">
                 Borradores y Procesos
                 @if($pendingQuotations->count() > 0)
-                    <span class="badge badge-primary ml-1">{{ $pendingQuotations->count() }}</span>
+                    <span class="count-badge">{{ $pendingQuotations->count() }}</span>
                 @endif
             </button>
         </div>

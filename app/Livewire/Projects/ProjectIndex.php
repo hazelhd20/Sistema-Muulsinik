@@ -263,7 +263,16 @@ class ProjectIndex extends Component
                     default => $q
                 };
             })
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->when(true, function ($q) {
+                $dir = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
+                if ($this->sortField === 'status') {
+                    $q->orderByRaw("CASE status WHEN 'activo' THEN 1 WHEN 'en_pausa' THEN 2 WHEN 'completado' THEN 3 WHEN 'cancelado' THEN 4 ELSE 5 END $dir");
+                } elseif (in_array($this->sortField, ['start_date', 'created_at', 'end_date'])) {
+                    $q->orderByRaw("\"{$this->sortField}\" $dir NULLS LAST");
+                } else {
+                    $q->orderBy($this->sortField, $dir);
+                }
+            })
             ->paginate(12);
 
         return view('livewire.projects.project-index', compact('projects'));

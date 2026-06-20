@@ -1,12 +1,16 @@
 <div>
     {{-- ─── Header con acciones de workflow ─── --}}
-    <x-page-header subtitle="Requisiciones" backUrl="{{ route('requisiciones.index') }}">
+    @php
+        $breadcrumbs = [
+            ['label' => 'Inicio', 'url' => route('dashboard')],
+            ['label' => 'Requisiciones', 'url' => route('requisiciones.index')],
+            ['label' => $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT)]
+        ];
+    @endphp
+    <x-page-header :breadcrumbs="$breadcrumbs" :status="$requisition->status">
         <x-slot:title>
             <div class="flex items-center gap-3">
                 {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
-                <x-status-badge
-                    :status="$requisition->status"
-                    :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
             </div>
         </x-slot:title>
         <x-slot:actions>
@@ -178,45 +182,46 @@
             </x-card.table>
 
             {{-- Mobile Cards --}}
-            <div class="md:hidden flex flex-col divide-y divide-border border-y border-border">
+            <div class="md:hidden flex flex-col divide-y divide-border/60 border-t border-border/60">
                 @forelse($requisition->items as $item)
-                    <div class="px-6 py-5 flex flex-col gap-2">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-bold text-body text-text-primary">
+                    <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover/50 transition-colors">
+                        <div class="flex justify-between items-start gap-4">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-body text-text-primary leading-snug">
                                     {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                 </p>
-                                <p class="text-small text-text-secondary mt-0.5">
+                                <p class="text-xs font-medium text-text-muted mt-1 uppercase tracking-wider">
                                     {{ $item->product?->category?->name ?? 'Sin categoría' }}
                                 </p>
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50">
+                        <div class="grid grid-cols-2 gap-4 mt-1 pt-3 border-t border-border/40">
                             <div>
-                                <p class="text-xs text-text-secondary mb-0.5">Cantidad</p>
-                                <p class="text-small font-medium text-text-primary">
+                                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Cantidad</p>
+                                <p class="text-sm font-medium text-text-primary">
                                     {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
                                 </p>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-text-secondary mb-0.5">Precio U.</p>
-                                <p class="text-small font-medium text-text-primary">
+                                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Precio Unitario</p>
+                                <p class="text-sm font-medium text-text-primary">
                                     ${{ number_format($item->unit_price, 2) }}
                                 </p>
                             </div>
                         </div>
                         
-                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-border/50">
-                            <span class="text-small font-medium text-text-secondary">Total Linea:</span>
-                            <span class="font-bold text-h3 text-text-primary">
+                        <div class="flex justify-between items-center mt-1 pt-3 border-t border-border/40">
+                            <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Línea</span>
+                            <span class="font-bold text-lg text-text-primary tabular-nums">
                                 ${{ number_format($item->line_total_computed, 2) }}
                             </span>
                         </div>
                     </div>
                 @empty
-                    <div class="py-12 text-center border-b border-border">
-                        <span class="text-text-muted">No hay productos</span>
+                    <div class="py-12 text-center bg-surface-main/30">
+                        <x-lucide-package class="w-8 h-8 mx-auto text-text-muted/50 mb-3" />
+                        <span class="text-sm font-medium text-text-muted">No hay productos registrados</span>
                     </div>
                 @endforelse
             </div>

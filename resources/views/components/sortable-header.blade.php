@@ -5,23 +5,23 @@
     'sortDirection' => null,
     'align' => 'left'
 ])
-
 @php
     $isActive = $sortField === $field;
     $icon = 'chevrons-up-down'; // Default
     if ($isActive) {
         $icon = $sortDirection === 'asc' ? 'chevron-up' : 'chevron-down';
     }
-    
-    $alignClass = match($align) {
+
+    $alignClass = match ($align) {
         'right' => 'justify-end',
         'center' => 'justify-center',
         default => 'justify-start',
     };
 @endphp
 
+
 <th wire:click="sortBy('{{ $field }}')" 
-    {{ $attributes->merge(['class' => 'cursor-pointer group transition-colors ' . ($isActive ? 'bg-primary-50/50' : 'hover:bg-surface-hover/50')]) }}>
+    {{ $attributes->merge(['class' => 'cursor-pointer group transition-colors hover:bg-surface-hover/50']) }}>
     <div class="flex items-center gap-1.5 {{ $alignClass }}">
         <span class="{{ $isActive ? 'text-primary-800 font-semibold' : '' }}">{{ $label }}</span>
         <x-dynamic-component :component="'lucide-' . $icon" 

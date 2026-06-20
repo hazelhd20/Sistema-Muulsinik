@@ -255,7 +255,14 @@ class ExpenseIndex extends Component
                     default => $q,
                 };
             })
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->when(true, function ($q) {
+                $dir = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
+                if (in_array($this->sortField, ['date', 'created_at'])) {
+                    $q->orderByRaw("\"{$this->sortField}\" $dir NULLS LAST");
+                } else {
+                    $q->orderBy($this->sortField, $dir);
+                }
+            })
             ->paginate(15);
 
         $projects = Project::where('status', 'activo')->orderBy('name')->get();

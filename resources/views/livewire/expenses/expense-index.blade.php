@@ -1,6 +1,6 @@
 <div x-data="expenseIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $expenses->count() }}; init()">
     {{-- Header --}}
-    <x-page-header subtitle="Control financiero" title="Gastos">
+    <x-page-header subtitle="Control financiero" title="Gastos" icon="wallet">
         <x-slot:actions>
             <x-button wire:click="openCreateModal" variant="primary" icon="plus">
                 Registrar Gasto
