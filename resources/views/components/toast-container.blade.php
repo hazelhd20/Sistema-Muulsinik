@@ -35,31 +35,37 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 -translate-y-4"
-             class="pointer-events-auto bg-surface-card border border-border shadow-lg rounded-xl p-4 flex items-start gap-3 relative overflow-hidden"
+             class="pointer-events-auto bg-surface-card border border-border shadow-lg rounded-xl p-4 flex items-center gap-3 relative overflow-hidden"
         >
-            <!-- Icon -->
-            <div class="shrink-0 mt-0.5">
+            <!-- Icon con fondo suave estandarizado -->
+            <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                 :class="{
+                    'bg-success-light text-success': toast.type === 'success',
+                    'bg-danger-light text-danger': toast.type === 'danger' || toast.type === 'error',
+                    'bg-warning-light text-warning': toast.type === 'warning',
+                    'bg-info-light text-info': toast.type === 'info' || toast.type === 'question' || !['success', 'danger', 'error', 'warning'].includes(toast.type)
+                 }">
                 <template x-if="toast.type === 'success'">
-                    <x-lucide-check-circle class="w-5 h-5 text-success" />
+                    <x-lucide-check-circle class="w-4 h-4" />
                 </template>
                 <template x-if="toast.type === 'danger' || toast.type === 'error'">
-                    <x-lucide-alert-circle class="w-5 h-5 text-danger" />
+                    <x-lucide-alert-circle class="w-4 h-4" />
                 </template>
                 <template x-if="toast.type === 'warning'">
-                    <x-lucide-alert-triangle class="w-5 h-5 text-warning" />
+                    <x-lucide-alert-triangle class="w-4 h-4" />
                 </template>
                 <template x-if="toast.type === 'info' || toast.type === 'question' || !['success', 'danger', 'error', 'warning'].includes(toast.type)">
-                    <x-lucide-info class="w-5 h-5 text-info" />
+                    <x-lucide-info class="w-4 h-4" />
                 </template>
             </div>
             
             <!-- Content -->
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-text-primary" x-text="toast.message"></p>
+                <p class="text-sm font-medium text-text-primary leading-tight" x-text="toast.message"></p>
             </div>
             
             <!-- Close Button -->
-            <button @click="remove(toast.id)" class="btn-icon shrink-0 -mr-1 -mt-1 w-6 h-6 p-0 text-text-muted hover:text-text-primary">
+            <button @click="remove(toast.id)" class="btn-icon shrink-0 -mr-1 w-6 h-6 p-0 text-text-muted hover:text-text-primary">
                 <x-lucide-x class="w-4 h-4" />
             </button>
             

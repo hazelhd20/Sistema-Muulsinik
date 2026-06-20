@@ -32,7 +32,12 @@ class RequisitionRepository
                     ->when($statusFilter, fn($q) => $q->where('status', $statusFilter))
                     ->when($projectFilter, fn($q) => $q->where('project_id', $projectFilter))
                     ->when($creatorFilter, fn($q) => $q->where('created_by', $creatorFilter))
-                    ->when($vendorFilter, fn($q) => $q->where('vendor_id', $vendorFilter))
+                    ->when($vendorFilter, function ($q) use ($vendorFilter) {
+                        $q->where(function ($sub) use ($vendorFilter) {
+                            $sub->whereHas('vendor', fn($v) => $v->where('supplier_id', $vendorFilter))
+                                ->orWhereHas('items', fn($i) => $i->where('supplier_id', $vendorFilter));
+                        });
+                    })
                     ->when($periodFilter, function ($q) use ($periodFilter, $dateFrom, $dateTo) {
                         if ($periodFilter === 'custom') {
                             if ($dateFrom) {

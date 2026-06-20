@@ -76,8 +76,14 @@
             </div>
             <div>
                 <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Proveedor</p>
-                <p class="text-small text-text-primary truncate" title="{{ $req->vendor?->name ?? 'Sin proveedor' }}">
-                    {{ $req->vendor?->name ?? 'Sin proveedor' }}
+                @php
+                    $proveedorName = $req->vendor?->supplier?->trade_name 
+                        ?? $req->vendor?->name 
+                        ?? $req->items->first()?->supplier?->trade_name 
+                        ?? 'Sin proveedor';
+                @endphp
+                <p class="text-small text-text-primary truncate" title="{{ $proveedorName }}">
+                    {{ $proveedorName }}
                 </p>
             </div>
             <div class="col-span-2">

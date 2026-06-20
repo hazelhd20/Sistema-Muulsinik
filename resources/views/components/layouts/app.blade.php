@@ -219,17 +219,17 @@
                 {{-- Global flash toast handler --}}
                 @if(session('success'))
                     <div x-data
-                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, icon: 'success', title: '{{ session('success') }}' }); $el.remove()"
+                        x-init="$dispatch('toast', { icon: 'success', title: '{{ session('success') }}', duration: 3000 }); $el.remove()"
                         wire:key="global-toast-success-{{ microtime(true) }}"></div>
                 @endif
                 @if(session('error'))
                     <div x-data
-                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true, icon: 'error', title: '{{ session('error') }}' }); $el.remove()"
+                        x-init="$dispatch('toast', { icon: 'error', title: '{{ session('error') }}', duration: 4000 }); $el.remove()"
                         wire:key="global-toast-error-{{ microtime(true) }}"></div>
                 @endif
                 @if(session('budget_alert'))
                     <div x-data
-                        x-init="Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, icon: 'warning', title: '{{ session('budget_alert') }}' }); $el.remove()"
+                        x-init="$dispatch('toast', { icon: 'warning', title: '{{ session('budget_alert') }}', duration: 5000 }); $el.remove()"
                         wire:key="global-toast-warning-{{ microtime(true) }}"></div>
                 @endif
 

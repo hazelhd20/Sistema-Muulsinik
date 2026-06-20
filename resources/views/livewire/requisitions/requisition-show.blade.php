@@ -97,7 +97,13 @@
                     <x-data-label label="Fecha" :value="$requisition->date?->format('d/m/Y') ?? '—'" />
                     <x-data-label label="Proyecto" :value="$requisition->project?->name ?? '—'" />
                     <x-data-label label="Solicitante" :value="$requisition->creator?->name ?? '—'" />
-                    <x-data-label label="Proveedor sugerido" :value="$requisition->vendor?->name ?? '—'" />
+                    @php
+                        $proveedorName = $requisition->vendor?->supplier?->trade_name 
+                            ?? $requisition->vendor?->name 
+                            ?? $requisition->items->first()?->supplier?->trade_name 
+                            ?? '—';
+                    @endphp
+                    <x-data-label label="Proveedor sugerido" :value="$proveedorName" />
 
                     @if($requisition->approver && in_array($requisition->status, ['aprobada', 'rechazada']))
                         <x-data-label 

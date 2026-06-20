@@ -48,8 +48,14 @@
                     </div>
                     <div class="col-span-2">
                         <p class="text-text-muted text-xs font-medium mb-0.5">Proveedor Seleccionado</p>
+                        @php
+                            $proveedorName = $detailRequisition->vendor?->supplier?->trade_name 
+                                ?? $detailRequisition->vendor?->name 
+                                ?? $detailRequisition->items->first()?->supplier?->trade_name 
+                                ?? '—';
+                        @endphp
                         <p class="font-medium text-text-primary">
-                            {{ $detailRequisition->vendor?->trade_name ?? $detailRequisition->vendor?->name ?? '—' }}
+                            {{ $proveedorName }}
                         </p>
                     </div>
 

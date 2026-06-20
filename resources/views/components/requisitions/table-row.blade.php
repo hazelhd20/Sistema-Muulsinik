@@ -19,8 +19,14 @@
     <td class="truncate max-w-0 text-text-secondary" title="{{ $req->creator->name ?? '—' }}">
         {{ $req->creator->name ?? '—' }}
     </td>
-    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->vendor?->name ?? '—' }}">
-        {{ $req->vendor?->name ?? '—' }}
+    @php
+        $proveedorName = $req->vendor?->supplier?->trade_name 
+            ?? $req->vendor?->name 
+            ?? $req->items->first()?->supplier?->trade_name 
+            ?? '—';
+    @endphp
+    <td class="truncate max-w-0 text-text-secondary" title="{{ $proveedorName }}">
+        {{ $proveedorName }}
     </td>
     <td class="text-right font-semibold tabular-nums text-text-primary numeric">
         ${{ number_format($req->total, 2, '.', ',') }}
