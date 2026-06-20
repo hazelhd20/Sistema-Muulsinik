@@ -75,21 +75,18 @@
 
     {{-- ─── Banner de rechazo (visible solo cuando rechazada) ─── --}}
     @if($requisition->status === 'rechazada' && $requisition->rejection_comment)
-        <div class="mb-6 flex items-start gap-3 p-4 rounded-xl bg-danger-light border border-danger-border">
-            <x-lucide-x-octagon class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true" />
-            <div class="min-w-0">
-                <p class="text-small font-semibold text-danger">Requisición rechazada</p>
-                <p class="text-small text-danger mt-0.5 opacity-85">{{ $requisition->rejection_comment }}</p>
-                @if($requisition->approver)
-                    <p class="text-xs text-danger mt-1 opacity-60">
-                        Por {{ $requisition->approver->name }}
-                        @if($requisition->updated_at)
-                            &middot; {{ $requisition->updated_at->locale('es')->diffForHumans() }}
-                        @endif
-                    </p>
-                @endif
-            </div>
-        </div>
+        <x-alert variant="danger" icon="x-octagon" title="Requisición rechazada" class="mb-6">
+            {{ $requisition->rejection_comment }}
+            
+            @if($requisition->approver)
+                <x-slot:footer>
+                    Por {{ $requisition->approver->name }}
+                    @if($requisition->updated_at)
+                        &middot; {{ $requisition->updated_at->locale('es')->diffForHumans() }}
+                    @endif
+                </x-slot:footer>
+            @endif
+        </x-alert>
     @endif
 
     <div class="space-y-6">
@@ -197,18 +194,13 @@
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4 mt-1 pt-3 border-t border-border/40">
-                            <div>
-                                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Cantidad</p>
-                                <p class="text-sm font-medium text-text-primary">
-                                    {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
-                                </p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Precio Unitario</p>
-                                <p class="text-sm font-medium text-text-primary">
-                                    ${{ number_format($item->unit_price, 2) }}
-                                </p>
-                            </div>
+                            <x-data-label label="Cantidad">
+                                {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
+                            </x-data-label>
+                            
+                            <x-data-label label="Precio Unitario" align="right">
+                                ${{ number_format($item->unit_price, 2) }}
+                            </x-data-label>
                         </div>
                         
                         <div class="flex justify-between items-center mt-1 pt-3 border-t border-border/40">

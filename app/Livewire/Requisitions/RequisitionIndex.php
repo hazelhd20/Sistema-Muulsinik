@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\Project;
 use App\Models\Quotation;
@@ -29,6 +30,7 @@ use Livewire\WithPagination;
 class RequisitionIndex extends Component
 {
     use WithPagination;
+    use WithFilters;
     use WithSorting;
 
     public string $search = '';
@@ -87,24 +89,7 @@ class RequisitionIndex extends Component
         // Esto simplemente forzará un re-render del componente index
     }
 
-    public function updated($property): void
-    {
-        $filterProperties = [
-            'search', 'statusFilter', 'projectFilter', 'periodFilter', 
-            'creatorFilter', 'vendorFilter', 'dateFrom', 'dateTo'
-        ];
 
-        if (in_array($property, $filterProperties)) {
-            $this->resetPage();
-        }
-    }
-
-    public function clearAllFilters(): void
-    {
-        $this->reset(['search', 'statusFilter', 'projectFilter', 'periodFilter', 'creatorFilter', 'vendorFilter', 'dateFrom', 'dateTo']);
-        $this->resetPage();
-        $this->selectedRows = [];
-    }
 
     /** RF-REQ-09: Enviar borrador a aprobación (Borrador → Pendiente).
      *  Si el usuario es Administrador (permiso *), la requisición se aprueba automáticamente. */

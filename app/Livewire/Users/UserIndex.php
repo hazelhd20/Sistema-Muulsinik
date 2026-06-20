@@ -3,6 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\DTOs\UserDTO;
 use App\Models\Role;
@@ -18,7 +19,7 @@ use Livewire\WithPagination;
 
 class UserIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting;
+    use EnforcesPermissions, WithFilters, WithPagination, WithSorting;
 
     #[Url(history: true)]
     public string $search = '';
@@ -47,19 +48,7 @@ class UserIndex extends Component
 
     public bool $active = true;
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
-    public function updatedRoleFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
     public function mount()
     {

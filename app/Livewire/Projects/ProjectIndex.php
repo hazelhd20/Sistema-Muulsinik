@@ -4,6 +4,7 @@ namespace App\Livewire\Projects;
 
 use App\DTOs\ProjectDTO;
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\Project;
 use App\Repositories\ProjectRepository;
@@ -16,7 +17,7 @@ use Livewire\WithPagination;
 
 class ProjectIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting;
+    use EnforcesPermissions, WithFilters, WithPagination, WithSorting;
 
     #[Url(history: true)]
     public string $search = '';
@@ -56,48 +57,7 @@ class ProjectIndex extends Component
 
     public string $status = 'activo';
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
-    public function updatedStatusFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedPeriodFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedDateFrom(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedDateTo(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function clearAllFilters(): void
-    {
-        $this->reset(['search', 'statusFilter', 'periodFilter', 'dateFrom', 'dateTo']);
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
     public function openCreateModal(): void
     {

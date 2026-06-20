@@ -63,7 +63,7 @@
 
     {{-- Notifications List --}}
     <div class="relative">
-        <div wire:loading.class="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll, markAsRead, markAsUnread, delete" class="w-full">
+        <div wire:loading.class="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll" class="w-full">
             <div class="card p-0">
                 @if($this->notifications->isEmpty())
                     <x-empty-state icon="bell-off" title="No hay notificaciones" />
@@ -111,41 +111,52 @@
 
                                     {{-- Actions --}}
                                     <div class="flex items-center gap-3 mt-3">
-                                        <a
-                                            href="{{ $data['action_url'] ?? '#' }}"
-                                            @if(!str_contains($data['action_url'] ?? '', '/storage/exports/')) wire:navigate @else download @endif
-                                            wire:click="markAsRead('{{ $notification->id }}')"
-                                            class="text-small font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                                        >
-                                            {{ $data['action_text'] ?? 'Ver detalle' }}
-                                        </a>
-
-                                        <div class="h-3 w-px bg-border"></div>
-
-                                        @if($isUnread)
-                                            <button
+                                        @if(!str_contains($data['action_url'] ?? '', '/storage/exports/'))
+                                            <x-button
+                                                href="{{ $data['action_url'] ?? '#' }}"
+                                                wire:navigate
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                class="text-small font-medium text-text-muted hover:text-text-secondary transition-colors"
+                                                variant="link" class="!text-small !min-h-0"
                                             >
-                                                Marcar como leída
-                                            </button>
+                                                {{ $data['action_text'] ?? 'Ver detalle' }}
+                                            </x-button>
                                         @else
-                                            <button
-                                                wire:click="markAsUnread('{{ $notification->id }}')"
-                                                class="text-small font-medium text-text-muted hover:text-text-secondary transition-colors"
+                                            <x-button
+                                                href="{{ $data['action_url'] ?? '#' }}"
+                                                download
+                                                wire:click="markAsRead('{{ $notification->id }}')"
+                                                variant="link" class="!text-small !min-h-0"
                                             >
-                                                Marcar como no leída
-                                            </button>
+                                                {{ $data['action_text'] ?? 'Ver detalle' }}
+                                            </x-button>
                                         @endif
 
                                         <div class="h-3 w-px bg-border"></div>
 
-                                        <button
+                                        @if($isUnread)
+                                            <x-button
+                                                wire:click="markAsRead('{{ $notification->id }}')"
+                                                variant="link-muted" class="!text-small !min-h-0"
+                                            >
+                                                Marcar como leída
+                                            </x-button>
+                                        @else
+                                            <x-button
+                                                wire:click="markAsUnread('{{ $notification->id }}')"
+                                                variant="link-muted" class="!text-small !min-h-0"
+                                            >
+                                                Marcar como no leída
+                                            </x-button>
+                                        @endif
+
+                                        <div class="h-3 w-px bg-border"></div>
+
+                                        <x-button
                                             wire:click="delete('{{ $notification->id }}')"
-                                            class="text-small font-medium text-text-muted hover:text-danger transition-colors"
+                                            variant="link-danger-muted" class="!text-small !min-h-0"
                                         >
                                             Eliminar
-                                        </button>
+                                        </x-button>
                                     </div>
                                 </div>
                             </div>
@@ -163,7 +174,7 @@
         </div>
 
         {{-- Skeleton Loader --}}
-        <div wire:loading.class.remove="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll, markAsRead, markAsUnread, delete"
+        <div wire:loading.class.remove="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll"
             class="hidden absolute inset-0 w-full z-10 bg-surface-main">
             <div class="card p-0 divide-y divide-border">
                 @for($i = 0; $i < 4; $i++)

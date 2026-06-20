@@ -48,7 +48,7 @@
     {{-- ═══════ PASO 1: UPLOAD ═══════ --}}
     @if($step === 1)
         <div class="max-w-2xl mx-auto">
-            <div class="bg-surface-card rounded-2xl border border-border/40 shadow-sm p-8 transition-all duration-300">
+            <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm p-8 transition-all duration-300">
                 <x-file-input wire:model="uploadQueue" :multiple="true" variant="dropzone"
                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB" :formats="['PDF', 'XLSX', 'JPG', 'PNG']"
                     title="Arrastra tus cotizaciones aquí" subtitle="o haz clic para seleccionar archivos"
@@ -74,7 +74,7 @@
     @if($step === 2)
         <div @if($processingStatus === 'processing' || $processingStatus === 'pending')
         wire:poll.2s.visible="checkProcessingStatus" @endif>
-            <div class="max-w-lg mx-auto bg-surface-card rounded-2xl border border-border/40 shadow-sm p-10 text-center transition-all duration-300"
+            <div class="max-w-lg mx-auto bg-surface-card rounded-xl border border-border/40 shadow-sm p-10 text-center transition-all duration-300"
                 x-data>
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Minimalist Premium Loader --}}
@@ -193,7 +193,7 @@
         </div>
 
         <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
-            <div class="bg-surface-card rounded-2xl border border-border/40 shadow-sm mb-6">
+            <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <h3 class="font-medium text-text-primary tracking-tight">Información General</h3>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
@@ -279,7 +279,7 @@
 
 
 
-            <div class="bg-surface-card rounded-2xl border border-border/40 shadow-sm mb-6 overflow-hidden">
+            <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6 overflow-hidden">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between bg-surface-main/10">
                     <div class="flex items-center gap-3">
                         <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
@@ -458,60 +458,58 @@
 
                                 <div class="flex flex-col gap-3">
                                     <div class="pr-8">
-                                        <div class="relative">
-                                            <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
-                                                <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                    class="input w-full {{ $productBorder }} {{ $hasProductIndicator ? 'pr-8' : '' }}"
-                                                    placeholder="Nombre del producto">
-                                            </x-conflict-popover>
-                                            @if(!$isFuzzyPending)
-                                                @if($productStatus === 'exact')
-                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
-                                                        title="Confirmado">
-                                                        <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
-                                                    </div>
-                                                @elseif($productStatus === 'new')
-                                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
-                                                        title="Nuevo producto">
-                                                        <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
-                                                    </div>
+                                        <x-form-field label="Producto">
+                                            <div class="relative">
+                                                <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
+                                                    <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
+                                                        class="input w-full {{ $productBorder }} {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                        placeholder="Nombre del producto">
+                                                </x-conflict-popover>
+                                                @if(!$isFuzzyPending)
+                                                    @if($productStatus === 'exact')
+                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
+                                                            title="Confirmado">
+                                                            <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
+                                                        </div>
+                                                    @elseif($productStatus === 'new')
+                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
+                                                            title="Nuevo producto">
+                                                            <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
+                                                        </div>
+                                                    @endif
                                                 @endif
-                                            @endif
-                                        </div>
+                                            </div>
+                                        </x-form-field>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="text-xs text-text-muted mb-1 block">Categoría</label>
+                                        <x-form-field label="Categoría">
                                             <x-conflict-popover type="category-conflict" :item="$item" :index="$i"
                                                 triggerRight="right-8">
                                                 <x-custom-select wire:model.live="items.{{ $i }}.category_id"
                                                     :options="$categories->pluck('name', 'id')->toArray()"
                                                     placeholder="Sin categoría" textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
                                             </x-conflict-popover>
-                                        </div>
-                                        <div>
-                                            <label class="text-xs text-text-muted mb-1 block">Unidad</label>
+                                        </x-form-field>
+                                        <x-form-field label="Unidad">
                                             <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
                                                 <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
                                                     :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
                                                     placeholder="Unidad" inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
                                                 </x-custom-combobox>
                                             </x-conflict-popover>
-                                        </div>
+                                        </x-form-field>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="text-xs text-text-muted mb-1 block">Cantidad</label>
+                                        <x-form-field label="Cantidad">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
                                                 step="0.01" class="input w-full" placeholder="0">
-                                        </div>
-                                        <div>
-                                            <label class="text-xs text-text-muted mb-1 block">Precio U.</label>
+                                        </x-form-field>
+                                        <x-form-field label="Precio U.">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
                                                 step="0.01" class="input w-full" placeholder="0.00">
-                                        </div>
+                                        </x-form-field>
                                     </div>
 
                                     <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">

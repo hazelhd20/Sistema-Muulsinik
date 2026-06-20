@@ -6,10 +6,10 @@
         <x-lucide-bell class="w-4 h-4" />
 
         {{-- Badge de notificaciones no leídas --}}
-        <div class="absolute -top-0.5 -right-0.5" wire:key="unread-badge">
+        <div class="absolute -top-1 -right-1" wire:key="unread-badge">
             @if($unreadCount > 0)
                 <span
-                    class="min-w-[14px] h-[14px] px-0.5 bg-danger rounded-full text-xs font-bold text-white flex items-center justify-center shadow-sm leading-none">
+                    class="min-w-[18px] h-[18px] px-1 bg-danger rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-sm leading-none">
                     {{ $unreadCount > 99 ? '99+' : $unreadCount }}
                 </span>
             @endif
@@ -33,10 +33,9 @@
         <div class="dropdown-header">
             <h3 class="dropdown-header-title">Notificaciones</h3>
             @if($unreadCount > 0)
-                <button wire:click="markAllAsRead"
-                    class="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors">
+                <x-button wire:click="markAllAsRead" variant="link" class="!text-xs !min-h-0">
                     Marcar todas como leídas
-                </button>
+                </x-button>
             @endif
         </div>
 
@@ -96,12 +95,21 @@
                                     {{ $notification['created_at'] }}
                                 </span>
                                 <div class="flex items-center gap-2">
-                                    <a href="{{ $notification['action_url'] }}" 
-                                        @if(!str_contains($notification['action_url'], '/storage/exports/')) wire:navigate @else download @endif
-                                        wire:click="markAsRead('{{ $notification['id'] }}')"
-                                        class="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors">
-                                        {{ $notification['action_text'] }}
-                                    </a>
+                                    @if(!str_contains($notification['action_url'], '/storage/exports/'))
+                                        <x-button href="{{ $notification['action_url'] }}" 
+                                            wire:navigate
+                                            wire:click="markAsRead('{{ $notification['id'] }}')"
+                                            variant="link" class="!text-xs !min-h-0">
+                                            {{ $notification['action_text'] }}
+                                        </x-button>
+                                    @else
+                                        <x-button href="{{ $notification['action_url'] }}" 
+                                            download
+                                            wire:click="markAsRead('{{ $notification['id'] }}')"
+                                            variant="link" class="!text-xs !min-h-0">
+                                            {{ $notification['action_text'] }}
+                                        </x-button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -113,10 +121,10 @@
         {{-- Footer --}}
         @if(!empty($notifications))
             <div class="dropdown-footer justify-center">
-                <a href="{{ url('/notificaciones') }}" wire:navigate
-                    class="text-small text-primary-600 hover:text-primary-700 font-medium transition-colors">
+                <x-button href="{{ url('/notificaciones') }}" wire:navigate
+                    variant="link" class="!text-small !min-h-0">
                     Ver todas las notificaciones
-                </a>
+                </x-button>
             </div>
         @endif
     </div>

@@ -387,9 +387,9 @@ input[type="search"]::-webkit-search-results-decoration {
      * Inspiración: Stripe, GitHub.
      */
     .btn-link { @apply inline-flex items-center justify-center gap-1 min-h-[2.25rem] bg-transparent text-primary-600 font-medium text-[length:var(--font-size-small)] border-none cursor-pointer transition-colors duration-150 whitespace-nowrap; }
-.btn-link:hover { @apply text-primary-700 underline underline-offset-2; }
-.btn-link:active { @apply text-primary-800; }
-.btn-link:disabled, .btn-link.disabled { @apply opacity-55 cursor-not-allowed no-underline; }
+.btn-link:hover { @apply text-primary-800; }
+.btn-link:active { @apply text-primary-900; }
+.btn-link:disabled, .btn-link.disabled { @apply opacity-55 cursor-not-allowed; }
 
     /* Link muted — "Limpiar filtros", acciones neutras */
     .btn-link-muted { @apply inline-flex items-center justify-center gap-1 min-h-[2.25rem] bg-transparent text-text-muted font-medium text-[length:var(--font-size-small)] border-none cursor-pointer transition-colors duration-150 whitespace-nowrap; }
@@ -398,8 +398,12 @@ input[type="search"]::-webkit-search-results-decoration {
 
     /* Link danger — "Eliminar cuenta", acciones destructivas suaves */
     .btn-link-danger { @apply inline-flex items-center justify-center gap-1 min-h-[2.25rem] bg-transparent text-danger font-medium text-[length:var(--font-size-small)] border-none cursor-pointer transition-colors duration-150 whitespace-nowrap; }
-.btn-link-danger:hover { @apply text-danger-hover underline underline-offset-2; }
-.btn-link-danger:disabled, .btn-link-danger.disabled { @apply opacity-55 cursor-not-allowed no-underline; }
+.btn-link-danger:hover { @apply text-danger-hover; }
+.btn-link-danger:disabled, .btn-link-danger.disabled { @apply opacity-55 cursor-not-allowed; }
+
+    .btn-link-danger-muted { @apply inline-flex items-center justify-center gap-1 min-h-[2.25rem] bg-transparent text-text-muted font-medium text-[length:var(--font-size-small)] border-none cursor-pointer transition-colors duration-150 whitespace-nowrap; }
+.btn-link-danger-muted:hover { @apply text-danger; }
+.btn-link-danger-muted:disabled, .btn-link-danger-muted.disabled { @apply opacity-55 cursor-not-allowed; }
 
     /*
      * ── Soft Button (Nivel 2 alternativo) ──
@@ -562,14 +566,15 @@ input[type="search"]::-webkit-search-results-decoration {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.125rem 0.375rem;
+        padding: 0 0.375rem;
         background-color: var(--color-primary-600);
         color: #fff;
         font-size: var(--font-size-xs);
         font-weight: 700;
         border-radius: 9999px;
         line-height: 1;
-        min-width: 1.125rem;
+        min-width: 1.25rem;
+        height: 1.25rem;
     }
 
     /* ── Sidebar nav link ── */
@@ -964,7 +969,7 @@ input[type="search"]::-webkit-search-results-decoration {
         align-items: center;
         justify-content: space-between;
         padding: 0.75rem 1rem; /* py-3 px-4 */
-        background-color: var(--color-surface-hover);
+        background-color: transparent;
         border-bottom: 1px solid var(--color-border);
     }
 
@@ -984,7 +989,7 @@ input[type="search"]::-webkit-search-results-decoration {
         justify-content: flex-end;
         gap: 0.75rem;
         padding: 0.75rem 1rem; /* py-3 px-4 */
-        background-color: var(--color-surface-hover);
+        background-color: transparent;
         border-top: 1px solid var(--color-border);
     }
 

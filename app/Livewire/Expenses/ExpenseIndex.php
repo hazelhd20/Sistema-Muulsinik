@@ -4,6 +4,7 @@ namespace App\Livewire\Expenses;
 
 use App\DTOs\ExpenseDTO;
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\Expense;
 use App\Models\Project;
@@ -19,7 +20,7 @@ use Livewire\WithPagination;
 
 class ExpenseIndex extends Component
 {
-    use EnforcesPermissions, WithFileUploads, WithPagination, WithSorting;
+    use EnforcesPermissions, WithFileUploads, WithFilters, WithPagination, WithSorting;
 
     #[Url(history: true)]
     public string $search = '';
@@ -71,55 +72,7 @@ class ExpenseIndex extends Component
         'otros' => 'Otros',
     ];
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
-    public function updatedProjectFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedCategoryFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedPeriodFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedDateFrom(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedDateTo(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function clearAllFilters(): void
-    {
-        $this->reset(['search', 'projectFilter', 'categoryFilter', 'periodFilter', 'userFilter', 'dateFrom', 'dateTo']);
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
     public function mount(): void
     {

@@ -52,9 +52,9 @@
                         </div>
 
                         <x-slot name="footer">
-                            <button type="button" @click="clearFilters()" class="btn-link-muted">
+                            <x-button type="button" @click="clearFilters()" variant="link-muted">
                                 Limpiar todo
-                            </button>
+                            </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
                                 Aplicar Filtros
                             </x-button>
@@ -78,10 +78,9 @@
                         @endif
 
                         @if($activeCount > 1)
-                            <button wire:click="clearAllFilters"
-                                class="text-xs font-medium text-text-muted hover:text-danger-600 transition-colors ml-auto flex items-center gap-1">
-                                <x-lucide-eraser class="w-3.5 h-3.5" /> Limpiar todo
-                            </button>
+                            <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="!text-xs !min-h-0 ml-auto">
+                                Limpiar todo
+                            </x-button>
                         @endif
                     </div>
                 @endif

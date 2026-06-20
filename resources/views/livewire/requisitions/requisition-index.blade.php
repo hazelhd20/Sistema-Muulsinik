@@ -36,7 +36,7 @@
              x-init="totalOnPage = {{ $requisitions->count() }}; init()">
             {{-- Unified Datagrid Card Container --}}
             <div
-                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
+                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl md:shadow-sm">
                 @php
                     $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
                     $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -44,7 +44,7 @@
 
                 @if($requisitions->isNotEmpty() || $hasActiveFilters)
                     {{-- Header Group (Search + Filters + Chips) --}}
-                    <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+                    <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                         {{-- Filters Bar --}}
                         <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                             {{-- Search: compact width --}}
@@ -93,10 +93,9 @@
                                 </div>
 
                                 <x-slot name="footer">
-                                    <button type="button" @click="clearFilters()"
-                                        class="btn-link-muted">
-                                        Limpiar todo
-                                    </button>
+                                        <x-button type="button" @click="clearFilters()" variant="link-muted">
+                                            Limpiar filtros
+                                        </x-button>
                                     <x-button type="button" @click="applyFilters(); open = false" variant="primary">
                                         Aplicar Filtros
                                     </x-button>
@@ -139,10 +138,9 @@
                                 @endif
 
                                 @if($activeCount > 1)
-                                    <button wire:click="clearAllFilters"
-                                        class="text-xs font-medium text-text-muted hover:text-danger-600 transition-colors ml-auto flex items-center gap-1">
-                                        <x-lucide-eraser class="w-3.5 h-3.5" /> Limpiar todo
-                                    </button>
+                                    <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="!text-xs !min-h-0 ml-auto">
+                                        Limpiar todo
+                                    </x-button>
                                 @endif
                             </div>
                         @endif

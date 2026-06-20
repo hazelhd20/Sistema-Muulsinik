@@ -4,6 +4,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 flatpickr.localize(Spanish);
 window.flatpickr = flatpickr;
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('datePicker', (config = {}) => ({
         value: config.value || '',
@@ -39,8 +40,6 @@ document.addEventListener('alpine:init', () => {
 });
 
 document.addEventListener("alpine:init", () => {
-    // Estandarización de Gráficas con Chart.js
-    // Uso: x-data="chartCanvas((data) => ({ type: 'line', data: {...}, options: {...} }))"
     Alpine.data("chartCanvas", (configCallback) => ({
         chart: null,
         chartData: [],
@@ -48,12 +47,7 @@ document.addEventListener("alpine:init", () => {
 
         init() {
             this.chartData = JSON.parse(this.$el.getAttribute('data-chart') || '[]');
-
-            // Esperar a que el canvas esté en el DOM antes de renderizar
-            // (necesario en Livewire 4 con tabs @if que hacen round-trip al servidor)
             this.waitForCanvas();
-
-            // Observar cambios de datos enviados por Livewire
             this._observer = new MutationObserver(() => {
                 const raw = this.$el.getAttribute('data-chart');
                 if (!raw) return;
@@ -68,7 +62,6 @@ document.addEventListener("alpine:init", () => {
             if (canvas) {
                 this.renderChart();
             } else if (attempts < 10) {
-                // Reintentar hasta 10 veces (~200ms total) en caso de que el DOM aún no esté listo
                 setTimeout(() => this.waitForCanvas(attempts + 1), 20);
             }
         },
@@ -77,11 +70,9 @@ document.addEventListener("alpine:init", () => {
             const canvas = this.$el.querySelector('canvas');
             if (!canvas) return;
 
-            // Destruir instancia previa para evitar el error "Canvas is already in use"
             const existingChart = window.Chart?.getChart(canvas);
             if (existingChart) existingChart.destroy();
 
-            // Si Livewire @assets ya inyectó Chart.js, lo usamos
             if (typeof window.Chart === 'undefined') {
                 console.warn('Chart.js no está cargado. Usa la directiva @assets de Livewire.');
                 return;
@@ -98,331 +89,120 @@ document.addEventListener("alpine:init", () => {
     }));
 });
 
-// Alpine component: Listado de Requisiciones
-// Gestiona: tabs, preview modal, filtros, selección masiva
-document.addEventListener("alpine:init", () => {
-    Alpine.data("requisitionIndex", (selectedRows, pageStatuses = {}) => ({
-        showFilters: false,
+// ─── Fábrica genérica para TODOS los índices ───────────────────
+function createIndexComponent(filterMap = {}) {
+    return (selectedRows = [], extras = {}) => {
+        const base = {
+            selectedRows,
+            totalOnPage: 0,
+            ...Object.fromEntries(Object.keys(filterMap).map(k => [k, ''])),
+
+            initFilters() {
+                Object.entries(filterMap).forEach(([alpineKey, livewireKey]) => {
+                    this[alpineKey] = this.$wire[livewireKey] || '';
+                });
+            },
+            applyFilters() {
+                Object.entries(filterMap).forEach(([alpineKey, livewireKey]) => {
+                    if (this.$wire[livewireKey] !== this[alpineKey]) {
+                        this.$wire.set(livewireKey, this[alpineKey]);
+                    }
+                });
+            },
+            clearFilters() {
+                Object.keys(filterMap).forEach(alpineKey => { this[alpineKey] = ''; });
+                this.applyFilters();
+            },
+            get allSelected() {
+                return this.selectedRows && this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
+            },
+            toggleAll(ids) {
+                if (this.allSelected) {
+                    this.selectedRows = [];
+                } else {
+                    this.selectedRows = ids.map(String);
+                }
+            },
+            init() { this.initFilters(); }
+        };
+
+        const descriptors = Object.getOwnPropertyDescriptors(extras);
+        Object.defineProperties(base, descriptors);
         
-        statuses: pageStatuses,
+        return base;
+    };
+}
 
-        // -- Filtros (sincronizados con $wire Livewire) --
-        filterStatus: "",
-        filterProject: "",
-        filterCreator: "",
-        filterVendor: "",
-        filterPeriod: "",
-        filterDateFrom: "",
-        filterDateTo: "",
-        initFilters() {
-            this.filterStatus = this.$wire.statusFilter || "";
-            this.filterProject = this.$wire.projectFilter || "";
-            this.filterCreator = this.$wire.creatorFilter || "";
-            this.filterVendor = this.$wire.vendorFilter || "";
-            this.filterPeriod = this.$wire.periodFilter || "";
-            this.filterDateFrom = this.$wire.dateFrom || "";
-            this.filterDateTo = this.$wire.dateTo || "";
-        },
-        applyFilters() {
-            if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
-            if (this.$wire.projectFilter !== this.filterProject) this.$wire.set("projectFilter", this.filterProject);
-            if (this.$wire.creatorFilter !== this.filterCreator) this.$wire.set("creatorFilter", this.filterCreator);
-            if (this.$wire.vendorFilter !== this.filterVendor) this.$wire.set("vendorFilter", this.filterVendor);
-            if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
-            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
-            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
-        },
-        clearFilters() {
-            this.filterStatus = "";
-            this.filterProject = "";
-            this.filterCreator = "";
-            this.filterVendor = "";
-            this.filterPeriod = "";
-            this.filterDateFrom = "";
-            this.filterDateTo = "";
-            this.applyFilters();
-        },
-
-        // -- Selección masiva (totalOnPage se inyecta desde x-init en la vista) --
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        get allSelected() {
-            return (
-                this.selectedRows.length > 0 &&
-                this.selectedRows.length === this.totalOnPage
-            );
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
+document.addEventListener('alpine:init', () => {
+    Alpine.data('requisitionIndex', (rows, statuses = {}) =>
+        createIndexComponent({
+            filterStatus: 'statusFilter',
+            filterProject: 'projectFilter',
+            filterCreator: 'creatorFilter',
+            filterVendor: 'vendorFilter',
+            filterPeriod: 'periodFilter',
+            filterDateFrom: 'dateFrom',
+            filterDateTo: 'dateTo'
+        })(rows, {
+            statuses,
+            get canApproveSelection() {
+                return this.selectedRows.length > 0
+                    && this.selectedRows.some(id => this.statuses[id] === 'pendiente');
             }
-        },
-        get canApproveSelection() {
-            if (this.selectedRows.length === 0) return false;
-            return this.selectedRows.some(id => this.statuses[id] === 'pendiente');
-        },
+        })
+    );
 
-        // -- Lifecycle --
-        init() {
-            this.initFilters();
-        },
-    }));
+    Alpine.data('expenseIndex',
+        createIndexComponent({
+            filterProject: 'projectFilter',
+            filterCategory: 'categoryFilter',
+            filterPeriod: 'periodFilter',
+            filterUser: 'userFilter',
+            filterDateFrom: 'dateFrom',
+            filterDateTo: 'dateTo'
+        })
+    );
 
-    // -- Expense Index --
-    Alpine.data("expenseIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        filterProject: "",
-        filterCategory: "",
-        filterPeriod: "",
-        filterUser: "",
-        filterDateFrom: "",
-        filterDateTo: "",
-        initFilters() {
-            this.filterProject = this.$wire.projectFilter || "";
-            this.filterCategory = this.$wire.categoryFilter || "";
-            this.filterPeriod = this.$wire.periodFilter || "";
-            this.filterUser = this.$wire.userFilter || "";
-            this.filterDateFrom = this.$wire.dateFrom || "";
-            this.filterDateTo = this.$wire.dateTo || "";
-        },
-        applyFilters() {
-            if (this.$wire.projectFilter !== this.filterProject) this.$wire.set("projectFilter", this.filterProject);
-            if (this.$wire.categoryFilter !== this.filterCategory) this.$wire.set("categoryFilter", this.filterCategory);
-            if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
-            if (this.$wire.userFilter !== this.filterUser) this.$wire.set("userFilter", this.filterUser);
-            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
-            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
-        },
-        clearFilters() {
-            this.filterProject = "";
-            this.filterCategory = "";
-            this.filterPeriod = "";
-            this.filterUser = "";
-            this.filterDateFrom = "";
-            this.filterDateTo = "";
-            this.applyFilters();
-        },
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {
-            this.initFilters();
-        }
-    }));
+    Alpine.data('projectIndex',
+        createIndexComponent({
+            filterStatus: 'statusFilter',
+            filterPeriod: 'periodFilter',
+            filterDateFrom: 'dateFrom',
+            filterDateTo: 'dateTo'
+        })
+    );
 
-    // -- Project Index --
-    Alpine.data("projectIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        filterStatus: "",
-        filterPeriod: "",
-        filterDateFrom: "",
-        filterDateTo: "",
-        initFilters() {
-            this.filterStatus = this.$wire.statusFilter || "";
-            this.filterPeriod = this.$wire.periodFilter || "";
-            this.filterDateFrom = this.$wire.dateFrom || "";
-            this.filterDateTo = this.$wire.dateTo || "";
-        },
-        applyFilters() {
-            if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
-            if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
-            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
-            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
-        },
-        clearFilters() {
-            this.filterStatus = "";
-            this.filterPeriod = "";
-            this.filterDateFrom = "";
-            this.filterDateTo = "";
-            this.applyFilters();
-        },
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {
-            this.initFilters();
-        }
-    }));
+    Alpine.data('userIndex',
+        createIndexComponent({
+            filterRole: 'roleFilter',
+            filterStatus: 'statusFilter'
+        })
+    );
 
-    // -- User Index --
-    Alpine.data("userIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        filterRole: "",
-        filterStatus: "",
-        initFilters() {
-            this.filterRole = this.$wire.roleFilter || "";
-            this.filterStatus = this.$wire.statusFilter || "";
-        },
-        applyFilters() {
-            if (this.$wire.roleFilter !== this.filterRole) this.$wire.set("roleFilter", this.filterRole);
-            if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
-        },
-        clearFilters() {
-            this.filterRole = "";
-            this.filterStatus = "";
-            this.applyFilters();
-        },
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {
-            this.initFilters();
-        }
-    }));
+    Alpine.data('productIndex',
+        createIndexComponent({
+            filterCategory: 'categoryFilter',
+            filterMeasure: 'measureFilter'
+        })
+    );
 
-    // -- Product Index --
-    Alpine.data("productIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        filterCategory: "",
-        filterMeasure: "",
-        initFilters() {
-            this.filterCategory = this.$wire.categoryFilter || "";
-            this.filterMeasure = this.$wire.measureFilter || "";
-        },
-        applyFilters() {
-            if (this.$wire.categoryFilter !== this.filterCategory) this.$wire.set("categoryFilter", this.filterCategory);
-            if (this.$wire.measureFilter !== this.filterMeasure) this.$wire.set("measureFilter", this.filterMeasure);
-        },
-        clearFilters() {
-            this.filterCategory = "";
-            this.filterMeasure = "";
-            this.applyFilters();
-        },
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {
-            this.initFilters();
-        }
-    }));
+    Alpine.data('supplierIndex',
+        createIndexComponent({
+            filterCategory: 'categoryFilter'
+        })
+    );
 
-    // -- Supplier Index --
-    Alpine.data("supplierIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        filterCategory: "",
-        initFilters() {
-            this.filterCategory = this.$wire.categoryFilter || "";
-        },
-        applyFilters() {
-            if (this.$wire.categoryFilter !== this.filterCategory) this.$wire.set("categoryFilter", this.filterCategory);
-        },
-        clearFilters() {
-            this.filterCategory = "";
-            this.applyFilters();
-        },
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {
-            this.initFilters();
-        }
-    }));
+    Alpine.data('quickBudgetIndex',
+        createIndexComponent({
+            filterStatus: 'statusFilter',
+            filterPeriod: 'periodFilter',
+            filterUser: 'userFilter',
+            filterDateFrom: 'dateFrom',
+            filterDateTo: 'dateTo'
+        })
+    );
 
-    // -- Quick Budget Index --
-    Alpine.data("quickBudgetIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        filterStatus: "",
-        filterPeriod: "",
-        filterUser: "",
-        filterDateFrom: "",
-        filterDateTo: "",
-        initFilters() {
-            this.filterStatus = this.$wire.statusFilter || "";
-            this.filterPeriod = this.$wire.periodFilter || "";
-            this.filterUser = this.$wire.userFilter || "";
-            this.filterDateFrom = this.$wire.dateFrom || "";
-            this.filterDateTo = this.$wire.dateTo || "";
-        },
-        applyFilters() {
-            if (this.$wire.statusFilter !== this.filterStatus) this.$wire.set("statusFilter", this.filterStatus);
-            if (this.$wire.periodFilter !== this.filterPeriod) this.$wire.set("periodFilter", this.filterPeriod);
-            if (this.$wire.userFilter !== this.filterUser) this.$wire.set("userFilter", this.filterUser);
-            if (this.$wire.dateFrom !== this.filterDateFrom) this.$wire.set("dateFrom", this.filterDateFrom);
-            if (this.$wire.dateTo !== this.filterDateTo) this.$wire.set("dateTo", this.filterDateTo);
-        },
-        clearFilters() {
-            this.filterStatus = "";
-            this.filterPeriod = "";
-            this.filterUser = "";
-            this.filterDateFrom = "";
-            this.filterDateTo = "";
-            this.applyFilters();
-        },
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {
-            this.initFilters();
-        }
-    }));
-
-    // -- Category Index & Measure Index (Only selection, no complex filters) --
-    Alpine.data("basicIndex", (selectedRows) => ({
-        selectedRows: selectedRows,
-        totalOnPage: 0,
-        get allSelected() {
-            return this.selectedRows.length > 0 && this.selectedRows.length === this.totalOnPage;
-        },
-        toggleAll(ids) {
-            if (this.allSelected) {
-                this.selectedRows = [];
-            } else {
-                this.selectedRows = ids.map(String);
-            }
-        },
-        init() {}
-    }));
-
+    Alpine.data('basicIndex',
+        createIndexComponent({})
+    );
 });
-
-

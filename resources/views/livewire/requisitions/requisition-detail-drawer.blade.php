@@ -37,49 +37,34 @@
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 text-small bg-surface-main/30 p-4 rounded-xl border border-border">
-                    <div>
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Proyecto</p>
-                        <p class="font-medium text-text-primary">{{ $detailRequisition->project?->name ?? '—' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Solicitante</p>
-                        <p class="font-medium text-text-primary">{{ $detailRequisition->creator?->name ?? '—' }}</p>
-                    </div>
+                <div class="grid grid-cols-2 gap-4 bg-surface-main/30 p-4 rounded-xl border border-border">
+                    <x-data-label label="Proyecto" :value="$detailRequisition->project?->name ?? '—'" />
+                    <x-data-label label="Solicitante" :value="$detailRequisition->creator?->name ?? '—'" />
+                    
                     <div class="col-span-2">
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Proveedor Seleccionado</p>
                         @php
                             $proveedorName = $detailRequisition->vendor?->supplier?->trade_name 
                                 ?? $detailRequisition->vendor?->name 
                                 ?? $detailRequisition->items->first()?->supplier?->trade_name 
                                 ?? '—';
                         @endphp
-                        <p class="font-medium text-text-primary">
-                            {{ $proveedorName }}
-                        </p>
+                        <x-data-label label="Proveedor Seleccionado" :value="$proveedorName" />
                     </div>
 
                     @if($detailRequisition->approver && in_array($detailRequisition->status, ['aprobada', 'rechazada']))
                         <div class="col-span-2">
-                            <p class="text-text-muted text-xs font-medium mb-0.5">
-                                {{ $detailRequisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por' }}
-                            </p>
-                            <p class="font-medium text-text-primary">{{ $detailRequisition->approver->name }}</p>
+                            <x-data-label 
+                                :label="$detailRequisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por'" 
+                                :value="$detailRequisition->approver->name" />
                         </div>
                     @endif
                 </div>
 
                 {{-- Banner de rechazo --}}
                 @if($detailRequisition->status === 'rechazada' && $detailRequisition->rejection_comment)
-                    <div class="flex items-start gap-3 p-4 rounded-xl bg-danger-light border border-danger-border">
-                        <x-lucide-x-octagon class="w-5 h-5 text-danger shrink-0 mt-0.5" aria-hidden="true" />
-                        <div class="min-w-0">
-                            <p class="text-small font-semibold text-danger">Motivo del rechazo</p>
-                            <p class="text-small text-danger mt-0.5" style="opacity:.85">
-                                {{ $detailRequisition->rejection_comment }}
-                            </p>
-                        </div>
-                    </div>
+                    <x-alert variant="danger" icon="x-octagon" title="Motivo del rechazo" class="mt-4">
+                        {{ $detailRequisition->rejection_comment }}
+                    </x-alert>
                 @endif
 
                 {{-- Partidas --}}

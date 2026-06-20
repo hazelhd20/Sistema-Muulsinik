@@ -32,9 +32,9 @@
                         </x-form-field>
 
                         <x-slot name="footer">
-                            <button type="button" @click="clearFilters()" class="btn-link-muted">
-                                Limpiar todo
-                            </button>
+                            <x-button type="button" @click="clearFilters()" variant="link-muted">
+                                Limpiar filtros
+                            </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
                                 Aplicar Filtros
                             </x-button>

@@ -31,6 +31,7 @@
         'link'          => 'btn-link',
         'link-muted'    => 'btn-link-muted',
         'link-danger'   => 'btn-link-danger',
+        'link-danger-muted' => 'btn-link-danger-muted',
         // Icon-only
         'icon'          => 'btn-icon relative',
         'icon-primary'  => 'btn-icon-primary relative',

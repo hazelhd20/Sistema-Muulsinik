@@ -3,6 +3,7 @@
 namespace App\Livewire\Suppliers;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\DTOs\SupplierDTO;
 use App\DTOs\VendorDTO;
@@ -21,7 +22,7 @@ use Livewire\WithPagination;
 
 class SupplierIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting;
+    use EnforcesPermissions, WithFilters, WithPagination, WithSorting;
 
     #[Url(history: true)]
     public string $search = '';
@@ -63,12 +64,7 @@ class SupplierIndex extends Component
 
     public ?int $editingSupplierId = null;
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
+
 
     public function openCreateModal(): void
     {

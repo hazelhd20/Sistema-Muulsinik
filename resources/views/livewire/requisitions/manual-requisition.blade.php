@@ -201,39 +201,36 @@
                             
                             <div class="flex flex-col gap-3">
                                 <div class="pr-8">
-                                    <label class="text-xs text-text-muted mb-1 block">Producto</label>
-                                    <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
-                                        class="input w-full" placeholder="Nombre del producto">
+                                    <x-form-field label="Producto">
+                                        <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
+                                            class="input w-full" placeholder="Nombre del producto">
+                                    </x-form-field>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="text-xs text-text-muted mb-1 block">Categoría</label>
+                                    <x-form-field label="Categoría">
                                         <x-custom-select wire:model.live="form.items.{{ $i }}.category_id"
                                             :options="$categories->pluck('name', 'id')->toArray()"
                                             placeholder="Sin categoría" />
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-text-muted mb-1 block">Unidad</label>
+                                    </x-form-field>
+                                    <x-form-field label="Unidad">
                                         <x-custom-select wire:model.live="form.items.{{ $i }}.unit" :options="$measureOptions"
                                             placeholder="Unidad" />
-                                    </div>
+                                    </x-form-field>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="text-xs text-text-muted mb-1 block">Cantidad</label>
+                                    <x-form-field label="Cantidad">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.quantity" type="number" step="0.01"
                                             class="input w-full" placeholder="0">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-text-muted mb-1 block">Precio U.</label>
+                                    </x-form-field>
+                                    <x-form-field label="Precio U.">
                                         <div class="relative">
                                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
                                             <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number" step="0.01"
                                                 class="input w-full pl-7" placeholder="0.00">
                                         </div>
-                                    </div>
+                                    </x-form-field>
                                 </div>
 
                                 <div class="mt-2 flex justify-between items-center pt-3 border-t border-border/50">
