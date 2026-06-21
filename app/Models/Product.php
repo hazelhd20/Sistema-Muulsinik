@@ -14,7 +14,7 @@ class Product extends Model
     
     use HasFactory, Searchable, SoftDeletes;
 
-    protected $fillable = ['canonical_name', 'normalized_name', 'measure_id', 'description', 'category_id'];
+    protected $fillable = ['canonical_name', 'normalized_name', 'measure_id', 'description', 'category_id', 'item_type'];
 
     protected static function booted()
     {

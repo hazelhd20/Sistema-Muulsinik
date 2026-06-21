@@ -22,8 +22,11 @@
                         </x-form-field>
                     </div>
                     <div class="{{ $advancedMode ? 'md:col-span-5' : 'md:col-span-6' }}">
-                        <x-form-field label="Cliente (Opcional)" error="{{ $errors->first('client') }}">
-                            <input wire:model="client" type="text" class="input w-full" placeholder="Nombre del cliente">
+                        <x-form-field label="Cliente (Opcional)" error="{{ $errors->first('client_id') }}">
+                            <x-custom-select wire:model.live="client_id"
+                                :options="$clients"
+                                minSearch="5"
+                                placeholder="Seleccionar cliente..." />
                         </x-form-field>
                     </div>
                     @if($advancedMode)

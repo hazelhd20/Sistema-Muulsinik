@@ -12,7 +12,7 @@ class QuickBudget extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'client',
+        'title', 'description', 'client_id',
         'subtotal', 'tax_amount', 'total',
         'margin_percent', 'grand_total',
         'status', 'created_by',
@@ -34,5 +34,10 @@ class QuickBudget extends Model
     public function items(): HasMany
     {
         return $this->hasMany(QuickBudgetItem::class);
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 }

@@ -55,7 +55,7 @@ class QuickBudgetRepository
                 [
                     'title' => $dto->title,
                     'description' => $dto->description,
-                    'client' => $dto->client,
+                    'client_id' => $dto->client_id,
                     'subtotal' => $total, // In QuickBudget, subtotal usually means before tax
                     'tax_amount' => $taxAmount,
                     'total' => $total, // In old logic, total = subtotal

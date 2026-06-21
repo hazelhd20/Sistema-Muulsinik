@@ -22,6 +22,7 @@ class ProductRepository extends BaseRepository
             'description' => $dto->description,
             'category_id' => $dto->category_id,
             'measure_id' => $dto->measure_id,
+            'item_type' => $dto->item_type,
         ], $dto->id);
     }
 }

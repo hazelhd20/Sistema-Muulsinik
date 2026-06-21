@@ -9,6 +9,7 @@ class ProductDTO
         public readonly ?int $measure_id = null,
         public readonly ?string $description = null,
         public readonly ?int $category_id = null,
+        public readonly string $item_type = 'material',
         public readonly ?int $id = null,
     ) {
     }
@@ -20,6 +21,7 @@ class ProductDTO
             measure_id: $data['measure_id'] ?? null,
             description: $data['description'] ?? null,
             category_id: $data['category_id'] ?? null,
+            item_type: $data['item_type'] ?? 'material',
             id: $data['id'] ?? null,
         );
     }
@@ -31,6 +33,7 @@ class ProductDTO
             'measure_id' => $this->measure_id,
             'description' => $this->description,
             'category_id' => $this->category_id,
+            'item_type' => $this->item_type,
             'id' => $this->id,
         ];
     }

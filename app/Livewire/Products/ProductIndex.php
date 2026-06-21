@@ -38,8 +38,9 @@ class ProductIndex extends Component
 
     public bool $showCreateModal = false;
 
-    // Campos del producto
     public string $canonicalName = '';
+
+    public string $itemType = 'material';
 
     public string $measureId = '';
 
@@ -87,6 +88,7 @@ class ProductIndex extends Component
         $this->editingId = $product->id;
         $this->canonicalName = $product->canonical_name;
         $this->measureId = $product->measure_id;
+        $this->itemType = $product->item_type ?? 'material';
         $this->description = $product->description ?? '';
         $this->categoryId = $product->category_id ?? '';
 
@@ -101,6 +103,7 @@ class ProductIndex extends Component
 
         $this->validate([
             'canonicalName' => 'required|min:2|max:255|unique:products,canonical_name,'.$this->editingId,
+            'itemType' => 'required|in:material,labor,service',
             'measureId' => 'required|exists:measures,id',
             'description' => 'nullable|max:500',
             'categoryId' => 'required|exists:categories,id',
@@ -124,6 +127,7 @@ class ProductIndex extends Component
             measure_id: $this->measureId,
             description: $this->description ?: null,
             category_id: $this->categoryId,
+            item_type: $this->itemType,
             id: $this->editingId,
         );
 
@@ -199,6 +203,7 @@ class ProductIndex extends Component
     {
         $this->editingId = null;
         $this->canonicalName = '';
+        $this->itemType = 'material';
         $this->measureId = '';
         $this->description = '';
         $this->categoryId = '';
@@ -228,11 +233,18 @@ class ProductIndex extends Component
             return Category::orderBy('name')->pluck('name', 'id')->toArray();
         });
 
+        $itemTypes = [
+            'material' => 'Material',
+            'labor' => 'Mano de Obra',
+            'service' => 'Servicio',
+        ];
+
         return view('livewire.products.product-index', compact(
             'products',
             'suppliers',
             'measures',
-            'categories'
+            'categories',
+            'itemTypes'
         ));
     }
 }

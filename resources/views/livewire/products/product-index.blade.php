@@ -126,6 +126,11 @@
                                             @else
                                                 <span class="text-text-muted">—</span>
                                             @endif
+                                            <div class="mt-1">
+                                                <x-badge variant="outline" class="text-[10px]">
+                                                    {{ $product->item_type === 'labor' ? 'Mano de Obra' : ($product->item_type === 'service' ? 'Servicio' : 'Material') }}
+                                                </x-badge>
+                                            </div>
                                         </td>
                                         <td class="text-body text-text-secondary">
                                             @if($product->measure && $product->measure->abbreviation)
@@ -344,12 +349,17 @@
                     error="{{ $errors->first('canonicalName') }}">
                     <input wire:model="canonicalName" type="text" class="input" placeholder="Ej. Cemento Portland CPC 30R">
                 </x-form-field>
-                <div class="grid grid-cols-2 gap-4">
-                    <x-form-field label="Unidad" required error="{{ $errors->first('measureId') }}">
-                        <x-custom-select wire:model="measureId" :options="$measures" placeholder="Seleccionar..." />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-form-field label="Tipo de Concepto" required error="{{ $errors->first('itemType') }}">
+                        <x-custom-select wire:model="itemType" :options="$itemTypes" placeholder="Seleccionar..." />
                     </x-form-field>
                     <x-form-field label="Categoría" required error="{{ $errors->first('categoryId') }}">
                         <x-custom-select wire:model="categoryId" :options="$categories" placeholder="Seleccionar..." />
+                    </x-form-field>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <x-form-field label="Unidad" required error="{{ $errors->first('measureId') }}">
+                        <x-custom-select wire:model="measureId" :options="$measures" placeholder="Seleccionar..." />
                     </x-form-field>
                 </div>
                 <x-form-field label="Descripción" error="{{ $errors->first('description') }}">

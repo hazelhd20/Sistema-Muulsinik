@@ -127,6 +127,13 @@
 
                 <p class="nav-section-label mt-4">Catálogos</p>
 
+                @if(auth()->user()->hasPermission('catalogos.ver'))
+                    <a href="{{ url('/clientes') }}" wire:navigate class="nav-link {{ request()->is('clientes*') ? 'active' : '' }}">
+                        <x-lucide-users-2 class="w-4 h-4 shrink-0" aria-hidden="true" />
+                        <span>Clientes</span>
+                    </a>
+                @endif
+
                 @if(auth()->user()->hasPermission('productos.ver'))
                     <a href="{{ url('/productos') }}" wire:navigate class="nav-link {{ request()->is('productos*') ? 'active' : '' }}">
                         <x-lucide-package class="w-4 h-4 shrink-0" aria-hidden="true" />

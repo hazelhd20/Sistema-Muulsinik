@@ -13,7 +13,8 @@ use Laravel\Scout\Searchable;
  * @property int $id
  * @property string $name
  * @property string|null $description
- * @property string|null $client
+ * @property int|null $client_id
+ * @property-read \App\Models\Client|null $client
  * @property float $budget
  * @property Carbon|null $start_date
  * @property Carbon|null $end_date
@@ -26,7 +27,7 @@ class Project extends Model
     use Searchable, SoftDeletes;
 
     protected $fillable = [
-        'name', 'description', 'client', 'budget',
+        'name', 'description', 'client_id', 'budget',
         'start_date', 'end_date', 'status',
     ];
 
@@ -47,7 +48,7 @@ class Project extends Model
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'client' => $this->client,
+            'client_id' => $this->client_id,
             'status' => $this->status,
         ];
     }
@@ -55,6 +56,11 @@ class Project extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function client(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function requisitions(): HasMany

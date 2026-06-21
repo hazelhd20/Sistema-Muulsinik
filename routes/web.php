@@ -8,6 +8,7 @@ use App\Livewire\Measures\MeasureIndex;
 use App\Livewire\Notifications\NotificationIndex;
 use App\Livewire\Products\CategoryIndex;
 use App\Livewire\Products\ProductIndex;
+use App\Livewire\Clients\ClientIndex;
 use App\Livewire\Projects\ProjectIndex;
 use App\Livewire\Projects\ProjectShow;
 use App\Livewire\QuickBudgets\QuickBudgetIndex;
@@ -64,6 +65,9 @@ Route::middleware('auth')->group(function () {
 
     // Proveedores (RF-PROV)
     Route::get('/proveedores', SupplierIndex::class)->name('proveedores.index');
+
+    // Clientes
+    Route::get('/clientes', ClientIndex::class)->name('clientes.index');
 
     // Documentos (RF-DOC)
 

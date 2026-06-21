@@ -23,7 +23,7 @@ class QuickBudgetWizard extends Component
 
     public string $description = '';
 
-    public string $client = '';
+    public ?int $client_id = null;
 
     public float $marginPercent = 0;
 
@@ -46,7 +46,7 @@ class QuickBudgetWizard extends Component
             $this->budgetId = $budget->id;
             $this->title = $budget->title;
             $this->description = $budget->description ?? '';
-            $this->client = $budget->client ?? '';
+            $this->client_id = $budget->client_id;
             $this->marginPercent = (float) $budget->margin_percent;
             $this->includeTax = (float) $budget->tax_amount > 0;
 
@@ -111,6 +111,7 @@ class QuickBudgetWizard extends Component
                 'id' => $product->id,
                 'name' => $product->canonical_name,
                 'category' => $product->category ? $product->category->name : 'Sin categoría',
+                'item_type' => $product->item_type ?? 'material',
                 'measure_id' => $product->measure_id,
                 'measure_abbr' => $product->measure ? $product->measure->abbreviation : '—',
                 'last_price' => (float) $safeCost,
@@ -133,7 +134,7 @@ class QuickBudgetWizard extends Component
             'id' => null,
             'product_id' => $product['id'],
             'concept' => $product['name'],
-            'item_type' => 'material',
+            'item_type' => $product['item_type'],
             'measure_id' => $product['measure_id'],
             'measure_abbr' => $product['measure_abbr'],
             'quantity' => 1,
@@ -252,7 +253,9 @@ class QuickBudgetWizard extends Component
     {
         $this->validate([
             'title' => 'required|string|max:255',
-            'client' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'client_id' => 'nullable|exists:clients,id',
+            'marginPercent' => 'required|numeric|min:0|max:100',
             'items' => 'required|array|min:1',
             'items.*.concept' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0.0001',
@@ -262,7 +265,7 @@ class QuickBudgetWizard extends Component
         $dto = QuickBudgetDTO::fromArray([
             'title' => $this->title,
             'description' => $this->description,
-            'client' => $this->client,
+            'client_id' => $this->client_id,
             'marginPercent' => $this->marginPercent,
             'includeTax' => $this->includeTax,
             'items' => $this->items,
@@ -289,6 +292,7 @@ class QuickBudgetWizard extends Component
         return view('livewire.quick-budgets.quick-budget-wizard', [
             'measures' => Measure::getOptions(),
             'itemTypes' => $itemTypes,
+            'clients' => \App\Models\Client::where('active', true)->orderBy('name')->pluck('name', 'id')->toArray(),
         ]);
     }
 }
