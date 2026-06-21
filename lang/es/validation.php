@@ -210,13 +210,22 @@ return [
         'reqNeedDate' => 'fecha de necesidad',
         'rejectionComment' => 'comentario de rechazo',
 
-        // Cotizaciones
+        // Cotizaciones (Antiguas y Generales)
         'file' => 'archivo',
         'projectId' => 'proyecto',
         'description' => 'descripción',
         'needDate' => 'fecha de necesidad',
         'items' => 'artículos',
         'items.*.name' => 'nombre del artículo',
+
+        // Cotizador Rápido (Quick Budgets)
+        'title' => 'título',
+        'client' => 'cliente',
+        'items.*.concept' => 'concepto',
+        'items.*.quantity' => 'cantidad',
+        'items.*.unit_price' => 'precio unitario',
+        'items.*.unit_cost' => 'costo unitario',
+        'marginPercent' => 'margen global',
 
         // Proyectos
         'name' => 'nombre',

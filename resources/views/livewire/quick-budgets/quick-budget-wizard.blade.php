@@ -77,9 +77,17 @@
                     <div class="relative">
                         <x-lucide-search
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input wire:model.live.debounce.300ms="searchQuery" @focus="open = true" @input="open = true" type="text"
-                            class="input w-full pl-10 border-border focus:border-primary-500 bg-surface-card"
+                        <input wire:model.live.debounce.300ms="searchQuery" 
+                            wire:keydown.enter.prevent="addFirstProduct"
+                            @focus="open = true" @input="open = true" type="text"
+                            class="input w-full pl-10 pr-10 border-border focus:border-primary-500 bg-surface-card"
                             placeholder="Buscar producto para agregar (carga precio histórico)...">
+                        
+                        @if(strlen($searchQuery) > 0)
+                            <button type="button" wire:click="$set('searchQuery', '')" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors p-1 rounded-full hover:bg-surface-hover">
+                                <x-lucide-x class="w-4 h-4" />
+                            </button>
+                        @endif
                     </div>
 
                     {{-- Dropdown Results & Loading Skeleton --}}
@@ -210,17 +218,19 @@
                                         @else
                                             <div class="flex flex-col gap-2">
                                                 <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
-                                                    class="input input-inline text-small w-full"
+                                                    class="input input-inline text-small w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-error-500 bg-error-50/50' : '' }}"
                                                     placeholder="Escribe un concepto...">
+                                                @error('items.'.$index.'.concept')
+                                                    <p class="text-error-600 text-[10px] font-medium leading-tight mt-0.5">{{ $message }}</p>
+                                                @enderror
                                             </div>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 {{ $advancedMode ? 'align-top pt-5' : 'align-middle' }}">
-                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs bg-surface-card border border-border/60 rounded-md text-text-primary font-medium py-1.5 pl-2 pr-6 h-auto leading-tight transition-colors shadow-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500/50">
-                                            <option value="material">Material</option>
-                                            <option value="labor">Mano de Obra</option>
-                                            <option value="service">Servicio</option>
-                                        </select>
+                                        <x-custom-select wire:model.live="items.{{ $index }}.item_type"
+                                            :options="$itemTypes"
+                                            minSearch="10"
+                                            placeholder="Tipo" />
                                     </td>
                                     <td class="px-4 py-4 {{ $advancedMode ? 'align-top pt-5' : 'align-middle' }}">
                                         @if($item['product_id'])
@@ -237,8 +247,11 @@
                                         <div class="relative">
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity"
                                                 step="0.01"
-                                                class="input text-center tabular-nums text-small w-full py-1.5 border-border/60 bg-surface-card focus:border-primary-500 shadow-sm transition-colors">
+                                                class="input text-center tabular-nums text-small w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.quantity') ? 'border-error-500 focus:border-error-500 bg-error-50' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
                                         </div>
+                                        @error('items.'.$index.'.quantity')
+                                            <p class="text-error-600 text-[10px] font-medium leading-tight mt-1 text-center">{{ current(explode(' ', $message)) }} inv.</p>
+                                        @enderror
                                     </td>
                                     @if($advancedMode)
                                     <td class="px-4 py-4 align-top pt-5">
@@ -259,7 +272,7 @@
                                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none font-medium">$</span>
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price"
                                                 step="0.01"
-                                                class="input pl-7 pr-3 text-right tabular-nums text-small font-medium text-text-primary w-full py-1.5 border-border/60 bg-surface-card focus:border-primary-500 shadow-sm transition-colors">
+                                                class="input pl-7 pr-3 text-right tabular-nums text-small font-medium text-text-primary w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.unit_price') ? 'border-error-500 focus:border-error-500 bg-error-50' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
                                             
                                             @if($advancedMode)
                                             <!-- Indicador de Margen -->
@@ -268,6 +281,9 @@
                                             </div>
                                             @endif
                                         </div>
+                                        @error('items.'.$index.'.unit_price')
+                                            <p class="text-error-600 text-[10px] font-medium leading-tight mt-1 text-right">Monto inv.</p>
+                                        @enderror
                                     </td>
                                     <td class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small {{ $advancedMode ? 'align-top pt-6' : 'align-middle' }}">
                                         ${{ number_format($item['line_total'], 2) }}

@@ -148,6 +148,13 @@ class QuickBudgetWizard extends Component
         $this->searchResults = [];
     }
 
+    public function addFirstProduct()
+    {
+        if (!empty($this->searchResults)) {
+            $this->addProduct(0);
+        }
+    }
+
     public function addManualItem()
     {
         $this->items[] = [
@@ -273,8 +280,15 @@ class QuickBudgetWizard extends Component
     #[Title('Cotizador - Editar')]
     public function render()
     {
+        $itemTypes = [
+            'material' => 'Material',
+            'labor' => 'Mano de Obra',
+            'service' => 'Servicio',
+        ];
+
         return view('livewire.quick-budgets.quick-budget-wizard', [
-            'measures' => Measure::getOptions()
+            'measures' => Measure::getOptions(),
+            'itemTypes' => $itemTypes,
         ]);
     }
 }
