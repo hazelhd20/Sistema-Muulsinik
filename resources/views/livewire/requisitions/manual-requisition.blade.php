@@ -178,7 +178,7 @@
                                         ${{ number_format($total, 2, '.', ',') }}
                                     </td>
                                     <td class="pr-6 pl-4 py-4 text-center">
-                                        <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
                                     </td>
                                 </tr>
                             @endforeach

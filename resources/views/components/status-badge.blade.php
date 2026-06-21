@@ -1,7 +1,7 @@
 @props([
     'status' => '',
     'map' => [],
-    'dot' => true,
+    'dot' => false,
 ])
 
 @php

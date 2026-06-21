@@ -117,72 +117,72 @@
     </div>
 </div>
 
+@script
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('confirmModalComponent', () => ({
-            show:         false,
-            title:        '',
-            description:  '',
-            confirmLabel: 'Confirmar',
-            cancelLabel:  'Cancelar',
-            variant:      'danger',
-            action:       '',
-            params:       [],
-            loading:      false,
-            onConfirmCallback: null,
+    Alpine.data('confirmModalComponent', () => ({
+        show:         false,
+        title:        '',
+        description:  '',
+        confirmLabel: 'Confirmar',
+        cancelLabel:  'Cancelar',
+        variant:      'danger',
+        action:       '',
+        params:       [],
+        loading:      false,
+        onConfirmCallback: null,
 
-            get iconName() {
-                return {
-                    danger:  'alert-triangle',
-                    warning: 'alert-circle',
-                    primary: 'help-circle',
-                    success: 'check-circle',
-                }[this.variant] ?? 'alert-triangle';
-            },
+        get iconName() {
+            return {
+                danger:  'alert-triangle',
+                warning: 'alert-circle',
+                primary: 'help-circle',
+                success: 'check-circle',
+            }[this.variant] ?? 'alert-triangle';
+        },
 
-            get confirmBtnClass() {
-                return {
-                    danger:  'btn-danger',
-                    warning: 'btn-warning',
-                    success: 'btn-success',
-                    primary: 'btn-primary',
-                }[this.variant] ?? 'btn-primary';
-            },
+        get confirmBtnClass() {
+            return {
+                danger:  'btn-danger',
+                warning: 'btn-warning',
+                success: 'btn-success',
+                primary: 'btn-primary',
+            }[this.variant] ?? 'btn-primary';
+        },
 
-            open(payload) {
-                this.title        = payload.title        ?? 'Confirmar acción';
-                this.description  = payload.description  ?? '';
-                this.confirmLabel = payload.confirmLabel ?? 'Confirmar';
-                this.cancelLabel  = payload.cancelLabel  ?? 'Cancelar';
-                this.variant      = payload.variant      ?? 'danger';
-                this.action       = payload.action       ?? '';
-                this.params       = payload.params       ?? [];
-                this.onConfirmCallback = payload.onConfirmCallback ?? null;
-                this.loading      = false;
-                this.show         = true;
-            },
+        open(payload) {
+            this.title        = payload.title        ?? 'Confirmar acción';
+            this.description  = payload.description  ?? '';
+            this.confirmLabel = payload.confirmLabel ?? 'Confirmar';
+            this.cancelLabel  = payload.cancelLabel  ?? 'Cancelar';
+            this.variant      = payload.variant      ?? 'danger';
+            this.action       = payload.action       ?? '';
+            this.params       = payload.params       ?? [];
+            this.onConfirmCallback = payload.onConfirmCallback ?? null;
+            this.loading      = false;
+            this.show         = true;
+        },
 
-            async execute() {
-                if (this.loading) return;
-                this.loading = true;
-                try {
-                    if (this.onConfirmCallback) {
-                        await this.onConfirmCallback();
-                    } else if (this.action) {
-                        await this.$wire[this.action](...this.params);
-                    }
-                } catch(e) {
-                    console.error('[confirm-modal]', e);
-                } finally {
-                    this.loading = false;
-                    this.show    = false;
+        async execute() {
+            if (this.loading) return;
+            this.loading = true;
+            try {
+                if (this.onConfirmCallback) {
+                    await this.onConfirmCallback();
+                } else if (this.action) {
+                    await this.$wire[this.action](...this.params);
                 }
-            },
-
-            forceClose() {
+            } catch(e) {
+                console.error('[confirm-modal]', e);
+            } finally {
                 this.loading = false;
-                this.show = false;
+                this.show    = false;
             }
-        }));
-    });
+        },
+
+        forceClose() {
+            this.loading = false;
+            this.show = false;
+        }
+    }));
 </script>
+@endscript

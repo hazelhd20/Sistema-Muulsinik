@@ -38,8 +38,8 @@
                 png:  { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
                 svg:  { icon: 'image',            color: 'text-info',            bg: 'bg-info-light' },
                 pdf:  { icon: 'file-text',        color: 'text-danger',         bg: 'bg-danger-light' },
-                xlsx: { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-primary-50' },
-                xls:  { icon: 'file-spreadsheet', color: 'text-primary-600',    bg: 'bg-primary-50' },
+                xlsx: { icon: 'file-spreadsheet', color: 'text-success',        bg: 'bg-success-light' },
+                xls:  { icon: 'file-spreadsheet', color: 'text-success',        bg: 'bg-success-light' },
             };
             return map[e] || { icon: 'file', color: 'text-text-secondary', bg: 'bg-surface-hover' };
         },
@@ -165,8 +165,8 @@
                 : (uploading ? 'border-border bg-surface-main/50 cursor-not-allowed opacity-70' : 'border-border-strong hover:border-primary-400 hover:bg-surface-main/30')"
         >
             <div class="flex flex-col items-center gap-4">
-                <div class="w-14 h-14 rounded-full bg-surface-main/60 border border-border/40 flex items-center justify-center shadow-sm transition-transform duration-300" :class="isDragging ? '-translate-y-1' : ''">
-                    <x-dynamic-component :component="'lucide-' . $icon" class="w-6 h-6 text-primary-500" stroke-width="1.5" wire:ignore />
+                <div class="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center transition-transform duration-300" :class="isDragging ? '-translate-y-1' : ''">
+                    <x-dynamic-component :component="'lucide-' . $icon" class="w-6 h-6 text-primary-600" stroke-width="1.5" wire:ignore />
                 </div>
                 <div>
                     <p class="text-body font-medium text-text-primary tracking-tight">{{ $title }}</p>
@@ -178,10 +178,10 @@
                         @foreach($formats as $fmt)
                             @php
                                 $fmtColors = match(strtoupper($fmt)) {
-                                    'PDF'          => 'bg-danger-light text-danger border-danger-border',
-                                    'XLSX', 'XLS'  => 'bg-success-light text-success border-success-border',
-                                    'JPG', 'PNG', 'JPEG' => 'bg-info-light text-info border-info-border',
-                                    default        => 'bg-surface-hover text-text-muted border-border',
+                                    'PDF'          => 'bg-danger-light text-danger',
+                                    'XLSX', 'XLS'  => 'bg-success-light text-success',
+                                    'JPG', 'PNG', 'JPEG' => 'bg-info-light text-info',
+                                    default        => 'bg-surface-main text-text-muted',
                                 };
                                 $fmtIcon = match(strtoupper($fmt)) {
                                     'PDF'          => 'file-text',
@@ -190,7 +190,7 @@
                                     default        => 'file',
                                 };
                             @endphp
-                            <span class="px-2.5 py-1 rounded-md border {{ $fmtColors }} text-[10px] font-medium tracking-wide flex items-center gap-1 shadow-sm">
+                            <span class="px-2.5 py-1 rounded-md {{ $fmtColors }} text-[10px] font-medium tracking-wide flex items-center gap-1">
                                 <x-dynamic-component :component="'lucide-' . $fmtIcon" class="w-3 h-3" stroke-width="2" wire:ignore />
                                 {{ strtoupper($fmt) }}
                             </span>
@@ -205,9 +205,9 @@
         {{-- File selected cards (dropzone) --}}
         <div class="flex flex-col gap-3 mt-4" wire:ignore>
             <template x-for="(file, index) in files" :key="file.name + '_' + file.size">
-                <div class="py-3 px-4 rounded-xl bg-surface-main/30 border border-border/40 hover:bg-surface-main/60 transition-all animate-fade-in-up">
+                <div class="py-3 px-4 rounded-xl bg-surface-main transition-all animate-fade-in-up">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-black/5 shadow-sm"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
                              :class="getIconData(file.ext).bg">
                             <div :class="getIconData(file.ext).color" class="flex items-center justify-center">
                                 <x-lucide-image x-show="getIconData(file.ext).icon === 'image'" class="w-6 h-6" x-cloak />

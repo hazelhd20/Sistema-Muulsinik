@@ -118,7 +118,7 @@
                     <div class="flex flex-col items-center max-w-sm mx-auto text-center py-2">
                         {{-- Ícono de error con borde semántico --}}
                         <div
-                            class="w-14 h-14 rounded-full bg-danger-50/50 border border-danger-border flex items-center justify-center mb-6 shrink-0 shadow-sm">
+                            class="w-14 h-14 rounded-full bg-danger-light/50 flex items-center justify-center mb-6 shrink-0 shadow-sm">
                             <x-lucide-alert-triangle class="w-6 h-6 text-danger" stroke-width="1.5" wire:ignore />
                         </div>
 
@@ -169,28 +169,55 @@
 
     {{-- ═══════ PASO 3: FORMULARIO EDITABLE ═══════ --}}
     @if($step === 3)
-        <div class="mb-6 border-b border-border/40">
-            <nav class="-mb-px flex space-x-6 overflow-x-auto hide-scrollbar" aria-label="Tabs">
-                @foreach($quotationIds as $index => $id)
-                    @php
-                        $isCompleted = in_array($id, $completedQuotationIds);
-                        $isActive = $activeQuotationId === $id;
-                    @endphp
-                    <button type="button" wire:click="setActiveTab({{ $id }})" @class([
-                        'whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm transition-colors',
-                        'border-primary-500 text-primary-600' => $isActive,
-                        'border-transparent text-text-muted hover:text-text-primary hover:border-border-strong' => !$isActive,
-                    ])>
-                        <span class="flex items-center gap-2">
-                            @if($isCompleted)
-                                <x-lucide-check-circle class="w-4 h-4 text-success" wire:ignore />
-                            @endif
-                            Cotización {{ $index + 1 }}
+        @php
+            $currentIndex = array_search($activeQuotationId, $quotationIds);
+            $totalCount = count($quotationIds);
+            $prevId = $currentIndex !== false && $currentIndex > 0 ? $quotationIds[$currentIndex - 1] : null;
+            $nextId = $currentIndex !== false && $currentIndex < $totalCount - 1 ? $quotationIds[$currentIndex + 1] : null;
+            $completedCount = count($completedQuotationIds);
+        @endphp
+
+        @if($totalCount > 1)
+            <div class="mb-6 border-b border-border/40 flex items-center justify-between pb-4">
+                <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                        Progreso de revisión
+                    </span>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="text-base font-semibold text-text-primary">
+                            Cotización {{ $currentIndex !== false ? $currentIndex + 1 : 1 }} <span class="text-text-muted font-normal">de {{ $totalCount }}</span>
                         </span>
-                    </button>
-                @endforeach
-            </nav>
-        </div>
+                        @if($completedCount > 0)
+                            <span class="badge badge-success">
+                                {{ $completedCount }} completadas
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    @if($prevId)
+                        <x-button type="button" wire:click="setActiveTab({{ $prevId }})" variant="secondary" icon="chevron-left" class="text-xs">
+                            Anterior
+                        </x-button>
+                    @else
+                        <x-button type="button" disabled variant="secondary" icon="chevron-left" class="text-xs">
+                            Anterior
+                        </x-button>
+                    @endif
+                    
+                    @if($nextId)
+                        <x-button type="button" wire:click="setActiveTab({{ $nextId }})" variant="secondary" iconRight="chevron-right" class="text-xs">
+                            Siguiente
+                        </x-button>
+                    @else
+                        <x-button type="button" disabled variant="secondary" iconRight="chevron-right" class="text-xs">
+                            Siguiente
+                        </x-button>
+                    @endif
+                </div>
+            </div>
+        @endif
 
         <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
             <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6">
@@ -200,7 +227,7 @@
                     @if($quotation)
                         <x-button type="button"
                             @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
-                            variant="secondary" icon="file-search" class="text-xs shadow-none border-border/50">
+                            variant="soft" icon="file-search" class="text-xs">
                             Ver documento original
                         </x-button>
                     @endif
@@ -270,7 +297,7 @@
                     <div class="md:col-span-3">
                         <x-form-field label="Anotaciones" :error="$errors->first('annotations')" class="mt-4">
                             <textarea wire:model="annotations"
-                                class="input w-full bg-surface-main/30 border-border/50 focus:bg-surface-card" rows="2"
+                                class="input w-full" rows="2"
                                 placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                         </x-form-field>
                     </div>
@@ -280,18 +307,17 @@
 
 
             <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6 overflow-hidden">
-                <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between bg-surface-main/10">
+                <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
                             <span
-                                class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md border border-border/50">{{ count($items) }}
+                                class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">{{ count($items) }}
                                 {{ count($items) === 1 ? 'artículo' : 'artículos' }}</span>
                         @endif
                     </div>
                     <div>
-                        <x-button wire:click="addItem" variant="secondary" icon="plus"
-                            class="text-xs shadow-none border-border/50 bg-surface-main hover:bg-surface-hover">
+                        <x-button wire:click="addItem" variant="soft" icon="plus" class="text-xs">
                             Agregar producto
                         </x-button>
                     </div>
@@ -303,7 +329,7 @@
                         <table class="w-full text-left table-inputs-compact">
                             <thead>
                                 <tr
-                                    class="bg-surface-main/30 border-b border-border/40 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                                    class="bg-surface-main border-b border-border/40 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                                     <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[26%]">Producto</th>
                                     <th class="px-4 py-3 whitespace-nowrap w-[13%]">Categoría</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap w-[8%]">Cant.</th>
@@ -321,9 +347,9 @@
                                         $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                         $productStatus = $item['_match']['product']['status'] ?? '';
                                         $productBorder = match (true) {
-                                            $productStatus === 'exact' => 'border-success/30 bg-success/5',
-                                            $productStatus === 'fuzzy' => 'border-primary-500/30 bg-primary-50/5',
-                                            $productStatus === 'new' => 'border-warning/30 bg-warning/5',
+                                            $productStatus === 'exact' => 'bg-success-light',
+                                            $productStatus === 'fuzzy' => 'bg-primary-50',
+                                            $productStatus === 'new' => 'bg-warning-light',
                                             default => '',
                                         };
                                     @endphp
@@ -423,7 +449,7 @@
                                         {{-- Delete --}}
                                         <td class="pr-6 pl-4 py-4 text-center">
                                             <x-button type="button" wire:click="removeItem({{ $i }})" variant="icon-danger"
-                                                icon="trash-2" class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                icon="trash-2" class="mt-1 opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
                                         </td>
                                     </tr>
                                 @endforeach
@@ -585,10 +611,10 @@
                         </x-totals-summary>
                     </div>
                 @else
-                    <div class="px-6 pb-6">
+                    <div class="px-6 pb-6 pt-2">
                         <x-empty-state icon="package-open" title="Sin productos detectados"
                             message="Agrégalos manualmente con el botón Agregar."
-                            class="border border-dashed border-border/50 bg-surface-main/20 rounded-xl py-12" />
+                            class="py-12" />
                     </div>
                 @endif
             </div>

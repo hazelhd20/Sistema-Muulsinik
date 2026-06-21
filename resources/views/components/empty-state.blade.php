@@ -14,7 +14,7 @@
     };
     
     $iconContainerClasses = match($variant) {
-        'page' => 'w-20 h-20 rounded-2xl bg-surface-hover flex items-center justify-center mb-6 border border-border/50 shadow-sm',
+        'page' => 'w-20 h-20 rounded-2xl bg-surface-main flex items-center justify-center mb-6',
         'search' => 'w-12 h-12 rounded-full bg-surface-main flex items-center justify-center mb-4',
         default => 'w-12 h-12 rounded-xl bg-surface-main flex items-center justify-center mb-3',
     };
