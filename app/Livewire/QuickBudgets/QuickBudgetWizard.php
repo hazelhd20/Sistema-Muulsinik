@@ -29,6 +29,8 @@ class QuickBudgetWizard extends Component
 
     public bool $includeTax = false;
 
+    public bool $advancedMode = false;
+
     // Items list
     public array $items = [];
 
@@ -53,6 +55,7 @@ class QuickBudgetWizard extends Component
                     'id' => $item->id,
                     'product_id' => $item->product_id,
                     'concept' => $item->concept,
+                    'item_type' => $item->item_type ?? 'material',
                     'measure_id' => $item->measure_id,
                     'measure_abbr' => $item->measure ? $item->measure->abbreviation : '—',
                     'quantity' => (float) $item->quantity,
@@ -130,6 +133,7 @@ class QuickBudgetWizard extends Component
             'id' => null,
             'product_id' => $product['id'],
             'concept' => $product['name'],
+            'item_type' => 'material',
             'measure_id' => $product['measure_id'],
             'measure_abbr' => $product['measure_abbr'],
             'quantity' => 1,
@@ -150,6 +154,7 @@ class QuickBudgetWizard extends Component
             'id' => null,
             'product_id' => null,
             'concept' => 'Nuevo concepto',
+            'item_type' => 'service',
             'measure_id' => null, // Will use text or select
             'measure_abbr' => 'SRV',
             'quantity' => 1,

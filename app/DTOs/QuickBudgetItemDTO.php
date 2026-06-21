@@ -7,6 +7,7 @@ readonly class QuickBudgetItemDTO
     public function __construct(
         public ?int $product_id,
         public string $concept,
+        public string $item_type,
         public ?int $measure_id,
         public float $quantity,
         public float $unit_price,
@@ -19,6 +20,7 @@ readonly class QuickBudgetItemDTO
         return new self(
             product_id: empty($data['product_id']) ? null : (int) $data['product_id'],
             concept: $data['concept'] ?? '',
+            item_type: $data['item_type'] ?? 'material',
             measure_id: empty($data['measure_id']) ? null : (int) $data['measure_id'],
             quantity: (float) ($data['quantity'] ?? 0),
             unit_price: (float) ($data['unit_price'] ?? 0),
@@ -32,6 +34,7 @@ readonly class QuickBudgetItemDTO
         return [
             'product_id' => $this->product_id,
             'concept' => $this->concept,
+            'item_type' => $this->item_type,
             'measure_id' => $this->measure_id,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,

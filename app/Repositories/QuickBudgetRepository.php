@@ -31,6 +31,7 @@ class QuickBudgetRepository
                 $itemsData[] = [
                     'product_id' => $itemDto->product_id,
                     'concept' => $itemDto->concept,
+                    'item_type' => $itemDto->item_type,
                     'measure_id' => $itemDto->measure_id,
                     'quantity' => $itemDto->quantity,
                     'unit_price' => $itemDto->unit_price,
