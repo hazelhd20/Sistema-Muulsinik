@@ -3,7 +3,7 @@
         {{-- Header --}}
         <x-page-header subtitle="Compras" title="Requisiciones" icon="clipboard-list">
             <x-slot:actions>
-                <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus"
+                <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="soft" icon="plus"
                     wire:navigate>
                     Nueva Manual
                 </x-button>
@@ -36,7 +36,7 @@
              x-init="totalOnPage = {{ $requisitions->count() }}; init()">
             {{-- Unified Datagrid Card Container --}}
             <div
-                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl md:shadow-sm">
+                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border/40 md:rounded-xl md:shadow-sm">
                 @php
                     $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
                     $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -174,7 +174,7 @@
                                     <col class="w-[8%]"> {{-- Estado --}}
                                     <col class="w-24"> {{-- Acciones --}}
                                 </colgroup>
-                                <thead class="bg-surface-main/50 border-b border-border">
+                                <thead class="bg-surface-main border-b border-border/40">
                                     <tr>
                                         <th class="actions text-center pl-4 pr-2">
                                             <x-table-checkbox 
@@ -339,12 +339,12 @@
                             </div>
                         @endif
 
-                        <div class="h-8 w-px bg-border mx-1 hidden sm:block"></div>
+                        <div class="h-8 w-px bg-border/40 mx-1 hidden sm:block"></div>
 
                         {{-- Menú de Exportación --}}
                         <x-dropdown align="top" width="56">
                             <x-slot name="trigger">
-                                <x-button variant="secondary" icon="file-down"
+                                <x-button variant="soft" icon="file-down"
                                     wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed"
                                     wire:loading.attr="disabled">
                                     <span wire:loading.remove
@@ -360,7 +360,7 @@
                                 <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
                                     Detallado con Ítems (CSV)
                                 </x-dropdown-link>
-                                <div class="border-t border-border my-1"></div>
+                                <div class="border-t border-border/40 my-1"></div>
                                 <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
                                     PDFs en ZIP
                                 </x-dropdown-link>

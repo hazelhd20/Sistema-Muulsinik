@@ -1,11 +1,11 @@
 @props(['req'])
 
-<div class="card p-0 flex flex-col relative transition-colors shadow-sm overflow-hidden"
+<div class="bg-surface-card border border-border/40 rounded-xl p-0 flex flex-col relative transition-colors shadow-sm overflow-hidden"
     :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
     wire:key="req-mobile-card-{{ $req->id }}">
 
     {{-- Cabecera de la Fila --}}
-    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/50 bg-surface-main/30">
+    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-main/30">
         <div class="flex items-center gap-3 min-w-0">
             <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
             <span class="font-bold text-text-primary text-base truncate">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
@@ -14,7 +14,7 @@
         <div class="flex items-center gap-2 shrink-0">
             <x-dropdown align="right" width="48">
                 <x-slot name="trigger">
-                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-card hover:text-text-primary transition-colors focus:outline-none hover:shadow-sm border border-transparent hover:border-border">
+                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-card hover:text-text-primary transition-colors focus:outline-none hover:shadow-sm border border-transparent hover:border-border/40">
                         <x-lucide-more-vertical class="w-5 h-5" />
                     </button>
                 </x-slot>
@@ -31,7 +31,7 @@
                     <x-dropdown-link as="a" href="{{ route('requisiciones.pdf', $req->id) }}" target="_blank" icon="file-down">Descargar PDF</x-dropdown-link>
                     
                     @if($req->status === 'borrador' && $req->created_by === auth()->id())
-                        <div class="border-t border-border my-1"></div>
+                        <div class="border-t border-border/40 my-1"></div>
                         @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                             <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.', confirmLabel: 'Aprobar', variant: 'success', action: 'submitForApproval', params: [{{ $req->id }}] })" icon="check-circle" success="true">Aprobar</x-dropdown-link>
                         @else
@@ -39,12 +39,12 @@
                         @endif
                     @endif
                     @if($req->status === 'pendiente' && auth()->user()->hasPermission('requisiciones.aprobar'))
-                        <div class="border-t border-border my-1"></div>
+                        <div class="border-t border-border/40 my-1"></div>
                         <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Cambiará a estado Aprobada y se notificará al solicitante.', confirmLabel: 'Aprobar', variant: 'success', action: 'approve', params: [{{ $req->id }}] })" icon="check-circle" success="true">Aprobar</x-dropdown-link>
                         <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">Rechazar</x-dropdown-link>
                     @endif
                     @if(in_array($req->status, ['borrador', 'rechazada']))
-                        <div class="border-t border-border my-1"></div>
+                        <div class="border-t border-border/40 my-1"></div>
                         <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Requisición', description: 'Esta acción es permanente y no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteRequisition', params: [{{ $req->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                     @endif
                 </x-slot>
@@ -67,7 +67,7 @@
         </div>
 
         {{-- Datos Financieros / Detalles --}}
-        <div class="grid grid-cols-2 gap-x-4 gap-y-4 pt-3 border-t border-border/50">
+        <div class="grid grid-cols-2 gap-x-4 gap-y-4 pt-3 border-t border-border/40">
             <div>
                 <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Proyecto</p>
                 <p class="text-sm font-medium text-text-primary truncate" title="{{ $req->project->name ?? 'Sin proyecto' }}">
@@ -88,7 +88,7 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-between pt-4 mt-1 border-t border-border/50">
+        <div class="flex items-center justify-between pt-4 mt-1 border-t border-border/40">
             <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total</p>
             <p class="font-bold text-lg text-text-primary tabular-nums">
                 ${{ number_format($req->total, 2, '.', ',') }}

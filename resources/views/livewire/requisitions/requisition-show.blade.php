@@ -15,7 +15,7 @@
         </x-slot:title>
         <x-slot:actions>
             {{-- Acciones secundarias siempre visibles --}}
-            <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary" icon="printer">
+            <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="soft" icon="printer">
                 Imprimir
             </x-button>
 
@@ -52,7 +52,7 @@
 
             {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
             @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
-                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal">
+                <x-button wire:click="openRejectModal" variant="soft" icon="x-circle" target="openRejectModal">
                     Rechazar
                 </x-button>
                 <x-button
@@ -91,9 +91,11 @@
 
     <div class="space-y-6">
 
-        <x-card>
-            <x-card.header title="Detalles Generales" />
-            <x-card.body>
+        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6">
+            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <h3 class="font-medium text-text-primary tracking-tight">Detalles Generales</h3>
+            </div>
+            <div class="p-6">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <x-data-label label="Fecha" :value="$requisition->date?->format('d/m/Y') ?? '—'" />
                     <x-data-label label="Proyecto" :value="$requisition->project?->name ?? '—'" />
@@ -120,21 +122,24 @@
                         </div>
                     @endif
                 </div>
-            </x-card.body>
-        </x-card>
+            </div>
+        </div>
 
         {{-- ─── Tarjeta de productos ─── --}}
-        <x-card class="overflow-hidden">
-            <x-card.header title="Productos Solicitados">
-                <x-slot:action>
-                    <x-badge variant="secondary" class="shrink-0">{{ $requisition->items->count() }}</x-badge>
-                </x-slot:action>
-            </x-card.header>
+        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6 overflow-hidden">
+            <div class="px-6 py-4 border-b border-border/40 flex items-center gap-3">
+                <h3 class="font-medium text-text-primary tracking-tight">Productos Solicitados</h3>
+                @if($requisition->items->count() > 0)
+                    <span class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
+                        {{ $requisition->items->count() }} {{ $requisition->items->count() === 1 ? 'artículo' : 'artículos' }}
+                    </span>
+                @endif
+            </div>
 
             {{-- Desktop Table --}}
-            <x-card.table class="hidden md:block">
+            <div class="hidden md:block w-full overflow-x-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-surface-hover/50 border-y border-border text-xs font-semibold text-text-secondary">
+                    <thead class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
                         <tr>
                             <th class="pl-6 pr-4 py-3 whitespace-nowrap">Producto</th>
                             <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
@@ -143,7 +148,7 @@
                             <th class="pr-6 pl-4 py-3 text-right whitespace-nowrap">Total</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border border-b border-border">
+                    <tbody class="divide-y divide-border/40 border-b border-border/40">
                         @forelse($requisition->items as $item)
                             <tr class="hover:bg-surface-hover/30 transition-colors">
                                 <td class="pl-6 pr-4 py-3">
@@ -176,10 +181,10 @@
                         @endforelse
                     </tbody>
                 </table>
-            </x-card.table>
+            </div>
 
             {{-- Mobile Cards --}}
-            <div class="md:hidden flex flex-col divide-y divide-border/60 border-t border-border/60">
+            <div class="md:hidden flex flex-col divide-y divide-border/40 border-t border-border/40">
                 @forelse($requisition->items as $item)
                     <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover/50 transition-colors">
                         <div class="flex justify-between items-start gap-4">
@@ -219,8 +224,8 @@
             </div>
 
             {{-- Totales --}}
-            <div class="flex justify-end px-6 pt-6 pb-8">
-                <x-totals-summary>
+            <div class="flex justify-end px-6 pt-6 pb-8 border-t border-border/40">
+                <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                     <div class="flex items-center justify-between gap-6">
                         <span class="text-small text-text-secondary">Subtotal</span>
                         <span class="text-small font-medium text-text-primary tabular-nums">
@@ -244,29 +249,31 @@
                             ${{ number_format($requisition->tax_amount, 2) }}
                         </span>
                     </div>
-                    <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border">
-                        <span class="text-body font-semibold text-text-primary">Total</span>
-                        <span class="text-h3 font-bold text-text-primary tabular-nums">
+                    <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border/40">
+                        <span class="text-body font-semibold text-text-primary">Total final</span>
+                        <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">
                             ${{ number_format($requisition->total, 2) }}
                         </span>
                     </div>
                 </x-totals-summary>
             </div>
-        </x-card>
+        </div>
     </div>
 
     {{-- ─── Historial de Actividad (Audit Log) (H1) ─── --}}
     @if($requisition->activities->isNotEmpty())
-        <x-card class="mt-6 mb-6">
-            <x-card.header title="Historial de Actividad" />
-            <x-card.body>
-                <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border">
+        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mt-6 mb-6">
+            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <h3 class="font-medium text-text-primary tracking-tight">Historial de Actividad</h3>
+            </div>
+            <div class="p-6">
+                <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border/40">
                     @foreach($requisition->activities as $activity)
                         <x-activity-timeline-item :activity="$activity" />
                     @endforeach
                 </div>
-            </x-card.body>
-        </x-card>
+            </div>
+        </div>
     @endif
 
     {{-- ─── Modal de Rechazo (RF-REQ-09) ─── --}}

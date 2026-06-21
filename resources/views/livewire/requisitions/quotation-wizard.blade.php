@@ -24,7 +24,7 @@
                     <div wire:key="step-indicator-{{ $num }}" class="relative z-10 flex flex-col items-center flex-1">
                         {{-- Label (Top) --}}
                         <span
-                            class="text-[11px] font-semibold tracking-wider uppercase mb-3 transition-colors duration-300 {{ $step === $num ? 'text-primary-600' : ($step > $num ? 'text-text-primary' : 'text-text-muted') }}">
+                            class="text-xs font-semibold tracking-wider uppercase mb-3 transition-colors duration-300 {{ $step === $num ? 'text-primary-600' : ($step > $num ? 'text-text-primary' : 'text-text-muted') }}">
                             {{ $label }}
                         </span>
 
@@ -32,7 +32,7 @@
                         <div class="w-6 h-6 rounded-full bg-surface-main flex items-center justify-center">
                             {{-- Dot / Icon --}}
                             <div class="transition-all duration-500 ease-out flex items-center justify-center 
-                                                           {{ $step > $num ? 'w-5 h-5 rounded-full bg-primary-600 text-white shadow-sm' :
+                                                                   {{ $step > $num ? 'w-5 h-5 rounded-full bg-primary-600 text-white shadow-sm' :
                 ($step === $num ? 'w-3.5 h-3.5 rounded-full bg-primary-600 ring-4 ring-primary-50' :
                     'w-2 h-2 rounded-full bg-border/60') }}">
                                 @if($step > $num)
@@ -144,18 +144,16 @@
                             <div class="flex items-center gap-3 my-1">
                                 <div class="flex-1 h-px bg-border/50"></div>
                                 <span
-                                    class="text-[11px] font-medium tracking-wide uppercase text-text-muted whitespace-nowrap">opciones
+                                    class="text-xs font-medium tracking-wide uppercase text-text-muted whitespace-nowrap">opciones
                                     manuales</span>
                                 <div class="flex-1 h-px bg-border/50"></div>
                             </div>
                             {{-- Acciones secundarias --}}
                             <div class="grid grid-cols-2 gap-3">
-                                <x-button wire:click="continueManually" variant="soft"
-                                    class="w-full rounded-xl">
+                                <x-button wire:click="continueManually" variant="soft" class="w-full rounded-xl">
                                     Llenar a mano
                                 </x-button>
-                                <x-button wire:click="resetWizard" variant="soft"
-                                    class="w-full rounded-xl">
+                                <x-button wire:click="resetWizard" variant="soft" class="w-full rounded-xl">
                                     Otro archivo
                                 </x-button>
                             </div>
@@ -185,7 +183,8 @@
                     </span>
                     <div class="flex items-center gap-3 mt-1">
                         <span class="text-base font-semibold text-text-primary">
-                            Cotización {{ $currentIndex !== false ? $currentIndex + 1 : 1 }} <span class="text-text-muted font-normal">de {{ $totalCount }}</span>
+                            Cotización {{ $currentIndex !== false ? $currentIndex + 1 : 1 }} <span
+                                class="text-text-muted font-normal">de {{ $totalCount }}</span>
                         </span>
                         @if($completedCount > 0)
                             <span class="badge badge-success">
@@ -194,10 +193,11 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     @if($prevId)
-                        <x-button type="button" wire:click="setActiveTab({{ $prevId }})" variant="secondary" icon="chevron-left" class="text-xs">
+                        <x-button type="button" wire:click="setActiveTab({{ $prevId }})" variant="secondary" icon="chevron-left"
+                            class="text-xs">
                             Anterior
                         </x-button>
                     @else
@@ -205,9 +205,10 @@
                             Anterior
                         </x-button>
                     @endif
-                    
+
                     @if($nextId)
-                        <x-button type="button" wire:click="setActiveTab({{ $nextId }})" variant="secondary" iconRight="chevron-right" class="text-xs">
+                        <x-button type="button" wire:click="setActiveTab({{ $nextId }})" variant="secondary"
+                            iconRight="chevron-right" class="text-xs">
                             Siguiente
                         </x-button>
                     @else
@@ -296,8 +297,7 @@
 
                     <div class="md:col-span-3">
                         <x-form-field label="Anotaciones" :error="$errors->first('annotations')" class="mt-4">
-                            <textarea wire:model="annotations"
-                                class="input w-full" rows="2"
+                            <textarea wire:model="annotations" class="input w-full" rows="2"
                                 placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                         </x-form-field>
                     </div>
@@ -329,7 +329,7 @@
                         <table class="w-full text-left table-inputs-compact">
                             <thead>
                                 <tr
-                                    class="bg-surface-main border-b border-border/40 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                                    class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
                                     <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[26%]">Producto</th>
                                     <th class="px-4 py-3 whitespace-nowrap w-[13%]">Categoría</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap w-[8%]">Cant.</th>
@@ -449,7 +449,8 @@
                                         {{-- Delete --}}
                                         <td class="pr-6 pl-4 py-4 text-center">
                                             <x-button type="button" wire:click="removeItem({{ $i }})" variant="icon-danger"
-                                                icon="trash-2" class="mt-1 opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
+                                                icon="trash-2"
+                                                class="mt-1 opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
                                         </td>
                                     </tr>
                                 @endforeach
@@ -475,80 +476,81 @@
                                 $hasCatConflict = isset($item['conflict']['category']);
                                 $hasUnitConflict = isset($item['conflict']['unit']);
                             @endphp
-                            <div class="bg-surface-main/30 border border-border/50 rounded-xl p-4 relative"
+                            <div class="bg-surface-main rounded-xl p-5 relative flex flex-col gap-3"
                                 wire:key="mobile-item-{{ $item['id'] ?? $i }}">
-                                <button type="button" wire:click="removeItem({{ $i }})"
-                                    class="absolute top-2 right-2 text-danger opacity-70 hover:opacity-100 p-1">
-                                    <x-lucide-x class="w-5 h-5" />
-                                </button>
 
-                                <div class="flex flex-col gap-3">
-                                    <div class="pr-8">
-                                        <x-form-field label="Producto">
-                                            <div class="relative">
-                                                <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
-                                                    <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                        class="input w-full {{ $productBorder }} {{ $hasProductIndicator ? 'pr-8' : '' }}"
-                                                        placeholder="Nombre del producto">
-                                                </x-conflict-popover>
-                                                @if(!$isFuzzyPending)
-                                                    @if($productStatus === 'exact')
-                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
-                                                            title="Confirmado">
-                                                            <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
-                                                        </div>
-                                                    @elseif($productStatus === 'new')
-                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
-                                                            title="Nuevo producto">
-                                                            <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
-                                                        </div>
-                                                    @endif
-                                                @endif
-                                            </div>
-                                        </x-form-field>
+                                {{-- Card Header --}}
+                                <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
+                                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                        Artículo {{ $i + 1 }}
+                                    </span>
+                                    <button type="button" wire:click="removeItem({{ $i }})"
+                                        class="text-danger opacity-70 hover:opacity-100 p-1 -mr-1 transition-opacity">
+                                        <x-lucide-trash-2 class="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <x-form-field label="Producto">
+                                    <div class="relative">
+                                        <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
+                                            <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
+                                                class="input w-full {{ $productBorder }} {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                placeholder="Nombre del producto">
+                                        </x-conflict-popover>
+                                        @if(!$isFuzzyPending)
+                                            @if($productStatus === 'exact')
+                                                <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-success shrink-0 z-10"
+                                                    title="Confirmado">
+                                                    <x-lucide-check-circle-2 class="w-4 h-4" wire:ignore />
+                                                </div>
+                                            @elseif($productStatus === 'new')
+                                                <div class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-warning shrink-0 z-10"
+                                                    title="Nuevo producto">
+                                                    <x-lucide-plus-circle class="w-4 h-4" wire:ignore />
+                                                </div>
+                                            @endif
+                                        @endif
                                     </div>
+                                </x-form-field>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <x-form-field label="Categoría">
+                                        <x-conflict-popover type="category-conflict" :item="$item" :index="$i"
+                                            triggerRight="right-8">
+                                            <x-custom-select wire:model.live="items.{{ $i }}.category_id"
+                                                :options="$categories->pluck('name', 'id')->toArray()" placeholder="Sin categoría"
+                                                textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
+                                        </x-conflict-popover>
+                                    </x-form-field>
+                                    <x-form-field label="Unidad">
+                                        <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
+                                            <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
+                                                :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
+                                                placeholder="Unidad" inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
+                                            </x-custom-combobox>
+                                        </x-conflict-popover>
+                                    </x-form-field>
+                                </div>
 
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <x-form-field label="Categoría">
-                                            <x-conflict-popover type="category-conflict" :item="$item" :index="$i"
-                                                triggerRight="right-8">
-                                                <x-custom-select wire:model.live="items.{{ $i }}.category_id"
-                                                    :options="$categories->pluck('name', 'id')->toArray()"
-                                                    placeholder="Sin categoría" textClass="{{ $hasCatConflict ? 'pr-6' : '' }}" />
-                                            </x-conflict-popover>
-                                        </x-form-field>
-                                        <x-form-field label="Unidad">
-                                            <x-conflict-popover type="unit-conflict" :item="$item" :index="$i">
-                                                <x-custom-combobox wire:model.live.debounce.400ms="items.{{ $i }}.unit"
-                                                    :options="$measures->mapWithKeys(fn($m) => [($m->abbreviation ?: $m->name) => $m->name . ($m->abbreviation ? ' (' . $m->abbreviation . ')' : '')])->toArray()"
-                                                    placeholder="Unidad" inputClass="{{ $hasUnitConflict ? 'pr-8' : '' }}">
-                                                </x-custom-combobox>
-                                            </x-conflict-popover>
-                                        </x-form-field>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <x-form-field label="Cantidad">
+                                        <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number" step="0.01"
+                                            class="input w-full" placeholder="0">
+                                    </x-form-field>
+                                    <x-form-field label="Precio U.">
+                                        <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number" step="0.01"
+                                            class="input w-full" placeholder="0.00">
+                                    </x-form-field>
+                                </div>
+
+                                <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-small text-text-muted">Subtotal</span>
+                                        <span class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
                                     </div>
-
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <x-form-field label="Cantidad">
-                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
-                                                step="0.01" class="input w-full" placeholder="0">
-                                        </x-form-field>
-                                        <x-form-field label="Precio U.">
-                                            <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
-                                                step="0.01" class="input w-full" placeholder="0.00">
-                                        </x-form-field>
-                                    </div>
-
-                                    <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-small text-text-muted">Subtotal</span>
-                                            <span
-                                                class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
-                                            <span
-                                                class="font-bold text-text-primary tabular-nums">${{ number_format($itemTotal, 2, '.', ',') }}</span>
-                                        </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
+                                        <span
+                                            class="font-bold text-text-primary tabular-nums">${{ number_format($itemTotal, 2, '.', ',') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -564,26 +566,29 @@
                         $hasAnyDiscount = $this->hasAnyDiscount();
                         $subtotalBruto = $this->subtotalBruto();
                     @endphp
-                    <div class="flex justify-end px-8 pt-8 pb-8 bg-surface-main/10 border-t border-border/40">
+                    <div class="flex justify-end px-8 pt-8 pb-8 border-t border-border/40">
                         <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                             <div class="flex flex-col gap-3">
                                 @if($hasAnyDiscount)
                                     <div class="flex items-center justify-between text-small">
                                         <span class="text-text-muted">Subtotal bruto</span>
-                                        <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
+                                        <span
+                                            class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                     </div>
                                     <div class="flex items-center justify-between text-small text-success">
                                         <span class="flex items-center gap-1.5 font-medium">
                                             <x-lucide-tag class="w-3.5 h-3.5" wire:ignore />
                                             Descuento total
                                         </span>
-                                        <span class="font-semibold tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
+                                        <span
+                                            class="font-semibold tabular-nums">-${{ number_format($totalDescuento, 2, '.', ',') }}</span>
                                     </div>
                                     <div class="h-px bg-border/40 my-1"></div>
                                 @endif
                                 <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">Subtotal s/IVA</span>
-                                    <span class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
+                                    <span
+                                        class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">IVA (16%)</span>
@@ -597,7 +602,8 @@
 
                             <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
                                 <span class="text-body font-semibold text-text-primary">Total final</span>
-                                <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                <span
+                                    class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
 
                             {{-- Botón de Acción --}}
@@ -613,8 +619,7 @@
                 @else
                     <div class="px-6 pb-6 pt-2">
                         <x-empty-state icon="package-open" title="Sin productos detectados"
-                            message="Agrégalos manualmente con el botón Agregar."
-                            class="py-12" />
+                            message="Agrégalos manualmente con el botón Agregar." class="py-12" />
                     </div>
                 @endif
             </div>

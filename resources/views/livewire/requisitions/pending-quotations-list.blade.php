@@ -3,7 +3,7 @@
         <div class="space-y-3">
             @foreach($pendingQuotations as $pq)
                 <div wire:key="pending-quotation-{{ $pq->id }}"
-                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border bg-surface-card border-border hover:bg-surface-hover transition-colors shadow-sm">
+                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border bg-surface-card border-border/40 shadow-sm">
 
                     <div class="flex items-start sm:items-center gap-3 w-full sm:w-auto">
                         @if($pq->isProcessing() || $pq->status === 'pending')
@@ -75,7 +75,7 @@
 
                         <x-button
                             href="{{ route('requisiciones.upload', ['ids' => [$pq->id], 'source' => 'borradores']) }}"
-                            variant="secondary"
+                            variant="soft"
                             :iconRight="'arrow-right'"
                             wire:navigate
                         >
@@ -86,7 +86,7 @@
             @endforeach
         </div>
     @else
-        <div class="bg-surface-card border border-border rounded-xl shadow-sm p-8">
+        <div class="bg-surface-card border border-border/40 rounded-xl shadow-sm p-8">
             <x-empty-state
                 icon="check-square"
                 title="No hay borradores pendientes"

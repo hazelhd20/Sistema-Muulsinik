@@ -37,7 +37,7 @@
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 bg-surface-main/30 p-4 rounded-xl border border-border">
+                <div class="grid grid-cols-2 gap-4 bg-surface-main/30 p-4 rounded-xl border border-border/40">
                     <x-data-label label="Proyecto" :value="$detailRequisition->project?->name ?? '—'" />
                     <x-data-label label="Solicitante" :value="$detailRequisition->creator?->name ?? '—'" />
                     
@@ -74,7 +74,7 @@
                     </h4>
                     <div class="flex flex-col gap-3">
                         @foreach($detailRequisition->items as $item)
-                            <div class="flex justify-between items-center bg-surface-main/30 border border-border/50 rounded-xl p-3">
+                            <div class="flex justify-between items-center bg-surface-main/30 border border-border/40 rounded-xl p-3">
                                 <div>
                                     <p class="font-medium text-small text-text-primary leading-snug mb-1">
                                         {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
@@ -119,12 +119,12 @@
         @if($detailRequisition)
         <x-slot:footer>
             <div class="flex justify-end gap-3" wire:loading.remove wire:target="showDetail">
-                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
+                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="soft" wire:navigate>
                     Ver Ficha Completa
                 </x-button>
 
                 @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle">
+                    <x-button wire:click="openRejectModal" variant="soft" icon="x-circle">
                         Rechazar
                     </x-button>
                     <x-button

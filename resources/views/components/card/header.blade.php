@@ -1,6 +1,6 @@
 @props(['title' => null, 'subtitle' => null])
 
-<div {{ $attributes->merge(['class' => 'px-6 pt-6 pb-4 flex items-start justify-between gap-4']) }}>
+<div {{ $attributes->merge(['class' => 'px-6 pt-6 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4']) }}>
     @if($title || $subtitle)
         <div>
             @if($title)
