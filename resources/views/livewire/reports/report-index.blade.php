@@ -44,11 +44,13 @@
         <div x-show="tab === 'overview'" class="space-y-4">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 @for($i = 0; $i < 4; $i++)
-                    <div class="stat-card">
-                        <x-skeleton class="w-10 h-10 rounded-xl shrink-0" />
-                        <div class="flex-1 w-full overflow-hidden">
-                            <x-skeleton class="h-8 w-24 mb-1 rounded" />
-                            <x-skeleton class="h-3 w-32 rounded" />
+                    <div class="bg-surface-card rounded-2xl border border-border p-5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <x-skeleton class="h-3 w-24 mb-2 rounded" />
+                                <x-skeleton class="h-8 w-32 rounded" />
+                            </div>
+                            <x-skeleton class="w-10 h-10 rounded-xl shrink-0" />
                         </div>
                     </div>
                 @endfor
@@ -281,44 +283,34 @@
 
         {{-- KPI Cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-            <div class="stat-card">
-                <div class="stat-icon bg-warning-light">
-                    <x-lucide-dollar-sign class="w-5 h-5 text-warning" />
-                </div>
-                <div>
-                    <p class="text-h2 font-bold text-text-primary tabular-nums">
-                        ${{ number_format($totalExpenses, 0, '.', ',') }}</p>
-                    <p class="text-xs text-text-muted">Gasto total del período</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon bg-primary-50">
-                    <x-lucide-receipt class="w-5 h-5 text-primary-600" />
-                </div>
-                <div>
-                    <p class="text-h2 text-text-primary">{{ $expenseCount }}</p>
-                    <p class="text-xs text-text-muted">Transacciones · ${{ number_format($avgExpense, 0, '.', ',') }}
-                        prom.</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon bg-success-light">
-                    <x-lucide-check-circle class="w-5 h-5 text-success" />
-                </div>
-                <div>
-                    <p class="text-h2 text-text-primary">{{ $requisitionsApproved }}</p>
-                    <p class="text-xs text-text-muted">Requisiciones aprobadas</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon bg-danger-light">
-                    <x-lucide-hard-hat class="w-5 h-5 text-danger" />
-                </div>
-                <div>
-                    <p class="text-h2 text-text-primary">{{ $activeProjects }}/{{ $totalProjects }}</p>
-                    <p class="text-xs text-text-muted">Proyectos activos</p>
-                </div>
-            </div>
+            <x-stat-card 
+                title="Gasto total del período" 
+                value="${{ number_format($totalExpenses, 0, '.', ',') }}" 
+                icon="dollar-sign" 
+                color="warning" 
+            />
+            
+            <x-stat-card 
+                title="Transacciones" 
+                value="{{ $expenseCount }}" 
+                icon="receipt" 
+                color="primary" 
+                footer="Promedio: ${{ number_format($avgExpense, 0, '.', ',') }}"
+            />
+
+            <x-stat-card 
+                title="Requisiciones aprobadas" 
+                value="{{ $requisitionsApproved }}" 
+                icon="check-circle" 
+                color="success" 
+            />
+
+            <x-stat-card 
+                title="Proyectos activos" 
+                value="{{ $activeProjects }}/{{ $totalProjects }}" 
+                icon="hard-hat" 
+                color="danger" 
+            />
         </div>
 
         {{-- Charts row --}}

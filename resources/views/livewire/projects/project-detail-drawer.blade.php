@@ -6,14 +6,17 @@
                 {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 text-text-primary">{{ $detailProject->name }}</h3>
-                        <p class="text-small text-text-secondary mt-1">Cliente: {{ $detailProject->client ?? 'Sin cliente' }}</p>
+                        <h3 class="text-h3 text-text-primary pr-4">{{ $detailProject->name }}</h3>
+                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
+                            <x-lucide-briefcase class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $detailProject->client ?? 'Sin cliente registrado' }}</span>
+                        </div>
                     </div>
-                    <x-status-badge :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                    <x-status-badge class="shrink-0" :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
                 </div>
 
                 {{-- Presupuesto y Gastos --}}
-                <div class="bg-surface-main/30 p-4 rounded-xl border border-border">
+                <div class="bg-surface-main/50 p-4 rounded-xl">
                     <div class="flex justify-between items-end mb-3">
                         <div>
                             <p class="text-text-muted text-xs font-medium mb-0.5">Presupuesto</p>
@@ -36,19 +39,27 @@
                     </div>
                 </div>
 
-                {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 text-small">
-                    <div>
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Fecha de Inicio</p>
-                        <p class="font-medium text-text-primary">{{ $detailProject->start_date?->format('d/m/Y') ?? 'No definida' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Fecha Estimada de Término</p>
-                        <p class="font-medium text-text-primary">{{ $detailProject->end_date?->format('d/m/Y') ?? 'No definida' }}</p>
-                    </div>
+                <div class="grid grid-cols-2 gap-6 text-small">
+
+                    <x-data-label label="Fecha de Inicio">
+                        <div class="flex items-center gap-1.5">
+                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $detailProject->start_date?->format('d/m/Y') ?? 'No definida' }}</span>
+                        </div>
+                    </x-data-label>
+                    <x-data-label label="Fecha Estimada de Término">
+                        <div class="flex items-center gap-1.5">
+                            <x-lucide-calendar-clock class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $detailProject->end_date?->format('d/m/Y') ?? 'No definida' }}</span>
+                        </div>
+                    </x-data-label>
                     <div class="col-span-2">
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Descripción</p>
-                        <p class="font-medium text-text-primary">{{ $detailProject->description ?: 'Sin descripción' }}</p>
+                        <x-data-label label="Descripción">
+                            <div class="flex items-start gap-1.5">
+                                <x-lucide-align-left class="w-3.5 h-3.5 text-text-muted/70 mt-0.5 shrink-0" />
+                                <span>{{ $detailProject->description ?: 'Sin descripción' }}</span>
+                            </div>
+                        </x-data-label>
                     </div>
                 </div>
 
@@ -63,8 +74,32 @@
                 </div>
             </div>
         @else
-            <div class="flex items-center justify-center h-48">
-                <div class="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="space-y-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <x-skeleton class="h-6 w-48 mb-2" />
+                        <x-skeleton class="h-4 w-32" />
+                    </div>
+                    <x-skeleton class="h-6 w-20 rounded-md" />
+                </div>
+                
+                <x-skeleton class="h-24 w-full rounded-xl" />
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <x-skeleton class="h-3 w-20 mb-1" />
+                        <x-skeleton class="h-4 w-32" />
+                    </div>
+                    <div>
+                        <x-skeleton class="h-3 w-20 mb-1" />
+                        <x-skeleton class="h-4 w-32" />
+                    </div>
+                    <div class="col-span-2">
+                        <x-skeleton class="h-3 w-20 mb-1" />
+                        <x-skeleton class="h-4 w-full mb-1" />
+                        <x-skeleton class="h-4 w-4/5" />
+                    </div>
+                </div>
             </div>
         @endif
     </x-drawer>

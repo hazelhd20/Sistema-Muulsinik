@@ -15,12 +15,18 @@ class QuickBudgetRepository
     public function save(?int $id, QuickBudgetDTO $dto): QuickBudget
     {
         return DB::transaction(function () use ($id, $dto) {
-            $subtotal = 0;
+            $subtotalCost = 0;
+            $subtotalSale = 0;
             $itemsData = [];
 
             foreach ($dto->items as $itemDto) {
-                $lineTotal = round($itemDto->quantity * $itemDto->unit_price, 2);
-                $subtotal += $lineTotal;
+                // If the item doesn't have a specific unit_price set, or we want to ensure margin logic:
+                // Actually the DTO should receive the calculated unit_price from the UI.
+                $lineTotalCost = round($itemDto->quantity * $itemDto->unit_cost, 2);
+                $lineTotalSale = round($itemDto->quantity * $itemDto->unit_price, 2);
+                
+                $subtotalCost += $lineTotalCost;
+                $subtotalSale += $lineTotalSale;
 
                 $itemsData[] = [
                     'product_id' => $itemDto->product_id,
@@ -28,15 +34,20 @@ class QuickBudgetRepository
                     'measure_id' => $itemDto->measure_id,
                     'quantity' => $itemDto->quantity,
                     'unit_price' => $itemDto->unit_price,
-                    'line_total' => $lineTotal,
+                    'unit_cost' => $itemDto->unit_cost,
+                    'margin_percent' => $itemDto->margin_percent,
+                    'line_total' => $lineTotalSale,
                 ];
             }
 
             // Calculations
-            $taxAmount = 0; // Simplified for quick budgets according to current logic
-            $total = $subtotal;
-            $marginAmount = $total * ($dto->margin_percent / 100);
-            $grandTotal = $total + $marginAmount;
+            $total = $subtotalSale; // Total before taxes
+            
+            // Note: If margin_percent at global level is used, we can store it.
+            // But if each item has its own margin, the global margin might be an average or just a target.
+            
+            $taxAmount = $dto->include_tax ? round($total * 0.16, 2) : 0;
+            $grandTotal = $total + $taxAmount;
 
             $budget = QuickBudget::updateOrCreate(
                 ['id' => $id],
@@ -44,9 +55,9 @@ class QuickBudgetRepository
                     'title' => $dto->title,
                     'description' => $dto->description,
                     'client' => $dto->client,
-                    'subtotal' => $subtotal,
+                    'subtotal' => $total, // In QuickBudget, subtotal usually means before tax
                     'tax_amount' => $taxAmount,
-                    'total' => $total,
+                    'total' => $total, // In old logic, total = subtotal
                     'margin_percent' => $dto->margin_percent,
                     'grand_total' => $grandTotal,
                     'created_by' => $dto->created_by,

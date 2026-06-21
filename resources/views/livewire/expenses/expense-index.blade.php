@@ -126,7 +126,7 @@
                             <col class="w-[12%]">        {{-- Monto --}}
                             <col class="w-[11%]">        {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-th border-b border-border">
+                        <thead class="bg-surface-main/50 border-b border-border">
                             <tr>
                                 <th class="actions text-center pl-6 pr-2">
                                     <input type="checkbox"
@@ -375,7 +375,7 @@
         {{-- Pagination Footer (Card Footer on Desktop) --}}
         @if($expenses->hasPages())
         <x-card.footer>
-            {{ $expenses->links() }}
+            {{ $expenses->links(data: ['scrollTo' => false]) }}
         </x-card.footer>
         @endif
     </div>

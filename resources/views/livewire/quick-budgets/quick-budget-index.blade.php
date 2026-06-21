@@ -122,7 +122,7 @@
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="created_at" label="Fecha" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="text-center">Ítems</th>
+                                <th class="text-center">Conceptos</th>
                                 <x-sortable-header field="grand_total" label="Monto Total" :sortField="$sortField"
                                     :sortDirection="$sortDirection" align="right" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
@@ -226,7 +226,7 @@
                                         class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
                                         <div>
                                             <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">
-                                                Ítems</p>
+                                                Conceptos</p>
                                             <span class="inline-flex items-center gap-1.5 text-text-primary">
                                                 <x-lucide-list class="w-3.5 h-3.5 text-text-muted" />
                                                 {{ $budget->items_count }}
@@ -296,7 +296,7 @@
                             <col class="w-[35%]"> {{-- Título --}}
                             <col class="w-[20%]"> {{-- Cliente --}}
                             <col class="w-[10%]"> {{-- Fecha --}}
-                            <col class="w-[8%]"> {{-- Ítems --}}
+                            <col class="w-[8%]"> {{-- Conceptos --}}
                             <col class="w-[12%]"> {{-- Monto Total --}}
                             <col class="w-28"> {{-- Acciones --}}
                         </colgroup>
@@ -306,7 +306,7 @@
                                 <th>Título</th>
                                 <th>Cliente</th>
                                 <th>Fecha</th>
-                                <th class="text-center">Ítems</th>
+                                <th class="text-center">Conceptos</th>
                                 <th class="text-right">Monto Total</th>
                                 <th class="actions text-right pr-4">Acciones</th>
                             </tr>

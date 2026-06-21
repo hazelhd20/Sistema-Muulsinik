@@ -10,6 +10,8 @@ readonly class QuickBudgetItemDTO
         public ?int $measure_id,
         public float $quantity,
         public float $unit_price,
+        public float $unit_cost,
+        public float $margin_percent,
     ) {}
 
     public static function fromArray(array $data): self
@@ -20,6 +22,8 @@ readonly class QuickBudgetItemDTO
             measure_id: empty($data['measure_id']) ? null : (int) $data['measure_id'],
             quantity: (float) ($data['quantity'] ?? 0),
             unit_price: (float) ($data['unit_price'] ?? 0),
+            unit_cost: (float) ($data['unit_cost'] ?? 0),
+            margin_percent: (float) ($data['margin_percent'] ?? 0),
         );
     }
 
@@ -31,6 +35,8 @@ readonly class QuickBudgetItemDTO
             'measure_id' => $this->measure_id,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
+            'unit_cost' => $this->unit_cost,
+            'margin_percent' => $this->margin_percent,
         ];
     }
 }

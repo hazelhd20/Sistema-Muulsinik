@@ -21,46 +21,33 @@
 
     {{-- ── KPI Strip ─────────────────────────────────────── --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <x-stat-card 
+            title="Proyectos activos" 
+            value="{{ $activeProjects }}" 
+            icon="hard-hat" 
+            color="primary" 
+        />
 
-        <div class="stat-card">
-            <div class="stat-icon bg-primary-50">
-                <x-lucide-hard-hat class="w-[18px] h-[18px] text-primary-600" />
-            </div>
-            <div class="min-w-0">
-                <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $activeProjects }}</p>
-                <p class="text-xs text-text-muted mt-0.5">Proyectos activos</p>
-            </div>
-        </div>
+        <x-stat-card 
+            title="Gasto del mes" 
+            value="${{ number_format($monthExpenses, 0, '.', ',') }}" 
+            icon="trending-up" 
+            color="success" 
+        />
 
-        <div class="stat-card">
-            <div class="stat-icon bg-success-light">
-                <x-lucide-trending-up class="w-[18px] h-[18px] text-success" />
-            </div>
-            <div class="min-w-0">
-                <p class="text-h2 font-bold text-text-primary leading-none truncate tabular-nums">${{ number_format($monthExpenses, 0, '.', ',') }}</p>
-                <p class="text-xs text-text-muted mt-0.5">Gasto del mes</p>
-            </div>
-        </div>
+        <x-stat-card 
+            title="Requisiciones pendientes" 
+            value="{{ $pendingRequisitions }}" 
+            icon="clock" 
+            color="warning" 
+        />
 
-        <div class="stat-card">
-            <div class="stat-icon bg-warning-light">
-                <x-lucide-clock class="w-[18px] h-[18px] text-warning" />
-            </div>
-            <div class="min-w-0">
-                <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $pendingRequisitions }}</p>
-                <p class="text-xs text-text-muted mt-0.5">Requisiciones pendientes</p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon bg-danger-light">
-                <x-lucide-truck class="w-[18px] h-[18px] text-danger" />
-            </div>
-            <div class="min-w-0">
-                <p class="text-h2 font-bold text-text-primary leading-none tabular-nums">{{ $totalSuppliers }}</p>
-                <p class="text-xs text-text-muted mt-0.5">Proveedores</p>
-            </div>
-        </div>
+        <x-stat-card 
+            title="Proveedores" 
+            value="{{ $totalSuppliers }}" 
+            icon="truck" 
+            color="danger" 
+        />
 
     </div>
 

@@ -1,14 +1,14 @@
 @props(['title' => null, 'subtitle' => null])
 
-<div {{ $attributes->merge(['class' => 'px-6 pt-6 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4']) }}>
+<div {{ $attributes->merge(['class' => 'px-6 py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4']) }}>
     @if($title || $subtitle)
-        <div>
+        <div class="flex flex-col min-w-0">
             @if($title)
-                <h2 class="card-title">{{ $title }}</h2>
+                <h3 class="font-medium text-text-primary tracking-tight truncate">{{ $title }}</h3>
             @endif
             
             @if($subtitle)
-                <p class="text-xs text-text-muted mt-0.5">{{ $subtitle }}</p>
+                <p class="text-xs text-text-muted mt-0.5 truncate">{{ $subtitle }}</p>
             @endif
         </div>
     @endif

@@ -1,7 +1,7 @@
 @props(['req'])
 
-<div class="bg-surface-card border border-border/40 rounded-xl p-0 flex flex-col relative transition-colors shadow-sm overflow-hidden"
-    :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
+<x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+    x-bind:class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
     wire:key="req-mobile-card-{{ $req->id }}">
 
     {{-- Cabecera de la Fila --}}
@@ -102,4 +102,4 @@
             </div>
         @endif
     </div>
-</div>
+</x-card>

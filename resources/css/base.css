@@ -1,0 +1,138 @@
+/* Global Resets para sensación de "App Nativa" */
+* {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Evita que hacer clic rápido en botones, tarjetas o encabezados seleccione el texto */
+button, a, .md\:card, .table-container, x-modal, .flatpickr-calendar, .flatpickr-month, .flatpickr-day {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Permitir selección de texto en inputs y áreas donde el usuario sí debe copiar */
+input:not(.select-none), textarea, p, h1, h2, h3, h4, h5, h6, span.selectable {
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+/* Evita que los campos readonly o select-none muestren resalte de selección azul al enfocarse */
+.select-none::selection,
+.select-none *::selection,
+input.select-none::selection,
+input[readonly]::selection {
+    background: transparent !important;
+    color: inherit !important;
+}
+
+.select-none::-moz-selection,
+.select-none *::-moz-selection,
+input.select-none::-moz-selection,
+input[readonly]::-moz-selection {
+    background: transparent !important;
+    color: inherit !important;
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+html {
+    scrollbar-gutter: stable;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-surface-main);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--font-size-body);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-hover);
+}
+
+/* ── Search Input ─────────────────────────────────────────── */
+/* Ocultar X nativa del navegador en inputs type="search" */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    display: none;
+}
+
+/* ── Utility Classes ────────────────────────────────────── */
+@layer utilities {
+    .transition-premium {
+        transition-property:
+            color, background-color, border-color, text-decoration-color, fill,
+            stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+        transition-duration: 220ms;
+    }
+}
+
+/* ── Fluid Typography Utilities ─────────────────────────── */
+.text-display {
+    font-size: var(--font-size-display);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+.text-h1 {
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+}
+
+.text-h2 {
+    font-size: var(--font-size-h2);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.text-h3 {
+    font-size: var(--font-size-h3);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.text-body {
+    font-size: var(--font-size-body);
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.text-small {
+    font-size: var(--font-size-small);
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.text-xs-fluid {
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+    line-height: 1.4;
+}

@@ -2,8 +2,7 @@
     @if($pendingQuotations->isNotEmpty())
         <div class="space-y-3">
             @foreach($pendingQuotations as $pq)
-                <div wire:key="pending-quotation-{{ $pq->id }}"
-                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border bg-surface-card border-border/40 shadow-sm">
+                <x-card wire:key="pending-quotation-{{ $pq->id }}" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4">
 
                     <div class="flex items-start sm:items-center gap-3 w-full sm:w-auto">
                         @if($pq->isProcessing() || $pq->status === 'pending')
@@ -82,16 +81,16 @@
                             {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar y Continuar' }}
                         </x-button>
                     </div>
-                </div>
+                </x-card>
             @endforeach
         </div>
     @else
-        <div class="bg-surface-card border border-border/40 rounded-xl shadow-sm p-8">
+        <x-card class="p-8">
             <x-empty-state
                 icon="check-square"
                 title="No hay borradores pendientes"
                 message="Todas tus cotizaciones han sido procesadas o enviadas a aprobación." />
-        </div>
+        </x-card>
     @endif
 
 </div>

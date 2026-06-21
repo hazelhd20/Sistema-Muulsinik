@@ -11,10 +11,10 @@
 @php
     $iconBgColors = [
         'primary' => 'bg-primary-50 text-primary-600',
-        'success' => 'bg-success-50 text-success-600',
-        'danger' => 'bg-danger-50 text-danger-600',
-        'warning' => 'bg-warning-50 text-warning-600',
-        'info' => 'bg-info-50 text-info-600',
+        'success' => 'bg-success-light text-success',
+        'danger' => 'bg-danger-light text-danger',
+        'warning' => 'bg-warning-light text-warning',
+        'info' => 'bg-info-light text-info',
     ];
     $iconBgColor = $iconBgColors[$color] ?? $iconBgColors['primary'];
 

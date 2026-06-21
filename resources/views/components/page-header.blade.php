@@ -1,4 +1,4 @@
-@props(['subtitle' => null, 'title' => null, 'backUrl' => null, 'breadcrumbs' => [], 'icon' => null, 'status' => null])
+@props(['subtitle' => null, 'title' => null, 'description' => null, 'backUrl' => null, 'breadcrumbs' => [], 'icon' => null, 'status' => null])
 
 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pb-5 border-b border-border/40">
     <div class="flex items-start gap-4">
@@ -42,6 +42,12 @@
                         :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                 @endif
             </div>
+
+            @if($description || isset($descriptionSlot))
+                <div class="mt-1.5 text-small text-text-muted">
+                    {{ $description ?? $descriptionSlot }}
+                </div>
+            @endif
         </div>
     </div>
     

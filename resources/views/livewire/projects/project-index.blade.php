@@ -16,7 +16,7 @@
         @endphp
         @if($projects->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <x-card class="md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
                 <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     {{-- Search --}}
@@ -89,7 +89,7 @@
                         @endif
                     </div>
                 @endif
-            </div> {{-- End Header Group --}}
+            </x-card> {{-- End Header Group --}}
         @endif
 
         {{-- Projects Table --}}
@@ -166,9 +166,8 @@
                                             {{ $project->client ?? '—' }}
                                         </td>
                                         <td>
-                                            <div class="flex items-center gap-1 text-text-primary">
-                                                <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
-                                                <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                                            <div class="text-text-primary">
+                                                {{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}
                                             </div>
                                         </td>
                                         <td class="numeric">
@@ -272,8 +271,8 @@
                         class="flex flex-col gap-4">
                         @if($projects->isNotEmpty())
                             @foreach($projects as $project)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                    :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                    x-bind:class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                     wire:key="project-mobile-row-{{ $project->id }}">
                                     
                                     {{-- Cabecera de la Fila --}}
@@ -339,19 +338,19 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </x-card>
                             @endforeach
                         @else
                             @if($hasActiveFilters)
-                                <div class="bg-surface-card border border-border shadow-sm rounded-xl p-8">
+                                <x-card class="p-8">
                                     <x-empty-state icon="search" title="No se encontraron resultados"
                                         message="No hay proyectos que coincidan con los filtros actuales." />
-                                </div>
+                                </x-card>
                             @else
-                                <div class="bg-surface-card border border-border shadow-sm rounded-xl p-12">
+                                <x-card class="p-12">
                                     <x-empty-state icon="folder" title="Aún no hay proyectos"
                                         message="Comienza creando un proyecto para gestionar tus gastos y tareas." />
-                                </div>
+                                </x-card>
                             @endif
                         @endif
                     </div>
@@ -361,7 +360,7 @@
                         wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                     {{-- Cabecera de la Fila --}}
                                     <div class="flex items-center justify-between gap-2">
                                         <div class="flex items-center gap-3 min-w-0">
@@ -397,7 +396,7 @@
                                             </div>
                                         </div>
                                     </div>
-                            </div>
+                            </x-card>
                         @endfor
                     </div>
                 </div>

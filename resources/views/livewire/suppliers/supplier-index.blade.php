@@ -128,19 +128,15 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="inline-flex items-center gap-1.5 text-xs text-text-secondary">
-                                                <x-lucide-users class="w-3.5 h-3.5 text-text-muted" />
+                                            <span class="text-text-secondary">
                                                 {{ $supplier->vendors_count }}
                                                 vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                                             </span>
                                         </td>
                                         <td class="max-w-0">
                                             @if($supplier->notes)
-                                                <div class="flex items-center gap-1" title="{{ $supplier->notes }}">
-                                                    <x-lucide-sticky-note
-                                                        class="w-3.5 h-3.5 text-text-muted shrink-0" />
-                                                    <span
-                                                        class="text-xs text-text-secondary truncate">{{ $supplier->notes }}</span>
+                                                <div title="{{ $supplier->notes }}">
+                                                    <span class="text-text-secondary truncate">{{ $supplier->notes }}</span>
                                                 </div>
                                             @else
                                                 <span class="text-text-muted">—</span>

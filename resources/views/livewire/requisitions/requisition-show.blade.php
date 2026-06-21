@@ -91,136 +91,173 @@
 
     <div class="space-y-6">
 
-        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6">
-            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-                <h3 class="font-medium text-text-primary tracking-tight">Detalles Generales</h3>
-            </div>
-            <div class="p-6">
+        <x-card class="mb-6">
+            <x-card.header title="Detalles Generales" />
+            <x-card.body>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <x-data-label label="Fecha" :value="$requisition->date?->format('d/m/Y') ?? '—'" />
-                    <x-data-label label="Proyecto" :value="$requisition->project?->name ?? '—'" />
-                    <x-data-label label="Solicitante" :value="$requisition->creator?->name ?? '—'" />
+                    <x-data-label label="Fecha">
+                        <div class="flex items-center gap-1.5">
+                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $requisition->date?->format('d/m/Y') ?? '—' }}</span>
+                        </div>
+                    </x-data-label>
+                    <x-data-label label="Proyecto">
+                        <div class="flex items-center gap-1.5">
+                            <x-lucide-hard-hat class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $requisition->project?->name ?? '—' }}</span>
+                        </div>
+                    </x-data-label>
+                    <x-data-label label="Solicitante">
+                        <div class="flex items-center gap-1.5">
+                            <x-lucide-user class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $requisition->creator?->name ?? '—' }}</span>
+                        </div>
+                    </x-data-label>
                     @php
                         $proveedorName = $requisition->vendor?->supplier?->trade_name 
                             ?? $requisition->vendor?->name 
                             ?? $requisition->items->first()?->supplier?->trade_name 
                             ?? '—';
                     @endphp
-                    <x-data-label label="Proveedor sugerido" :value="$proveedorName" />
+                    <x-data-label label="Proveedor">
+                        <div class="flex items-center gap-1.5">
+                            <x-lucide-truck class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>{{ $proveedorName }}</span>
+                        </div>
+                    </x-data-label>
 
                     @if($requisition->approver && in_array($requisition->status, ['aprobada', 'rechazada']))
-                        <x-data-label 
-                            :label="$requisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por'" 
-                            :value="$requisition->approver->name" />
+                        <x-data-label label="{{ $requisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por' }}">
+                            <div class="flex items-center gap-1.5">
+                                <x-dynamic-component :component="$requisition->status === 'aprobada' ? 'lucide-user-check' : 'lucide-user-x'" class="w-3.5 h-3.5 text-text-muted/70" />
+                                <span>{{ $requisition->approver->name }}</span>
+                            </div>
+                        </x-data-label>
                     @endif
 
                     @if($requisition->annotations)
                         <div class="col-span-2 md:col-span-4">
                             <x-data-label label="Notas adicionales">
-                                {{ $requisition->annotations }}
+                                <div class="flex items-start gap-1.5">
+                                    <x-lucide-sticky-note class="w-3.5 h-3.5 text-text-muted/70 mt-0.5 shrink-0" />
+                                    <span>{{ $requisition->annotations }}</span>
+                                </div>
                             </x-data-label>
                         </div>
                     @endif
                 </div>
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
 
         {{-- ─── Tarjeta de productos ─── --}}
-        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6 overflow-hidden">
-            <div class="px-6 py-4 border-b border-border/40 flex items-center gap-3">
-                <h3 class="font-medium text-text-primary tracking-tight">Productos Solicitados</h3>
-                @if($requisition->items->count() > 0)
-                    <span class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
-                        {{ $requisition->items->count() }} {{ $requisition->items->count() === 1 ? 'artículo' : 'artículos' }}
-                    </span>
-                @endif
+        <x-card class="mb-6 overflow-hidden">
+            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <h3 class="font-medium text-text-primary tracking-tight">Productos Solicitados</h3>
+                    @if($requisition->items->count() > 0)
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                            <x-lucide-package class="w-3.5 h-3.5" />
+                            {{ $requisition->items->count() }} {{ $requisition->items->count() === 1 ? 'artículo' : 'artículos' }}
+                        </span>
+                    @endif
+                </div>
             </div>
 
             {{-- Desktop Table --}}
             <div class="hidden md:block w-full overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <tr>
-                            <th class="pl-6 pr-4 py-3 whitespace-nowrap">Producto</th>
-                            <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
-                            <th class="px-4 py-3 text-center whitespace-nowrap w-[10%]">Cant.</th>
-                            <th class="px-4 py-3 text-right whitespace-nowrap">Precio U.</th>
-                            <th class="pr-6 pl-4 py-3 text-right whitespace-nowrap">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border/40 border-b border-border/40">
-                        @forelse($requisition->items as $item)
-                            <tr class="hover:bg-surface-hover/30 transition-colors">
-                                <td class="pl-6 pr-4 py-3">
-                                    <p class="font-medium text-small text-text-primary">
-                                        {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
-                                    </p>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span class="text-small text-text-secondary">
-                                        {{ $item->product?->category?->name ?? '—' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-center tabular-nums text-small text-text-secondary">
-                                    {{ number_format($item->quantity, 2) }}
-                                    {{ $item->measure?->abbreviation ?? '' }}
-                                </td>
-                                <td class="px-4 py-3 text-right tabular-nums text-small text-text-secondary">
-                                    ${{ number_format($item->unit_price, 2) }}
-                                </td>
-                                <td class="pr-6 pl-4 py-3 text-right font-medium tabular-nums text-small text-text-primary">
-                                    ${{ number_format($item->line_total_computed, 2) }}
-                                </td>
-                            </tr>
-                        @empty
+                @if($requisition->items->isNotEmpty())
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
-                                <td colspan="5" class="py-12 text-center">
-                                    <x-empty-state icon="package" title="Sin productos registrados" />
-                                </td>
+                                <th class="pl-6 pr-4 py-3 whitespace-nowrap">Producto</th>
+                                <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
+                                <th class="px-4 py-3 text-center whitespace-nowrap w-[10%]">Cant.</th>
+                                <th class="px-4 py-3 text-right whitespace-nowrap">Precio U.</th>
+                                <th class="pr-6 pl-4 py-3 text-right whitespace-nowrap">Total</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-border/40 border-b border-border/40">
+                            @foreach($requisition->items as $item)
+                                <tr class="hover:bg-surface-hover/30 transition-colors">
+                                    <td class="pl-6 pr-4 py-3">
+                                        <p class="font-medium text-small text-text-primary">
+                                            {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
+                                        </p>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="text-small text-text-secondary">
+                                            {{ $item->product?->category?->name ?? '—' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center tabular-nums text-small text-text-secondary">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <span>{{ number_format($item->quantity, 2) }}</span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
+                                                {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right tabular-nums text-small text-text-secondary">
+                                        ${{ number_format($item->unit_price, 2) }}
+                                    </td>
+                                    <td class="pr-6 pl-4 py-3 text-right font-medium tabular-nums text-small text-text-primary">
+                                        ${{ number_format($item->line_total_computed, 2) }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <div class="py-12 px-6 flex justify-center">
+                        <x-empty-state icon="package" title="Sin productos registrados" />
+                    </div>
+                @endif
             </div>
 
             {{-- Mobile Cards --}}
             <div class="md:hidden flex flex-col divide-y divide-border/40 border-t border-border/40">
-                @forelse($requisition->items as $item)
-                    <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover/50 transition-colors">
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="min-w-0">
-                                <p class="font-semibold text-body text-text-primary leading-snug">
-                                    {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
-                                </p>
-                                <p class="text-xs font-medium text-text-muted mt-1 uppercase tracking-wider">
-                                    {{ $item->product?->category?->name ?? 'Sin categoría' }}
-                                </p>
+                @if($requisition->items->isNotEmpty())
+                    @foreach($requisition->items as $item)
+                        <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover/50 transition-colors">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-small text-text-primary break-words">
+                                        {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
+                                    </p>
+                                    <p class="text-xs text-text-muted mt-0.5">
+                                        {{ $item->product?->category?->name ?? '—' }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-1 pt-3 border-t border-border/40">
+                                <x-data-label label="Cantidad">
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span>{{ number_format($item->quantity, 2) }}</span>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
+                                            {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                        </span>
+                                    </div>
+                                </x-data-label>
+                                
+                                <x-data-label label="Precio Unitario" align="right">
+                                    ${{ number_format($item->unit_price, 2) }}
+                                </x-data-label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center mt-1 pt-3 border-t border-border/40">
+                                <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Línea</span>
+                                <span class="font-bold text-lg text-text-primary tabular-nums">
+                                    ${{ number_format($item->line_total_computed, 2) }}
+                                </span>
                             </div>
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 mt-1 pt-3 border-t border-border/40">
-                            <x-data-label label="Cantidad">
-                                {{ number_format($item->quantity, 2) }} {{ $item->measure?->abbreviation ?? '' }}
-                            </x-data-label>
-                            
-                            <x-data-label label="Precio Unitario" align="right">
-                                ${{ number_format($item->unit_price, 2) }}
-                            </x-data-label>
-                        </div>
-                        
-                        <div class="flex justify-between items-center mt-1 pt-3 border-t border-border/40">
-                            <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Línea</span>
-                            <span class="font-bold text-lg text-text-primary tabular-nums">
-                                ${{ number_format($item->line_total_computed, 2) }}
-                            </span>
-                        </div>
+                    @endforeach
+                @else
+                    <div class="py-12 px-6 flex justify-center">
+                        <x-empty-state icon="package" title="Sin productos registrados" />
                     </div>
-                @empty
-                    <div class="py-12 text-center bg-surface-main/30">
-                        <x-lucide-package class="w-8 h-8 mx-auto text-text-muted/50 mb-3" />
-                        <span class="text-sm font-medium text-text-muted">No hay productos registrados</span>
-                    </div>
-                @endforelse
+                @endif
             </div>
 
             {{-- Totales --}}
@@ -257,23 +294,21 @@
                     </div>
                 </x-totals-summary>
             </div>
-        </div>
-    </div>
+    </x-card>
 
-    {{-- ─── Historial de Actividad (Audit Log) (H1) ─── --}}
+    </div> {{-- End space-y-6 --}}
+    {{-- ─── Historial de Actividad (Audit Log) ─── --}}
     @if($requisition->activities->isNotEmpty())
-        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mt-6 mb-6">
-            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-                <h3 class="font-medium text-text-primary tracking-tight">Historial de Actividad</h3>
-            </div>
-            <div class="p-6">
+        <x-card class="mt-6 mb-6">
+            <x-card.header title="Historial de Actividad" />
+            <x-card.body>
                 <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border/40">
                     @foreach($requisition->activities as $activity)
                         <x-activity-timeline-item :activity="$activity" />
                     @endforeach
                 </div>
-            </div>
-        </div>
+            </x-card.body>
+        </x-card>
     @endif
 
     {{-- ─── Modal de Rechazo (RF-REQ-09) ─── --}}

@@ -48,7 +48,7 @@
     {{-- ═══════ PASO 1: UPLOAD ═══════ --}}
     @if($step === 1)
         <div class="max-w-2xl mx-auto">
-            <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm p-8 transition-all duration-300">
+            <x-card class="p-8 transition-all duration-300">
                 <x-file-input wire:model="uploadQueue" :multiple="true" variant="dropzone"
                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB" :formats="['PDF', 'XLSX', 'JPG', 'PNG']"
                     title="Arrastra tus cotizaciones aquí" subtitle="o haz clic para seleccionar archivos"
@@ -66,7 +66,7 @@
                     </div>
                 @endif
                 @error('files') <span class="text-xs text-danger mt-2 block">{{ $message }}</span> @enderror
-            </div>
+            </x-card>
         </div>
     @endif
 
@@ -74,8 +74,7 @@
     @if($step === 2)
         <div @if($processingStatus === 'processing' || $processingStatus === 'pending')
         wire:poll.2s.visible="checkProcessingStatus" @endif>
-            <div class="max-w-lg mx-auto bg-surface-card rounded-xl border border-border/40 shadow-sm p-10 text-center transition-all duration-300"
-                x-data>
+            <x-card class="max-w-lg mx-auto p-10 text-center transition-all duration-300" x-data>
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Minimalist Premium Loader --}}
                     <div class="mb-8">
@@ -160,7 +159,7 @@
                         </div>
                     </div>
                 @endif
-            </div>
+            </x-card>
         </div>
     @endif
 
@@ -221,7 +220,7 @@
         @endif
 
         <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
-            <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6">
+            <x-card class="mb-6">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <h3 class="font-medium text-text-primary tracking-tight">Información General</h3>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
@@ -302,18 +301,19 @@
                         </x-form-field>
                     </div>
                 </div>
-            </div>
+            </x-card>
 
 
 
-            <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6 overflow-hidden">
+            <x-card class="mb-6 overflow-hidden">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
-                            <span
-                                class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">{{ count($items) }}
-                                {{ count($items) === 1 ? 'artículo' : 'artículos' }}</span>
+                            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                                <x-lucide-package class="w-3.5 h-3.5" />
+                                {{ count($items) }} {{ count($items) === 1 ? 'artículo' : 'artículos' }}
+                            </span>
                         @endif
                     </div>
                     <div>
@@ -622,7 +622,7 @@
                             message="Agrégalos manualmente con el botón Agregar." class="py-12" />
                     </div>
                 @endif
-            </div>
+            </x-card>
         </form>
     @endif
 

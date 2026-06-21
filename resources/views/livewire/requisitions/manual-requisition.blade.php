@@ -11,11 +11,9 @@
 
     <form wire:submit="createRequisition" class="space-y-6">
         {{-- 1. Datos Generales --}}
-        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6">
-            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-                <h3 class="font-medium text-text-primary tracking-tight">Datos Generales</h3>
-            </div>
-            <div class="p-6">
+        <x-card class="mb-6">
+            <x-card.header title="Datos Generales" />
+            <x-card.body>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-form-field label="Proyecto" required error="{{ $errors->first('form.projectId') }}">
                     <x-custom-select wire:model="form.projectId" :options="$projects->pluck('name', 'id')->toArray()"
@@ -42,22 +40,23 @@
                             placeholder="Anotaciones de la requisición (opcional)..."></textarea>
                     </x-form-field>
                 </div>
-            </div>
-            </div>
-        </div>
+                </div>
+            </x-card.body>
+        </x-card>
 
         {{-- 2. Productos --}}
-        <div class="bg-surface-card rounded-xl border border-border/40 shadow-sm mb-6 overflow-hidden">
-            <div class="px-6 py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <x-card class="mb-6 overflow-hidden">
+            <div class="px-6 py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
                     @if(count($form->items) > 0)
-                        <span class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                            <x-lucide-package class="w-3.5 h-3.5" />
                             {{ count($form->items) }} {{ count($form->items) === 1 ? 'artículo' : 'artículos' }}
                         </span>
                     @endif
                 </div>
-                <div>
+                <div class="flex-shrink-0">
                     <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs w-full sm:w-auto justify-center">
                         Concepto Manual
                     </x-button>
@@ -290,6 +289,6 @@
                         class="py-12" />
                 </div>
             @endif
-        </div>
+        </x-card>
     </form>
 </div>
