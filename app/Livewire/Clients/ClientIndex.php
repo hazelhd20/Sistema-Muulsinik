@@ -23,6 +23,9 @@ class ClientIndex extends Component
     #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
+    public string $activeFilter = '';
+
     public array $selectedRows = [];
 
     public bool $allSelected = false;
@@ -40,6 +43,13 @@ class ClientIndex extends Component
     public ?int $editingId = null;
 
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+        $this->selectedRows = [];
+        $this->allSelected = false;
+    }
+
+    public function updatedActiveFilter(): void
     {
         $this->resetPage();
         $this->selectedRows = [];
@@ -191,9 +201,14 @@ class ClientIndex extends Component
     {
         $clients = Client::query()
             ->when($this->search, function ($q) {
-                $q->where('name', 'ilike', "%{$this->search}%")
-                  ->orWhere('rfc', 'ilike', "%{$this->search}%")
-                  ->orWhere('email', 'ilike', "%{$this->search}%");
+                $q->where(function($query) {
+                    $query->where('name', 'ilike', "%{$this->search}%")
+                      ->orWhere('rfc', 'ilike', "%{$this->search}%")
+                      ->orWhere('email', 'ilike', "%{$this->search}%");
+                });
+            })
+            ->when($this->activeFilter !== '', function ($q) {
+                $q->where('active', $this->activeFilter === '1');
             })
             ->withCount('projects', 'quickBudgets')
             ->orderBy($this->sortField, $this->sortDirection)

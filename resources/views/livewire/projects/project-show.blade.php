@@ -14,7 +14,7 @@
         <x-slot:descriptionSlot>
             <div class="flex items-center gap-1.5 mt-0.5">
                 <x-lucide-briefcase class="w-4 h-4 text-text-muted/70" />
-                <span>{{ $project->client ?? 'Sin cliente registrado' }}</span>
+                <span>{{ $project->client?->name ?? 'Sin cliente registrado' }}</span>
             </div>
         </x-slot:descriptionSlot>
     </x-page-header>
@@ -150,7 +150,7 @@
                                         {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td class="px-4 py-3 text-small text-text-muted">
-                                        {{ $requisition->vendor?->name ?? '—' }}
+                                        {{ $requisition->supplier_name }}
                                     </td>
                                     <td class="px-4 py-3 text-small text-text-secondary">
                                         {{ $requisition->creator?->name ?? '—' }}

@@ -85,7 +85,7 @@ class Dashboard extends Component
         });
 
         // Estas consultas se mantienen en tiempo real por su naturaleza
-        $recentProjects = Project::latest()->take(5)->get();
+        $recentProjects = Project::with('client')->latest()->take(5)->get();
         $recentExpenses = Expense::with(['project', 'user'])->latest()->take(5)->get();
         $recentRequisitions = Requisition::with(['project', 'creator'])->latest()->take(5)->get();
 

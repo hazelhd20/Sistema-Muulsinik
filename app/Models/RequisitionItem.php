@@ -17,7 +17,6 @@ class RequisitionItem extends Model
         'tax_amount',
         'tax_source',
         'line_subtotal',
-        'line_total',
         'discount_percent',
         'supplier_id',
     ];

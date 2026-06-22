@@ -9,7 +9,7 @@
                         <h3 class="text-h3 text-text-primary pr-4">{{ $detailProject->name }}</h3>
                         <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
                             <x-lucide-briefcase class="w-3.5 h-3.5 text-text-muted/70" />
-                            <span>{{ $detailProject->client ?? 'Sin cliente registrado' }}</span>
+                            <span>{{ $detailProject->client?->name ?? 'Sin cliente registrado' }}</span>
                         </div>
                     </div>
                     <x-status-badge class="shrink-0" :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />

@@ -47,7 +47,7 @@ class ProjectIndex extends Component
 
     public string $description = '';
 
-    public string $client = '';
+    public ?int $client_id = null;
 
     public string $budget = '';
 
@@ -77,7 +77,7 @@ class ProjectIndex extends Component
         $this->editingId = $project->id;
         $this->name = $project->name;
         $this->description = $project->description ?? '';
-        $this->client = $project->client ?? '';
+        $this->client_id = $project->client_id;
         $this->budget = (string) $project->budget;
         $this->startDate = $project->start_date?->format('Y-m-d') ?? '';
         $this->endDate = $project->end_date?->format('Y-m-d') ?? '';
@@ -95,7 +95,7 @@ class ProjectIndex extends Component
             $validated = $this->validate([
                 'name' => 'required|min:3|max:255',
                 'description' => 'nullable|max:1000',
-                'client' => 'nullable|max:255',
+                'client_id' => 'nullable|exists:clients,id',
                 'budget' => 'required|numeric|min:0',
                 'startDate' => 'nullable|date',
                 'endDate' => 'nullable|date|after_or_equal:startDate',
@@ -113,7 +113,7 @@ class ProjectIndex extends Component
             $validated = $this->validate([
                 'name' => 'required|min:3|max:255',
                 'description' => 'nullable|max:1000',
-                'client' => 'nullable|max:255',
+                'client_id' => 'nullable|exists:clients,id',
                 'budget' => 'required|numeric|min:0',
                 'startDate' => 'nullable|date',
                 'endDate' => 'nullable|date|after_or_equal:startDate',
@@ -183,7 +183,7 @@ class ProjectIndex extends Component
     {
         $this->name = '';
         $this->description = '';
-        $this->client = '';
+        $this->client_id = null;
         $this->budget = '';
         $this->startDate = '';
         $this->endDate = '';
@@ -191,15 +191,24 @@ class ProjectIndex extends Component
         $this->editingId = null;
     }
 
+    public function mount(): void
+    {
+        $this->sortField = 'start_date';
+        $this->sortDirection = 'desc';
+    }
+
     #[Layout('components.layouts.app')]
     #[Title('Proyectos')]
     public function render()
     {
         $projects = Project::query()
+            ->with('client')
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('name', 'ilike', "%{$this->search}%")
-                          ->orWhere('client', 'ilike', "%{$this->search}%");
+                          ->orWhereHas('client', function($c) {
+                              $c->where('name', 'ilike', "%{$this->search}%");
+                          });
                 });
             })
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
@@ -235,6 +244,8 @@ class ProjectIndex extends Component
             })
             ->paginate(12);
 
-        return view('livewire.projects.project-index', compact('projects'));
+        $clients = \App\Models\Client::where('active', true)->orderBy('name')->pluck('name', 'id')->toArray();
+
+        return view('livewire.projects.project-index', compact('projects', 'clients'));
     }
 }

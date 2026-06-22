@@ -10,27 +10,58 @@
 
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
-        @if($clients->isNotEmpty() || !empty($search))
+        @php
+            $activeCount = ($activeFilter !== '' ? 1 : 0);
+            $hasActiveFilters = !empty($search) || $activeCount > 0;
+        @endphp
+
+        @if($clients->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group --}}
             <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre, RFC o email..." />
                     </div>
+
+                    {{-- Filters Popover --}}
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Estado">
+                            <x-custom-select x-model="filterActive" :options="['1' => 'Activos', '0' => 'Inactivos']"
+                                placeholder="Todos" />
+                        </x-form-field>
+
+                        <x-slot name="footer">
+                            <x-button type="button" @click="clearFilters()" variant="link-muted">
+                                Limpiar filtros
+                            </x-button>
+                            <x-button type="button" @click="$wire.set('activeFilter', filterActive); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
                 </div>
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                    @if($activeFilter !== '')
+                        <x-filter-chip label="Estado" :value="$activeFilter === '1' ? 'Activos' : 'Inactivos'" wire:click="$set('activeFilter', '')" />
+                    @endif
+                </div>
+                @endif
             </div>
         @endif
 
         <div class="relative">
             <div class="w-full">
                 <x-card.table class="hidden md:block w-full">
-                @if($clients->isEmpty() && empty($search))
-                    <div class="p-8">
+                @if($clients->isEmpty() && !$hasActiveFilters)
+                    <div wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="users" title="No hay clientes" message="Aún no has registrado ningún cliente en el catálogo." />
                     </div>
                 @endif
-                <table class="w-full table-fixed min-w-[1000px] {{ $clients->isEmpty() && empty($search) ? 'hidden' : '' }}"
-                    @if($clients->isEmpty()) wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" @endif>
+                <table class="w-full table-fixed min-w-[1000px] {{ $clients->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
+                    @if($clients->isEmpty()) wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" @endif>
                     <colgroup>
                         <col class="w-14">
                         <col class="w-[30%]">
@@ -54,8 +85,8 @@
                             <th class="actions text-right pr-4">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage">
-                        @if($clients->isEmpty() && !empty($search))
+                    <tbody wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage">
+                        @if($clients->isEmpty() && $hasActiveFilters)
                             <tr>
                                 <td colspan="6" class="p-8">
                                     <x-empty-state icon="search" title="No se encontraron clientes" message="Intenta con otro término de búsqueda." />
@@ -117,25 +148,113 @@
                             @endforeach
                         @endif
                     </tbody>
+                    <tbody wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="hidden">
+                        @for($i = 0; $i < 5; $i++)
+                            <tr class="opacity-{{ 100 - ($i * 15) }}">
+                                <td class="actions pl-4 pr-2 text-center">
+                                    <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
+                                </td>
+                                <td>
+                                    <x-skeleton class="h-4 rounded w-48 mb-1.5" />
+                                    <x-skeleton class="h-3 rounded w-32" />
+                                </td>
+                                <td>
+                                    <x-skeleton class="h-4 rounded w-24" />
+                                </td>
+                                <td>
+                                    <x-skeleton class="h-4 rounded w-32 mb-1.5" />
+                                    <x-skeleton class="h-4 rounded w-24" />
+                                </td>
+                                <td>
+                                    <x-skeleton class="h-5 rounded w-16 rounded-full" />
+                                </td>
+                                <td class="actions pr-4 py-3">
+                                    <div class="flex items-center justify-end">
+                                        <x-skeleton class="w-8 h-8 rounded-md" />
+                                    </div>
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
                 </table>
                 </x-card.table>
 
-                {{-- Mobile view (omitted for brevity but maintaining structure) --}}
+                {{-- Mobile view --}}
                 <div class="md:hidden flex flex-col gap-4 mt-2">
-                    <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    <div wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($clients->isNotEmpty())
                             @foreach($clients as $client)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm">
+                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                     :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50 border-primary-300' : ''">
                                     <div class="flex items-center justify-between gap-2">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $client->id }}" />
                                             <span class="font-bold text-text-primary text-base truncate">{{ $client->name }}</span>
                                         </div>
-                                        <x-button variant="icon" icon="pencil" wire:click="openEditModal({{ $client->id }})" />
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
+                                                        <x-lucide-more-vertical class="w-5 h-5" />
+                                                    </button>
+                                                </x-slot>
+                                                <x-slot name="content">
+                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente?', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                </x-slot>
+                                            </x-dropdown>
+                                        </div>
+                                    </div>
+                                    <div class="pl-8 flex flex-col gap-3">
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                            <div>
+                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">RFC</p>
+                                                <p class="text-xs text-text-secondary">{{ $client->rfc ?: '—' }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Estado</p>
+                                                @if($client->active)
+                                                    <x-badge variant="success">Activo</x-badge>
+                                                @else
+                                                    <x-badge variant="danger">Inactivo</x-badge>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
+                        @elseif($hasActiveFilters)
+                            <div class="p-12">
+                                <x-empty-state icon="search" title="No se encontraron clientes" message="Intenta ajustar tus filtros." />
+                            </div>
                         @endif
+                    </div>
+
+                    {{-- Mobile Skeletons --}}
+                    <div wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
+                        @for($i = 0; $i < 4; $i++)
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                        <x-skeleton class="h-5 w-48 rounded" />
+                                    </div>
+                                    <x-skeleton class="w-7 h-7 rounded-md" />
+                                </div>
+                                <div class="pl-8 flex flex-col gap-3">
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div>
+                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                            <x-skeleton class="h-4 w-24 rounded" />
+                                        </div>
+                                        <div>
+                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                            <x-skeleton class="h-5 w-16 rounded-full" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endfor
                     </div>
                 </div>
             </div>

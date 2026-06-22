@@ -18,7 +18,7 @@ class ProjectDetailDrawer extends Component
     public function showDetail(int $id): void
     {
         $this->showingDetailId = $id;
-        $this->detailProject = Project::find($id);
+        $this->detailProject = Project::with('client')->find($id);
         $this->showDetailDrawer = true;
     }
 

@@ -157,7 +157,7 @@
             @else
             <x-card.table>
                 <table>
-                <thead>
+                <thead class="bg-surface-th border-b border-border">
                     <tr>
                         <th>Proyecto</th>
                         <th>Estado</th>
@@ -166,10 +166,10 @@
                 </thead>
                 <tbody>
                     @foreach($recentProjects as $project)
-                        <tr @click="Livewire.navigate('{{ url('/proyectos') }}')" class="cursor-pointer hover:bg-surface-hover">
+                        <tr @click="Livewire.navigate('{{ route('proyectos.show', $project->id) }}')" class="cursor-pointer group hover:bg-surface-hover/80 transition-colors duration-150">
                             <td>
                                 <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
-                                <p class="text-xs text-text-muted">{{ $project->client ?? '—' }}</p>
+                                <p class="text-xs text-text-muted">{{ $project->client?->name ?? '—' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
@@ -202,7 +202,7 @@
             @else
             <x-card.table>
                 <table>
-                <thead>
+                <thead class="bg-surface-th border-b border-border">
                     <tr>
                         <th>Número</th>
                         <th>Estado</th>
@@ -211,7 +211,7 @@
                 </thead>
                 <tbody>
                     @foreach($recentRequisitions as $req)
-                        <tr @click="Livewire.navigate('{{ route('cotizador.wizard', ['id' => $req->id]) }}')" class="cursor-pointer hover:bg-surface-hover">
+                        <tr @click="Livewire.navigate('{{ route('requisiciones.show', $req->id) }}')" class="cursor-pointer group hover:bg-surface-hover/80 transition-colors duration-150">
                             <td>
                                 <p class="font-medium text-text-primary text-small">
                                     {{ $req->number ?? 'REQ-' . $req->id }}

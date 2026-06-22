@@ -50,7 +50,7 @@
         role="combobox"
         aria-haspopup="listbox"
         :aria-expanded="open.toString()"
-        class="input flex items-center justify-between text-left w-full h-9"
+        class="input flex items-center justify-between text-left w-full"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
         <div class="flex items-center gap-2 truncate {{ $textClass }}">

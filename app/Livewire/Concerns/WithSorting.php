@@ -2,10 +2,14 @@
 
 namespace App\Livewire\Concerns;
 
+use Livewire\Attributes\Url;
+
 trait WithSorting
 {
+    #[Url(history: true)]
     public $sortField = 'created_at';
 
+    #[Url(history: true)]
     public $sortDirection = 'desc';
 
     public function sortBy($field)

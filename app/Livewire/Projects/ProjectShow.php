@@ -24,8 +24,10 @@ class ProjectShow extends Component
     public function render()
     {
         $project = Project::with([
-            'requisitions.items',
-            'requisitions.vendor',
+            'client',
+            'requisitions.items.supplier',
+            'requisitions.quotations.supplier',
+            'requisitions.vendor.supplier',
             'requisitions.creator',
             'expenses.user',
             'expenseAllocations.expense',

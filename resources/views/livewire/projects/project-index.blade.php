@@ -162,8 +162,8 @@
                                         <td class="font-semibold text-text-primary truncate max-w-0" title="{{ $project->name }}">
                                             {{ $project->name }}
                                         </td>
-                                        <td class="truncate text-text-secondary max-w-0" title="{{ $project->client ?? '—' }}">
-                                            {{ $project->client ?? '—' }}
+                                        <td class="truncate text-text-secondary max-w-0" title="{{ $project->client?->name ?? '—' }}">
+                                            {{ $project->client?->name ?? '—' }}
                                         </td>
                                         <td>
                                             <div class="text-text-primary">
@@ -305,7 +305,7 @@
                                         <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
                                             <span class="flex items-center gap-1.5 truncate">
                                                 <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
-                                                <span class="truncate">{{ $project->client ?? 'Sin cliente' }}</span>
+                                                <span class="truncate">{{ $project->client?->name ?? 'Sin cliente' }}</span>
                                             </span>
                                             <span class="flex items-center gap-1.5">
                                                 <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
@@ -439,8 +439,8 @@
                 </x-form-field>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <x-form-field label="Cliente" error="{{ $errors->first('client') }}">
-                        <input wire:model="client" type="text" class="input" placeholder="Nombre del cliente">
+                    <x-form-field label="Cliente" error="{{ $errors->first('client_id') }}">
+                        <x-custom-select wire:model="client_id" :options="$clients" placeholder="Seleccionar cliente (opcional)..." />
                     </x-form-field>
                     <x-form-field label="Presupuesto" required error="{{ $errors->first('budget') }}">
                         <input wire:model="budget" type="number" step="0.01" class="input" placeholder="0.00">

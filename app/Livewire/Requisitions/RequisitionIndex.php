@@ -62,6 +62,12 @@ class RequisitionIndex extends Component
     // Selección masiva
     public array $selectedRows = [];
 
+    public function mount(): void
+    {
+        $this->sortField = 'date';
+        $this->sortDirection = 'desc';
+    }
+
     #[Computed(persist: true)]
     public function canApproveSelection(): bool
     {

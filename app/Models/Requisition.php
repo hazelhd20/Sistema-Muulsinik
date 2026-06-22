@@ -158,4 +158,16 @@ class Requisition extends Model
             'cached_total' => $total,
         ]);
     }
+
+    /**
+     * Obtiene el nombre del proveedor principal de la requisición.
+     * Busca en cascada: Vendor -> Cotizaciones -> Items.
+     */
+    public function getSupplierNameAttribute(): string
+    {
+        return $this->vendor?->supplier?->trade_name 
+            ?? $this->quotations->first()?->supplier?->trade_name
+            ?? $this->items->first()?->supplier?->trade_name 
+            ?? '—';
+    }
 }
