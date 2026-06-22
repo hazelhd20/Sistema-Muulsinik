@@ -25,7 +25,7 @@
                     {{-- Filters Popover --}}
                     <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
                         <x-form-field label="Estado">
-                            <x-custom-select x-model="filterStatus" :options="['borrador' => 'Borrador', 'enviado' => 'Enviado', 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', 'expirado' => 'Expirado']"
+                            <x-custom-select x-model="filterStatus" :options="$statuses"
                                 placeholder="Todos los estados" />
                         </x-form-field>
 
@@ -105,10 +105,11 @@
                             <col class="w-[20%]"> {{-- Cliente --}}
                             <col class="w-[10%]"> {{-- Fecha --}}
                             <col class="w-[8%]"> {{-- Ítems --}}
+                            <col class="w-[12%]"> {{-- Estado --}}
                             <col class="w-[12%]"> {{-- Monto Total --}}
                             <col class="w-28"> {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-main/50 border-b border-border">
+                        <thead class="bg-surface-th border-b border-border/40">
                             <tr>
                                 <th class="actions text-center pl-4 pr-2">
                                     <input type="checkbox"
@@ -123,6 +124,8 @@
                                 <x-sortable-header field="created_at" label="Fecha" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <th class="text-center">Conceptos</th>
+                                <x-sortable-header field="status" label="Estado" :sortField="$sortField"
+                                    :sortDirection="$sortDirection" />
                                 <x-sortable-header field="grand_total" label="Monto Total" :sortField="$sortField"
                                     :sortDirection="$sortDirection" align="right" />
                                 <th class="w-1 whitespace-nowrap text-right pr-4">Acciones</th>
@@ -139,7 +142,7 @@
                             @else
                                 @foreach($budgets as $budget)
                                     <tr wire:key="budget-row-{{ $budget->id }}"
-                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                        class="group hover:bg-surface-hover/30 transition-colors"
                                         :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions pl-4 pr-2 text-center" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
@@ -159,6 +162,13 @@
                                         <td class="text-body text-text-secondary">{{ $budget->created_at->format('d/m/Y') }}
                                         </td>
                                         <td class="text-center text-body">{{ $budget->items_count }}</td>
+                                        <td>
+                                            @if($budget->status)
+                                                <x-badge variant="{{ $budget->status->color() }}">{{ $budget->status->label() }}</x-badge>
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
+                                        </td>
                                         <td class="text-right font-semibold tabular-nums text-text-primary numeric">
                                             ${{ number_format($budget->grand_total, 2, '.', ',') }}</td>
                                         <td class="actions pr-4 py-3" @click.stop>

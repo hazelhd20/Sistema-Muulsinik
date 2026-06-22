@@ -5,6 +5,7 @@ namespace App\Livewire\QuickBudgets;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\QuickBudget;
 use App\Repositories\QuickBudgetRepository;
+use App\Enums\QuickBudgetStatus;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -144,7 +145,8 @@ class QuickBudgetIndex extends Component
             ->paginate(15);
 
         $users = \App\Models\User::orderBy('name')->get();
+        $statuses = QuickBudgetStatus::toArray();
 
-        return view('livewire.quick-budgets.quick-budget-index', compact('budgets', 'users'));
+        return view('livewire.quick-budgets.quick-budget-index', compact('budgets', 'users', 'statuses'));
     }
 }

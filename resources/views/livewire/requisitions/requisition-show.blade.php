@@ -193,7 +193,7 @@
                                         <div class="flex items-center justify-center gap-1.5">
                                             <span>{{ number_format($item->quantity, 2) }}</span>
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
-                                                {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                                {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
                                             </span>
                                         </div>
                                     </td>
@@ -235,7 +235,7 @@
                                     <div class="flex items-center gap-1.5 mt-0.5">
                                         <span>{{ number_format($item->quantity, 2) }}</span>
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
-                                            {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                            {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
                                         </span>
                                     </div>
                                 </x-data-label>

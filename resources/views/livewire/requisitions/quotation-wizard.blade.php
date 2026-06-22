@@ -32,7 +32,7 @@
                         <div class="w-6 h-6 rounded-full bg-surface-main flex items-center justify-center">
                             {{-- Dot / Icon --}}
                             <div class="transition-all duration-500 ease-out flex items-center justify-center 
-                                                                   {{ $step > $num ? 'w-5 h-5 rounded-full bg-primary-600 text-white shadow-sm' :
+                                                                           {{ $step > $num ? 'w-5 h-5 rounded-full bg-primary-600 text-white shadow-sm' :
                 ($step === $num ? 'w-3.5 h-3.5 rounded-full bg-primary-600 ring-4 ring-primary-50' :
                     'w-2 h-2 rounded-full bg-border/60') }}">
                                 @if($step > $num)
@@ -105,8 +105,8 @@
                     <div class="mt-8 flex justify-center">
                         <x-button
                             href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}"
-                            variant="secondary" icon="arrow-left"
-                            class="text-xs bg-transparent border-transparent hover:bg-surface-hover/50 shadow-none text-text-muted hover:text-text-primary"
+                            variant="ghost" icon="arrow-left"
+                            class="text-xs text-text-muted hover:text-text-primary shadow-none border-transparent hover:bg-surface-hover/50"
                             wire:navigate>
                             Volver mientras se procesa
                         </x-button>
@@ -310,7 +310,8 @@
                     <div class="flex items-center gap-3">
                         <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
-                            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
                                 <x-lucide-package class="w-3.5 h-3.5" />
                                 {{ count($items) }} {{ count($items) === 1 ? 'artículo' : 'artículos' }}
                             </span>
@@ -343,8 +344,6 @@
                             <tbody class="divide-y divide-border/40">
                                 @foreach($items as $i => $item)
                                     @php
-                                        $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
-                                        $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                         $productStatus = $item['_match']['product']['status'] ?? '';
                                         $productBorder = match (true) {
                                             $productStatus === 'exact' => 'bg-success-light',
@@ -437,13 +436,13 @@
                                         {{-- Subtotal --}}
                                         <td
                                             class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
-                                            ${{ number_format($itemSubtotal, 2, '.', ',') }}
+                                            ${{ number_format($item['line_subtotal'], 2, '.', ',') }}
                                         </td>
 
                                         {{-- Total con IVA --}}
                                         <td
                                             class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
-                                            ${{ number_format($itemTotal, 2, '.', ',') }}
+                                            ${{ number_format($item['line_total'], 2, '.', ',') }}
                                         </td>
 
                                         {{-- Delete --}}
@@ -462,8 +461,6 @@
                     <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
                         @foreach($items as $i => $item)
                             @php
-                                $itemSubtotal = $item['line_subtotal'] ?? (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0));
-                                $itemTotal = $item['line_total'] ?? ($itemSubtotal + ($item['tax_amount'] ?? 0));
                                 $productStatus = $item['_match']['product']['status'] ?? '';
                                 $productBorder = match (true) {
                                     $productStatus === 'exact' => 'border-success/30 bg-success/5',
@@ -545,12 +542,13 @@
                                 <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
                                     <div class="flex justify-between items-center">
                                         <span class="text-small text-text-muted">Subtotal</span>
-                                        <span class="text-small font-medium">${{ number_format($itemSubtotal, 2, '.', ',') }}</span>
+                                        <span
+                                            class="text-small font-medium">${{ number_format($item['line_subtotal'], 2, '.', ',') }}</span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
                                         <span
-                                            class="font-bold text-text-primary tabular-nums">${{ number_format($itemTotal, 2, '.', ',') }}</span>
+                                            class="font-bold text-text-primary tabular-nums">${{ number_format($item['line_total'], 2, '.', ',') }}</span>
                                     </div>
                                 </div>
                             </div>

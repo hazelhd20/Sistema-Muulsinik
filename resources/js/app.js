@@ -94,7 +94,10 @@ function createIndexComponent(filterMap = {}) {
     return (selectedRows = [], extras = {}) => {
         const base = {
             selectedRows,
-            totalOnPage: 0,
+            totalOnPageStatic: 0,
+            get totalOnPage() {
+                return parseInt(this.$el?.getAttribute('data-total-on-page')) || this.totalOnPageStatic || 0;
+            },
             ...Object.fromEntries(Object.keys(filterMap).map(k => [k, ''])),
 
             initFilters() {
@@ -128,14 +131,17 @@ function createIndexComponent(filterMap = {}) {
 
         const descriptors = Object.getOwnPropertyDescriptors(extras);
         Object.defineProperties(base, descriptors);
-        
+
         return base;
     };
 }
 
 document.addEventListener('alpine:init', () => {
-    Alpine.data('requisitionIndex', (rows, statuses = {}) =>
-        createIndexComponent({
+    const requisitionStatuses = {};
+
+    Alpine.data('requisitionIndex', (rows, statuses = {}) => {
+        Object.assign(requisitionStatuses, statuses);
+        return createIndexComponent({
             filterStatus: 'statusFilter',
             filterProject: 'projectFilter',
             filterCreator: 'creatorFilter',
@@ -144,13 +150,13 @@ document.addEventListener('alpine:init', () => {
             filterDateFrom: 'dateFrom',
             filterDateTo: 'dateTo'
         })(rows, {
-            statuses,
+            statuses: requisitionStatuses,
             get canApproveSelection() {
                 return this.selectedRows.length > 0
                     && this.selectedRows.some(id => this.statuses[id] === 'pendiente');
             }
-        })
-    );
+        });
+    });
 
     Alpine.data('expenseIndex',
         createIndexComponent({

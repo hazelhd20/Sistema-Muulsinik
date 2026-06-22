@@ -47,7 +47,7 @@
                         <col class="w-[15%]">        {{-- Fecha de Registro --}}
                         <col class="w-28">           {{-- Acciones --}}
                     </colgroup>
-                    <thead class="bg-surface-main/50 border-b border-border">
+                    <thead class="bg-surface-th border-b border-border/40">
                             <tr>
                                 <th class="actions text-center pl-4 pr-2">
                                     <input type="checkbox"
@@ -74,7 +74,7 @@
                             @else
                                 @foreach ($measures as $measure)
                                     <tr wire:key="measure-row-{{ $measure->id }}"
-                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                        class="group hover:bg-surface-hover/30 transition-colors"
                                         :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions pl-4 pr-2 text-center" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />

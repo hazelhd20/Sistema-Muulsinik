@@ -68,17 +68,7 @@ class RequisitionIndex extends Component
         $this->sortDirection = 'desc';
     }
 
-    #[Computed(persist: true)]
-    public function canApproveSelection(): bool
-    {
-        if (empty($this->selectedRows)) {
-            return false;
-        }
 
-        return Requisition::whereIn('id', $this->selectedRows)
-            ->where('status', RequisitionStatus::PENDING->value)
-            ->exists();
-    }
 
     // Rechazo con comentario obligatorio (RF-REQ-09)
     public bool $showRejectModal = false;

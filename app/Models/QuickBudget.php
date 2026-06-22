@@ -24,6 +24,7 @@ class QuickBudget extends Model
         'total' => 'decimal:2',
         'margin_percent' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'status' => \App\Enums\QuickBudgetStatus::class,
     ];
 
     public function creator(): BelongsTo

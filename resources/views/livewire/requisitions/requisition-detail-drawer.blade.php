@@ -109,7 +109,7 @@
                                     <p class="text-xs font-medium text-text-muted flex items-center mt-0.5">
                                         {{ number_format($item->quantity, 2) }}
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider ml-1.5">
-                                            {{ $item->product?->measure?->code ?? $item->measure?->abbreviation ?? 'pza' }}
+                                            {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
                                         </span>
                                     </p>
                                 </div>

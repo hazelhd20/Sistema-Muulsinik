@@ -24,7 +24,7 @@
                             </div>
                             <div>
                                 @php
-                                    $supplierName = $pq->supplier?->name ?? ($pq->raw_parsed_data['supplier_name'] ?? null);
+                                    $supplierName = $pq->supplier?->trade_name ?? ($pq->raw_parsed_data['supplier_name'] ?? null);
                                     $total = $pq->draft_state['total'] ?? ($pq->raw_parsed_data['total'] ?? null);
                                     $title = $supplierName ? "Borrador: {$supplierName}" : "Borrador de Requisición listo";
                                 @endphp

@@ -113,9 +113,11 @@
         align-items: center;
         gap: 0.375rem;
         padding: 0.25rem 0.625rem;
-        font-size: 0.6875rem; /* slightly smaller than xs for ultra premium look */
+        font-size: 0.6875rem;
+        /* slightly smaller than xs for ultra premium look */
         font-weight: 700;
-        border-radius: 0.375rem; /* rounded-md - Industrial/Structural Look */
+        border-radius: 0.375rem;
+        /* rounded-md - Industrial/Structural Look */
         letter-spacing: 0.05em;
         text-transform: uppercase;
         white-space: nowrap;
@@ -150,6 +152,17 @@
     .badge-danger {
         background-color: var(--color-danger-light);
         color: var(--color-danger-active);
+    }
+
+    .badge-info {
+        background-color: var(--color-info-light);
+        color: var(--color-info-active);
+    }
+
+    .badge-outline {
+        background-color: transparent;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-secondary);
     }
 
     /* Contador numérico compacto (filtros activos, tabs) */
@@ -322,8 +335,8 @@
         gap: 0.25rem;
     }
 
-    nav[role="navigation"] span[aria-current="page"] > span,
-    nav[role="navigation"] [aria-current="page"] > span {
+    nav[role="navigation"] span[aria-current="page"]>span,
+    nav[role="navigation"] [aria-current="page"]>span {
         background-color: var(--color-primary-600) !important;
         color: #fff !important;
         border-color: var(--color-primary-600) !important;
@@ -331,7 +344,7 @@
         font-weight: 600;
     }
 
-    nav[role="navigation"] span > span,
+    nav[role="navigation"] span>span,
     nav[role="navigation"] a {
         border-radius: 0.375rem !important;
         border-color: transparent !important;
@@ -434,12 +447,10 @@
 
     /* ── Skeleton loading (Vercel-inspired) ── */
     .skeleton {
-        background: linear-gradient(
-            90deg,
-            var(--color-skeleton-base) 25%,
-            var(--color-skeleton-highlight) 50%,
-            var(--color-skeleton-base) 75%
-        );
+        background: linear-gradient(90deg,
+                var(--color-skeleton-base) 25%,
+                var(--color-skeleton-highlight) 50%,
+                var(--color-skeleton-base) 75%);
         background-size: 200% 100%;
         animation: skeleton-shimmer 1.5s ease-in-out infinite;
         border-radius: 0.375rem;
@@ -447,12 +458,10 @@
 
     /* ── Skeleton variants ── */
     .skeleton-card {
-        background: linear-gradient(
-            90deg,
-            var(--color-surface-card) 25%,
-            var(--color-skeleton-base) 50%,
-            var(--color-surface-card) 75%
-        );
+        background: linear-gradient(90deg,
+                var(--color-surface-card) 25%,
+                var(--color-skeleton-base) 50%,
+                var(--color-surface-card) 75%);
         background-size: 200% 100%;
         animation: skeleton-shimmer 1.5s ease-in-out infinite;
         border-radius: 0.375rem;
@@ -482,7 +491,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0.75rem 1rem; /* py-3 px-4 */
+        padding: 0.75rem 1rem;
+        /* py-3 px-4 */
         background-color: transparent;
         border-bottom: 1px solid var(--color-border);
     }
@@ -502,7 +512,8 @@
         align-items: center;
         justify-content: flex-end;
         gap: 0.75rem;
-        padding: 0.75rem 1rem; /* py-3 px-4 */
+        padding: 0.75rem 1rem;
+        /* py-3 px-4 */
         background-color: transparent;
         border-top: 1px solid var(--color-border);
     }
@@ -540,7 +551,8 @@
     }
 
     .card-body {
-        padding: 1.25rem 1.5rem 1.5rem 1.5rem; /* pt-5 pb-6 px-6 */
+        padding: 1.25rem 1.5rem 1.5rem 1.5rem;
+        /* pt-5 pb-6 px-6 */
     }
 
     /* ── Section row (Stripe settings pattern) ──
@@ -820,6 +832,7 @@
 
 /* ── Accessibility: Respect users who prefer reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     ::before,
     ::after {

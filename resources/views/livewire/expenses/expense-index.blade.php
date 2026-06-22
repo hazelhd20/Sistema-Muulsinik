@@ -1,4 +1,4 @@
-<div x-data="expenseIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $expenses->count() }}; init()">
+<div x-data="expenseIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $expenses->count() }}; init()" data-total-on-page="{{ $expenses->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Control financiero" title="Gastos" icon="wallet">
         <x-slot:actions>
@@ -32,7 +32,7 @@
             @endphp
             <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
                 <x-form-field label="Proyecto">
-                    <x-custom-select x-model="filterProject" :options="$projects->pluck('name', 'id')->toArray()" placeholder="Todos los proyectos" />
+                    <x-custom-select x-model="filterProject" :options="$projects" placeholder="Todos los proyectos" />
                 </x-form-field>
 
                 <x-form-field label="Categoría">
@@ -72,7 +72,7 @@
         @if($activeCount > 0)
         <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
             @if($projectFilter)
-                <x-filter-chip label="Proyecto" :value="$projects->firstWhere('id', $projectFilter)?->name ?? 'Desconocido'" wire:click="$set('projectFilter', '')" />
+                <x-filter-chip label="Proyecto" :value="$projects[$projectFilter] ?? 'Desconocido'" wire:click="$set('projectFilter', '')" />
             @endif
             @if($categoryFilter)
                 <x-filter-chip label="Categoría" :value="$categories[$categoryFilter] ?? $categoryFilter" wire:click="$set('categoryFilter', '')" />
@@ -126,7 +126,7 @@
                             <col class="w-[12%]">        {{-- Monto --}}
                             <col class="w-[11%]">        {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-main/50 border-b border-border">
+                        <thead class="bg-surface-th border-b border-border/40">
                             <tr>
                                 <th class="actions text-center pl-6 pr-2">
                                     <input type="checkbox"
@@ -153,7 +153,7 @@
                             @else
                                 @foreach($expenses as $expense)
                                 <tr wire:key="expense-row-{{ $expense->id }}"
-                                    class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                    class="group hover:bg-surface-hover/30 transition-colors"
                                     :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="actions text-center pl-6 pr-2" @click.stop="$event.stopPropagation()">
                                         <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
@@ -354,21 +354,23 @@
             </div>
 
             {{-- Bulk Actions Bar --}}
-            <x-bulk-actions-bar>
-                <x-button
-                    @click="$dispatch('confirm-action', {
-                        title: 'Eliminar Gastos',
-                        description: 'Se eliminarán permanentemente los gastos seleccionados.',
-                        confirmLabel: 'Eliminar',
-                        variant: 'danger',
-                        action: 'bulkDelete',
-                        params: []
-                    })"
-                    variant="danger"
-                    icon="trash-2">
-                    Eliminar
-                </x-button>
-            </x-bulk-actions-bar>
+            @if(auth()->user()->hasPermission('gastos.eliminar') || auth()->user()->hasPermission('*'))
+                <x-bulk-actions-bar>
+                    <x-button
+                        @click="$dispatch('confirm-action', {
+                            title: 'Eliminar Gastos',
+                            description: 'Se eliminarán permanentemente los gastos seleccionados.',
+                            confirmLabel: 'Eliminar',
+                            variant: 'danger',
+                            action: 'bulkDelete',
+                            params: []
+                        })"
+                        variant="danger"
+                        icon="trash-2">
+                        Eliminar
+                    </x-button>
+                </x-bulk-actions-bar>
+            @endif
 
         </div>
 
@@ -412,7 +414,7 @@
                     <x-form-field :error="$errors->first('projectId')">
                         <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
                             <div x-show="!distributed">
-                                <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
+                                <x-custom-select wire:model="projectId" :options="$projects"
                                     placeholder="Seleccionar..." />
                             </div>
                             <div x-show="distributed"

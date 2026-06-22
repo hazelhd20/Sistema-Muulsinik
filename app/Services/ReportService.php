@@ -25,11 +25,10 @@ class ReportService
                 ->whereHas('expense', fn ($q) => $q->where('date', '>=', $dateFrom))
                 ->sum('amount');
 
-            $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                ->where('requisitions.project_id', $projectFilter)
-                ->where('requisitions.status', 'aprobada')
-                ->where('requisitions.created_at', '>=', $dateFrom)
-                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $requisitions = (float) Requisition::where('project_id', $projectFilter)
+                ->where('status', 'aprobada')
+                ->where('created_at', '>=', $dateFrom)
+                ->sum('cached_total');
 
             $totalExpenses = $direct + $distributed + $requisitions;
 
@@ -40,10 +39,9 @@ class ReportService
         } else {
             $direct = (float) Expense::where('date', '>=', $dateFrom)->sum('amount');
 
-            $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                ->where('requisitions.status', 'aprobada')
-                ->where('requisitions.created_at', '>=', $dateFrom)
-                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $requisitions = (float) Requisition::where('status', 'aprobada')
+                ->where('created_at', '>=', $dateFrom)
+                ->sum('cached_total');
 
             $totalExpenses = $direct + $requisitions;
 
@@ -95,7 +93,7 @@ class ReportService
                     'category' => $category,
                     'total' => $total,
                 ];
-            })->sortByDesc('total');
+            })->sortByDesc('total')->values();
         } else {
             $expenseByCategory = Expense::select('category', DB::raw('SUM(amount) as total'))
                 ->where('date', '>=', $dateFrom)
@@ -121,21 +119,19 @@ class ReportService
                     ->whereHas('expense', fn ($q) => $q->whereBetween('date', [$startOfMonth, $endOfMonth]))
                     ->sum('amount');
 
-                $requisitionsMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                    ->where('requisitions.project_id', $projectFilter)
-                    ->where('requisitions.status', 'aprobada')
-                    ->whereBetween('requisitions.created_at', [$startOfMonth, $endOfMonth])
-                    ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+                $requisitionsMonth = (float) Requisition::where('project_id', $projectFilter)
+                    ->where('status', 'aprobada')
+                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                    ->sum('cached_total');
 
                 $monthTotal = $directMonth + $distributedMonth + $requisitionsMonth;
             } else {
                 $directMonth = (float) Expense::whereBetween('date', [$startOfMonth, $endOfMonth])
                     ->sum('amount');
 
-                $requisitionsMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                    ->where('requisitions.status', 'aprobada')
-                    ->whereBetween('requisitions.created_at', [$startOfMonth, $endOfMonth])
-                    ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+                $requisitionsMonth = (float) Requisition::where('status', 'aprobada')
+                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                    ->sum('cached_total');
 
                 $monthTotal = $directMonth + $requisitionsMonth;
             }
@@ -148,13 +144,14 @@ class ReportService
         }
 
         // Top 5 proyectos por gasto
-        $topProjects = Project::all()
+        $topProjects = Project::with('client')->get()
             ->map(function ($proj) use ($dateFrom) {
                 $proj->total_spent = $proj->getSpentInPeriod($dateFrom);
                 return $proj;
             })
             ->sortByDesc('total_spent')
-            ->take(5);
+            ->take(5)
+            ->values();
 
         // Presupuesto vs Gasto por proyecto
         $budgetComparison = Project::where('status', 'activo')
@@ -164,7 +161,8 @@ class ReportService
                 'budget' => (float) $p->budget,
                 'spent' => (float) $p->total_expenses,
                 'percent' => $p->budget_used_percent,
-            ]);
+            ])
+            ->values();
 
         return compact(
             'totalExpenses',

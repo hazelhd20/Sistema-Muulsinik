@@ -47,7 +47,7 @@ $shouldRender = match($type) {
 $cfg = $shouldRender ? match($type) {
 
     'fuzzy-product' => [
-        // Botón trigger
+        // Boton trigger
         'triggerIcon'  => 'sparkles',
         'triggerClass' => 'text-primary-600 hover:bg-primary-50 animate-pulse',
         'triggerTitle' => 'Coincidencia difusa detectada — click para revisar',
@@ -82,9 +82,9 @@ $cfg = $shouldRender ? match($type) {
         ],
 
         // Botones de acción
-        'confirmAction' => "confirmProductAssociation({$index})",
-        'confirmLabel'  => 'Confirmar y vincular',
-        'confirmClass'  => 'btn-primary',
+        'confirmAction'  => "confirmProductAssociation({$index})",
+        'confirmLabel'   => 'Confirmar y vincular',
+        'confirmVariant' => 'primary',
 
         'cancelAction'  => "rejectProductAssociation({$index})",
         'cancelLabel'   => 'Crear como producto nuevo',
@@ -115,9 +115,9 @@ $cfg = $shouldRender ? match($type) {
             ],
         ],
 
-        'confirmAction' => "resolveProductConflict({$index}, 'category')",
-        'confirmLabel'  => 'Actualizar catálogo maestro',
-        'confirmClass'  => 'btn-warning',
+        'confirmAction'  => "resolveProductConflict({$index}, 'category')",
+        'confirmLabel'   => 'Actualizar catálogo maestro',
+        'confirmVariant' => 'warning',
 
         'cancelAction'  => "dismissProductConflict({$index})",
         'cancelLabel'   => 'Conservar catálogo actual',
@@ -148,9 +148,9 @@ $cfg = $shouldRender ? match($type) {
             ],
         ],
 
-        'confirmAction' => "resolveProductConflict({$index}, 'unit')",
-        'confirmLabel'  => 'Actualizar catálogo maestro',
-        'confirmClass'  => 'btn-warning',
+        'confirmAction'  => "resolveProductConflict({$index}, 'unit')",
+        'confirmLabel'   => 'Actualizar catálogo maestro',
+        'confirmVariant' => 'warning',
 
         'cancelAction'  => "dismissProductConflict({$index})",
         'cancelLabel'   => 'Conservar catálogo actual',
@@ -238,18 +238,20 @@ $cfg = $shouldRender ? match($type) {
 
                     {{-- Acciones --}}
                     <div class="flex flex-col gap-1.5">
-                        <button type="button"
+                        <x-button type="button"
                                 wire:click="{{ $cfg['confirmAction'] }}"
                                 @click="open = false"
-                                class="w-full py-1.5 px-3 rounded-md text-xs font-semibold min-h-0 {{ $cfg['confirmClass'] }}">
+                                :variant="$cfg['confirmVariant']"
+                                class="w-full">
                             {{ $cfg['confirmLabel'] }}
-                        </button>
-                        <button type="button"
+                        </x-button>
+                        <x-button type="button"
                                 wire:click="{{ $cfg['cancelAction'] }}"
                                 @click="open = false"
-                                class="btn-secondary w-full py-1.5 px-3 rounded-md text-xs font-medium min-h-0">
+                                variant="secondary"
+                                class="w-full">
                             {{ $cfg['cancelLabel'] }}
-                        </button>
+                        </x-button>
                     </div>
 
                 </div>

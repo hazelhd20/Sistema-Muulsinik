@@ -1,4 +1,4 @@
-<div x-data="projectIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $projects->count() }}; init()">
+<div x-data="projectIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $projects->count() }}; init()" data-total-on-page="{{ $projects->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Gestión" title="Proyectos" icon="hard-hat">
         <x-slot:actions>
@@ -30,7 +30,7 @@
                     @endphp
                     <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
                         <x-form-field label="Estado">
-                            <x-custom-select x-model="filterStatus" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Todos los estados" />
+                            <x-custom-select x-model="filterStatus" :options="$statuses" placeholder="Todos los estados" />
                         </x-form-field>
 
                         <x-form-field label="Período (Creación)">
@@ -65,7 +65,7 @@
                     <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
                         @if($statusFilter)
                             @php
-                                $statusNames = ['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado'];
+                                $statusNames = $statuses;
                             @endphp
                             <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter"
                                 wire:click="$set('statusFilter', '')" />
@@ -191,7 +191,11 @@
                                             </div>
                                         </td>
                                         <td class="pr-2">
-                                            <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                                            @if($project->status)
+                                                <x-badge variant="{{ $project->status->color() }}">{{ $project->status->label() }}</x-badge>
+                                            @else
+                                                <span class="text-text-muted">—</span>
+                                            @endif
                                         </td>
                                         <td class="actions pr-6" @click.stop>
                                             <div class="flex items-center justify-end">
@@ -403,18 +407,20 @@
             </div>
 
             {{-- Bulk Actions Bar --}}
-            <x-bulk-actions-bar>
-                <x-button @click="$dispatch('confirm-action', {
-                        title: 'Eliminar Proyectos',
-                        description: 'Se eliminarán permanentemente los proyectos seleccionados que no tengan dependencias.',
-                        confirmLabel: 'Eliminar',
-                        variant: 'danger',
-                        action: 'bulkDelete',
-                        params: []
-                    })" variant="danger" icon="trash-2">
-                    Eliminar
-                </x-button>
-            </x-bulk-actions-bar>
+            @if(auth()->user()->hasPermission('proyectos.eliminar') || auth()->user()->hasPermission('*'))
+                <x-bulk-actions-bar>
+                    <x-button @click="$dispatch('confirm-action', {
+                            title: 'Eliminar Proyectos',
+                            description: 'Se eliminarán permanentemente los proyectos seleccionados que no tengan dependencias.',
+                            confirmLabel: 'Eliminar',
+                            variant: 'danger',
+                            action: 'bulkDelete',
+                            params: []
+                        })" variant="danger" icon="trash-2">
+                        Eliminar
+                    </x-button>
+                </x-bulk-actions-bar>
+            @endif
 
         </div>
 
@@ -458,7 +464,7 @@
 
                 @if($editingId)
                     <x-form-field label="Estado" error="{{ $errors->first('status') }}">
-                        <x-custom-select wire:model="status" :options="['activo' => 'Activo', 'en_pausa' => 'En Pausa', 'completado' => 'Completado', 'cancelado' => 'Cancelado']" placeholder="Seleccionar estado..." />
+                        <x-custom-select wire:model="status" :options="$statuses" placeholder="Seleccionar estado..." />
                     </x-form-field>
                 @endif
 

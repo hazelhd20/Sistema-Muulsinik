@@ -134,12 +134,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border/40">
-                            @foreach($form->items as $i => $item)
-                                @php
-                                    $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
-                                    $iva = round($subtotal * 0.16, 2);
-                                    $total = $subtotal + $iva;
-                                @endphp
+                            @foreach($itemsWithTotals as $i => $item)
                                 <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
                                     wire:key="item-row-{{ $item['id'] ?? $i }}">
                                     <td class="pl-6 pr-4 py-4">
@@ -175,11 +170,11 @@
                                     </td>
                                     <td
                                         class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
-                                        ${{ number_format($subtotal, 2, '.', ',') }}
+                                        ${{ number_format($item['subtotal'], 2, '.', ',') }}
                                     </td>
                                     <td
                                         class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
-                                        ${{ number_format($total, 2, '.', ',') }}
+                                        ${{ number_format($item['total'], 2, '.', ',') }}
                                     </td>
                                     <td class="pr-6 pl-4 py-4 text-center">
                                         <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
@@ -192,12 +187,7 @@
 
                 {{-- Mobile Cards --}}
                 <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
-                    @foreach($form->items as $i => $item)
-                        @php
-                            $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
-                            $iva = round($subtotal * 0.16, 2);
-                            $total = $subtotal + $iva;
-                        @endphp
+                    @foreach($itemsWithTotals as $i => $item)
                         <div class="bg-surface-main rounded-xl p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
                             {{-- Card Header --}}
                             <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
@@ -243,7 +233,7 @@
                                 <div class="mt-2 flex justify-between items-center pt-3 border-t border-border/50">
                                     <span class="text-small font-medium text-text-secondary">Total Línea:</span>
                                     <span class="font-bold text-h3 text-text-primary tabular-nums">
-                                        ${{ number_format($total, 2, '.', ',') }}
+                                        ${{ number_format($item['total'], 2, '.', ',') }}
                                     </span>
                                 </div>
                         </div>

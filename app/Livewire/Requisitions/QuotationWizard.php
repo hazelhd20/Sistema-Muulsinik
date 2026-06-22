@@ -598,10 +598,16 @@ class QuotationWizard extends Component
             $suggestedCategoryName = $item['category'] ?? 'General';
             $suggestedUnit = $item['unit'] ?? 'pza';
 
+            $qty = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['unit_price'] ?? 0);
+            $subtotalVal = $item['line_subtotal'] ?? round($price * $qty, 2);
+            $taxVal = $item['tax_amount'] ?? round($subtotalVal * 0.16, 2);
+            $totalVal = $item['line_total'] ?? ($subtotalVal + $taxVal);
+
             $this->items[] = [
                 'id' => uniqid(),
                 'name' => $item['name'] ?? '',
-                'quantity' => $item['quantity'] ?? 0,
+                'quantity' => $qty,
                 'unit' => ($existingProduct && $existingProduct->measure_id)
                     ? ($existingProduct->measure?->abbreviation ?? $suggestedUnit)
                     : $suggestedUnit,
@@ -611,12 +617,12 @@ class QuotationWizard extends Component
                 'category_name' => ($existingProduct)
                     ? ($existingProduct->category?->name ?? 'General')
                     : $suggestedCategoryName,
-                'unit_price' => $item['unit_price'] ?? 0,
-                'unit_price_original' => $item['unit_price_original'] ?? $item['unit_price'] ?? 0,
-                'tax_amount' => $item['tax_amount'] ?? null,
-                'tax_source' => $item['tax_source'] ?? null,
-                'line_subtotal' => $item['line_subtotal'] ?? null,
-                'line_total' => $item['line_total'] ?? null,
+                'unit_price' => $price,
+                'unit_price_original' => $item['unit_price_original'] ?? $price,
+                'tax_amount' => $taxVal,
+                'tax_source' => $item['tax_source'] ?? 'calculated',
+                'line_subtotal' => $subtotalVal,
+                'line_total' => $totalVal,
                 'discount_percent' => $item['discount_percent'] ?? null,
                 'product_id' => $existingProductId,
                 'conflict' => $conflict,
@@ -815,10 +821,10 @@ class QuotationWizard extends Component
             'category_name' => '',
             'unit_price' => 0,
             'unit_price_original' => 0,
-            'tax_amount' => null,
-            'tax_source' => null,
-            'line_subtotal' => null,
-            'line_total' => null,
+            'tax_amount' => 0,
+            'tax_source' => 'calculated',
+            'line_subtotal' => 0,
+            'line_total' => 0,
             'discount_percent' => null,
             'product_id' => null,
         ];

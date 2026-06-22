@@ -246,28 +246,45 @@
                 if (!ctx) return;
     
                 const data = @json($monthlyExpenses);
+
+                // Helper para convertir hex a rgba compatible con Canvas
+                const hexToRgba = (hex, opacity) => {
+                    hex = hex.trim();
+                    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+                        let c = hex.substring(1).split('');
+                        if(c.length === 3){
+                            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                        }
+                        c = '0x' + c.join('');
+                        return `rgba(${(c>>16)&255}, ${(c>>8)&255}, ${c&255}, ${opacity})`;
+                    }
+                    return hex;
+                };
+
+                // Obtener tokens de diseño dinámicamente del DOM
+                const style = getComputedStyle(document.documentElement);
+                const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
+                const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
+                const textMuted = style.getPropertyValue('--color-text-muted').trim() || '#475569';
+                const borderLight = style.getPropertyValue('--color-border-light').trim() || 'rgba(0,0,0,0.04)';
     
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: data.map(d => d.month),
                         datasets: [{
-                            // Paleta mapeada a design tokens:
-                            // rgba(2,48,200,X) = var(--color-primary-600) con opacidad X
-                            // '#0F1117'        = var(--color-text-primary)
-                            // '#9299A8'        = var(--color-text-muted)
                             label: 'Gastos',
                             data: data.map(d => d.total),
                             backgroundColor: (ctx) => {
                                 const chart = ctx.chart;
                                 const { ctx: c, chartArea } = chart;
-                                if (!chartArea) return 'rgba(2,48,200,0.12)';
+                                if (!chartArea) return hexToRgba(primaryHex, 0.12);
                                 const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                                gradient.addColorStop(0, 'rgba(2,48,200,0.18)');
-                                gradient.addColorStop(1, 'rgba(2,48,200,0.04)');
+                                gradient.addColorStop(0, hexToRgba(primaryHex, 0.18));
+                                gradient.addColorStop(1, hexToRgba(primaryHex, 0.04));
                                 return gradient;
                             },
-                            borderColor: 'rgba(2,48,200,0.7)',
+                            borderColor: hexToRgba(primaryHex, 0.7),
                             borderWidth: 1.5,
                             borderRadius: 6,
                             borderSkipped: false,
@@ -279,7 +296,7 @@
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                backgroundColor: '#0F1117',
+                                backgroundColor: textPrimary,
                                 titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
                                 bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
                                 padding: 10,
@@ -293,14 +310,14 @@
                             x: {
                                 grid: { display: false },
                                 border: { display: false },
-                                ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9299A8' }
+                                ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: textMuted }
                             },
                             y: {
-                                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                                grid: { color: borderLight, drawBorder: false },
                                 border: { display: false, dash: [4, 4] },
                                 ticks: {
                                     font: { family: 'Plus Jakarta Sans', size: 11 },
-                                    color: '#9299A8',
+                                    color: textMuted,
                                     callback: (v) => `$${(v / 1000).toFixed(0)}k`
                                 }
                             }

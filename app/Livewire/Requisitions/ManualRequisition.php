@@ -134,10 +134,19 @@ class ManualRequisition extends Component
         $categories = Category::orderBy('name')->get();
         $measures = Measure::getOptions();
 
+        // Calcular subtotales y totales individuales por partida
+        $itemsWithTotals = array_map(function ($item) {
+            $subtotal = ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0);
+            $iva = round($subtotal * 0.16, 2);
+            $total = $subtotal + $iva;
+            return array_merge($item, [
+                'subtotal' => $subtotal,
+                'total' => $total,
+            ]);
+        }, $this->form->items);
+
         // Totales calculados en el componente — la vista solo los consume
-        $subtotal = collect($this->form->items)->sum(
-            fn ($item) => ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)
-        );
+        $subtotal = collect($itemsWithTotals)->sum('subtotal');
         $iva = round($subtotal * 0.16, 2);
         $totals = [
             'subtotal' => $subtotal,
@@ -150,7 +159,8 @@ class ManualRequisition extends Component
             'vendors',
             'categories',
             'measures',
-            'totals'
+            'totals',
+            'itemsWithTotals'
         ));
     }
 }

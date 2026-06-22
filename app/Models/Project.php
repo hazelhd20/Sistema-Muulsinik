@@ -35,6 +35,7 @@ class Project extends Model
         'budget' => 'decimal:2',
         'start_date' => 'date',
         'end_date' => 'date',
+        'status' => \App\Enums\ProjectStatus::class,
     ];
 
     /**
@@ -98,11 +99,10 @@ class Project extends Model
             ->whereHas('expense', fn ($q) => $q->where('date', '>=', $dateFrom))
             ->sum('amount');
 
-        $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-            ->where('requisitions.project_id', $this->id)
-            ->where('requisitions.status', 'aprobada')
-            ->where('requisitions.created_at', '>=', $dateFrom)
-            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+        $requisitions = (float) $this->requisitions()
+            ->where('status', 'aprobada')
+            ->where('created_at', '>=', $dateFrom)
+            ->sum('cached_total');
 
         return $direct + $distributed + $requisitions;
     }

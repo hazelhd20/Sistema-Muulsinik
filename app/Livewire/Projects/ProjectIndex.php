@@ -8,6 +8,8 @@ use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\Project;
 use App\Repositories\ProjectRepository;
+use App\Enums\ProjectStatus;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -99,7 +101,7 @@ class ProjectIndex extends Component
                 'budget' => 'required|numeric|min:0',
                 'startDate' => 'nullable|date',
                 'endDate' => 'nullable|date|after_or_equal:startDate',
-                'status' => 'required|in:activo,en_pausa,completado,cancelado',
+                'status' => ['required', Rule::enum(ProjectStatus::class)],
             ]);
 
             $dto = ProjectDTO::fromArray($validated);
@@ -245,7 +247,8 @@ class ProjectIndex extends Component
             ->paginate(12);
 
         $clients = \App\Models\Client::where('active', true)->orderBy('name')->pluck('name', 'id')->toArray();
+        $statuses = ProjectStatus::toArray();
 
-        return view('livewire.projects.project-index', compact('projects', 'clients'));
+        return view('livewire.projects.project-index', compact('projects', 'clients', 'statuses'));
     }
 }

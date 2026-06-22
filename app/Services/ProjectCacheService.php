@@ -20,10 +20,9 @@ class ProjectCacheService
         $direct = (float) $project->expenses()->sum('amount');
         $distributed = (float) $project->expenseAllocations()->sum('amount');
 
-        $requisitions = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-            ->where('requisitions.project_id', $project->id)
-            ->where('requisitions.status', 'aprobada')
-            ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+        $requisitions = (float) $project->requisitions()
+            ->where('status', 'aprobada')
+            ->sum('cached_total');
 
         $project->forceFill(['total_expenses_cache' => $direct + $distributed + $requisitions])->saveQuietly();
     }

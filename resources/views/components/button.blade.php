@@ -11,6 +11,7 @@
     'iconRight' => null,
     'target' => null, // para wire:target
     'ariaLabel' => null,
+    'iconClass' => '',
 ])
 
 @php
@@ -51,7 +52,8 @@
 
     $isIconButton = str_starts_with($variant, 'icon');
     $isLinkVariant = str_starts_with($variant, 'link');
-    $iconClass = $isIconButton ? 'w-4 h-4' : 'w-4 h-4 shrink-0';
+    $baseIconClass = $isIconButton ? 'w-4 h-4' : 'w-4 h-4 shrink-0';
+    $computedIconClass = $baseIconClass . ($iconClass ? ' ' . $iconClass : '');
     $computedAriaLabel = $ariaLabel ?? $attributes->get('aria-label') ?? $attributes->get('title') ?? ($isIconButton && $slot->isEmpty() ? 'Icon button' : null);
 @endphp
 
@@ -59,13 +61,13 @@
 @if($href)
     <a href="{!! $href !!}" {{ $attributes->merge(['class' => $baseClasses]) }} @if($computedAriaLabel) aria-label="{{ $computedAriaLabel }}" @endif>
         @if($icon)
-            <x-dynamic-component :component="'lucide-' . $icon" class="{{ $iconClass }}" />
+            <x-dynamic-component :component="'lucide-' . $icon" class="{{ $computedIconClass }}" />
         @endif
         @if(!$isIconButton || $slot->isNotEmpty())
             {{ $slot }}
         @endif
         @if($iconRight)
-            <x-dynamic-component :component="'lucide-' . $iconRight" class="{{ $iconClass }}" />
+            <x-dynamic-component :component="'lucide-' . $iconRight" class="{{ $computedIconClass }}" />
         @endif
     </a>
 @else
@@ -78,7 +80,7 @@
         @endif
 
         @if($icon)
-            <x-dynamic-component :component="'lucide-' . $icon" class="{{ $iconClass }}" />
+            <x-dynamic-component :component="'lucide-' . $icon" class="{{ $computedIconClass }}" />
         @endif
 
         @if(!$isIconButton || $slot->isNotEmpty())
@@ -86,7 +88,7 @@
         @endif
 
         @if($iconRight)
-            <x-dynamic-component :component="'lucide-' . $iconRight" class="{{ $iconClass }}" />
+            <x-dynamic-component :component="'lucide-' . $iconRight" class="{{ $computedIconClass }}" />
         @endif
 
         @if($target)

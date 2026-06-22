@@ -46,18 +46,6 @@ class ReportIndex extends Component
         };
     }
 
-    private function getCategoryLabels(): array
-    {
-        return [
-            'materiales' => 'Materiales',
-            'mano_de_obra' => 'Mano de Obra',
-            'equipo' => 'Equipo y Maquinaria',
-            'transporte' => 'Transporte',
-            'servicios' => 'Servicios Profesionales',
-            'administrativos' => 'Administrativos',
-            'otros' => 'Otros',
-        ];
-    }
 
     /** Datos para la pestaña de Resumen General */
 
@@ -67,7 +55,7 @@ class ReportIndex extends Component
     public function render(\App\Services\ReportService $reportService)
     {
         $dateFrom = $this->getDateFrom();
-        $categoryLabels = $this->getCategoryLabels();
+        $categoryLabels = \App\Enums\ExpenseCategory::toArray();
         $projects = Project::orderBy('name')->get();
 
         // Cargar los datos según la pestaña activa para rendimiento (Lazy Loading)

@@ -304,6 +304,7 @@ class RequisitionItemResolverService
         if (! empty($items)) {
             $itemsData = $this->processItems($items, $requisition->id, $finalSupplierId);
             RequisitionItem::insert($itemsData);
+            $requisition->recalculateTotals();
         }
 
         $requisition->activities()->create([

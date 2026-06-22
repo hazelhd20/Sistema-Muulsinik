@@ -62,15 +62,6 @@ class ExpenseIndex extends Component
 
     public $receiptFile = null;
 
-    protected array $categories = [
-        'materiales' => 'Materiales',
-        'mano_de_obra' => 'Mano de Obra',
-        'equipo' => 'Equipo y Maquinaria',
-        'transporte' => 'Transporte',
-        'servicios' => 'Servicios Profesionales',
-        'administrativos' => 'Gastos Administrativos',
-        'otros' => 'Otros',
-    ];
 
 
 
@@ -218,8 +209,8 @@ class ExpenseIndex extends Component
             })
             ->paginate(15);
 
-        $projects = Project::where('status', 'activo')->orderBy('name')->get();
-        $categories = $this->categories;
+        $projects = cache()->rememberForever('projects.activos.array', fn() => Project::where('status', 'activo')->orderBy('name')->pluck('name', 'id')->toArray());
+        $categories = \App\Enums\ExpenseCategory::toArray();
         $users = User::select('id', 'name')->orderBy('name')->get();
 
         $totalMonth = Expense::whereMonth('date', now()->month)

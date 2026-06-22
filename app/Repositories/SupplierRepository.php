@@ -16,12 +16,6 @@ class SupplierRepository extends BaseRepository
      */
     public function save(SupplierDTO $dto): Supplier
     {
-        if (!$dto->id) {
-            \Illuminate\Support\Facades\Cache::forget('dashboard_global_stats');
-        }
-        
-        \Illuminate\Support\Facades\Cache::forget('catalog_suppliers');
-        
         return $this->saveRecord([
             'trade_name' => $dto->trade_name,
             'legal_name' => $dto->legal_name,

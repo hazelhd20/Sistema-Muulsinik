@@ -168,6 +168,7 @@
             :style="{ minWidth: $refs.input?.offsetWidth + 'px' }"
             class="z-[200] bg-surface-card border border-border rounded-xl shadow-xl flex flex-col max-w-[90vw] max-h-64 overflow-hidden mt-1"
             style="display: none;"
+        >
         @if(isset($header))
             <div class="dropdown-header">
                 {{ $header }}

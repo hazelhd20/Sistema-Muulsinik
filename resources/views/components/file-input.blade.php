@@ -227,14 +227,14 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0 pl-2">
-                            <button x-show="canPreview(file) && !file.isUploading" type="button" @click.stop="openPreview(file)"
-                                class="btn-icon-primary" title="Vista previa">
+                            <x-button x-show="canPreview(file) && !file.isUploading" type="button" @click.stop="openPreview(file)"
+                                variant="icon-primary" title="Vista previa">
                                 <x-lucide-eye class="w-4 h-4" wire:ignore />
-                            </button>
-                            <button x-show="!file.isUploading" type="button" @click.stop="removeFile(index)"
-                                class="btn-icon-danger" title="Eliminar archivo">
+                            </x-button>
+                            <x-button x-show="!file.isUploading" type="button" @click.stop="removeFile(index)"
+                                variant="icon-danger" title="Eliminar archivo">
                                 <x-lucide-trash-2 class="w-4 h-4" wire:ignore />
-                            </button>
+                            </x-button>
                         </div>
                     </div>
                 </div>

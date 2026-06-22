@@ -36,4 +36,17 @@ class Expense extends Model
     {
         return $this->hasMany(ExpenseAllocation::class);
     }
+
+    /**
+     * Obtiene el nombre formateado de la categoría.
+     */
+    public function getCategoryNameAttribute(): string
+    {
+        if (!$this->category) {
+            return '—';
+        }
+
+        $enum = \App\Enums\ExpenseCategory::tryFrom($this->category);
+        return $enum ? $enum->label() : ucfirst(str_replace('_', ' ', $this->category));
+    }
 }

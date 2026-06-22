@@ -29,16 +29,13 @@ class Dashboard extends Component
         });
 
         $financialStats = \Illuminate\Support\Facades\Cache::remember('dashboard_financial_stats', now()->addHours(1), function () {
-            $requisitionsTotalAllTime = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                ->where('requisitions.status', 'aprobada')
-                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $requisitionsTotalAllTime = (float) Requisition::where('status', 'aprobada')->sum('cached_total');
             $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
 
-            $requisitionsTotalThisMonth = (float) RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                ->where('requisitions.status', 'aprobada')
-                ->whereMonth('requisitions.created_at', now()->month)
-                ->whereYear('requisitions.created_at', now()->year)
-                ->sum(DB::raw('COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))'));
+            $requisitionsTotalThisMonth = (float) Requisition::where('status', 'aprobada')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('cached_total');
             $monthExpenses = (float) Expense::whereMonth('date', now()->month)
                 ->whereYear('date', now()->year)
                 ->sum('amount') + $requisitionsTotalThisMonth;
@@ -52,7 +49,7 @@ class Dashboard extends Component
 
             $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
             $dateTruncExpense = $driver === 'sqlite' ? "strftime('%Y-%m', date)" : "DATE_TRUNC('month', date)";
-            $dateTruncReq = $driver === 'sqlite' ? "strftime('%Y-%m', requisitions.created_at)" : "DATE_TRUNC('month', requisitions.created_at)";
+            $dateTruncReq = $driver === 'sqlite' ? "strftime('%Y-%m', created_at)" : "DATE_TRUNC('month', created_at)";
 
             $directExpenses = Expense::selectRaw("$dateTruncExpense as month_date, SUM(amount) as total")
                 ->whereBetween('date', [$startDate, $endDate])
@@ -60,10 +57,9 @@ class Dashboard extends Component
                 ->get()
                 ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
 
-            $requisitionExpenses = RequisitionItem::join('requisitions', 'requisitions.id', '=', 'requisition_items.requisition_id')
-                ->selectRaw("$dateTruncReq as month_date, SUM(COALESCE(requisition_items.line_total, (requisition_items.unit_price * requisition_items.quantity) + COALESCE(requisition_items.tax_amount, 0))) as total")
-                ->where('requisitions.status', 'aprobada')
-                ->whereBetween('requisitions.created_at', [$startDate, $endDate])
+            $requisitionExpenses = Requisition::selectRaw("$dateTruncReq as month_date, SUM(cached_total) as total")
+                ->where('status', 'aprobada')
+                ->whereBetween('created_at', [$startDate, $endDate])
                 ->groupBy(DB::raw($dateTruncReq))
                 ->get()
                 ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));

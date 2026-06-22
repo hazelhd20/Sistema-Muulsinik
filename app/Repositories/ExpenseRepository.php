@@ -64,7 +64,7 @@ class ExpenseRepository
     public function bulkDelete(array $ids): void
     {
         if (!empty($ids)) {
-            Expense::whereIn('id', $ids)->delete();
+            Expense::whereIn('id', $ids)->get()->each->delete();
         }
     }
 

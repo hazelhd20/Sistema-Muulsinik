@@ -221,8 +221,8 @@
                                     <td class="pl-6 pr-4 py-3 font-medium text-small text-text-primary">
                                         {{ $expense->concept }}
                                     </td>
-                                    <td class="px-4 py-3 text-small text-text-muted">
-                                        {{ $expense->category ?? '—' }}
+                                    <td class="px-4 py-3 text-small">
+                                        <x-dynamic-badge :value="$expense->category_name" />
                                     </td>
                                     <td class="px-4 py-3 text-small text-text-secondary">
                                         {{ $expense->user?->name ?? '—' }}
