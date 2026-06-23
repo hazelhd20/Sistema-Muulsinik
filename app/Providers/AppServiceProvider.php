@@ -26,5 +26,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Supplier::observe(\App\Observers\SupplierObserver::class);
         \App\Models\User::observe(\App\Observers\UserObserver::class);
         \App\Models\RequisitionItem::observe(\App\Observers\RequisitionItemObserver::class);
+        \App\Models\Measure::observe(\App\Observers\MeasureObserver::class);
+        \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
     }
 }

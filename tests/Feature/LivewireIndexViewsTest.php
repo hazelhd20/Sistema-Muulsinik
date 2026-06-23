@@ -480,6 +480,230 @@ class LivewireIndexViewsTest extends TestCase
             ->set('activeTab', 'products')
             ->assertStatus(200);
     }
+
+    public function test_client_bulk_delete_enforces_permissions()
+    {
+        $admin = User::first();
+        
+        $client1 = \App\Models\Client::create([
+            'name' => 'Cliente Uno',
+            'active' => true,
+        ]);
+        
+        $client2 = \App\Models\Client::create([
+            'name' => 'Cliente Dos',
+            'active' => true,
+        ]);
+
+        // Create a role that does NOT have catalogos.eliminar
+        $roleWithoutDelete = \App\Models\Role::create([
+            'name' => 'Sin Borrar Catalogos',
+            'permissions' => ['catalogos.ver']
+        ]);
+        $unauthorizedUser = User::create([
+            'name' => 'No Borra Cliente',
+            'email' => 'noborracliente@muulsinik.com',
+            'password' => bcrypt('password'),
+            'role_id' => $roleWithoutDelete->id,
+            'active' => true,
+        ]);
+
+        // Act as unauthorized user and try to delete
+        $this->actingAs($unauthorizedUser);
+
+        Livewire::test(\App\Livewire\Clients\ClientIndex::class)
+            ->set('selectedRows', [(string) $client1->id, (string) $client2->id])
+            ->call('bulkDelete');
+
+        // Verify they are not deleted
+        $this->assertDatabaseHas('clients', ['id' => $client1->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('clients', ['id' => $client2->id, 'deleted_at' => null]);
+
+        // Act as admin and delete
+        $this->actingAs($admin);
+
+        Livewire::test(\App\Livewire\Clients\ClientIndex::class)
+            ->set('selectedRows', [(string) $client1->id, (string) $client2->id])
+            ->call('bulkDelete')
+            ->assertSet('selectedRows', []);
+
+        // Verify soft deleted
+        $this->assertSoftDeleted($client1);
+        $this->assertSoftDeleted($client2);
+    }
+
+    public function test_product_bulk_delete_enforces_permissions()
+    {
+        $admin = User::first();
+        
+        $category = \App\Models\Category::first() ?? \App\Models\Category::create(['name' => 'Cat Test']);
+        $measure = \App\Models\Measure::first() ?? \App\Models\Measure::create(['name' => 'Pza', 'abbreviation' => 'Pza']);
+
+        $product1 = \App\Models\Product::create([
+            'canonical_name' => 'Producto Uno',
+            'category_id' => $category->id,
+            'measure_id' => $measure->id,
+            'item_type' => 'material',
+        ]);
+        
+        $product2 = \App\Models\Product::create([
+            'canonical_name' => 'Producto Dos',
+            'category_id' => $category->id,
+            'measure_id' => $measure->id,
+            'item_type' => 'material',
+        ]);
+
+        // Create a role that does NOT have productos.eliminar
+        $roleWithoutDelete = \App\Models\Role::create([
+            'name' => 'Sin Borrar Productos',
+            'permissions' => ['productos.ver']
+        ]);
+        $unauthorizedUser = User::create([
+            'name' => 'No Borra Producto',
+            'email' => 'noborraprod@muulsinik.com',
+            'password' => bcrypt('password'),
+            'role_id' => $roleWithoutDelete->id,
+            'active' => true,
+        ]);
+
+        // Act as unauthorized user and try to delete
+        $this->actingAs($unauthorizedUser);
+
+        Livewire::test(\App\Livewire\Products\ProductIndex::class)
+            ->set('selectedRows', [(string) $product1->id, (string) $product2->id])
+            ->call('bulkDelete');
+
+        // Verify they are not deleted
+        $this->assertDatabaseHas('products', ['id' => $product1->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('products', ['id' => $product2->id, 'deleted_at' => null]);
+
+        // Act as admin and delete
+        $this->actingAs($admin);
+
+        Livewire::test(\App\Livewire\Products\ProductIndex::class)
+            ->set('selectedRows', [(string) $product1->id, (string) $product2->id])
+            ->call('bulkDelete')
+            ->assertSet('selectedRows', []);
+
+        // Verify soft deleted
+        $this->assertSoftDeleted($product1);
+        $this->assertSoftDeleted($product2);
+    }
+
+    public function test_measure_bulk_delete_invalidates_cache_and_enforces_permissions()
+    {
+        $admin = User::first();
+        
+        $measure1 = \App\Models\Measure::create([
+            'name' => 'Metro Lineal',
+            'abbreviation' => 'm',
+        ]);
+        
+        $measure2 = \App\Models\Measure::create([
+            'name' => 'Kilogramo',
+            'abbreviation' => 'kg',
+        ]);
+
+        // Create a role that does NOT have catalogos.editar
+        $roleWithoutDelete = \App\Models\Role::create([
+            'name' => 'Sin Editar Catalogos',
+            'permissions' => ['catalogos.ver']
+        ]);
+        $unauthorizedUser = User::create([
+            'name' => 'No Borra Medida',
+            'email' => 'noborramedida@muulsinik.com',
+            'password' => bcrypt('password'),
+            'role_id' => $roleWithoutDelete->id,
+            'active' => true,
+        ]);
+
+        // Populate the cache key
+        cache()->put('catalog_measures', ['some' => 'data'], 3600);
+        $this->assertTrue(cache()->has('catalog_measures'));
+
+        // Act as unauthorized user and try to delete
+        $this->actingAs($unauthorizedUser);
+
+        Livewire::test(\App\Livewire\Measures\MeasureIndex::class)
+            ->set('selectedRows', [(string) $measure1->id, (string) $measure2->id])
+            ->call('bulkDelete');
+
+        // Verify they are not deleted
+        $this->assertDatabaseHas('measures', ['id' => $measure1->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('measures', ['id' => $measure2->id, 'deleted_at' => null]);
+        $this->assertTrue(cache()->has('catalog_measures'));
+
+        // Act as admin and delete
+        $this->actingAs($admin);
+
+        Livewire::test(\App\Livewire\Measures\MeasureIndex::class)
+            ->set('selectedRows', [(string) $measure1->id, (string) $measure2->id])
+            ->call('bulkDelete')
+            ->assertSet('selectedRows', []);
+
+        // Verify soft deleted and cache cleared
+        $this->assertSoftDeleted($measure1);
+        $this->assertSoftDeleted($measure2);
+        $this->assertFalse(cache()->has('catalog_measures'));
+    }
+
+    public function test_category_bulk_delete_invalidates_cache_and_enforces_permissions()
+    {
+        $admin = User::first();
+        
+        $category1 = \App\Models\Category::create([
+            'name' => 'Categoria Invalida Cache Uno',
+        ]);
+        
+        $category2 = \App\Models\Category::create([
+            'name' => 'Categoria Invalida Cache Dos',
+        ]);
+
+        // Create a role that does NOT have catalogos.editar
+        $roleWithoutDelete = \App\Models\Role::create([
+            'name' => 'Sin Editar Catalogos',
+            'permissions' => ['catalogos.ver']
+        ]);
+        $unauthorizedUser = User::create([
+            'name' => 'No Borra Categoria',
+            'email' => 'noborracat@muulsinik.com',
+            'password' => bcrypt('password'),
+            'role_id' => $roleWithoutDelete->id,
+            'active' => true,
+        ]);
+
+        // Populate the cache key
+        cache()->put('catalog_categories', ['some' => 'data'], 3600);
+        $this->assertTrue(cache()->has('catalog_categories'));
+
+        // Act as unauthorized user and try to delete
+        $this->actingAs($unauthorizedUser);
+
+        Livewire::test(\App\Livewire\Products\CategoryIndex::class)
+            ->set('selectedRows', [(string) $category1->id, (string) $category2->id])
+            ->call('bulkDelete');
+
+        // Verify they are not deleted
+        $this->assertDatabaseHas('categories', ['id' => $category1->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('categories', ['id' => $category2->id, 'deleted_at' => null]);
+        $this->assertTrue(cache()->has('catalog_categories'));
+
+        // Act as admin and delete
+        $this->actingAs($admin);
+
+        Livewire::test(\App\Livewire\Products\CategoryIndex::class)
+            ->set('selectedRows', [(string) $category1->id, (string) $category2->id])
+            ->call('bulkDelete')
+            ->assertSet('selectedRows', []);
+
+        // Verify soft deleted and cache cleared
+        $this->assertSoftDeleted($category1);
+        $this->assertSoftDeleted($category2);
+        $this->assertFalse(cache()->has('catalog_categories'));
+    }
 }
+
+
+
 
 

@@ -1,4 +1,4 @@
-<div x-data="basicIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $measures->count() }}; init()">
+<div x-data="basicIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $measures->count() }}; init()" data-total-on-page="{{ $measures->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Medidas">
         <x-slot:actions>
@@ -53,7 +53,7 @@
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $measures->pluck('id')->join(',') }}])" />
+                                        x-on:change="toggleAll({{ json_encode($measures->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -241,7 +241,7 @@
             </div>
         </div>
 
-        {{-- Bulk Actions Bar --}}
+        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
         <x-bulk-actions-bar>
             <x-button
                 @click="$dispatch('confirm-action', {
@@ -257,6 +257,7 @@
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
+        @endif
         @if($measures->hasPages())
             <x-card.footer class="flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="w-full sm:w-auto overflow-x-auto">

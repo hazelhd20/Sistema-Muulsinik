@@ -1,4 +1,4 @@
-<div x-data="productIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $clients->count() }}; init()">
+<div x-data="clientIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $clients->count() }}; init()" data-total-on-page="{{ $clients->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Clientes">
         <x-slot:actions>
@@ -76,7 +76,7 @@
                                 <input type="checkbox"
                                     class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                     x-bind:checked="allSelected"
-                                    x-on:change="toggleAll([{{ $clients->pluck('id')->join(',') }}])" />
+                                    x-on:change="toggleAll({{ json_encode($clients->pluck('id')->toArray()) }})" />
                             </th>
                             <x-sortable-header field="name" label="Nombre Comercial" :sortField="$sortField" :sortDirection="$sortDirection" />
                             <x-sortable-header field="rfc" label="RFC" :sortField="$sortField" :sortDirection="$sortDirection" />
@@ -260,11 +260,13 @@
             </div>
         </div>
 
+        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
         <x-bulk-actions-bar>
             <x-button @click="$dispatch('confirm-action', { title: 'Eliminar Clientes', description: 'Se eliminarán los clientes seleccionados.', confirmLabel: 'Eliminar', variant: 'danger', action: 'bulkDelete', params: [] })" variant="danger" icon="trash-2">
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
+        @endif
 
         @if($clients->hasPages())
             <x-card.footer>

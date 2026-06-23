@@ -26,15 +26,4 @@ class ClientRepository extends BaseRepository
         ], $dto->id);
     }
 
-    /**
-     * Delete multiple records.
-     * Overridden to handle relations if needed, but BaseRepository handles default soft delete.
-     *
-     * @param array $ids
-     * @return int Number of records deleted
-     */
-    public function bulkDelete(array $ids): int
-    {
-        return parent::bulkDelete($ids);
-    }
 }

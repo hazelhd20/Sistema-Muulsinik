@@ -1,4 +1,4 @@
-<div x-data="productIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $products->count() }}; init()">
+<div x-data="productIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $products->count() }}; init()" data-total-on-page="{{ $products->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Productos">
         <x-slot:actions>
@@ -89,7 +89,7 @@
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $products->pluck('id')->join(',') }}])" />
+                                        x-on:change="toggleAll({{ json_encode($products->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -317,6 +317,7 @@
         </div>
 
         {{-- Bulk Actions Bar --}}
+        @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
         <x-bulk-actions-bar>
             <x-button
                 @click="$dispatch('confirm-action', {
@@ -332,6 +333,7 @@
                 Eliminar
             </x-button>
         </x-bulk-actions-bar>
+        @endif
         {{-- Pagination Footer --}}
         @if($products->hasPages())
             <x-card.footer>

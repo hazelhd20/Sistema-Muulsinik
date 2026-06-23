@@ -198,6 +198,12 @@ document.addEventListener('alpine:init', () => {
         })
     );
 
+    Alpine.data('clientIndex',
+        createIndexComponent({
+            filterActive: 'activeFilter'
+        })
+    );
+
     Alpine.data('quickBudgetIndex',
         createIndexComponent({
             filterStatus: 'statusFilter',
