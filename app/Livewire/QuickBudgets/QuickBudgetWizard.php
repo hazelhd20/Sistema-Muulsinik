@@ -41,6 +41,12 @@ class QuickBudgetWizard extends Component
 
     public function mount(?int $id = null)
     {
+        $requiredPermission = $id ? 'cotizaciones.editar' : 'cotizaciones.crear';
+        if (! auth()->user()?->hasPermission($requiredPermission) &&
+            ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para acceder al cotizador rápido.');
+        }
+
         if ($id) {
             $budget = QuickBudget::with('items.product', 'items.measure')->findOrFail($id);
             $this->budgetId = $budget->id;
@@ -251,6 +257,13 @@ class QuickBudgetWizard extends Component
 
     public function save(QuickBudgetRepository $repository)
     {
+        $requiredPermission = $this->budgetId ? 'cotizaciones.editar' : 'cotizaciones.crear';
+        if (! auth()->user()?->hasPermission($requiredPermission) &&
+            ! auth()->user()?->hasPermission('*')) {
+            session()->flash('error', 'No tienes permiso para realizar esta acción.');
+            return null;
+        }
+
         $this->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',

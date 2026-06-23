@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Forms\Requisitions\ManualRequisitionForm;
 use App\Models\Category;
 use App\Models\Measure;
@@ -17,6 +18,8 @@ use Livewire\Component;
 
 class ManualRequisition extends Component
 {
+    use EnforcesPermissions;
+
     public ManualRequisitionForm $form;
 
     #[Url]
@@ -29,6 +32,10 @@ class ManualRequisition extends Component
 
     public function mount()
     {
+        if (! auth()->user()?->hasPermission('requisiciones.crear') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para crear requisiciones.');
+        }
+
         $this->form->date = now()->format('Y-m-d');
     }
 

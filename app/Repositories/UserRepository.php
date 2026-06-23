@@ -56,6 +56,21 @@ class UserRepository
     }
 
     /**
+     * Delete multiple users by ID, ensuring observers run to invalidate caches
+     *
+     * @param array $ids
+     * @return void
+     */
+    public function bulkDelete(array $ids): void
+    {
+        if (!empty($ids)) {
+            DB::transaction(function () use ($ids) {
+                User::whereIn('id', $ids)->get()->each->delete();
+            });
+        }
+    }
+
+    /**
      * Toggle the active status of a user
      * 
      * @param int $id

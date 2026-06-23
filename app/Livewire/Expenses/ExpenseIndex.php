@@ -67,6 +67,10 @@ class ExpenseIndex extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('gastos.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver gastos.');
+        }
+
         $this->sortField = 'date';
         $this->sortDirection = 'desc';
     }

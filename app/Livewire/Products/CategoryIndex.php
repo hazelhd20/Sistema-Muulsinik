@@ -47,6 +47,10 @@ class CategoryIndex extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('catalogos.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para acceder al catálogo de categorías.');
+        }
+
         $this->sortField = 'name';
         $this->sortDirection = 'asc';
     }

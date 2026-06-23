@@ -51,6 +51,8 @@ abstract class BaseRepository
      */
     public function bulkDelete(array $ids): void
     {
-        $this->modelClass::whereIn('id', $ids)->delete();
+        if (!empty($ids)) {
+            $this->modelClass::whereIn('id', $ids)->get()->each->delete();
+        }
     }
 }

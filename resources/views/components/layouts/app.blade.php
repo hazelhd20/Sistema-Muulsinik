@@ -92,6 +92,15 @@
                     </a>
                 @endif
 
+                @if(auth()->user()->hasPermission('reportes.ver'))
+                    <a href="{{ url('/reportes') }}" wire:navigate class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
+                        <x-lucide-bar-chart-3 class="w-4 h-4 shrink-0" aria-hidden="true" />
+                        <span>Reportes</span>
+                    </a>
+                @endif
+
+                <p class="nav-section-label mt-4">Comercial</p>
+
                 @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
                     <a href="{{ route('cotizador.index') }}" wire:navigate
                         class="nav-link {{ request()->routeIs('cotizador.*') ? 'active' : '' }}">
@@ -100,37 +109,20 @@
                     </a>
                 @endif
 
-                <p class="nav-section-label mt-4">Administración</p>
-
-                @if(auth()->user()->hasPermission('usuarios.ver'))
-                    <a href="{{ url('/usuarios') }}" wire:navigate
-                        class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
-                        <x-lucide-users class="w-4 h-4 shrink-0" aria-hidden="true" />
-                        <span>Usuarios</span>
+                @if(auth()->user()->hasPermission('catalogos.ver'))
+                    <a href="{{ url('/clientes') }}" wire:navigate class="nav-link {{ request()->is('clientes*') ? 'active' : '' }}">
+                        <x-lucide-users-2 class="w-4 h-4 shrink-0" aria-hidden="true" />
+                        <span>Clientes</span>
                     </a>
                 @endif
+
+                <p class="nav-section-label mt-4">Catálogos</p>
 
                 @if(auth()->user()->hasPermission('proveedores.ver'))
                     <a href="{{ url('/proveedores') }}" wire:navigate
                         class="nav-link {{ request()->is('proveedores*') ? 'active' : '' }}">
                         <x-lucide-truck class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Proveedores</span>
-                    </a>
-                @endif
-
-                @if(auth()->user()->hasPermission('reportes.ver'))
-                    <a href="{{ url('/reportes') }}" wire:navigate class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
-                        <x-lucide-bar-chart-3 class="w-4 h-4 shrink-0" aria-hidden="true" />
-                        <span>Reportes</span>
-                    </a>
-                @endif
-
-                <p class="nav-section-label mt-4">Catálogos</p>
-
-                @if(auth()->user()->hasPermission('catalogos.ver'))
-                    <a href="{{ url('/clientes') }}" wire:navigate class="nav-link {{ request()->is('clientes*') ? 'active' : '' }}">
-                        <x-lucide-users-2 class="w-4 h-4 shrink-0" aria-hidden="true" />
-                        <span>Clientes</span>
                     </a>
                 @endif
 
@@ -149,6 +141,16 @@
                     <a href="{{ url('/categorias') }}" wire:navigate class="nav-link {{ request()->is('categorias*') ? 'active' : '' }}">
                         <x-lucide-layers class="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>Categorías</span>
+                    </a>
+                @endif
+
+                <p class="nav-section-label mt-4">Administración</p>
+
+                @if(auth()->user()->hasPermission('usuarios.ver'))
+                    <a href="{{ url('/usuarios') }}" wire:navigate
+                        class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
+                        <x-lucide-users class="w-4 h-4 shrink-0" aria-hidden="true" />
+                        <span>Usuarios</span>
                     </a>
                 @endif
             </nav>

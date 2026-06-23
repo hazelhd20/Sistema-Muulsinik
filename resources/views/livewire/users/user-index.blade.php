@@ -1,4 +1,4 @@
-<div x-data="userIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $users->count() }}; init()">
+<div x-data="userIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $users->count() }}; init()" data-total-on-page="{{ $users->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Administración" title="Usuarios">
         <x-slot:actions>
@@ -92,7 +92,7 @@
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $users->pluck('id')->join(',') }}])" />
+                                        x-on:change="toggleAll({{ json_encode($users->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="name" label="Usuario / Correo" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -321,21 +321,23 @@
         </div>
 
         {{-- Bulk Actions Bar --}}
-        <x-bulk-actions-bar>
-            <x-button
-                @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Usuarios',
-                    description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })"
-                variant="danger"
-                icon="trash-2">
-                Eliminar
-            </x-button>
-        </x-bulk-actions-bar>
+        @if(auth()->user()->hasPermission('usuarios.eliminar') || auth()->user()->hasPermission('*'))
+            <x-bulk-actions-bar>
+                <x-button
+                    @click="$dispatch('confirm-action', {
+                        title: 'Eliminar Usuarios',
+                        description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
+                        confirmLabel: 'Eliminar',
+                        variant: 'danger',
+                        action: 'bulkDelete',
+                        params: []
+                    })"
+                    variant="danger"
+                    icon="trash-2">
+                    Eliminar
+                </x-button>
+            </x-bulk-actions-bar>
+        @endif
         {{-- Pagination Footer --}}
         @if($users->hasPages())
             <x-card.footer>

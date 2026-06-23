@@ -78,4 +78,37 @@ class RequisitionRepository
 
         return $query->paginate($perPage);
     }
+
+    /**
+     * Delete a single requisition and orphan its associated quotations.
+     */
+    public function delete(int $id): void
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $requisition = Requisition::findOrFail($id);
+            $requisition->quotations()->update(['is_orphan' => true]);
+            $requisition->delete();
+        });
+    }
+
+    /**
+     * Bulk delete requisitions, filtering by draft/rejected status, and running observers.
+     */
+    public function bulkDelete(array $ids): array
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($ids) {
+            $deletableReqs = Requisition::whereIn('id', $ids)
+                ->whereIn('status', [\App\Enums\RequisitionStatus::DRAFT->value, \App\Enums\RequisitionStatus::REJECTED->value])
+                ->get();
+            
+            $deletableIds = $deletableReqs->pluck('id')->toArray();
+
+            if (!empty($deletableIds)) {
+                \App\Models\Quotation::whereIn('requisition_id', $deletableIds)->update(['is_orphan' => true]);
+                $deletableReqs->each->delete();
+            }
+
+            return $deletableIds;
+        });
+    }
 }

@@ -58,6 +58,10 @@ class ClientIndex extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('catalogos.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para acceder al catálogo de clientes.');
+        }
+
         $this->sortField = 'name';
         $this->sortDirection = 'asc';
     }

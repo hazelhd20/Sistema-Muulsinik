@@ -311,53 +311,74 @@
                         </div>
                     @else
                         <div wire:key="overview-monthly-content" class="h-64 flex-1"
-                            data-chart="{{ json_encode($monthlyData) }}" x-data="chartCanvas((data) => ({
-                                     type: 'line',
-                                     data: {
-                                         labels: data.map(d => d.short),
-                                         datasets: [{
-                                             label: 'Gastos',
-                                             data: data.map(d => d.total),
-                                             borderColor: '#0230c8',
-                                             backgroundColor: 'rgba(2, 48, 200, 0.08)',
-                                             fill: true,
-                                             tension: 0.4,
-                                             borderWidth: 2.5,
-                                             pointBackgroundColor: '#0230c8',
-                                             pointRadius: 4,
-                                             pointHoverRadius: 6,
-                                         }]
-                                     },
-                                     options: {
-                                         responsive: true,
-                                         maintainAspectRatio: false,
-                                         plugins: {
-                                             legend: { display: false },
-                                             tooltip: {
-                                                 backgroundColor: '#1E1B2E',
-                                                 padding: 12,
-                                                 cornerRadius: 8,
-                                                 titleFont: { family: 'Plus Jakarta Sans' },
-                                                 bodyFont: { family: 'Plus Jakarta Sans' },
-                                                 callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` }
+                            data-chart="{{ json_encode($monthlyData) }}" x-data="chartCanvas((data) => {
+                                     const style = getComputedStyle(document.documentElement);
+                                     const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
+                                     const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
+                                     const textMuted = style.getPropertyValue('--color-text-muted').trim() || '#475569';
+                                     const borderLight = style.getPropertyValue('--color-border-light').trim() || 'rgba(0,0,0,0.04)';
+
+                                     const hexToRgba = (hex, opacity) => {
+                                         hex = hex.trim();
+                                         if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+                                             let c = hex.substring(1).split('');
+                                             if(c.length === 3){
+                                                 c = [c[0], c[0], c[1], c[1], c[2], c[2]];
                                              }
+                                             c = '0x' + c.join('');
+                                             return `rgba(${(c>>16)&255}, ${(c>>8)&255}, ${c&255}, ${opacity})`;
+                                         }
+                                         return hex;
+                                     };
+
+                                     return {
+                                         type: 'line',
+                                         data: {
+                                             labels: data.map(d => d.short),
+                                             datasets: [{
+                                                 label: 'Gastos',
+                                                 data: data.map(d => d.total),
+                                                 borderColor: primaryHex,
+                                                 backgroundColor: hexToRgba(primaryHex, 0.08),
+                                                 fill: true,
+                                                 tension: 0.4,
+                                                 borderWidth: 2.5,
+                                                 pointBackgroundColor: primaryHex,
+                                                 pointRadius: 4,
+                                                 pointHoverRadius: 6,
+                                             }]
                                          },
-                                         scales: {
-                                             x: {
-                                                 grid: { display: false },
-                                                 ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#9CA3AF' }
+                                         options: {
+                                             responsive: true,
+                                             maintainAspectRatio: false,
+                                             plugins: {
+                                                 legend: { display: false },
+                                                 tooltip: {
+                                                     backgroundColor: textPrimary,
+                                                     padding: 12,
+                                                     cornerRadius: 8,
+                                                     titleFont: { family: 'Plus Jakarta Sans' },
+                                                     bodyFont: { family: 'Plus Jakarta Sans' },
+                                                     callbacks: { label: ctx => ` $${ctx.parsed.y.toLocaleString()}` }
+                                                 }
                                              },
-                                             y: {
-                                                 grid: { color: 'rgba(0,0,0,0.04)' },
-                                                 ticks: {
-                                                     font: { family: 'Plus Jakarta Sans', size: 11 },
-                                                     color: '#9CA3AF',
-                                                     callback: v => `$${(v / 1000).toFixed(0)}k`
+                                             scales: {
+                                                 x: {
+                                                     grid: { display: false },
+                                                     ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: textMuted }
+                                                 },
+                                                 y: {
+                                                     grid: { color: borderLight },
+                                                     ticks: {
+                                                         font: { family: 'Plus Jakarta Sans', size: 11 },
+                                                         color: textMuted,
+                                                         callback: v => `$${(v / 1000).toFixed(0)}k`
+                                                     }
                                                  }
                                              }
                                          }
-                                     }
-                                 }))">
+                                     };
+                                 })">
                             <div wire:ignore class="h-full w-full">
                                 <canvas></canvas>
                             </div>
@@ -379,7 +400,17 @@
                             <div class="h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($expenseByCategory) }}" x-data="chartCanvas((data) => {
                                          const labels = {{ json_encode($categoryLabels) }};
-                                         const colors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
+                                         const style = getComputedStyle(document.documentElement);
+                                         const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
+                                         const colors = [
+                                             style.getPropertyValue('--color-primary-600').trim() || '#2563eb',
+                                             style.getPropertyValue('--color-info').trim() || '#0284c7',
+                                             style.getPropertyValue('--color-success').trim() || '#0d9e6e',
+                                             style.getPropertyValue('--color-warning').trim() || '#d97706',
+                                             style.getPropertyValue('--color-danger').trim() || '#dc2626',
+                                             '#ec4899',
+                                             '#6b7280'
+                                         ];
                                          return {
                                              type: 'doughnut',
                                              data: {
@@ -398,12 +429,12 @@
                                                  plugins: {
                                                      legend: { display: false },
                                                      tooltip: {
-                                                         backgroundColor: '#1E1B2E',
+                                                         backgroundColor: textPrimary,
                                                          padding: 10,
                                                          cornerRadius: 8,
                                                          titleFont: { family: 'Plus Jakarta Sans' },
                                                          bodyFont: { family: 'Plus Jakarta Sans' },
-                                                         callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
+                                                         callbacks: { label: ctx => ` $${ctx.parsed.toLocaleString()}` }
                                                      }
                                                  }
                                              }
@@ -415,7 +446,7 @@
                             </div>
                             <div class="mt-4 space-y-2">
                                 @php
-                                    $catColors = ['#0230c8', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6b7280'];
+                                    $catColors = ['#2563eb', '#0284c7', '#0d9e6e', '#d97706', '#dc2626', '#ec4899', '#6b7280'];
                                 @endphp
                                 @foreach($expenseByCategory->take(5) as $i => $cat)
                                     <div class="flex items-center justify-between text-body">
@@ -713,7 +744,20 @@
                         <div wire:key="products-chart-content" class="flex flex-col flex-1">
                             <div class="h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($productsByCategory) }}" x-data="chartCanvas((data) => {
-                                         const colors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+                                         const style = getComputedStyle(document.documentElement);
+                                         const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
+                                         const colors = [
+                                             style.getPropertyValue('--color-primary-600').trim() || '#2563eb',
+                                             '#7c3aed',
+                                             '#6366f1',
+                                             style.getPropertyValue('--color-info').trim() || '#0284c7',
+                                             '#ec4899',
+                                             '#a855f7',
+                                             '#8b5cf6',
+                                             '#0ea5e9',
+                                             '#64748b',
+                                             '#78716c'
+                                         ];
                                          return {
                                              type: 'doughnut',
                                              data: {
@@ -732,12 +776,12 @@
                                                  plugins: {
                                                      legend: { display: false },
                                                      tooltip: {
-                                                         backgroundColor: '#1E1B2E',
+                                                         backgroundColor: textPrimary,
                                                          padding: 10,
                                                          cornerRadius: 8,
                                                          titleFont: { family: 'Plus Jakarta Sans' },
                                                          bodyFont: { family: 'Plus Jakarta Sans' },
-                                                         callbacks: { label: ctx => `$${ctx.parsed.toLocaleString()}` }
+                                                         callbacks: { label: ctx => ` $${ctx.parsed.toLocaleString()}` }
                                                      }
                                                  }
                                              }
@@ -749,7 +793,7 @@
                             </div>
                             <div class="mt-4 space-y-2">
                                 @php
-                                    $pcColors = ['#0230c8', '#7c3aed', '#6366f1', '#06b6d4', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+                                    $pcColors = ['#2563eb', '#7c3aed', '#6366f1', '#0284c7', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
                                 @endphp
                                 @foreach($productsByCategory->take(6) as $i => $pc)
                                     <div class="flex items-center justify-between text-body">

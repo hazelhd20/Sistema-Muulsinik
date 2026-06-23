@@ -33,7 +33,7 @@
 
         <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table" 
              x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
-             x-init="totalOnPage = {{ $requisitions->count() }}; init()">
+             x-init="totalOnPageStatic = {{ $requisitions->count() }}; init()" data-total-on-page="{{ $requisitions->count() }}">
             {{-- Unified Datagrid Card Container --}}
             <div
                 class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border/40 md:rounded-xl md:shadow-sm">
@@ -366,16 +366,18 @@
                             </x-slot>
                         </x-dropdown>
 
-                        <x-button @click="$dispatch('confirm-action', {
-                            title: 'Eliminar Seleccionadas',
-                            description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
-                            confirmLabel: 'Eliminar',
-                            variant: 'danger',
-                            action: 'deleteSelected',
-                            params: []
-                        })" variant="danger" icon="trash-2">
-                            Eliminar
-                        </x-button>
+                        @if(auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
+                            <x-button @click="$dispatch('confirm-action', {
+                                title: 'Eliminar Seleccionadas',
+                                description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
+                                confirmLabel: 'Eliminar',
+                                variant: 'danger',
+                                action: 'deleteSelected',
+                                params: []
+                            })" variant="danger" icon="trash-2">
+                                Eliminar
+                            </x-button>
+                        @endif
                     </x-bulk-actions-bar>
                 </div>
 

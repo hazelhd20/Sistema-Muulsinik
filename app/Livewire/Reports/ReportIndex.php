@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Reports;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Expense;
 use App\Models\ExpenseAllocation;
 use App\Models\Project;
@@ -17,6 +18,15 @@ use Livewire\Component;
 
 class ReportIndex extends Component
 {
+    use EnforcesPermissions;
+
+    public function mount(): void
+    {
+        if (! auth()->user()?->hasPermission('reportes.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver reportes.');
+        }
+    }
+
     #[Url(history: true)]
     public string $period = 'month';
 

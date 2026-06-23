@@ -193,7 +193,7 @@ class UserIndex extends Component
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No puedes eliminar tu propio usuario.']);
         }
 
-        User::whereIn('id', $userIdsToDelete)->delete();
+        app(UserRepository::class)->bulkDelete($userIdsToDelete);
 
         if (count($userIdsToDelete) > 0) {
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($userIdsToDelete) . ' usuario(s) eliminado(s) exitosamente.']);

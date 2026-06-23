@@ -126,7 +126,7 @@
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $projects->pluck('id')->join(',') }}])" />
+                                        x-on:change="toggleAll({{ json_encode($projects->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />

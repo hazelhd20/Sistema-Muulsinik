@@ -16,6 +16,10 @@ class ProjectShow extends Component
 
     public function mount(int $id): void
     {
+        if (! auth()->user()?->hasPermission('proyectos.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver proyectos.');
+        }
+
         $this->projectId = $id;
     }
 

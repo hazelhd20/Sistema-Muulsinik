@@ -1,4 +1,4 @@
-<div x-data="supplierIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $suppliers->count() }}; init()">
+<div x-data="supplierIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $suppliers->count() }}; init()" data-total-on-page="{{ $suppliers->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Red de suministro" title="Proveedores" icon="truck">
         <x-slot:actions>
@@ -81,7 +81,7 @@
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $suppliers->pluck('id')->join(',') }}])" />
+                                        x-on:change="toggleAll({{ json_encode($suppliers->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="trade_name" label="Proveedor" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -312,21 +312,23 @@
         </div>
 
         {{-- Bulk Actions Bar --}}
-        <x-bulk-actions-bar>
-            <x-button
-                @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Proveedores',
-                    description: 'Se eliminarán permanentemente los proveedores seleccionados que no estén en uso.',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })"
-                variant="danger"
-                icon="trash-2">
-                Eliminar
-            </x-button>
-        </x-bulk-actions-bar>
+        @if(auth()->user()->hasPermission('proveedores.eliminar') || auth()->user()->hasPermission('*'))
+            <x-bulk-actions-bar>
+                <x-button
+                    @click="$dispatch('confirm-action', {
+                        title: 'Eliminar Proveedores',
+                        description: 'Se eliminarán permanentemente los proveedores seleccionados que no estén en uso.',
+                        confirmLabel: 'Eliminar',
+                        variant: 'danger',
+                        action: 'bulkDelete',
+                        params: []
+                    })"
+                    variant="danger"
+                    icon="trash-2">
+                    Eliminar
+                </x-button>
+            </x-bulk-actions-bar>
+        @endif
         {{-- Pagination Footer --}}
         @if($suppliers->hasPages())
             <x-card.footer>

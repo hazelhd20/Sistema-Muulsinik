@@ -64,7 +64,15 @@ class SupplierIndex extends Component
 
     public ?int $editingSupplierId = null;
 
+    public function mount(): void
+    {
+        if (! auth()->user()?->hasPermission('proveedores.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver proveedores.');
+        }
 
+        $this->sortField = 'trade_name';
+        $this->sortDirection = 'asc';
+    }
 
     public function openCreateModal(): void
     {
@@ -257,9 +265,7 @@ class SupplierIndex extends Component
         }
 
         if (count($suppliersToDelete) > 0) {
-            foreach ($suppliersToDelete as $sid) {
-                app(SupplierRepository::class)->delete($sid);
-            }
+            app(SupplierRepository::class)->bulkDelete($suppliersToDelete);
             $this->dispatch('toast', ['icon' => 'success', 'message' => count($suppliersToDelete) . ' proveedor(es) eliminado(s) exitosamente.']);
         }
 

@@ -102,37 +102,56 @@ class ReportService
                 ->get();
         }
 
-        // Gastos mensuales (últimos 12 meses)
+        // Gastos mensuales (últimos 12 meses) - Optimización de Consultas N+1
+        $startOfPeriod = now()->subMonths(11)->startOfMonth();
+        $endOfPeriod = now()->endOfMonth();
+
+        if ($projectFilter) {
+            $directExpenses = Expense::where('project_id', $projectFilter)
+                ->whereBetween('date', [$startOfPeriod, $endOfPeriod])
+                ->select('date', 'amount')
+                ->get();
+
+            $allocatedExpenses = ExpenseAllocation::where('project_id', $projectFilter)
+                ->whereHas('expense', fn ($q) => $q->whereBetween('date', [$startOfPeriod, $endOfPeriod]))
+                ->with('expense:id,date')
+                ->get();
+
+            $requisitions = Requisition::where('project_id', $projectFilter)
+                ->where('status', 'aprobada')
+                ->whereBetween('created_at', [$startOfPeriod, $endOfPeriod])
+                ->select('created_at', 'cached_total')
+                ->get();
+        } else {
+            $directExpenses = Expense::whereBetween('date', [$startOfPeriod, $endOfPeriod])
+                ->select('date', 'amount')
+                ->get();
+
+            $allocatedExpenses = collect();
+
+            $requisitions = Requisition::where('status', 'aprobada')
+                ->whereBetween('created_at', [$startOfPeriod, $endOfPeriod])
+                ->select('created_at', 'cached_total')
+                ->get();
+        }
+
+        // Agrupar en memoria por 'Y-m' para suma rápida
+        $directGrouped = $directExpenses->groupBy(fn($e) => $e->date ? Carbon::parse($e->date)->format('Y-m') : '');
+        $allocatedGrouped = $allocatedExpenses->groupBy(fn($a) => ($a->expense && $a->expense->date) ? Carbon::parse($a->expense->date)->format('Y-m') : '');
+        $requisitionsGrouped = $requisitions->groupBy(fn($r) => $r->created_at ? Carbon::parse($r->created_at)->format('Y-m') : '');
+
         $monthlyData = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
+            $key = $date->format('Y-m');
 
-            $startOfMonth = $date->copy()->startOfMonth();
-            $endOfMonth = $date->copy()->endOfMonth();
+            $directMonth = (float) ($directGrouped->get($key)?->sum('amount') ?? 0.0);
+            $requisitionsMonth = (float) ($requisitionsGrouped->get($key)?->sum('cached_total') ?? 0.0);
 
             if ($projectFilter) {
-                $directMonth = (float) Expense::where('project_id', $projectFilter)
-                    ->whereBetween('date', [$startOfMonth, $endOfMonth])
-                    ->sum('amount');
-
-                $distributedMonth = (float) ExpenseAllocation::where('project_id', $projectFilter)
-                    ->whereHas('expense', fn ($q) => $q->whereBetween('date', [$startOfMonth, $endOfMonth]))
-                    ->sum('amount');
-
-                $requisitionsMonth = (float) Requisition::where('project_id', $projectFilter)
-                    ->where('status', 'aprobada')
-                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                    ->sum('cached_total');
-
+                $distributedMonth = (float) ($allocatedGrouped->get($key)?->sum('amount') ?? 0.0);
                 $monthTotal = $directMonth + $distributedMonth + $requisitionsMonth;
             } else {
-                $directMonth = (float) Expense::whereBetween('date', [$startOfMonth, $endOfMonth])
-                    ->sum('amount');
-
-                $requisitionsMonth = (float) Requisition::where('status', 'aprobada')
-                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                    ->sum('cached_total');
-
                 $monthTotal = $directMonth + $requisitionsMonth;
             }
 
@@ -143,10 +162,29 @@ class ReportService
             ];
         }
 
-        // Top 5 proyectos por gasto
+        // Top 5 proyectos por gasto - Optimización de Consultas N+1
+        $directSpentGrouped = Expense::where('date', '>=', $dateFrom)
+            ->groupBy('project_id')
+            ->select('project_id', DB::raw('SUM(amount) as total'))
+            ->pluck('total', 'project_id');
+
+        $distributedSpentGrouped = ExpenseAllocation::whereHas('expense', fn ($q) => $q->where('date', '>=', $dateFrom))
+            ->groupBy('project_id')
+            ->select('project_id', DB::raw('SUM(amount) as total'))
+            ->pluck('total', 'project_id');
+
+        $requisitionsSpentGrouped = Requisition::where('status', 'aprobada')
+            ->where('created_at', '>=', $dateFrom)
+            ->groupBy('project_id')
+            ->select('project_id', DB::raw('SUM(cached_total) as total'))
+            ->pluck('total', 'project_id');
+
         $topProjects = Project::with('client')->get()
-            ->map(function ($proj) use ($dateFrom) {
-                $proj->total_spent = $proj->getSpentInPeriod($dateFrom);
+            ->map(function ($proj) use ($directSpentGrouped, $distributedSpentGrouped, $requisitionsSpentGrouped) {
+                $direct = (float) ($directSpentGrouped[$proj->id] ?? 0.0);
+                $distributed = (float) ($distributedSpentGrouped[$proj->id] ?? 0.0);
+                $requisitions = (float) ($requisitionsSpentGrouped[$proj->id] ?? 0.0);
+                $proj->total_spent = $direct + $distributed + $requisitions;
                 return $proj;
             })
             ->sortByDesc('total_spent')
@@ -178,6 +216,7 @@ class ReportService
             'topProjects',
             'budgetComparison'
         );
+
     }
 
     public function getSupplierData(Carbon $dateFrom, ?string $projectFilter = null): array

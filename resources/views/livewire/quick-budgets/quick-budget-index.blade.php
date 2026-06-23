@@ -1,4 +1,4 @@
-<div x-data="quickBudgetIndex(@entangle('selectedRows'))" x-init="totalOnPage = {{ $budgets->count() }}; init()">
+<div x-data="quickBudgetIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $budgets->count() }}; init()" data-total-on-page="{{ $budgets->count() }}">
     <x-page-header subtitle="Trabajos menores" title="Cotizador Rápido">
         <x-slot:actions>
             <x-button href="{{ route('cotizador.wizard') }}" variant="primary" icon="calculator" wire:navigate>
@@ -115,7 +115,7 @@
                                     <input type="checkbox"
                                         class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
                                         x-bind:checked="allSelected"
-                                        x-on:change="toggleAll([{{ $budgets->pluck('id')->join(',') }}])" />
+                                        x-on:change="toggleAll({{ json_encode($budgets->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="title" label="Título" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -157,7 +157,7 @@
                                         </td>
                                         <td class="max-w-0">
                                             <span class="text-body text-text-secondary truncate block"
-                                                title="{{ $budget->client ?? '—' }}">{{ $budget->client ?? '—' }}</span>
+                                                title="{{ $budget->client?->name ?? '—' }}">{{ $budget->client?->name ?? '—' }}</span>
                                         </td>
                                         <td class="text-body text-text-secondary">{{ $budget->created_at->format('d/m/Y') }}
                                         </td>
@@ -186,11 +186,13 @@
                                                             icon="edit-2" wire:navigate>
                                                             Editar
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" type="button"
-                                                            @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })"
-                                                            danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
+                                                        @if(auth()->user()->hasPermission('cotizaciones.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button"
+                                                                @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })"
+                                                                danger="true" icon="trash-2">
+                                                                Eliminar
+                                                            </x-dropdown-link>
+                                                        @endif
                                                     </x-slot>
                                                 </x-dropdown>
                                             </div>
@@ -222,7 +224,7 @@
                                                         class="font-bold text-text-primary text-body">{{ $budget->title }}</span>
                                                 </div>
                                                 <p class="text-xs text-text-secondary mt-1 truncate">Cliente:
-                                                    {{ $budget->client ?? '—' }}</p>
+                                                    {{ $budget->client?->name ?? '—' }}</p>
                                             </div>
                                         </div>
                                         <div class="text-right shrink-0">
@@ -271,11 +273,13 @@
                                                     icon="edit-2" wire:navigate>
                                                     Editar
                                                 </x-dropdown-link>
-                                                <x-dropdown-link as="button" type="button"
-                                                    @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })"
-                                                    danger="true" icon="trash-2">
-                                                    Eliminar
-                                                </x-dropdown-link>
+                                                @if(auth()->user()->hasPermission('cotizaciones.eliminar') || auth()->user()->hasPermission('*'))
+                                                    <x-dropdown-link as="button" type="button"
+                                                        @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })"
+                                                        danger="true" icon="trash-2">
+                                                        Eliminar
+                                                    </x-dropdown-link>
+                                                @endif
                                             </x-slot>
                                         </x-dropdown>
                                     </div>
@@ -392,18 +396,20 @@
             </div>
 
             {{-- Bulk Actions Bar --}}
-            <x-bulk-actions-bar>
-                <x-button @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Cotizaciones',
-                    description: 'Se eliminarán permanentemente las cotizaciones seleccionadas.',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })" variant="danger" icon="trash-2">
-                    Eliminar
-                </x-button>
-            </x-bulk-actions-bar>
+            @if(auth()->user()->hasPermission('cotizaciones.eliminar') || auth()->user()->hasPermission('*'))
+                <x-bulk-actions-bar>
+                    <x-button @click="$dispatch('confirm-action', {
+                        title: 'Eliminar Cotizaciones',
+                        description: 'Se eliminarán permanentemente las cotizaciones seleccionadas.',
+                        confirmLabel: 'Eliminar',
+                        variant: 'danger',
+                        action: 'bulkDelete',
+                        params: []
+                    })" variant="danger" icon="trash-2">
+                        Eliminar
+                    </x-button>
+                </x-bulk-actions-bar>
+            @endif
         </div>
 
         {{-- Pagination Footer --}}

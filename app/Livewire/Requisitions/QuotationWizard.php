@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\DTOs\QuotationDTO;
 use App\Jobs\ProcessQuotationJob;
 use App\Models\Category;
@@ -34,6 +35,7 @@ use Livewire\WithFileUploads;
  */
 class QuotationWizard extends Component
 {
+    use EnforcesPermissions;
     use WithFileUploads;
 
     /* ── Estado del Wizard ───────────────────────────── */
@@ -221,6 +223,10 @@ class QuotationWizard extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('requisiciones.crear') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para subir cotizaciones.');
+        }
+
         $this->date = now()->format('Y-m-d');
 
         if (! empty($this->quotationIds)) {

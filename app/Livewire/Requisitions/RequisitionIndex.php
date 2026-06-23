@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\Project;
@@ -29,6 +30,7 @@ use Livewire\WithPagination;
 
 class RequisitionIndex extends Component
 {
+    use EnforcesPermissions;
     use WithPagination;
     use WithFilters;
     use WithSorting;
@@ -64,6 +66,10 @@ class RequisitionIndex extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('requisiciones.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver requisiciones.');
+        }
+
         $this->sortField = 'date';
         $this->sortDirection = 'desc';
     }
@@ -215,12 +221,11 @@ class RequisitionIndex extends Component
 
     public function deleteRequisition(int $id): void
     {
-        $requisition = Requisition::findOrFail($id);
-        
-        // Descartar cotizaciones ligadas para que no revivan en la bandeja de borradores
-        $requisition->quotations()->update(['is_orphan' => true]);
-        
-        $requisition->delete();
+        if ($this->denyUnless('requisiciones.editar', 'No tienes permiso para eliminar requisiciones.')) {
+            return;
+        }
+
+        app(RequisitionRepository::class)->delete($id);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Requisición eliminada con éxito.']);
         $this->resetPage();
     }
@@ -262,22 +267,18 @@ class RequisitionIndex extends Component
     /** Eliminación masiva de requisiciones seleccionadas en estado borrador o rechazada. */
     public function deleteSelected(): void
     {
-        $deletableIds = Requisition::whereIn('id', $this->selectedRows)
-            ->whereIn('status', [RequisitionStatus::DRAFT->value, RequisitionStatus::REJECTED->value])
-            ->pluck('id')
-            ->toArray();
-
-        if (empty($deletableIds)) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones borradoras o rechazadas seleccionadas para eliminar.']);
-
+        if ($this->denyUnless('requisiciones.editar', 'No tienes permiso para eliminar requisiciones.')) {
             return;
         }
 
-        // Descartar cotizaciones ligadas de todas las requisiciones seleccionadas
-        \App\Models\Quotation::whereIn('requisition_id', $deletableIds)->update(['is_orphan' => true]);
+        $deletedIds = app(RequisitionRepository::class)->bulkDelete($this->selectedRows);
 
-        Requisition::whereIn('id', $deletableIds)->delete();
-        $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletableIds) . ' requisición(es) eliminada(s).']);
+        if (empty($deletedIds)) {
+            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones borradoras o rechazadas seleccionadas para eliminar.']);
+            return;
+        }
+
+        $this->dispatch('toast', ['icon' => 'success', 'message' => count($deletedIds) . ' requisición(es) eliminada(s).']);
         $this->selectedRows = [];
     }
 

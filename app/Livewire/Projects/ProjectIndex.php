@@ -195,6 +195,10 @@ class ProjectIndex extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('proyectos.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver proyectos.');
+        }
+
         $this->sortField = 'start_date';
         $this->sortDirection = 'desc';
     }

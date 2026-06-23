@@ -2,6 +2,7 @@
 
 namespace App\Livewire\QuickBudgets;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Livewire\Concerns\WithSorting;
 use App\Models\QuickBudget;
 use App\Repositories\QuickBudgetRepository;
@@ -14,7 +15,7 @@ use Livewire\WithPagination;
 
 class QuickBudgetIndex extends Component
 {
-    use WithPagination, WithSorting;
+    use WithPagination, WithSorting, EnforcesPermissions;
 
     #[Url(history: true)]
     public string $search = '';
@@ -37,6 +38,14 @@ class QuickBudgetIndex extends Component
     public array $selectedRows = [];
 
     public bool $allSelected = false;
+
+    public function mount(): void
+    {
+        if (! auth()->user()?->hasPermission('cotizaciones.ver') &&
+            ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para acceder al cotizador rápido.');
+        }
+    }
 
     public function updatedSearch(): void
     {
@@ -76,6 +85,12 @@ class QuickBudgetIndex extends Component
 
     public function deleteBudget(int $id, QuickBudgetRepository $repository): void
     {
+        if (! auth()->user()?->hasPermission('cotizaciones.eliminar') &&
+            ! auth()->user()?->hasPermission('*')) {
+            session()->flash('error', 'No tienes permiso para eliminar cotizaciones.');
+            return;
+        }
+
         $repository->delete($id);
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Cotización eliminada.']);
         $this->selectedRows = array_diff($this->selectedRows, [$id]);
@@ -93,6 +108,12 @@ class QuickBudgetIndex extends Component
 
     public function bulkDelete(QuickBudgetRepository $repository): void
     {
+        if (! auth()->user()?->hasPermission('cotizaciones.eliminar') &&
+            ! auth()->user()?->hasPermission('*')) {
+            session()->flash('error', 'No tienes permiso para eliminar cotizaciones.');
+            return;
+        }
+
         if (empty($this->selectedRows)) {
             return;
         }
@@ -111,12 +132,17 @@ class QuickBudgetIndex extends Component
     #[Title('Cotizador Rápido')]
     public function render()
     {
+        $likeOperator = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite' ? 'like' : 'ilike';
+
         $budgets = QuickBudget::query()
-            ->when($this->search, function ($q) {
-                $q->where(function ($query) {
-                    $query->where('title', 'ilike', "%{$this->search}%")
-                          ->orWhere('client', 'ilike', "%{$this->search}%")
-                          ->orWhere('folio', 'ilike', "%{$this->search}%");
+            ->with(['client', 'creator'])
+            ->when($this->search, function ($q) use ($likeOperator) {
+                $q->where(function ($query) use ($likeOperator) {
+                    $query->where('title', $likeOperator, "%{$this->search}%")
+                          ->orWhere('description', $likeOperator, "%{$this->search}%")
+                          ->orWhereHas('client', function ($cq) use ($likeOperator) {
+                              $cq->where('name', $likeOperator, "%{$this->search}%");
+                          });
                 });
             })
             ->when($this->periodFilter, function ($q) {

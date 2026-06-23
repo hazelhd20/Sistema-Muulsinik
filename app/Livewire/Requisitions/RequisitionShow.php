@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Requisitions;
 
+use App\Livewire\Concerns\EnforcesPermissions;
 use App\Models\Requisition;
 use App\Models\User;
 use App\Notifications\RequisitionPendingApproval;
@@ -14,6 +15,8 @@ use Livewire\Component;
 
 class RequisitionShow extends Component
 {
+    use EnforcesPermissions;
+
     public int $requisitionId;
 
     /* ── Modal de rechazo (RF-REQ-09) ── */
@@ -23,6 +26,10 @@ class RequisitionShow extends Component
 
     public function mount(int $id): void
     {
+        if (! auth()->user()?->hasPermission('requisiciones.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para ver requisiciones.');
+        }
+
         $this->requisitionId = $id;
     }
 

@@ -66,6 +66,10 @@ class ProductIndex extends Component
 
     public function mount(): void
     {
+        if (! auth()->user()?->hasPermission('productos.ver') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para acceder al catálogo de productos.');
+        }
+
         $this->sortField = 'canonical_name';
         $this->sortDirection = 'asc';
     }
