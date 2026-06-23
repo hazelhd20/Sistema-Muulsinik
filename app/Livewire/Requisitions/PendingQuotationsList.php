@@ -16,15 +16,7 @@ class PendingQuotationsList extends Component
 
     public function render()
     {
-        $pendingQuotations = Quotation::whereNull('requisition_id')
-            ->where('is_orphan', false)
-            ->where(function ($query) {
-                $query->whereIn('status', ['pending', 'processing'])
-                    ->orWhere(function ($q) {
-                        $q->whereIn('status', ['completed', 'failed'])
-                            ->where('created_at', '>=', now()->subDays(7));
-                    });
-            })
+        $pendingQuotations = Quotation::pendingInbox()
             ->orderByDesc('created_at')
             ->get();
 

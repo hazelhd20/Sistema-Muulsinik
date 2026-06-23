@@ -46,12 +46,27 @@ class QuotationWizard extends Component
 
     public function updatedUploadQueue()
     {
-        $this->validate([
-            'uploadQueue.*' => 'file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel|mimes:pdf,jpg,jpeg,png,xlsx,xls',
-        ]);
+        $rules = [
+            'file' => 'file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+        ];
+        
+        $messages = [
+            'file.max' => 'El archivo supera el límite de 20 MB.',
+            'file.mimetypes' => 'El formato del archivo no está permitido (solo PDF, JPG, PNG, XLSX).',
+            'file.mimes' => 'El formato del archivo no está permitido (solo PDF, JPG, PNG, XLSX).',
+        ];
 
         foreach ($this->uploadQueue as $file) {
-            $this->files[] = $file;
+            $validator = \Illuminate\Support\Facades\Validator::make(['file' => $file], $rules, $messages);
+            
+            if ($validator->fails()) {
+                $this->dispatch('toast', [
+                    'icon' => 'error',
+                    'message' => 'Error en ' . $file->getClientOriginalName() . ': ' . $validator->errors()->first('file'),
+                ]);
+            } else {
+                $this->files[] = $file;
+            }
         }
 
         // Limpiar la cola para permitir nuevas subidas
@@ -229,6 +244,14 @@ class QuotationWizard extends Component
                     $this->step = 2;
                 } elseif ($allCompleted) {
                     $this->processingStatus = 'completed';
+                    
+                    // Sincronizar completedQuotationIds con la base de datos (evita resets en hard reload)
+                    foreach ($quotations as $quotation) {
+                        if ($quotation->requisition_id && !in_array($quotation->id, $this->completedQuotationIds)) {
+                            $this->completedQuotationIds[] = $quotation->id;
+                        }
+                    }
+
                     // Activar el primer tab incompleto
                     $nextId = null;
                     foreach ($this->quotationIds as $id) {
@@ -308,7 +331,9 @@ class QuotationWizard extends Component
     {
         $this->validate([
             'files' => 'required|array|min:1',
-            'files.*' => 'required|file|max:20480|mimetypes:application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel|mimes:pdf,jpg,jpeg,png,xlsx,xls',
+        ], [
+            'files.required' => 'Debes seleccionar al menos un archivo.',
+            'files.min' => 'Debes seleccionar al menos un archivo.',
         ]);
 
         $this->quotationIds = [];
@@ -1167,13 +1192,25 @@ class QuotationWizard extends Component
         // El modelo Quotation se carga aquí para evitar queries en la vista
         $quotation = $this->activeQuotationId ? Quotation::find($this->activeQuotationId) : null;
 
+        // Obtener el listado de todas las cotizaciones del wizard en el orden original
+        $wizardQuotations = collect();
+        if (! empty($this->quotationIds)) {
+            $quotations = Quotation::whereIn('id', $this->quotationIds)->get()->keyBy('id');
+            foreach ($this->quotationIds as $id) {
+                if (isset($quotations[$id])) {
+                    $wizardQuotations->put($id, $quotations[$id]);
+                }
+            }
+        }
+
         return view('livewire.requisitions.quotation-wizard', compact(
             'projects',
             'suppliers',
             'measures',
             'categories',
             'vendors',
-            'quotation'
+            'quotation',
+            'wizardQuotations'
         ));
     }
 }

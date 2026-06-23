@@ -100,7 +100,7 @@
                         </p>
                     </div>
 
-                    <x-status-chip icon="sparkles" color="primary">Procesamiento en segundo plano</x-status-chip>
+                    <x-status-chip icon="sparkles" color="primary" class="self-center">Procesamiento en segundo plano</x-status-chip>
 
                     <div class="mt-8 flex justify-center">
                         <x-button
@@ -175,43 +175,83 @@
         @endphp
 
         @if($totalCount > 1)
-            <div class="mb-6 border-b border-border/40 flex items-center justify-between pb-4">
-                <div class="flex flex-col">
-                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+            <div class="mb-6 border-b border-border/40 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-3">
                         Progreso de revisión
                     </span>
-                    <div class="flex items-center gap-3 mt-1">
-                        <span class="text-base font-semibold text-text-primary">
-                            Cotización {{ $currentIndex !== false ? $currentIndex + 1 : 1 }} <span
-                                class="text-text-muted font-normal">de {{ $totalCount }}</span>
-                        </span>
-                        @if($completedCount > 0)
-                            <span class="badge badge-success">
-                                {{ $completedCount }} completadas
-                            </span>
-                        @endif
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                        @foreach($wizardQuotations as $id => $q)
+                            @php
+                                $isCurrent = $id === $activeQuotationId;
+                                $isCompleted = in_array($id, $completedQuotationIds) || $q->requisition_id;
+                                $isFailed = $q->isFailed();
+
+                                // Obtener etiqueta del proveedor
+                                $label = '';
+                                if ($isCompleted && $q->supplier) {
+                                    $label = $q->supplier->trade_name;
+                                } elseif (!empty($q->draft_state['supplierName'])) {
+                                    $label = $q->draft_state['supplierName'];
+                                } elseif (!empty($q->raw_parsed_data['supplier'])) {
+                                    $label = $q->raw_parsed_data['supplier'];
+                                }
+
+                                if (empty($label)) {
+                                    $label = $q->original_filename;
+                                }
+
+                                // Truncar si es muy largo
+                                $displayLabel = \Illuminate\Support\Str::limit($label, 22);
+
+                                // Clases de estado dinámicas
+                                $tabClass = 'flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-all duration-200 whitespace-nowrap ';
+                                if ($isCurrent) {
+                                    $tabClass .= 'bg-primary-50 border-primary-300 text-primary-700 shadow-sm ring-1 ring-primary-300 font-semibold scale-[1.02]';
+                                } elseif ($isCompleted) {
+                                    $tabClass .= 'bg-success-light/40 border-success/30 text-success-700 hover:bg-success-light/60 hover:border-success/40';
+                                } elseif ($isFailed) {
+                                    $tabClass .= 'bg-danger-light/40 border-danger/30 text-danger-700 hover:bg-danger-light/60 hover:border-danger/40';
+                                } else {
+                                    $tabClass .= 'bg-surface-card border-border hover:bg-surface-hover text-text-secondary hover:text-text-primary hover:border-border-strong';
+                                }
+                            @endphp
+
+                            <button type="button" wire:click="setActiveTab({{ $id }})" class="{{ $tabClass }}">
+                                @if($isCompleted)
+                                    <x-lucide-check-circle-2 class="w-4 h-4 text-success shrink-0" />
+                                @elseif($isFailed)
+                                    <x-lucide-alert-circle class="w-4 h-4 text-danger shrink-0" />
+                                @elseif($isCurrent)
+                                    <x-lucide-sparkles class="w-4 h-4 text-primary-500 animate-pulse shrink-0" />
+                                @else
+                                    <x-lucide-file-text class="w-4 h-4 text-text-muted shrink-0" />
+                                @endif
+                                <span>{{ $displayLabel }}</span>
+                            </button>
+                        @endforeach
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 shrink-0 pb-2">
                     @if($prevId)
                         <x-button type="button" wire:click="setActiveTab({{ $prevId }})" variant="secondary" icon="chevron-left"
-                            class="text-xs">
+                            class="text-xs py-2 rounded-xl">
                             Anterior
                         </x-button>
                     @else
-                        <x-button type="button" disabled variant="secondary" icon="chevron-left" class="text-xs">
+                        <x-button type="button" disabled variant="secondary" icon="chevron-left" class="text-xs py-2 rounded-xl">
                             Anterior
                         </x-button>
                     @endif
 
                     @if($nextId)
                         <x-button type="button" wire:click="setActiveTab({{ $nextId }})" variant="secondary"
-                            iconRight="chevron-right" class="text-xs">
+                            iconRight="chevron-right" class="text-xs py-2 rounded-xl">
                             Siguiente
                         </x-button>
                     @else
-                        <x-button type="button" disabled variant="secondary" iconRight="chevron-right" class="text-xs">
+                        <x-button type="button" disabled variant="secondary" iconRight="chevron-right" class="text-xs py-2 rounded-xl">
                             Siguiente
                         </x-button>
                     @endif

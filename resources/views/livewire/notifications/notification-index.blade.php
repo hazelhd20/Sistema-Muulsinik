@@ -22,8 +22,7 @@
             @if(!$this->notifications->isEmpty())
                 <x-button
                     type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar todas las notificaciones? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteAll' })"
-                    variant="secondary"
-                    class="text-danger hover:bg-danger-light hover:border-danger/50"
+                    variant="soft-danger"
                 >
                     <svg class="w-4 h-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -38,37 +37,35 @@
     </div>
 
     {{-- Filters --}}
-    <div class="card p-3">
-        <div class="flex flex-wrap gap-2">
-            <button
-                wire:click="$set('filter', 'all')"
-                class="px-3 py-1.5 rounded-lg text-small font-medium transition-colors {{ $filter === 'all' ? 'bg-primary-600 text-white' : 'bg-surface-hover text-text-secondary hover:bg-border' }}"
-            >
-                Todas
-            </button>
-            <button
-                wire:click="$set('filter', 'unread')"
-                class="px-3 py-1.5 rounded-lg text-small font-medium transition-colors {{ $filter === 'unread' ? 'bg-primary-600 text-white' : 'bg-surface-hover text-text-secondary hover:bg-border' }}"
-            >
-                No leídas
-            </button>
-            <button
-                wire:click="$set('filter', 'read')"
-                class="px-3 py-1.5 rounded-lg text-small font-medium transition-colors {{ $filter === 'read' ? 'bg-primary-600 text-white' : 'bg-surface-hover text-text-secondary hover:bg-border' }}"
-            >
-                Leídas
-            </button>
-        </div>
-    </div>
+    <x-card class="p-1.5 flex-row inline-flex gap-1 mb-5">
+        <button
+            wire:click="$set('filter', 'all')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 {{ $filter === 'all' ? 'bg-primary-50 text-primary-700 font-semibold border-transparent' : 'bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary' }}"
+        >
+            Todas
+        </button>
+        <button
+            wire:click="$set('filter', 'unread')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 {{ $filter === 'unread' ? 'bg-primary-50 text-primary-700 font-semibold border-transparent' : 'bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary' }}"
+        >
+            No leídas
+        </button>
+        <button
+            wire:click="$set('filter', 'read')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 {{ $filter === 'read' ? 'bg-primary-50 text-primary-700 font-semibold border-transparent' : 'bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary' }}"
+        >
+            Leídas
+        </button>
+    </x-card>
 
     {{-- Notifications List --}}
     <div class="relative">
         <div wire:loading.class="hidden" wire:target="filter, previousPage, nextPage, gotoPage, markAllAsRead, deleteAll" class="w-full">
-            <div class="card p-0">
+            <x-card class="p-0 overflow-hidden divide-y divide-border/40">
                 @if($this->notifications->isEmpty())
                     <x-empty-state icon="bell-off" title="No hay notificaciones" />
                 @else
-                    <div class="divide-y divide-border">
+                    <div class="divide-y divide-border/40">
                         @foreach($this->notifications as $notification)
                             @php
                                 $data = $notification->data;
@@ -84,20 +81,18 @@
 
                             <div class="flex gap-4 px-5 py-4 hover:bg-surface-hover transition-colors {{ $isUnread ? 'bg-primary-50/20' : '' }}">
                                 {{-- Icon --}}
-                                <div class="w-11 h-11 rounded-xl {{ $colorClasses }} flex items-center justify-center shrink-0">
-                                    <x-dynamic-component :component="'lucide-' . $data['icon'] ?? 'bell'" class="w-5 h-5" />
+                                <div class="w-10 h-10 rounded-xl {{ $colorClasses }} flex items-center justify-center shrink-0 shadow-sm">
+                                    <x-dynamic-component :component="'lucide-' . ($data['icon'] ?? 'bell')" class="w-5 h-5" />
                                 </div>
 
                                 {{-- Content --}}
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
-                                            <h4 class="text-body font-semibold text-text-primary">
-                                                {{ $data['title'] ?? 'Notificación' }}
+                                            <h4 class="text-body font-semibold text-text-primary flex items-center gap-2">
+                                                <span>{{ $data['title'] ?? 'Notificación' }}</span>
                                                 @if($isUnread)
-                                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                                                        Nueva
-                                                    </span>
+                                                    <x-badge variant="primary" size="md">Nueva</x-badge>
                                                 @endif
                                             </h4>
                                             <p class="text-small text-text-secondary mt-1">
@@ -116,7 +111,7 @@
                                                 href="{{ $data['action_url'] ?? '#' }}"
                                                 wire:navigate
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                variant="link" class="!text-small !min-h-0"
+                                                variant="link" class="!text-xs !min-h-0 !py-1 !px-0"
                                             >
                                                 {{ $data['action_text'] ?? 'Ver detalle' }}
                                             </x-button>
@@ -125,7 +120,7 @@
                                                 href="{{ $data['action_url'] ?? '#' }}"
                                                 download
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                variant="link" class="!text-small !min-h-0"
+                                                variant="link" class="!text-xs !min-h-0 !py-1 !px-0"
                                             >
                                                 {{ $data['action_text'] ?? 'Ver detalle' }}
                                             </x-button>
@@ -136,14 +131,14 @@
                                         @if($isUnread)
                                             <x-button
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                variant="link-muted" class="!text-small !min-h-0"
+                                                variant="link-muted" class="!text-xs !min-h-0 !py-1 !px-0"
                                             >
                                                 Marcar como leída
                                             </x-button>
                                         @else
                                             <x-button
                                                 wire:click="markAsUnread('{{ $notification->id }}')"
-                                                variant="link-muted" class="!text-small !min-h-0"
+                                                variant="link-muted" class="!text-xs !min-h-0 !py-1 !px-0"
                                             >
                                                 Marcar como no leída
                                             </x-button>
@@ -153,7 +148,7 @@
 
                                         <x-button
                                             wire:click="delete('{{ $notification->id }}')"
-                                            variant="link-danger-muted" class="!text-small !min-h-0"
+                                            variant="link-danger-muted" class="!text-xs !min-h-0 !py-1 !px-0"
                                         >
                                             Eliminar
                                         </x-button>
@@ -165,12 +160,12 @@
 
                     {{-- Pagination --}}
                     @if($this->notifications->hasPages())
-                        <div class="px-5 py-4 border-t border-border">
+                        <div class="px-5 py-4 border-t border-border/40">
                             {{ $this->notifications->links() }}
                         </div>
                     @endif
                 @endif
-            </div>
+            </x-card>
         </div>
 
         {{-- Skeleton Loader --}}

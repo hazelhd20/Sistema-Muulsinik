@@ -72,7 +72,7 @@
                                     {{ $notification['title'] }}
                                 </p>
                                 @if($isUnread)
-                                    <span class="w-2 h-2 bg-primary-500 rounded-full shrink-0 mt-1"></span>
+                                    <x-pulse-indicator color="primary" class="shrink-0 mt-1" />
                                 @endif
                             </div>
                             <p class="text-xs text-text-secondary mt-0.5 leading-relaxed">

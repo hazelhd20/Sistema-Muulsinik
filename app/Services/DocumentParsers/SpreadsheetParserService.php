@@ -85,14 +85,7 @@ class SpreadsheetParserService implements ParserInterface
                 return $aiResult;
             }
 
-            return [
-                'supplier' => null,
-                'store' => null,
-                'seller' => null,
-                'tax_info' => null,
-                'items' => [],
-                'raw_text' => $rawText,
-            ];
+            throw new \RuntimeException('La IA de Gemini no pudo estructurar la cotización y no se detectaron encabezados válidos en la hoja de cálculo. Por favor, intenta de nuevo o captura manualmente.');
         }
 
         // Paso 2: leer las filas de datos

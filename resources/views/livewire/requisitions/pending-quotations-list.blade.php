@@ -2,17 +2,23 @@
     @if($pendingQuotations->isNotEmpty())
         <div class="space-y-3">
             @foreach($pendingQuotations as $pq)
-                <x-card wire:key="pending-quotation-{{ $pq->id }}" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4">
+                <x-card wire:key="pending-quotation-{{ $pq->id }}" 
+                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 hover:shadow-md transition-shadow duration-200">
 
-                    <div class="flex items-start sm:items-center gap-3 w-full sm:w-auto">
+                    <div class="flex items-start sm:items-center gap-3.5 w-full sm:w-auto">
                         @if($pq->isProcessing() || $pq->status === 'pending')
                             {{-- Estado: procesando --}}
                             <div class="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 shadow-sm">
                                 <span class="spinner-processing !w-5 !h-5 !border-2"></span>
                             </div>
-                            <div>
-                                <p class="text-small font-semibold text-text-primary">Procesando cotización en segundo plano</p>
-                                <p class="text-xs text-text-muted">
+                            <div class="min-w-0 flex-1 sm:flex-initial">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <p class="text-small font-semibold text-text-primary">Procesando cotización</p>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-primary-50 text-primary-700">
+                                        Analizando
+                                    </span>
+                                </div>
+                                <p class="text-xs text-text-muted truncate max-w-md">
                                     {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
@@ -22,21 +28,30 @@
                             <div class="w-10 h-10 rounded-xl bg-success-light text-success flex items-center justify-center shrink-0 shadow-sm">
                                 <x-lucide-file-edit class="w-5 h-5" wire:ignore />
                             </div>
-                            <div>
+                            <div class="min-w-0 flex-1 sm:flex-initial">
                                 @php
-                                    $supplierName = $pq->supplier?->trade_name ?? ($pq->raw_parsed_data['supplier_name'] ?? null);
-                                    $total = $pq->draft_state['total'] ?? ($pq->raw_parsed_data['total'] ?? null);
+                                    $supplierName = !empty($pq->draft_state['supplierName']) 
+                                        ? $pq->draft_state['supplierName'] 
+                                        : ($pq->raw_parsed_data['supplier'] ?? null);
+
+                                    $total = null;
+                                    if (!empty($pq->draft_state['items'])) {
+                                        $total = collect($pq->draft_state['items'])->sum(fn($item) => (float)($item['line_total'] ?? 0));
+                                    } else {
+                                        $total = $pq->raw_parsed_data['tax_info']['grand_total'] ?? null;
+                                    }
+
                                     $title = $supplierName ? "Borrador: {$supplierName}" : "Borrador de Requisición listo";
                                 @endphp
                                 <div class="flex items-center gap-2 mb-0.5">
                                     <p class="text-small font-semibold text-text-primary">{{ $title }}</p>
                                     @if($total)
-                                        <span class="text-[0.65rem] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded-md border border-success/20">
+                                        <span class="text-[11px] font-semibold text-text-primary bg-surface-main px-2 py-0.5 rounded-md tabular-nums">
                                             ${{ number_format((float)$total, 2) }}
                                         </span>
                                     @endif
                                 </div>
-                                <p class="text-xs text-text-muted">
+                                <p class="text-xs text-text-muted truncate max-w-md">
                                     Procesado de: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
@@ -46,17 +61,26 @@
                             <div class="w-10 h-10 rounded-xl bg-danger-light text-danger flex items-center justify-center shrink-0 shadow-sm">
                                 <x-lucide-file-x class="w-5 h-5" wire:ignore />
                             </div>
-                            <div>
-                                <p class="text-small font-semibold text-text-primary">Error al extraer datos</p>
-                                <p class="text-xs text-text-muted">
-                                    {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
+                            <div class="min-w-0 flex-1 sm:flex-initial">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <p class="text-small font-semibold text-text-primary">Error de extracción</p>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-danger-light text-danger">
+                                        Falló
+                                    </span>
+                                </div>
+                                @if($pq->error_message)
+                                    <p class="text-xs text-danger font-medium mt-0.5 leading-relaxed max-w-md">
+                                        {{ \Illuminate\Support\Str::limit($pq->error_message, 80) }}
+                                    </p>
+                                @endif
+                                <p class="text-xs text-text-muted mt-0.5">
+                                    Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
                         @endif
                     </div>
 
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-0 border-border/50 sm:border-transparent mt-1 sm:mt-0">
-                        {{-- Descartar con confirm-modal (SVG Nativo en slot para prevenir parpadeo) --}}
                         <x-button
                             @click="$dispatch('confirm-action', {
                                 title: 'Descartar Borrador',
@@ -70,6 +94,7 @@
                             icon="trash-2"
                             title="Descartar borrador"
                             aria-label="Descartar {{ $pq->original_filename }}"
+                            class="opacity-60 hover:opacity-100 transition-opacity rounded-xl"
                         />
 
                         <x-button
@@ -77,8 +102,9 @@
                             variant="soft"
                             :iconRight="'arrow-right'"
                             wire:navigate
+                            class="rounded-xl font-medium text-xs py-2"
                         >
-                            {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar y Continuar' }}
+                            {{ $pq->isProcessing() || $pq->status === 'pending' ? 'Ver progreso' : 'Revisar' }}
                         </x-button>
                     </div>
                 </x-card>
