@@ -9,14 +9,14 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
 
         @php
             $hasActiveFilters = !empty($search) || !empty($statusFilter) || !empty($periodFilter);
         @endphp
         @if($projects->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <x-card class="md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <x-card class="md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
                 <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     {{-- Search --}}

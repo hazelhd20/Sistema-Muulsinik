@@ -50,7 +50,7 @@ class LivewireIndexViewsTest extends TestCase
     public function test_user_bulk_delete_invalidates_cache_and_enforces_permissions()
     {
         $admin = User::first();
-        
+
         $user1 = User::create([
             'name' => 'Usuario Uno',
             'email' => 'uno@muulsinik.com',
@@ -58,7 +58,7 @@ class LivewireIndexViewsTest extends TestCase
             'role_id' => $admin->role_id,
             'active' => true,
         ]);
-        
+
         $user2 = User::create([
             'name' => 'Usuario Dos',
             'email' => 'dos@muulsinik.com',
@@ -142,6 +142,24 @@ class LivewireIndexViewsTest extends TestCase
         $this->actingAs($user);
 
         Livewire::test(ExpenseIndex::class)
+            ->assertStatus(200);
+    }
+
+    public function test_client_index_renders()
+    {
+        $user = User::first();
+        $this->actingAs($user);
+
+        Livewire::test(\App\Livewire\Clients\ClientIndex::class)
+            ->assertStatus(200);
+    }
+
+    public function test_supplier_index_renders()
+    {
+        $user = User::first();
+        $this->actingAs($user);
+
+        Livewire::test(\App\Livewire\Suppliers\SupplierIndex::class)
             ->assertStatus(200);
     }
 
@@ -362,7 +380,7 @@ class LivewireIndexViewsTest extends TestCase
             'created_by' => $user->id,
             'date' => now(),
         ]);
-        
+
         $req2 = Requisition::create([
             'project_id' => $project->id,
             'status' => 'borrador',
@@ -398,12 +416,12 @@ class LivewireIndexViewsTest extends TestCase
     public function test_supplier_bulk_delete_invalidates_cache_and_enforces_permissions()
     {
         $admin = User::first();
-        
+
         $supplier1 = \App\Models\Supplier::create([
             'trade_name' => 'Proveedor Uno',
             'active' => true,
         ]);
-        
+
         $supplier2 = \App\Models\Supplier::create([
             'trade_name' => 'Proveedor Dos',
             'active' => true,
@@ -484,12 +502,12 @@ class LivewireIndexViewsTest extends TestCase
     public function test_client_bulk_delete_enforces_permissions()
     {
         $admin = User::first();
-        
+
         $client1 = \App\Models\Client::create([
             'name' => 'Cliente Uno',
             'active' => true,
         ]);
-        
+
         $client2 = \App\Models\Client::create([
             'name' => 'Cliente Dos',
             'active' => true,
@@ -535,7 +553,7 @@ class LivewireIndexViewsTest extends TestCase
     public function test_product_bulk_delete_enforces_permissions()
     {
         $admin = User::first();
-        
+
         $category = \App\Models\Category::first() ?? \App\Models\Category::create(['name' => 'Cat Test']);
         $measure = \App\Models\Measure::first() ?? \App\Models\Measure::create(['name' => 'Pza', 'abbreviation' => 'Pza']);
 
@@ -545,7 +563,7 @@ class LivewireIndexViewsTest extends TestCase
             'measure_id' => $measure->id,
             'item_type' => 'material',
         ]);
-        
+
         $product2 = \App\Models\Product::create([
             'canonical_name' => 'Producto Dos',
             'category_id' => $category->id,
@@ -593,12 +611,12 @@ class LivewireIndexViewsTest extends TestCase
     public function test_measure_bulk_delete_invalidates_cache_and_enforces_permissions()
     {
         $admin = User::first();
-        
+
         $measure1 = \App\Models\Measure::create([
             'name' => 'Metro Lineal',
             'abbreviation' => 'm',
         ]);
-        
+
         $measure2 = \App\Models\Measure::create([
             'name' => 'Kilogramo',
             'abbreviation' => 'kg',
@@ -650,11 +668,11 @@ class LivewireIndexViewsTest extends TestCase
     public function test_category_bulk_delete_invalidates_cache_and_enforces_permissions()
     {
         $admin = User::first();
-        
+
         $category1 = \App\Models\Category::create([
             'name' => 'Categoria Invalida Cache Uno',
         ]);
-        
+
         $category2 = \App\Models\Category::create([
             'name' => 'Categoria Invalida Cache Dos',
         ]);

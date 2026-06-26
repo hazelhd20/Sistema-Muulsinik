@@ -96,8 +96,8 @@
         </div>
 
         @if($req->status === 'rechazada' && $req->rejection_comment)
-            <div class="bg-danger-50 text-danger-700 text-xs p-3 rounded-lg border border-danger-200 mt-2 flex items-start gap-2.5">
-                <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5" />
+            <div class="bg-danger-light text-danger-active border border-danger-border text-xs p-3 rounded-lg mt-2 flex items-start gap-2.5">
+                <x-lucide-alert-circle class="w-4 h-4 shrink-0 mt-0.5 text-danger" />
                 <p class="leading-relaxed font-medium">{{ $req->rejection_comment }}</p>
             </div>
         @endif

@@ -11,14 +11,14 @@
 
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-[10px] md:shadow-sm">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
         
         @php
             $hasActiveFilters = !empty($search) || !empty($projectFilter) || !empty($categoryFilter) || !empty($periodFilter) || !empty($userFilter);
         @endphp
         @if($expenses->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-[10px] md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="card md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
             {{-- Filters Bar --}}
             <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                 {{-- Search --}}

@@ -221,10 +221,10 @@
                                         @else
                                             <div class="flex flex-col gap-2">
                                                 <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
-                                                    class="input input-inline text-small w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-error-500 bg-error-50/50' : '' }}"
+                                                    class="input input-inline text-small w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-danger bg-danger-light' : '' }}"
                                                     placeholder="Escribe un concepto...">
                                                 @error('items.'.$index.'.concept')
-                                                    <p class="text-error-600 text-[10px] font-medium leading-tight mt-0.5">{{ $message }}</p>
+                                                    <p class="text-danger-active text-[10px] font-medium leading-tight mt-0.5">{{ $message }}</p>
                                                 @enderror
                                             </div>
                                         @endif
@@ -250,10 +250,10 @@
                                         <div class="relative">
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity"
                                                 step="0.01"
-                                                class="input text-center tabular-nums text-small w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.quantity') ? 'border-error-500 focus:border-error-500 bg-error-50' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
+                                                class="input text-center tabular-nums text-small w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.quantity') ? 'border-danger focus:border-danger bg-danger-light' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
                                         </div>
                                         @error('items.'.$index.'.quantity')
-                                            <p class="text-error-600 text-[10px] font-medium leading-tight mt-1 text-center">{{ current(explode(' ', $message)) }} inv.</p>
+                                            <p class="text-danger-active text-[10px] font-medium leading-tight mt-1 text-center">{{ current(explode(' ', $message)) }} inv.</p>
                                         @enderror
                                     </td>
                                     @if($advancedMode)
@@ -275,7 +275,7 @@
                                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none font-medium">$</span>
                                             <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price"
                                                 step="0.01"
-                                                class="input pl-7 pr-3 text-right tabular-nums text-small font-medium text-text-primary w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.unit_price') ? 'border-error-500 focus:border-error-500 bg-error-50' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
+                                                class="input pl-7 pr-3 text-right tabular-nums text-small font-medium text-text-primary w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.unit_price') ? 'border-danger focus:border-danger bg-danger-light' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
                                             
                                             @if($advancedMode)
                                             <!-- Indicador de Margen -->
@@ -285,7 +285,7 @@
                                             @endif
                                         </div>
                                         @error('items.'.$index.'.unit_price')
-                                            <p class="text-error-600 text-[10px] font-medium leading-tight mt-1 text-right">Monto inv.</p>
+                                            <p class="text-danger-active text-[10px] font-medium leading-tight mt-1 text-right">Monto inv.</p>
                                         @enderror
                                     </td>
                                     <td class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small {{ $advancedMode ? 'align-top pt-6' : 'align-middle' }}">
