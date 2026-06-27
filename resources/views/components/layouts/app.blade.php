@@ -206,12 +206,17 @@
             <header class="sticky top-0 z-35">
                 <div class="flex items-center justify-between h-14 px-5 lg:px-6 max-w-screen-2xl mx-auto w-full">
 
-                    {{-- Left: Hamburger (mobile) --}}
-                    <div class="flex items-center gap-3">
+                    {{-- Left: Hamburger (mobile) + Breadcrumbs (desktop) --}}
+                    <div class="flex items-center gap-3.5 min-w-0">
                         <button @click="mobileSidebarOpen = !mobileSidebarOpen"
                             class="lg:hidden p-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition">
                             <x-lucide-menu class="w-5 h-5" />
                         </button>
+
+                        {{-- Breadcrumbs Teleport Target (Linear / Vercel Vibe) --}}
+                        <div class="hidden lg:flex items-center min-w-0">
+                            @stack('topbar-breadcrumbs')
+                        </div>
                     </div>
 
                     {{-- Right: Global Search + Notifications --}}

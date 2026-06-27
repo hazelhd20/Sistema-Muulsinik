@@ -1,18 +1,32 @@
 @props(['links' => []])
 
-@if(!empty($links))
-    <nav class="flex text-xs text-text-muted mb-2 font-medium" aria-label="Breadcrumb">
+@php
+    $cleanedLinks = collect($links)->reject(function ($link) {
+        $label = is_array($link) ? ($link['label'] ?? '') : $link;
+        $url   = is_array($link) ? ($link['url'] ?? '') : '';
+        return strtolower(trim($label)) === 'inicio' || $url === url('/') || $url === url('/dashboard');
+    })->values()->all();
+@endphp
+
+@if(!empty($cleanedLinks))
+    <nav class="flex text-xs text-text-secondary font-medium select-none items-center my-auto" aria-label="Breadcrumb">
         <ol class="inline-flex items-center flex-wrap gap-y-1">
-            @foreach($links as $index => $link)
+            @foreach($cleanedLinks as $index => $link)
                 <li class="inline-flex items-center">
                     @if(isset($link['url']) && !$loop->last)
-                        <a href="{!! $link['url'] !!}" wire:navigate class="inline-flex items-center hover:text-text-primary transition-colors">
-                            {{ $link['label'] }}
+                        <a href="{!! $link['url'] !!}" wire:navigate class="inline-flex items-center text-text-secondary hover:text-text-primary transition-colors">
+                            @if(isset($link['icon']))
+                                <x-dynamic-component :component="'lucide-' . $link['icon']" class="w-3.5 h-3.5 mr-1 shrink-0 opacity-75" />
+                            @endif
+                            <span>{{ $link['label'] ?? $link }}</span>
                         </a>
-                        <x-lucide-chevron-right class="w-3.5 h-3.5 mx-1.5 opacity-50 shrink-0" />
+                        <x-lucide-chevron-right class="w-3.5 h-3.5 mx-1.5 text-border-strong shrink-0 opacity-60" />
                     @else
-                        <span class="text-text-primary font-semibold truncate max-w-[200px] sm:max-w-[300px]" aria-current="page" title="{{ $link['label'] ?? $link }}">
-                            {{ $link['label'] ?? $link }}
+                        <span class="inline-flex items-center text-text-muted font-normal truncate max-w-[200px] sm:max-w-[300px]" aria-current="page" title="{{ $link['label'] ?? $link }}">
+                            @if(isset($link['icon']))
+                                <x-dynamic-component :component="'lucide-' . $link['icon']" class="w-3.5 h-3.5 mr-1 shrink-0 opacity-60" />
+                            @endif
+                            <span>{{ $link['label'] ?? $link }}</span>
                         </span>
                     @endif
                 </li>
