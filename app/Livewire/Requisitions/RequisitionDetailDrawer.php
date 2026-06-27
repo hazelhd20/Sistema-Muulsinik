@@ -48,6 +48,11 @@ class RequisitionDetailDrawer extends Component
     /** Aprobar requisición desde el drawer (Pendiente → Aprobada). */
     public function approve(int $requisitionId, RequisitionWorkflowService $workflowService): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
+            return;
+        }
+
         $req = Requisition::findOrFail($requisitionId);
 
         try {
@@ -64,6 +69,11 @@ class RequisitionDetailDrawer extends Component
     /** RF-REQ-09 — Abrir modal de rechazo. */
     public function openRejectModal(): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
+            return;
+        }
+
         $this->rejectionComment = '';
         $this->showRejectModal = true;
     }

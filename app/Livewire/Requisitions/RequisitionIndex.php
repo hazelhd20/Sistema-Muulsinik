@@ -116,6 +116,11 @@ class RequisitionIndex extends Component
     /** RF-REQ-09: Aprobar requisición (Pendiente → Aprobada). */
     public function approve(int $requisitionId, RequisitionWorkflowService $workflowService): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
+            return;
+        }
+
         $req = Requisition::findOrFail($requisitionId);
         try {
             $workflowService->approve($req, auth()->user());
@@ -129,6 +134,11 @@ class RequisitionIndex extends Component
     /** RF-REQ-09: Abrir modal de rechazo (Pendiente → Rechazada). */
     public function openRejectModal(int $requisitionId): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
+            return;
+        }
+
         $this->isBulkReject = false;
         $this->rejectingId = $requisitionId;
         $this->rejectionComment = '';
@@ -233,6 +243,11 @@ class RequisitionIndex extends Component
     /** Aprobación masiva de requisiciones seleccionadas en estado pendiente. */
     public function approveSelected(RequisitionWorkflowService $workflowService): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
+            return;
+        }
+
         $user = auth()->user();
 
         $pendingIds = Requisition::whereIn('id', $this->selectedRows)

@@ -30,9 +30,9 @@
         'danger'        => $fullBtn . 'bg-danger text-white font-semibold border-transparent hover:bg-danger-hover hover:ring-4 hover:ring-danger/10 active:bg-danger-active active:shadow-none',
         'warning'       => $fullBtn . 'bg-warning text-white font-semibold border-transparent hover:bg-warning-hover hover:ring-4 hover:ring-warning/10 active:bg-warning-active active:shadow-none',
         // Soft
-        'soft'          => $fullBtn . 'bg-surface-main text-text-secondary font-medium border-transparent hover:bg-surface-hover hover:text-text-primary active:bg-border/30',
-        'soft-primary'  => $fullBtn . 'bg-primary-50 text-primary-700 font-medium border-transparent hover:bg-primary-100 hover:text-primary-800 active:bg-primary-100/80',
-        'soft-danger'   => $fullBtn . 'bg-danger-light text-danger font-medium border-transparent hover:bg-danger-light hover:text-danger-hover active:bg-danger-light/80',
+        'soft'          => $fullBtn . '!shadow-none bg-slate-100 text-text-secondary font-medium border-border/60 hover:bg-slate-200/80 hover:text-text-primary hover:border-border active:bg-slate-300/60',
+        'soft-primary'  => $fullBtn . '!shadow-none bg-primary-50 text-primary-700 font-medium border-transparent hover:bg-primary-100 hover:text-primary-800 active:bg-primary-100/80',
+        'soft-danger'   => $fullBtn . '!shadow-none bg-danger-light text-danger font-medium border-transparent hover:bg-danger-light hover:text-danger-hover active:bg-danger-light/80',
         // Ghost
         'ghost'         => $ghostBtn . 'bg-transparent text-text-secondary font-medium hover:bg-surface-hover hover:text-text-primary active:bg-surface-main',
         'ghost-danger'  => $ghostBtn . 'bg-transparent text-text-muted font-medium hover:bg-danger-light hover:text-danger active:bg-danger-light/70',

@@ -343,7 +343,7 @@
                         {{-- Menú de Exportación --}}
                         <x-dropdown align="top" width="56">
                             <x-slot name="trigger">
-                                <x-button variant="soft" icon="file-down"
+                                <x-button variant="secondary" icon="file-down"
                                     wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed"
                                     wire:loading.attr="disabled">
                                     <span wire:loading.remove
@@ -359,7 +359,6 @@
                                 <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
                                     Detallado con Ítems (CSV)
                                 </x-dropdown-link>
-                                <div class="border-t border-border/40 my-1"></div>
                                 <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
                                     PDFs en ZIP
                                 </x-dropdown-link>

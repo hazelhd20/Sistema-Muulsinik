@@ -65,6 +65,11 @@ class RequisitionShow extends Component
      */
     public function approve(RequisitionWorkflowService $workflowService): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para aprobar requisiciones.']);
+            return;
+        }
+
         $req = Requisition::findOrFail($this->requisitionId);
 
         try {
@@ -82,6 +87,11 @@ class RequisitionShow extends Component
      */
     public function openRejectModal(): void
     {
+        if (!auth()->user()?->hasPermission('requisiciones.aprobar') && !auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para rechazar requisiciones.']);
+            return;
+        }
+
         $this->rejectionComment = '';
         $this->showRejectModal = true;
     }

@@ -121,7 +121,8 @@
         letter-spacing: 0.05em;
         text-transform: uppercase;
         white-space: nowrap;
-        white-space: nowrap;
+        user-select: none;
+        cursor: default;
         transition:
             background-color 120ms,
             border-color 120ms,

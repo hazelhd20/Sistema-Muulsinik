@@ -175,7 +175,7 @@
             </div>
         @endif
 
-        <div class="py-1 flex-1 overflow-y-auto" x-ref="listbox" role="listbox">
+        <div class="flex-1 overflow-y-auto" x-ref="listbox" role="listbox">
             <template x-if="filteredOptions.length > 0">
                 <template x-for="(opt, index) in filteredOptions" :key="index">
                     <div

@@ -32,7 +32,7 @@
         </div>
 
         @if($activity->old_values || $activity->new_values)
-            <div class="mt-3 p-4 rounded-lg bg-surface-main/30 border border-border overflow-x-auto shadow-sm">
+            <div class="mt-3 p-4 rounded-lg bg-surface-main/30 border border-border overflow-x-auto">
                 @if(in_array($activity->action, ['status_changed', 'approved', 'rejected']) && (isset($activity->old_values['status']) || isset($activity->new_values['status'])))
                     <div class="flex items-center gap-3 text-small font-medium">
                         <span class="text-text-muted line-through">{{ strtoupper($activity->old_values['status'] ?? '—') }}</span>

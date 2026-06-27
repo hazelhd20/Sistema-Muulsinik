@@ -95,7 +95,7 @@
         </div>
 
         <!-- Options List -->
-        <div class="overflow-y-auto py-1 flex-1" role="listbox">
+        <div class="overflow-y-auto flex-1" role="listbox">
             @if($placeholder)
                 <div
                     @click="value = ''; close()"

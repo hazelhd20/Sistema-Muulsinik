@@ -43,7 +43,7 @@
     $currentTitleColor = $titleColor[$type] ?? $titleColor['info'];
 @endphp
 
-<div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms {{ $attributes->merge(['class' => "p-4 rounded-xl flex items-start gap-3 shadow-sm $currentColor"]) }} role="alert">
+<div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms {{ $attributes->merge(['class' => "p-4 rounded-xl flex items-start gap-3 $currentColor"]) }} role="alert">
     <x-dynamic-component :component="'lucide-' . $currentIcon" class="w-5 h-5 shrink-0 mt-0.5 {{ $currentIconColor }}" aria-hidden="true" />
     <div class="flex-1 min-w-0">
         @if($title)

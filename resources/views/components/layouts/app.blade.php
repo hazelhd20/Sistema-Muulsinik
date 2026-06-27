@@ -99,7 +99,9 @@
                     </a>
                 @endif
 
-                <p class="nav-section-label mt-4">Comercial</p>
+                @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear') || auth()->user()->hasPermission('catalogos.ver'))
+                    <p class="nav-section-label mt-4">Comercial</p>
+                @endif
 
                 @if(auth()->user()->hasPermission('proyectos.crear') || auth()->user()->hasPermission('requisiciones.crear'))
                     <a href="{{ route('cotizador.index') }}" wire:navigate
@@ -116,7 +118,9 @@
                     </a>
                 @endif
 
-                <p class="nav-section-label mt-4">Catálogos</p>
+                @if(auth()->user()->hasPermission('proveedores.ver') || auth()->user()->hasPermission('productos.ver') || auth()->user()->hasPermission('catalogos.ver'))
+                    <p class="nav-section-label mt-4">Catálogos</p>
+                @endif
 
                 @if(auth()->user()->hasPermission('proveedores.ver'))
                     <a href="{{ url('/proveedores') }}" wire:navigate
@@ -144,9 +148,9 @@
                     </a>
                 @endif
 
-                <p class="nav-section-label mt-4">Administración</p>
-
                 @if(auth()->user()->hasPermission('usuarios.ver'))
+                    <p class="nav-section-label mt-4">Administración</p>
+
                     <a href="{{ url('/usuarios') }}" wire:navigate
                         class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
                         <x-lucide-users class="w-4 h-4 shrink-0" aria-hidden="true" />

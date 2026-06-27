@@ -24,9 +24,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Encargado de Compras',
                 'permissions' => [
-                    'requisiciones.ver', 'requisiciones.crear', 'requisiciones.editar', 'requisiciones.aprobar',
+                    'requisiciones.ver', 'requisiciones.crear', 'requisiciones.editar', 'requisiciones.eliminar', 'requisiciones.aprobar',
                     'proveedores.ver', 'proveedores.crear', 'proveedores.editar', 'proveedores.eliminar',
-                    'cotizaciones.cargar',
                     'cotizaciones.ver', 'cotizaciones.crear', 'cotizaciones.editar', 'cotizaciones.eliminar',
                     'productos.ver', 'productos.crear', 'productos.eliminar',
                     'catalogos.ver', 'catalogos.editar',
@@ -40,7 +39,7 @@ class DatabaseSeeder extends Seeder
                 'permissions' => [
                     'proyectos.ver',
                     'gastos.ver', 'gastos.crear',
-                    'requisiciones.ver', 'requisiciones.crear',
+                    'requisiciones.ver', 'requisiciones.crear', 'requisiciones.editar',
                     'cotizaciones.ver', 'cotizaciones.crear',
                     'reportes.ver',
                 ],
