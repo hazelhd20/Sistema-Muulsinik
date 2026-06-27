@@ -145,7 +145,7 @@
                         </thead>
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($project->requisitions as $requisition)
-                                <tr class="hover:bg-surface-hover/30 transition-colors">
+                                <tr class="hover:bg-surface-hover transition-colors duration-150">
                                     <td class="pl-6 pr-4 py-3 font-medium text-small text-text-primary">
                                         {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
@@ -217,7 +217,7 @@
                         </thead>
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($project->expenses as $expense)
-                                <tr class="hover:bg-surface-hover/30 transition-colors">
+                                <tr class="hover:bg-surface-hover transition-colors duration-150">
                                     <td class="pl-6 pr-4 py-3 font-medium text-small text-text-primary">
                                         {{ $expense->concept }}
                                     </td>

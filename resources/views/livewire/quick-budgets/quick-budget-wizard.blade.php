@@ -211,7 +211,7 @@
                         </thead>
                         <tbody class="divide-y divide-border/40">
                             @foreach($items as $index => $item)
-                                <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
+                                <tr class="align-middle hover:bg-surface-hover transition-colors duration-150 group"
                                     wire:key="item-row-{{ $index }}">
                                     <td class="pl-6 pr-4 py-4">
                                         @if($item['product_id'])

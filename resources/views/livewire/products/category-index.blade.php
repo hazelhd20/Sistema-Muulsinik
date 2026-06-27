@@ -71,7 +71,7 @@
                             @else
                                 @foreach ($categories as $category)
                                     <tr wire:key="category-row-{{ $category->id }}"
-                                        class="group hover:bg-surface-hover/30 transition-colors"
+                                        class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $category->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions pl-4 pr-2 text-center" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $category->id }}" />

@@ -154,7 +154,7 @@
                             @elseif($projects->isNotEmpty())
                                 @foreach($projects as $project)
                                     <tr wire:key="project-row-{{ $project->id }}"
-                                        class="group hover:bg-surface-hover/80 transition-colors duration-150"
+                                        class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions text-center pl-6 pr-2" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />

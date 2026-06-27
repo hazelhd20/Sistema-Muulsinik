@@ -1,7 +1,7 @@
 @props(['req'])
 
 <tr wire:key="requisition-row-{{ $req->id }}"
-    class="group hover:bg-surface-hover/50 transition-colors duration-150"
+    class="group hover:bg-surface-hover transition-colors duration-150"
     :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
     
     <td class="actions text-center pl-4 pr-2" @click.stop="$event.stopPropagation()">

@@ -168,7 +168,7 @@
                         </thead>
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($requisition->items as $item)
-                                <tr class="hover:bg-surface-hover/30 transition-colors">
+                                <tr class="hover:bg-surface-hover transition-colors duration-150">
                                     <td class="pl-6 pr-4 py-3">
                                         <p class="font-medium text-small text-text-primary">
                                             {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
@@ -210,7 +210,7 @@
             <div class="md:hidden flex flex-col divide-y divide-border/40 border-t border-border/40">
                 @if($requisition->items->isNotEmpty())
                     @foreach($requisition->items as $item)
-                        <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover/50 transition-colors">
+                        <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover transition-colors duration-150">
                             <div class="flex justify-between items-start gap-4">
                                 <div class="min-w-0">
                                     <p class="font-semibold text-small text-text-primary break-words">

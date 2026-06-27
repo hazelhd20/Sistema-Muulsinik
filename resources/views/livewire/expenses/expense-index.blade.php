@@ -153,7 +153,7 @@
                             @else
                                 @foreach($expenses as $expense)
                                 <tr wire:key="expense-row-{{ $expense->id }}"
-                                    class="group hover:bg-surface-hover/30 transition-colors"
+                                    class="group hover:bg-surface-hover transition-colors duration-150"
                                     :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="actions text-center pl-6 pr-2" @click.stop="$event.stopPropagation()">
                                         <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />

@@ -135,7 +135,7 @@
                         </thead>
                         <tbody class="divide-y divide-border/40">
                             @foreach($itemsWithTotals as $i => $item)
-                                <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
+                                <tr class="align-middle hover:bg-surface-hover transition-colors duration-150 group"
                                     wire:key="item-row-{{ $item['id'] ?? $i }}">
                                     <td class="pl-6 pr-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"

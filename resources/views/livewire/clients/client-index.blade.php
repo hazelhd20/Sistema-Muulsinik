@@ -94,7 +94,7 @@
                             </tr>
                         @else
                             @foreach($clients as $client)
-                                <tr wire:key="client-row-{{ $client->id }}" class="group hover:bg-surface-hover/30 transition-colors" :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50' : ''">
+                                <tr wire:key="client-row-{{ $client->id }}" class="group hover:bg-surface-hover transition-colors duration-150" :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="actions pl-4 pr-2 text-center" @click.stop>
                                         <x-table-checkbox x-model="selectedRows" value="{{ $client->id }}" />
                                     </td>

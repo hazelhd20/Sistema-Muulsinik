@@ -106,7 +106,7 @@
                         <x-button
                             href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}"
                             variant="ghost" icon="arrow-left"
-                            class="text-xs text-text-muted hover:text-text-primary shadow-none border-transparent hover:bg-surface-hover/50"
+                            class="text-xs text-text-muted hover:text-text-primary shadow-none border-transparent hover:bg-surface-hover transition-colors duration-150"
                             wire:navigate>
                             Volver mientras se procesa
                         </x-button>
@@ -392,7 +392,7 @@
                                             default => '',
                                         };
                                     @endphp
-                                    <tr class="align-middle hover:bg-surface-hover/30 transition-colors group"
+                                    <tr class="align-middle hover:bg-surface-hover transition-colors duration-150 group"
                                         wire:key="item-row-{{ $item['id'] ?? $i }}">
                                         {{-- Nombre / Producto --}}
                                         <td class="pl-6 pr-4 py-4">

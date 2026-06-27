@@ -114,7 +114,7 @@
                             @else
                                 @foreach($users as $user)
                                             <tr wire:key="user-row-{{ $user->id }}"
-                                                class="group hover:bg-surface-hover/30 transition-colors"
+                                                class="group hover:bg-surface-hover transition-colors duration-150"
                                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''">
                                                 <td class="actions text-center" @click.stop>
                                                     <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />

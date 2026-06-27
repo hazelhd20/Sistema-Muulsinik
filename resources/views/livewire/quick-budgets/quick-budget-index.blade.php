@@ -142,7 +142,7 @@
                             @else
                                 @foreach($budgets as $budget)
                                     <tr wire:key="budget-row-{{ $budget->id }}"
-                                        class="group hover:bg-surface-hover/30 transition-colors"
+                                        class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions pl-4 pr-2 text-center" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
