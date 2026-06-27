@@ -57,7 +57,7 @@
                     @endif
                 </div>
                 <div class="flex-shrink-0">
-                    <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs w-full sm:w-auto justify-center">
+                    <x-button wire:click="addManualItem" variant="secondary" icon="plus" class="text-xs w-full sm:w-auto justify-center">
                         Concepto Manual
                     </x-button>
                 </div>

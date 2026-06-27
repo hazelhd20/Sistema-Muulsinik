@@ -106,12 +106,17 @@
                                     <p class="font-medium text-small text-text-primary leading-snug mb-1">
                                         {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
                                     </p>
-                                    <p class="text-xs font-medium text-text-muted flex items-center mt-0.5">
-                                        {{ number_format($item->quantity, 2) }}
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider ml-1.5">
-                                            {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
+                                    <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                        @if($item->product?->category?->name)
+                                            <x-dynamic-badge :value="$item->product->category->name" size="xs" />
+                                        @endif
+                                        <span class="text-xs font-medium text-text-muted flex items-center">
+                                            {{ number_format($item->quantity, 2) }}
+                                            <x-badge variant="secondary" size="xs" class="ml-1.5">
+                                                {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
+                                            </x-badge>
                                         </span>
-                                    </p>
+                                    </div>
                                 </div>
                                 <div class="text-right">
                                     <p class="font-medium text-small text-text-primary tabular-nums">
@@ -149,12 +154,12 @@
         @if($detailRequisition)
         <x-slot:footer>
             <div class="flex justify-end gap-3" wire:loading.remove wire:target="showDetail">
-                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="soft" wire:navigate>
+                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
                     Ver Ficha Completa
                 </x-button>
 
                 @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                    <x-button wire:click="openRejectModal" variant="soft" icon="x-circle">
+                    <x-button wire:click="openRejectModal" variant="soft-danger" icon="x-circle">
                         Rechazar
                     </x-button>
                     <x-button

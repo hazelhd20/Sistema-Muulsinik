@@ -1,5 +1,6 @@
 @props([
     'value' => '',
+    'size' => 'md',
 ])
 @php
     $colors = [
@@ -16,8 +17,15 @@
     ];
     $hash = crc32($value ?? '');
     $colorClass = $colors[$hash % count($colors)];
+    $sizeClasses = match($size) {
+        'lg' => 'px-3 py-1.5 text-xs',
+        'md' => '',
+        'sm' => 'px-2 py-0.5 text-[10px]',
+        'xs' => 'px-1.5 py-0.5 text-[9px]',
+        default => '',
+    };
 @endphp
 
-<span {{ $attributes->merge(['class' => "badge {$colorClass}"]) }}>
+<span {{ $attributes->merge(['class' => "badge {$colorClass} {$sizeClasses}"]) }}>
     {{ $slot->isNotEmpty() ? $slot : $value }}
 </span>

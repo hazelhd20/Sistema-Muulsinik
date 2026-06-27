@@ -1,9 +1,9 @@
 <div x-data="{ tab: @entangle('tab').live }" x-on:livewire:navigated.window="tab = $wire.tab">
     <div>
         {{-- Header --}}
-        <x-page-header subtitle="Compras" title="Requisiciones" icon="clipboard-list">
+        <x-page-header subtitle="Compras" title="Requisiciones" :sticky="true">
             <x-slot:actions>
-                <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="soft" icon="plus"
+                <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus"
                     wire:navigate>
                     Nueva Manual
                 </x-button>
@@ -331,7 +331,7 @@
                                         })" variant="success" icon="check-circle">
                                     Aprobar
                                 </x-button>
-                                <x-button wire:click="openBulkRejectModal" variant="warning" icon="x-octagon"
+                                <x-button wire:click="openBulkRejectModal" variant="soft-danger" icon="x-circle"
                                     target="openBulkRejectModal">
                                     Rechazar
                                 </x-button>

@@ -1,50 +1,42 @@
 <div>
     {{-- ─── Header con acciones de workflow ─── --}}
     @php
+        $folio = $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT);
         $breadcrumbs = [
-            ['label' => 'Inicio', 'url' => route('dashboard')],
             ['label' => 'Requisiciones', 'url' => route('requisiciones.index')],
-            ['label' => $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT)]
+            ['label' => $folio]
         ];
     @endphp
-    <x-page-header :breadcrumbs="$breadcrumbs" :status="$requisition->status">
-        <x-slot:title>
-            <div class="flex items-center gap-3">
-                {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
-            </div>
-        </x-slot:title>
+    <x-page-header :breadcrumbs="$breadcrumbs" :title="$folio" :status="$requisition->status" :sticky="true">
         <x-slot:actions>
-            {{-- Acciones secundarias siempre visibles --}}
-            <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="soft" icon="printer">
+            {{-- Acción secundaria siempre visible --}}
+            <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary"
+                icon="printer">
                 Imprimir
             </x-button>
 
             {{-- ── Workflow: Borrador → Pendiente (o Aprobada si admin) ── --}}
             @if($requisition->status === 'borrador' && $requisition->created_by === auth()->id())
                 @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                    <x-button
-                        @click="$dispatch('confirm-action', {
-                            title: 'Aprobar Requisición',
-                            description: 'Tienes permisos de aprobación. La requisición se aprobará automáticamente.',
-                            confirmLabel: 'Aprobar ahora',
-                            variant: 'success',
-                            action: 'submitForApproval',
-                            params: []
-                        })"
-                        variant="success" icon="check-circle">
+                    <x-button @click="$dispatch('confirm-action', {
+                                    title: 'Aprobar Requisición',
+                                    description: 'Tienes permisos de aprobación. La requisición se aprobará automáticamente.',
+                                    confirmLabel: 'Aprobar ahora',
+                                    variant: 'success',
+                                    action: 'submitForApproval',
+                                    params: []
+                                })" variant="success" icon="check-circle">
                         Aprobar Requisición
                     </x-button>
                 @else
-                    <x-button
-                        @click="$dispatch('confirm-action', {
-                            title: 'Solicitar Aprobación',
-                            description: 'La requisición será enviada a los aprobadores del sistema.',
-                            confirmLabel: 'Enviar a aprobación',
-                            variant: 'primary',
-                            action: 'submitForApproval',
-                            params: []
-                        })"
-                        variant="primary" icon="send">
+                    <x-button @click="$dispatch('confirm-action', {
+                                    title: 'Solicitar Aprobación',
+                                    description: 'La requisición será enviada a los aprobadores del sistema.',
+                                    confirmLabel: 'Enviar a aprobación',
+                                    variant: 'primary',
+                                    action: 'submitForApproval',
+                                    params: []
+                                })" variant="primary" icon="send">
                         Solicitar Aprobación
                     </x-button>
                 @endif
@@ -52,19 +44,17 @@
 
             {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
             @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
-                <x-button wire:click="openRejectModal" variant="soft" icon="x-circle" target="openRejectModal">
+                <x-button wire:click="openRejectModal" variant="soft-danger" icon="x-circle" target="openRejectModal">
                     Rechazar
                 </x-button>
-                <x-button
-                    @click="$dispatch('confirm-action', {
-                        title: 'Aprobar Requisición',
-                        description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                        confirmLabel: 'Aprobar',
-                        variant: 'success',
-                        action: 'approve',
-                        params: []
-                    })"
-                    variant="success" icon="check-circle">
+                <x-button @click="$dispatch('confirm-action', {
+                            title: 'Aprobar Requisición',
+                            description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                            confirmLabel: 'Aprobar',
+                            variant: 'success',
+                            action: 'approve',
+                            params: []
+                        })" variant="success" icon="check-circle">
                     Aprobar
                 </x-button>
             @endif
@@ -77,7 +67,7 @@
     @if($requisition->status === 'rechazada' && $requisition->rejection_comment)
         <x-alert variant="danger" icon="x-octagon" title="Requisición rechazada" class="mb-6">
             {{ $requisition->rejection_comment }}
-            
+
             @if($requisition->approver)
                 <x-slot:footer>
                     Por {{ $requisition->approver->name }}
@@ -114,9 +104,9 @@
                         </div>
                     </x-data-label>
                     @php
-                        $proveedorName = $requisition->vendor?->supplier?->trade_name 
-                            ?? $requisition->vendor?->name 
-                            ?? $requisition->items->first()?->supplier?->trade_name 
+                        $proveedorName = $requisition->vendor?->supplier?->trade_name
+                            ?? $requisition->vendor?->name
+                            ?? $requisition->items->first()?->supplier?->trade_name
                             ?? '—';
                     @endphp
                     <x-data-label label="Proveedor">
@@ -151,23 +141,23 @@
 
         {{-- ─── Tarjeta de productos ─── --}}
         <x-card class="mb-6 overflow-hidden">
-            <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <h3 class="font-medium text-text-primary tracking-tight">Productos Solicitados</h3>
-                    @if($requisition->items->count() > 0)
-                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
-                            <x-lucide-package class="w-3.5 h-3.5" />
-                            {{ $requisition->items->count() }} {{ $requisition->items->count() === 1 ? 'artículo' : 'artículos' }}
-                        </span>
-                    @endif
-                </div>
-            </div>
+            <x-card.header title="Productos Solicitados">
+                @if($requisition->items->count() > 0)
+                    <x-slot:action>
+                        <x-badge variant="secondary" size="md" icon="package" :normal-case="true">
+                            {{ $requisition->items->count() }}
+                            {{ $requisition->items->count() === 1 ? 'artículo' : 'artículos' }}
+                        </x-badge>
+                    </x-slot:action>
+                @endif
+            </x-card.header>
 
             {{-- Desktop Table --}}
             <div class="hidden md:block w-full overflow-x-auto">
                 @if($requisition->items->isNotEmpty())
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                        <thead
+                            class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap">Producto</th>
                                 <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
@@ -185,16 +175,18 @@
                                         </p>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <span class="text-small text-text-secondary">
-                                            {{ $item->product?->category?->name ?? '—' }}
-                                        </span>
+                                        @if($item->product?->category?->name)
+                                            <x-dynamic-badge :value="$item->product->category->name" size="xs" />
+                                        @else
+                                            <span class="text-small text-text-muted">—</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-center tabular-nums text-small text-text-secondary">
                                         <div class="flex items-center justify-center gap-1.5">
                                             <span>{{ number_format($item->quantity, 2) }}</span>
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
+                                            <x-badge variant="secondary" size="xs">
                                                 {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
-                                            </span>
+                                            </x-badge>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-right tabular-nums text-small text-text-secondary">
@@ -224,27 +216,31 @@
                                     <p class="font-semibold text-small text-text-primary break-words">
                                         {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                     </p>
-                                    <p class="text-xs text-text-muted mt-0.5">
-                                        {{ $item->product?->category?->name ?? '—' }}
-                                    </p>
+                                    <div class="mt-1">
+                                        @if($item->product?->category?->name)
+                                            <x-dynamic-badge :value="$item->product->category->name" size="xs" />
+                                        @else
+                                            <span class="text-xs text-text-muted">—</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                            
+
                             <div class="grid grid-cols-2 gap-4 mt-1 pt-3 border-t border-border/40">
                                 <x-data-label label="Cantidad">
                                     <div class="flex items-center gap-1.5 mt-0.5">
                                         <span>{{ number_format($item->quantity, 2) }}</span>
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
+                                        <x-badge variant="secondary" size="xs">
                                             {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
-                                        </span>
+                                        </x-badge>
                                     </div>
                                 </x-data-label>
-                                
+
                                 <x-data-label label="Precio Unitario" align="right">
                                     ${{ number_format($item->unit_price, 2) }}
                                 </x-data-label>
                             </div>
-                            
+
                             <div class="flex justify-between items-center mt-1 pt-3 border-t border-border/40">
                                 <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Línea</span>
                                 <span class="font-bold text-lg text-text-primary tabular-nums">
@@ -294,7 +290,7 @@
                     </div>
                 </x-totals-summary>
             </div>
-    </x-card>
+        </x-card>
 
     </div> {{-- End space-y-6 --}}
     {{-- ─── Historial de Actividad (Audit Log) ─── --}}
@@ -302,7 +298,8 @@
         <x-card class="mt-6 mb-6">
             <x-card.header title="Historial de Actividad" />
             <x-card.body>
-                <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border/40">
+                <div
+                    class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-1/2 before:h-full before:w-px before:bg-border/40">
                     @foreach($requisition->activities as $activity)
                         <x-activity-timeline-item :activity="$activity" />
                     @endforeach

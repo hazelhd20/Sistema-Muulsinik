@@ -14,9 +14,7 @@
         <div class="flex items-center gap-2 shrink-0">
             <x-dropdown align="right" width="48">
                 <x-slot name="trigger">
-                    <button class="p-1 rounded-md text-text-muted hover:bg-surface-card hover:text-text-primary transition-colors focus:outline-none hover:shadow-sm border border-transparent hover:border-border/40">
-                        <x-lucide-more-vertical class="w-5 h-5" />
-                    </button>
+                    <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
                 </x-slot>
                 <x-slot name="content">
                     <x-dropdown-link as="button" type="button" @click="$dispatch('open-requisition-detail', { id: {{ $req->id }} })" icon="eye">Ver detalles</x-dropdown-link>

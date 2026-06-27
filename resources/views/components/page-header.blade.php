@@ -10,8 +10,8 @@
 ])
 
 <div @class([
-    'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-5 border-b border-border/40 transition-all duration-150',
-    'sticky top-0 z-30 bg-surface-main/85 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 border-border shadow-xs' => $sticky,
+    'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-2 transition-all duration-150',
+    'sticky top-0 z-30 bg-surface-main/85 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-4' => $sticky,
 ])>
     <div class="flex-1 min-w-0">
         {{-- Nivel Superior: Breadcrumbs teletransportados a Topbar (Desktop) y locales en Móvil --}}
@@ -55,6 +55,7 @@
             @if($status)
                 <x-status-badge
                     :status="$status"
+                    size="md"
                     :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
             @endif
         </div>

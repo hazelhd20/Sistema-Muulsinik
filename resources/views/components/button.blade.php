@@ -42,11 +42,11 @@
         'link-danger'   => $linkBtn . 'bg-transparent text-danger font-medium hover:text-danger-hover',
         'link-danger-muted' => $linkBtn . 'bg-transparent text-text-muted font-medium hover:text-danger',
         // Icon
-        'icon'          => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-slate-900/5 hover:text-text-primary',
+        'icon'          => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-surface-hover hover:text-text-primary',
         'icon-primary'  => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-primary-50 hover:text-primary-600',
         'icon-danger'   => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-danger-light hover:text-danger',
         'icon-success'  => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-success-light hover:text-success',
-        'icon-secondary'=> $iconBtn . 'w-[2.25rem] h-[2.25rem] bg-surface-card text-text-secondary border-border shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
+        'icon-secondary'=> $iconBtn . 'w-[2.25rem] h-[2.25rem] bg-surface-card text-text-secondary border-border shadow-sm hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
         default         => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800 active:shadow-none',
     };
 

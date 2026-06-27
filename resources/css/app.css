@@ -135,8 +135,8 @@
     }
 
     .badge-secondary {
-        background-color: var(--color-border-light);
-        color: var(--color-text-secondary);
+        background-color: var(--color-secondary-light);
+        color: var(--color-secondary-active);
     }
 
     .badge-success {

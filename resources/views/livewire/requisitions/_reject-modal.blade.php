@@ -23,7 +23,7 @@
                     aria-required="true"></textarea>
             </x-form-field>
             <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                <x-button wire:click="$set('showRejectModal', false)" variant="secondary">
+                <x-button wire:click="$set('showRejectModal', false)" variant="soft">
                     Cancelar
                 </x-button>
                 <x-button type="submit" variant="danger" icon="x-circle" target="confirmReject">
