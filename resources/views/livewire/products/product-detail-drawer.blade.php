@@ -6,36 +6,37 @@
                 {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 text-text-primary">{{ $detailProduct->canonical_name }}</h3>
-                        <p class="text-small text-text-secondary mt-1">Registrado el {{ $detailProduct->created_at?->format('d/m/Y') }}</p>
+                        <h3 class="text-h3 text-text-primary pr-4">{{ $detailProduct->canonical_name }}</h3>
+                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
+                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
+                            <span>Registrado el {{ $detailProduct->created_at?->format('d/m/Y') ?? '—' }}</span>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 text-small bg-surface-main/30 p-4 rounded-xl border border-border">
-                    <div>
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Categoría</p>
-                        <p class="font-medium text-text-primary">
-                            @if($detailProduct->category)
-                                <x-dynamic-badge :value="$detailProduct->category->name" />
-                            @else
-                                <span class="text-text-muted">—</span>
-                            @endif
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Unidad</p>
-                        <p class="font-medium text-text-primary">
-                            @if($detailProduct->measure && $detailProduct->measure->abbreviation)
-                                <x-badge variant="secondary">{{ $detailProduct->measure->abbreviation }}</x-badge>
-                            @else
-                                <span class="text-text-muted">—</span>
-                            @endif
-                        </p>
-                    </div>
+                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
+                    <x-data-label label="Categoría">
+                        @if($detailProduct->category)
+                            <x-dynamic-badge :value="$detailProduct->category->name" size="xs" />
+                        @else
+                            <span class="text-text-muted">—</span>
+                        @endif
+                    </x-data-label>
+                    <x-data-label label="Unidad">
+                        @if($detailProduct->measure && $detailProduct->measure->abbreviation)
+                            <x-chip size="sm">{{ $detailProduct->measure->abbreviation }}</x-chip>
+                        @else
+                            <span class="text-text-muted">—</span>
+                        @endif
+                    </x-data-label>
                     <div class="col-span-2">
-                        <p class="text-text-muted text-xs font-medium mb-0.5">Descripción Técnica</p>
-                        <p class="font-medium text-text-primary">{{ $detailProduct->description ?: 'Sin descripción' }}</p>
+                        <x-data-label label="Descripción Técnica">
+                            <div class="flex items-start gap-1.5">
+                                <x-lucide-align-left class="w-3.5 h-3.5 text-text-muted/70 mt-0.5 shrink-0" />
+                                <span>{{ $detailProduct->description ?: 'Sin descripción' }}</span>
+                            </div>
+                        </x-data-label>
                     </div>
                 </div>
 
@@ -47,8 +48,29 @@
                 </div>
             </div>
         @else
-            <div class="flex items-center justify-center h-48">
-                <div class="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="space-y-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <x-skeleton class="h-6 w-48 mb-2" />
+                        <x-skeleton class="h-4 w-32" />
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <x-skeleton class="h-3 w-20 mb-1" />
+                        <x-skeleton class="h-6 w-24" />
+                    </div>
+                    <div>
+                        <x-skeleton class="h-3 w-20 mb-1" />
+                        <x-skeleton class="h-6 w-16" />
+                    </div>
+                    <div class="col-span-2">
+                        <x-skeleton class="h-3 w-28 mb-1" />
+                        <x-skeleton class="h-4 w-full mb-1" />
+                        <x-skeleton class="h-4 w-4/5" />
+                    </div>
+                </div>
             </div>
         @endif
     </x-drawer>

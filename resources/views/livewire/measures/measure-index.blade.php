@@ -84,7 +84,7 @@
                                         </td>
                                         <td>
                                             @if($measure->abbreviation)
-                                                <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
+                                                <x-chip size="sm">{{ $measure->abbreviation }}</x-chip>
                                             @else
                                                 <span class="text-text-muted">—</span>
                                             @endif
@@ -166,7 +166,7 @@
                                         <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
                                         <span class="font-bold text-text-primary text-base truncate">{{ $measure->name }}</span>
                                         @if($measure->abbreviation)
-                                            <x-badge variant="secondary">{{ $measure->abbreviation }}</x-badge>
+                                            <x-chip size="sm">{{ $measure->abbreviation }}</x-chip>
                                         @endif
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">

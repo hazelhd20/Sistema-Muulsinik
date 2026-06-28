@@ -112,9 +112,9 @@
                                         @endif
                                         <span class="text-xs font-medium text-text-muted flex items-center">
                                             {{ number_format($item->quantity, 2) }}
-                                            <x-badge variant="secondary" size="xs" class="ml-1.5">
+                                            <x-chip size="xs" class="ml-1.5">
                                                 {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
-                                            </x-badge>
+                                            </x-chip>
                                         </span>
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@
         @if($detailRequisition)
         <x-slot:footer>
             <div class="flex justify-end gap-3" wire:loading.remove wire:target="showDetail">
-                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="soft" wire:navigate>
+                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
                     Ver Ficha Completa
                 </x-button>
 

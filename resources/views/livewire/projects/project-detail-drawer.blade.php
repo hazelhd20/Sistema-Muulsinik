@@ -39,8 +39,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6 text-small">
-
+                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
                     <x-data-label label="Fecha de Inicio">
                         <div class="flex items-center gap-1.5">
                             <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />

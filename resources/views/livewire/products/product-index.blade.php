@@ -134,7 +134,7 @@
                                         </td>
                                         <td class="text-body text-text-secondary">
                                             @if($product->measure && $product->measure->abbreviation)
-                                                <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
+                                                <x-chip size="sm">{{ $product->measure->abbreviation }}</x-chip>
                                             @else
                                                 <span class="text-text-muted">—</span>
                                             @endif
@@ -254,7 +254,7 @@
                                         <div>
                                             <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Unidad</p>
                                             @if($product->measure && $product->measure->abbreviation)
-                                                <x-badge variant="secondary">{{ $product->measure->abbreviation }}</x-badge>
+                                                <x-chip size="sm">{{ $product->measure->abbreviation }}</x-chip>
                                             @else
                                                 <span class="text-text-muted">—</span>
                                             @endif
