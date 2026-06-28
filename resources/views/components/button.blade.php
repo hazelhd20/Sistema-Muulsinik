@@ -17,22 +17,22 @@
 @php
     $base = 'inline-flex items-center justify-center transition-all duration-150 cursor-pointer whitespace-nowrap disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none relative ';
     
-    $fullBtn = $base . 'gap-1.5 px-4 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border tracking-wide shadow-sm ';
+    $fullBtn = $base . 'gap-1.5 px-4 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border tracking-wide ';
     $ghostBtn = $base . 'gap-1.5 px-3 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border border-transparent ';
     $linkBtn = $base . 'gap-1 min-h-[2.25rem] text-[length:var(--font-size-small)] border-none ';
     $iconBtn = $base . 'rounded-[0.4375rem] min-w-[2.25rem] min-h-[2.25rem] border border-transparent ';
 
     $baseClasses = match($variant) {
         // Solid
-        'primary'       => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800 active:shadow-none',
+        'primary'       => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800',
         'secondary'     => $fullBtn . 'bg-surface-card text-text-primary font-medium border-border hover:bg-surface-hover hover:border-border-strong active:bg-surface-hover/70',
-        'success'       => $fullBtn . 'bg-success text-white font-semibold border-transparent hover:bg-success-hover hover:ring-4 hover:ring-success/10 active:bg-success-active active:shadow-none',
-        'danger'        => $fullBtn . 'bg-danger text-white font-semibold border-transparent hover:bg-danger-hover hover:ring-4 hover:ring-danger/10 active:bg-danger-active active:shadow-none',
-        'warning'       => $fullBtn . 'bg-warning text-white font-semibold border-transparent hover:bg-warning-hover hover:ring-4 hover:ring-warning/10 active:bg-warning-active active:shadow-none',
+        'success'       => $fullBtn . 'bg-success text-white font-semibold border-transparent hover:bg-success-hover hover:ring-4 hover:ring-success/10 active:bg-success-active',
+        'danger'        => $fullBtn . 'bg-danger text-white font-semibold border-transparent hover:bg-danger-hover hover:ring-4 hover:ring-danger/10 active:bg-danger-active',
+        'warning'       => $fullBtn . 'bg-warning text-white font-semibold border-transparent hover:bg-warning-hover hover:ring-4 hover:ring-warning/10 active:bg-warning-active',
         // Soft
-        'soft'          => $fullBtn . '!shadow-none bg-slate-100 text-text-secondary font-medium border-border/60 hover:bg-slate-200/80 hover:text-text-primary hover:border-border active:bg-slate-300/60',
-        'soft-primary'  => $fullBtn . '!shadow-none bg-primary-50 text-primary-700 font-medium border-transparent hover:bg-primary-100 hover:text-primary-800 active:bg-primary-100/80',
-        'soft-danger'   => $fullBtn . '!shadow-none bg-danger-light text-danger font-medium border-transparent hover:bg-danger-light hover:text-danger-hover active:bg-danger-light/80',
+        'soft'          => $fullBtn . 'bg-secondary-light text-text-secondary font-medium border-border/60 hover:bg-secondary-border hover:text-text-primary hover:border-border active:bg-border',
+        'soft-primary'  => $fullBtn . 'bg-primary-50 text-primary-700 font-medium border-transparent hover:bg-primary-100 hover:text-primary-800 active:bg-primary-100/80',
+        'soft-danger'   => $fullBtn . 'bg-danger-light text-danger font-medium border-transparent hover:bg-danger-light hover:text-danger-hover active:bg-danger-light/80',
         // Ghost
         'ghost'         => $ghostBtn . 'bg-transparent text-text-secondary font-medium hover:bg-surface-hover hover:text-text-primary active:bg-surface-main',
         'ghost-danger'  => $ghostBtn . 'bg-transparent text-text-muted font-medium hover:bg-danger-light hover:text-danger active:bg-danger-light/70',
@@ -46,8 +46,8 @@
         'icon-primary'  => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-primary-50 hover:text-primary-600',
         'icon-danger'   => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-danger-light hover:text-danger',
         'icon-success'  => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-success-light hover:text-success',
-        'icon-secondary'=> $iconBtn . 'w-[2.25rem] h-[2.25rem] bg-surface-card text-text-secondary border-border shadow-sm hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
-        default         => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800 active:shadow-none',
+        'icon-secondary'=> $iconBtn . 'w-[2.25rem] h-[2.25rem] bg-surface-card text-text-secondary border-border hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
+        default         => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800',
     };
 
     $isIconButton = str_starts_with($variant, 'icon');

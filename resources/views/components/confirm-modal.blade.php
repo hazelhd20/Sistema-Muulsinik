@@ -90,7 +90,7 @@
                 <button type="button"
                         @click="forceClose()"
                         :disabled="loading"
-                        class="btn-secondary"
+                        class="btn-soft"
                         x-text="cancelLabel"></button>
 
                 {{-- Confirmar --}}

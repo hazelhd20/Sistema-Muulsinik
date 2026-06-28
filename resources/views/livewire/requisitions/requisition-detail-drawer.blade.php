@@ -154,12 +154,12 @@
         @if($detailRequisition)
         <x-slot:footer>
             <div class="flex justify-end gap-3" wire:loading.remove wire:target="showDetail">
-                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
+                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="soft" wire:navigate>
                     Ver Ficha Completa
                 </x-button>
 
                 @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                    <x-button wire:click="openRejectModal" variant="soft-danger" icon="x-circle">
+                    <x-button wire:click="openRejectModal" variant="danger" icon="x-circle">
                         Rechazar
                     </x-button>
                     <x-button

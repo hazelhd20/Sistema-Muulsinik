@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
         @php
             $activeCount = ($activeFilter !== '' ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -301,7 +301,7 @@
                     <x-toggle wire:model="active" label="Cliente Activo" description="Los clientes inactivos no aparecerán en el cotizador." />
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveClient">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Cliente' }}
                     </x-button>

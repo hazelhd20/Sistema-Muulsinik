@@ -36,7 +36,7 @@
              x-init="totalOnPageStatic = {{ $requisitions->count() }}; init()" data-total-on-page="{{ $requisitions->count() }}">
             {{-- Unified Datagrid Card Container --}}
             <div
-                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border/40 md:rounded-xl md:shadow-sm">
+                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
                 @php
                     $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
                     $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -331,7 +331,7 @@
                                         })" variant="success" icon="check-circle">
                                     Aprobar
                                 </x-button>
-                                <x-button wire:click="openBulkRejectModal" variant="soft-danger" icon="x-circle"
+                                <x-button wire:click="openBulkRejectModal" variant="danger" icon="x-circle"
                                     target="openBulkRejectModal">
                                     Rechazar
                                 </x-button>

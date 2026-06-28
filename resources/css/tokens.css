@@ -73,8 +73,11 @@
     --color-info-light: #f0f9ff;
     --color-info-border: #bae6fd;
 
-    --color-secondary-light: #dfe6f2;
-    --color-secondary-active: #1e293b;
+    --color-secondary: #64748b;
+    --color-secondary-hover: #475569;
+    --color-secondary-active: #334155;
+    --color-secondary-light: #f1f5f9;
+    --color-secondary-border: #e2e8f0;
 
     /* Skeleton highlight */
     --color-skeleton-base: var(--color-surface-main); /* #f4f7fa */

@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
         @php
             $activeCount = ($categoryFilter ? 1 : 0) + ($measureFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -369,7 +369,7 @@
                         placeholder="Descripción técnica opcional..."></textarea>
                 </x-form-field>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveProduct">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}
                     </x-button>

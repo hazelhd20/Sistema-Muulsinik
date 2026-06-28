@@ -22,7 +22,7 @@
     $isNegativeTrend = $trend !== null && floatval($trend) < 0;
 @endphp
 
-<div {{ $attributes->merge(['class' => 'bg-surface-card rounded-2xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow']) }}>
+<div {{ $attributes->merge(['class' => 'bg-surface-card rounded-2xl border border-border p-5 hover:border-border-strong transition-colors']) }}>
     <div class="flex items-start justify-between">
         <div>
             <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">{{ $title }}</p>

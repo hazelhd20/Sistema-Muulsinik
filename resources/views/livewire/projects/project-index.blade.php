@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
 
         @php
             $hasActiveFilters = !empty($search) || !empty($statusFilter) || !empty($periodFilter);
@@ -469,7 +469,7 @@
                 @endif
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button wire:click="$set('showModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary"
                         target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-button>
                 </div>

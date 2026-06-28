@@ -11,7 +11,7 @@
 
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
         
         @php
             $hasActiveFilters = !empty($search) || !empty($projectFilter) || !empty($categoryFilter) || !empty($periodFilter) || !empty($userFilter);
@@ -435,7 +435,7 @@
             </x-form-field>
 
             <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                 <x-button type="submit" variant="primary" target="createExpense">
                     Registrar Gasto
                 </x-button>

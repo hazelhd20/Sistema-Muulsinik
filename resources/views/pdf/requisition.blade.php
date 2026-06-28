@@ -265,7 +265,7 @@
             </div>
             <div class="info-row">
                 <div class="info-label">Cliente</div>
-                <div class="info-value">{{ $requisition->project?->client ?? '—' }}</div>
+                <div class="info-value">{{ $requisition->project?->client?->name ?? '—' }}</div>
             </div>
             <div class="info-row">
                 <div class="info-label">Fecha</div>

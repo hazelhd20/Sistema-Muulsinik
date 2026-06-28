@@ -9,7 +9,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg md:shadow-sm">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
         @php
             $activeCount = $categoryFilter ? 1 : 0;
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -366,7 +366,7 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">
-                    <x-button wire:click="$set('showCreateModal', false)" variant="secondary">Cancelar</x-button>
+                    <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveSupplier">
                         {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
                     </x-button>
@@ -420,11 +420,11 @@
                             <x-button type="submit" variant="primary" target="saveVendor" class="text-xs">
                                 {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
                             </x-button>
-                            <x-button wire:click="$set('showAddVendor', false)" variant="secondary" class="text-xs">Cancelar</x-button>
+                            <x-button wire:click="$set('showAddVendor', false)" variant="soft" class="text-xs">Cancelar</x-button>
                         </div>
                     </form>
                 @else
-                    <x-button wire:click="$set('showAddVendor', true)" variant="secondary" icon="user-plus" class="w-full">
+                    <x-button wire:click="$set('showAddVendor', true)" variant="soft" icon="user-plus" class="w-full">
                         Agregar Vendedor
                     </x-button>
                 @endif

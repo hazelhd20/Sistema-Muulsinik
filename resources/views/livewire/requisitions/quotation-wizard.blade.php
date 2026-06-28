@@ -149,10 +149,10 @@
                             </div>
                             {{-- Acciones secundarias --}}
                             <div class="grid grid-cols-2 gap-3">
-                                <x-button wire:click="continueManually" variant="secondary" class="w-full rounded-xl">
+                                <x-button wire:click="continueManually" variant="soft" class="w-full rounded-xl">
                                     Llenar a mano
                                 </x-button>
-                                <x-button wire:click="resetWizard" variant="secondary" class="w-full rounded-xl">
+                                <x-button wire:click="resetWizard" variant="soft" class="w-full rounded-xl">
                                     Otro archivo
                                 </x-button>
                             </div>
@@ -267,7 +267,7 @@
                     @if($quotation)
                         <x-button type="button"
                             @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
-                            variant="secondary" icon="file-search" class="text-xs">
+                            variant="soft" icon="file-search" class="text-xs">
                             Ver documento original
                         </x-button>
                     @endif
@@ -358,7 +358,7 @@
                         @endif
                     </div>
                     <div>
-                        <x-button wire:click="addItem" variant="secondary" icon="plus" class="text-xs">
+                        <x-button wire:click="addItem" variant="soft" icon="plus" class="text-xs">
                             Agregar producto
                         </x-button>
                     </div>
