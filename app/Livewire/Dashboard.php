@@ -2,8 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Client;
 use App\Models\Expense;
+use App\Models\Product;
 use App\Models\Project;
+use App\Models\QuickBudget;
+use App\Models\Quotation;
 use App\Models\Requisition;
 use App\Models\RequisitionItem;
 use App\Models\Supplier;
@@ -18,13 +22,17 @@ class Dashboard extends Component
     #[Title('Dashboard')]
     public function render()
     {
-        $globalStats = \Illuminate\Support\Facades\Cache::remember('dashboard_global_stats', now()->addHours(1), function () {
+        $globalStats = \Illuminate\Support\Facades\Cache::remember('dashboard_global_stats_v3', now()->addHours(1), function () {
             return [
                 'totalProjects' => Project::count(),
                 'activeProjects' => Project::where('status', 'activo')->count(),
                 'pendingRequisitions' => Requisition::where('status', 'pendiente')->count(),
                 'approvedRequisitions' => Requisition::where('status', 'aprobada')->count(),
+                'pendingQuotations' => Quotation::pendingInbox()->count(),
                 'totalSuppliers' => Supplier::count(),
+                'totalClients' => Client::count(),
+                'totalProducts' => Product::count(),
+                'totalBudgets' => QuickBudget::count(),
             ];
         });
 
@@ -43,8 +51,8 @@ class Dashboard extends Component
             return compact('totalExpenses', 'monthExpenses');
         });
 
-        $monthlyExpenses = \Illuminate\Support\Facades\Cache::remember('dashboard_monthly_chart', now()->addHours(1), function () {
-            $startDate = now()->subMonths(5)->startOfMonth();
+        $monthlyExpenses = \Illuminate\Support\Facades\Cache::remember('dashboard_monthly_chart_v3', now()->addHours(1), function () {
+            $startDate = now()->startOfMonth()->subMonths(5);
             $endDate = now()->endOfMonth();
 
             $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
@@ -66,15 +74,17 @@ class Dashboard extends Component
 
             $chartData = [];
             for ($i = 5; $i >= 0; $i--) {
-                $date = now()->subMonths($i);
+                $date = now()->startOfMonth()->subMonths($i);
                 $key = $date->format('Y-m');
 
                 $direct = (float) ($directExpenses[$key]->total ?? 0);
                 $requisitions = (float) ($requisitionExpenses[$key]->total ?? 0);
 
                 $chartData[] = [
-                    'month' => $date->translatedFormat('M'),
-                    'total' => $direct + $requisitions,
+                    'month' => ucfirst($date->translatedFormat('M')),
+                    'direct' => round($direct, 2),
+                    'requisitions' => round($requisitions, 2),
+                    'total' => round($direct + $requisitions, 2),
                 ];
             }
             return $chartData;
@@ -90,7 +100,11 @@ class Dashboard extends Component
             'activeProjects' => $globalStats['activeProjects'],
             'pendingRequisitions' => $globalStats['pendingRequisitions'],
             'approvedRequisitions' => $globalStats['approvedRequisitions'],
+            'pendingQuotations' => $globalStats['pendingQuotations'],
             'totalSuppliers' => $globalStats['totalSuppliers'],
+            'totalClients' => $globalStats['totalClients'],
+            'totalProducts' => $globalStats['totalProducts'],
+            'totalBudgets' => $globalStats['totalBudgets'],
             'totalExpenses' => $financialStats['totalExpenses'],
             'monthExpenses' => $financialStats['monthExpenses'],
             'recentProjects' => $recentProjects,

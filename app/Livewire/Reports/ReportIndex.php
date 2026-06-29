@@ -57,6 +57,16 @@ class ReportIndex extends Component
     }
 
 
+    public function exportCsv(\App\Actions\Reports\ExportReportAction $exportAction)
+    {
+        return $exportAction->executeCsv($this->activeTab, $this->getDateFrom(), $this->projectFilter ?: null);
+    }
+
+    public function exportExcel(\App\Actions\Reports\ExportReportAction $exportAction)
+    {
+        return $exportAction->executeExcel($this->activeTab, $this->getDateFrom(), $this->projectFilter ?: null);
+    }
+
     /** Datos para la pestaña de Resumen General */
 
 

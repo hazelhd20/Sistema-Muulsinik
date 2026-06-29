@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
-    public function getOverviewData(Carbon $dateFrom, ?string $projectFilter = null): array
+    public function getOverviewData(Carbon $dateFrom, ?string $projectFilter = null, int $limit = 5): array
     {
         // 1. Calcular el total de gastos del período (Directos + Requisiciones Aprobadas + Distribuidos si hay proyecto)
         if ($projectFilter) {
@@ -187,9 +187,11 @@ class ReportService
                 $proj->total_spent = $direct + $distributed + $requisitions;
                 return $proj;
             })
-            ->sortByDesc('total_spent')
-            ->take(5)
-            ->values();
+            ->sortByDesc('total_spent');
+        if ($limit > 0) {
+            $topProjects = $topProjects->take($limit);
+        }
+        $topProjects = $topProjects->values();
 
         // Presupuesto vs Gasto por proyecto
         $budgetComparison = Project::where('status', 'activo')
@@ -219,7 +221,7 @@ class ReportService
 
     }
 
-    public function getSupplierData(Carbon $dateFrom, ?string $projectFilter = null): array
+    public function getSupplierData(Carbon $dateFrom, ?string $projectFilter = null, int $limit = 10): array
     {
         $topSuppliers = Supplier::select('suppliers.id', 'suppliers.trade_name', 'suppliers.category')
             ->selectRaw('COUNT(DISTINCT requisitions.id) as total_requisitions')
@@ -233,13 +235,13 @@ class ReportService
             ->when($projectFilter, fn ($q) => $q->where('requisitions.project_id', $projectFilter))
             ->groupBy('suppliers.id', 'suppliers.trade_name', 'suppliers.category')
             ->orderByDesc('total_amount')
-            ->take(10)
+            ->when($limit > 0, fn ($q) => $q->take($limit))
             ->get();
 
         return compact('topSuppliers');
     }
 
-    public function getVendorData(Carbon $dateFrom, ?string $projectFilter = null): array
+    public function getVendorData(Carbon $dateFrom, ?string $projectFilter = null, int $limit = 10): array
     {
         $topVendors = DB::table('vendors')
             ->select(
@@ -257,13 +259,13 @@ class ReportService
             ->when($projectFilter, fn ($q) => $q->where('requisitions.project_id', $projectFilter))
             ->groupBy('vendors.id', 'vendors.name', 'suppliers.trade_name')
             ->orderByDesc('total_amount')
-            ->take(10)
+            ->when($limit > 0, fn ($q) => $q->take($limit))
             ->get();
 
         return compact('topVendors');
     }
 
-    public function getProductData(Carbon $dateFrom, ?string $projectFilter = null): array
+    public function getProductData(Carbon $dateFrom, ?string $projectFilter = null, int $limit = 15): array
     {
         $topProducts = DB::table('requisition_items')
             ->select(
@@ -285,7 +287,7 @@ class ReportService
             ->when($projectFilter, fn ($q) => $q->where('requisitions.project_id', $projectFilter))
             ->groupBy('products.id', 'products.canonical_name', 'categories.name', 'measures.abbreviation')
             ->orderByDesc('total_amount')
-            ->take(15)
+            ->when($limit > 0, fn ($q) => $q->take($limit))
             ->get();
 
         // Productos por categoría

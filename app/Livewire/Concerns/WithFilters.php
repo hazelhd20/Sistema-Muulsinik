@@ -17,7 +17,7 @@ trait WithFilters
             : [
                 'search', 'statusFilter', 'periodFilter', 'dateFrom', 'dateTo', 
                 'categoryFilter', 'projectFilter', 'creatorFilter', 'vendorFilter', 
-                'userFilter', 'roleFilter', 'measureFilter', 'tab', 'perPage'
+                'userFilter', 'roleFilter', 'measureFilter', 'tab'
             ];
     }
 

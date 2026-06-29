@@ -94,6 +94,18 @@
     --color-cat-product: var(--color-info);
     --color-cat-product-light: var(--color-info-light);
 
+    /* Chart Palette Curada — Industrial Premium */
+    --color-chart-1: #2563eb;
+    --color-chart-2: #0284c7;
+    --color-chart-3: #0d9e6e;
+    --color-chart-4: #d97706;
+    --color-chart-5: #dc2626;
+    --color-chart-6: #7c3aed;
+    --color-chart-7: #db2777;
+    --color-chart-8: #0891b2;
+    --color-chart-9: #ea580c;
+    --color-chart-10: #64748b;
+
     --color-border-light: #f1f5f9;
     --color-surface-th: #f8fafc;
 

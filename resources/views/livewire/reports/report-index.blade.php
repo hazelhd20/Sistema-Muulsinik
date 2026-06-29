@@ -10,6 +10,21 @@
                 placeholder="Todos los proyectos" class="w-auto min-w-[180px]" />
             <x-custom-select wire:model.live="period" :options="['week' => 'Última semana', 'month' => 'Último mes', 'quarter' => 'Último trimestre', 'year' => 'Último año', 'all' => 'Todo']" class="w-auto min-w-[140px]"
                 placeholder="" />
+            <x-dropdown align="right" width="56">
+                <x-slot:trigger>
+                    <x-button variant="secondary" icon="download" iconRight="chevron-down" target="exportExcel, exportCsv">
+                        Exportar
+                    </x-button>
+                </x-slot:trigger>
+                <x-slot:content>
+                    <x-dropdown-link as="button" wire:click="exportExcel" icon="file-spreadsheet">
+                        Formato Excel (.xlsx)
+                    </x-dropdown-link>
+                    <x-dropdown-link as="button" wire:click="exportCsv" icon="file-text">
+                        Formato CSV (.csv)
+                    </x-dropdown-link>
+                </x-slot:content>
+            </x-dropdown>
         </x-slot:actions>
     </x-page-header>
 
@@ -339,13 +354,26 @@
                                                  label: 'Gastos',
                                                  data: data.map(d => d.total),
                                                  borderColor: primaryHex,
-                                                 backgroundColor: hexToRgba(primaryHex, 0.08),
+                                                 backgroundColor: (context) => {
+                                                     const chart = context.chart;
+                                                     const {ctx, chartArea} = chart;
+                                                     if (!chartArea) return hexToRgba(primaryHex, 0.08);
+                                                     const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                                                     gradient.addColorStop(0, hexToRgba(primaryHex, 0.22));
+                                                     gradient.addColorStop(1, hexToRgba(primaryHex, 0.0));
+                                                     return gradient;
+                                                 },
                                                  fill: true,
-                                                 tension: 0.4,
-                                                 borderWidth: 2.5,
-                                                 pointBackgroundColor: primaryHex,
+                                                 tension: 0.35,
+                                                 borderWidth: 3,
+                                                 pointBackgroundColor: '#ffffff',
+                                                 pointBorderColor: primaryHex,
+                                                 pointBorderWidth: 2,
                                                  pointRadius: 4,
-                                                 pointHoverRadius: 6,
+                                                 pointHoverRadius: 7,
+                                                 pointHoverBackgroundColor: primaryHex,
+                                                 pointHoverBorderColor: '#ffffff',
+                                                 pointHoverBorderWidth: 2,
                                              }]
                                          },
                                          options: {
@@ -356,10 +384,12 @@
                                                  tooltip: {
                                                      backgroundColor: textPrimary,
                                                      padding: 12,
-                                                     cornerRadius: 8,
-                                                     titleFont: { family: 'Plus Jakarta Sans' },
-                                                     bodyFont: { family: 'Plus Jakarta Sans' },
-                                                     callbacks: { label: ctx => ` $${ctx.parsed.y.toLocaleString()}` }
+                                                     cornerRadius: 10,
+                                                     boxPadding: 6,
+                                                     usePointStyle: true,
+                                                     titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '600' },
+                                                     bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+                                                     callbacks: { label: ctx => ` Gastos: $${Number(ctx.parsed.y).toLocaleString()}` }
                                                  }
                                              },
                                              scales: {
@@ -372,7 +402,7 @@
                                                      ticks: {
                                                          font: { family: 'Plus Jakarta Sans', size: 11 },
                                                          color: textMuted,
-                                                         callback: v => `$${(v / 1000).toFixed(0)}k`
+                                                         callback: v => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`
                                                      }
                                                  }
                                              }
@@ -402,14 +432,15 @@
                                          const labels = {{ json_encode($categoryLabels) }};
                                          const style = getComputedStyle(document.documentElement);
                                          const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
+                                         const cardBg = style.getPropertyValue('--color-surface-card').trim() || '#ffffff';
                                          const colors = [
-                                             style.getPropertyValue('--color-primary-600').trim() || '#2563eb',
-                                             style.getPropertyValue('--color-info').trim() || '#0284c7',
-                                             style.getPropertyValue('--color-success').trim() || '#0d9e6e',
-                                             style.getPropertyValue('--color-warning').trim() || '#d97706',
-                                             style.getPropertyValue('--color-danger').trim() || '#dc2626',
-                                             '#ec4899',
-                                             '#6b7280'
+                                             style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
+                                             style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
+                                             style.getPropertyValue('--color-chart-3').trim() || '#0d9e6e',
+                                             style.getPropertyValue('--color-chart-4').trim() || '#d97706',
+                                             style.getPropertyValue('--color-chart-5').trim() || '#dc2626',
+                                             style.getPropertyValue('--color-chart-6').trim() || '#7c3aed',
+                                             style.getPropertyValue('--color-chart-7').trim() || '#db2777'
                                          ];
                                          return {
                                              type: 'doughnut',
@@ -418,23 +449,31 @@
                                                  datasets: [{
                                                      data: data.map(d => d.total),
                                                      backgroundColor: colors.slice(0, data.length),
-                                                     borderWidth: 0,
+                                                     borderWidth: 2,
+                                                     borderColor: cardBg,
                                                      hoverOffset: 6,
                                                  }]
                                              },
                                              options: {
                                                  responsive: true,
                                                  maintainAspectRatio: false,
-                                                 cutout: '65%',
+                                                 cutout: '72%',
                                                  plugins: {
                                                      legend: { display: false },
                                                      tooltip: {
                                                          backgroundColor: textPrimary,
                                                          padding: 10,
                                                          cornerRadius: 8,
-                                                         titleFont: { family: 'Plus Jakarta Sans' },
+                                                         usePointStyle: true,
+                                                         titleFont: { family: 'Plus Jakarta Sans', weight: '600' },
                                                          bodyFont: { family: 'Plus Jakarta Sans' },
-                                                         callbacks: { label: ctx => ` $${ctx.parsed.toLocaleString()}` }
+                                                         callbacks: {
+                                                             label: (ctx) => {
+                                                                 const total = ctx.dataset.data.reduce((acc, val) => acc + Number(val), 0);
+                                                                 const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) + '%' : '0%';
+                                                                 return ` ${ctx.label}: $${Number(ctx.parsed).toLocaleString()} (${pct})`;
+                                                             }
+                                                         }
                                                      }
                                                  }
                                              }
@@ -446,13 +485,13 @@
                             </div>
                             <div class="mt-4 space-y-2">
                                 @php
-                                    $catColors = ['#2563eb', '#0284c7', '#0d9e6e', '#d97706', '#dc2626', '#ec4899', '#6b7280'];
+                                    $catColors = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-chart-3)', 'var(--color-chart-4)', 'var(--color-chart-5)', 'var(--color-chart-6)', 'var(--color-chart-7)'];
                                 @endphp
                                 @foreach($expenseByCategory->take(5) as $i => $cat)
                                     <div class="flex items-center justify-between text-body">
                                         <div class="flex items-center gap-2">
                                             <div class="w-2.5 h-2.5 rounded-full"
-                                                style="background: {{ $catColors[$i] ?? '#9ca3af' }}">
+                                                style="background: {{ $catColors[$i] ?? 'var(--color-chart-10)' }}">
                                             </div>
                                             <span
                                                 class="text-text-secondary">{{ $categoryLabels[$cat->category] ?? $cat->category }}</span>
@@ -746,17 +785,18 @@
                                 data-chart="{{ json_encode($productsByCategory) }}" x-data="chartCanvas((data) => {
                                          const style = getComputedStyle(document.documentElement);
                                          const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
+                                         const cardBg = style.getPropertyValue('--color-surface-card').trim() || '#ffffff';
                                          const colors = [
-                                             style.getPropertyValue('--color-primary-600').trim() || '#2563eb',
-                                             '#7c3aed',
-                                             '#6366f1',
-                                             style.getPropertyValue('--color-info').trim() || '#0284c7',
-                                             '#ec4899',
-                                             '#a855f7',
-                                             '#8b5cf6',
-                                             '#0ea5e9',
-                                             '#64748b',
-                                             '#78716c'
+                                             style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
+                                             style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
+                                             style.getPropertyValue('--color-chart-3').trim() || '#0d9e6e',
+                                             style.getPropertyValue('--color-chart-4').trim() || '#d97706',
+                                             style.getPropertyValue('--color-chart-5').trim() || '#dc2626',
+                                             style.getPropertyValue('--color-chart-6').trim() || '#7c3aed',
+                                             style.getPropertyValue('--color-chart-7').trim() || '#db2777',
+                                             style.getPropertyValue('--color-chart-8').trim() || '#0891b2',
+                                             style.getPropertyValue('--color-chart-9').trim() || '#ea580c',
+                                             style.getPropertyValue('--color-chart-10').trim() || '#64748b'
                                          ];
                                          return {
                                              type: 'doughnut',
@@ -765,23 +805,31 @@
                                                  datasets: [{
                                                      data: data.map(d => d.total_amount),
                                                      backgroundColor: colors.slice(0, data.length),
-                                                     borderWidth: 0,
+                                                     borderWidth: 2,
+                                                     borderColor: cardBg,
                                                      hoverOffset: 6,
                                                  }]
                                              },
                                              options: {
                                                  responsive: true,
                                                  maintainAspectRatio: false,
-                                                 cutout: '65%',
+                                                 cutout: '72%',
                                                  plugins: {
                                                      legend: { display: false },
                                                      tooltip: {
                                                          backgroundColor: textPrimary,
                                                          padding: 10,
                                                          cornerRadius: 8,
-                                                         titleFont: { family: 'Plus Jakarta Sans' },
+                                                         usePointStyle: true,
+                                                         titleFont: { family: 'Plus Jakarta Sans', weight: '600' },
                                                          bodyFont: { family: 'Plus Jakarta Sans' },
-                                                         callbacks: { label: ctx => ` $${ctx.parsed.toLocaleString()}` }
+                                                         callbacks: {
+                                                             label: (ctx) => {
+                                                                 const total = ctx.dataset.data.reduce((acc, val) => acc + Number(val), 0);
+                                                                 const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) + '%' : '0%';
+                                                                 return ` ${ctx.label}: $${Number(ctx.parsed).toLocaleString()} (${pct})`;
+                                                             }
+                                                         }
                                                      }
                                                  }
                                              }
@@ -793,13 +841,13 @@
                             </div>
                             <div class="mt-4 space-y-2">
                                 @php
-                                    $pcColors = ['#2563eb', '#7c3aed', '#6366f1', '#0284c7', '#ec4899', '#a855f7', '#8b5cf6', '#0ea5e9', '#64748b', '#78716c'];
+                                    $pcColors = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-chart-3)', 'var(--color-chart-4)', 'var(--color-chart-5)', 'var(--color-chart-6)', 'var(--color-chart-7)', 'var(--color-chart-8)', 'var(--color-chart-9)', 'var(--color-chart-10)'];
                                 @endphp
                                 @foreach($productsByCategory->take(6) as $i => $pc)
                                     <div class="flex items-center justify-between text-body">
                                         <div class="flex items-center gap-2">
                                             <div class="w-2.5 h-2.5 rounded-full"
-                                                style="background: {{ $pcColors[$i] ?? '#9ca3af' }}">
+                                                style="background: {{ $pcColors[$i] ?? 'var(--color-chart-10)' }}">
                                             </div>
                                             <span class="text-text-secondary">{{ $pc->category_name ?? '—' }}</span>
                                         </div>

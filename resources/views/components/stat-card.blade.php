@@ -6,6 +6,7 @@
     'trend' => null, // e.g. +12, -5
     'trendLabel' => 'vs mes anterior',
     'valueSize' => 'text-h2', // text-h2 or text-h3
+    'href' => null,
 ])
 
 @php
@@ -20,16 +21,22 @@
 
     $isPositiveTrend = $trend !== null && floatval($trend) > 0;
     $isNegativeTrend = $trend !== null && floatval($trend) < 0;
+
+    $tag = $href ? 'a' : 'div';
+    $baseClasses = 'bg-surface-card rounded-2xl border border-border p-5 transition-all duration-200 block';
+    if ($href) {
+        $baseClasses .= ' hover:border-border-strong hover:shadow-sm cursor-pointer group';
+    }
 @endphp
 
-<div {{ $attributes->merge(['class' => 'bg-surface-card rounded-2xl border border-border p-5 hover:border-border-strong transition-colors']) }}>
+<{{ $tag }} @if($href) href="{{ $href }}" wire:navigate @endif {{ $attributes->merge(['class' => $baseClasses]) }}>
     <div class="flex items-start justify-between">
         <div>
-            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">{{ $title }}</p>
+            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 @if($href) group-hover:text-text-secondary transition-colors @endif">{{ $title }}</p>
             <p class="{{ $valueSize }} font-bold text-text-primary tabular-nums">{{ $value }}</p>
         </div>
         @if($icon)
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ $iconBgColor }}">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ $iconBgColor }} @if($href) group-hover:scale-105 transition-transform @endif">
                 <x-dynamic-component :component="'lucide-' . $icon" class="w-5 h-5" />
             </div>
         @endif
@@ -56,4 +63,4 @@
             {{ $footer }}
         </div>
     @endif
-</div>
+</{{ $tag }}>

@@ -26,6 +26,7 @@
             value="{{ $activeProjects }}" 
             icon="hard-hat" 
             color="primary" 
+            href="{{ url('/proyectos') }}"
         />
 
         <x-stat-card 
@@ -33,6 +34,7 @@
             value="${{ number_format($monthExpenses, 0, '.', ',') }}" 
             icon="trending-up" 
             color="success" 
+            href="{{ url('/gastos') }}"
         />
 
         <x-stat-card 
@@ -40,13 +42,15 @@
             value="{{ $pendingRequisitions }}" 
             icon="clock" 
             color="warning" 
+            href="{{ url('/requisiciones?statusFilter=pendiente') }}"
         />
 
         <x-stat-card 
-            title="Proveedores" 
-            value="{{ $totalSuppliers }}" 
-            icon="truck" 
-            color="danger" 
+            title="Borradores y procesos" 
+            value="{{ $pendingQuotations }}" 
+            icon="file-edit" 
+            color="info" 
+            href="{{ url('/requisiciones?tab=borradores') }}"
         />
 
     </div>
@@ -70,7 +74,7 @@
                         <x-empty-state icon="trending-up" title="Sin gastos registrados" message="Los datos de tus gastos se graficarán aquí." />
                     </div>
                 @else
-                    <div class="h-44" x-data="chartComponent()" x-init="initChart()">
+                    <div class="h-64" x-data="chartComponent()" x-init="initChart()">
                         <canvas id="monthly-expenses-chart"></canvas>
                     </div>
                 @endif
@@ -93,7 +97,17 @@
                     <div class="metric-row">
                         <div class="flex items-center gap-2">
                             <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
-                                <x-lucide-briefcase class="w-3 h-3 text-primary-600" />
+                                <x-lucide-building-2 class="w-3 h-3 text-primary-600" />
+                            </div>
+                            <span class="text-small text-text-secondary">Cartera de clientes</span>
+                        </div>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalClients }}</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded bg-purple-50 flex items-center justify-center">
+                                <x-lucide-briefcase class="w-3 h-3 text-purple-600" />
                             </div>
                             <span class="text-small text-text-secondary">Total proyectos</span>
                         </div>
@@ -103,11 +117,11 @@
                     <div class="metric-row">
                         <div class="flex items-center gap-2">
                             <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
-                                <x-lucide-wallet class="w-3 h-3 text-warning" />
+                                <x-lucide-package class="w-3 h-3 text-warning" />
                             </div>
-                            <span class="text-small text-text-secondary">Gasto total</span>
+                            <span class="text-small text-text-secondary">Catálogo de productos</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($totalExpenses, 0, '.', ',') }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProducts }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -122,14 +136,22 @@
 
                     <div class="metric-row">
                         <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded bg-cyan-50 flex items-center justify-center">
+                                <x-lucide-file-text class="w-3 h-3 text-cyan-600" />
+                            </div>
+                            <span class="text-small text-text-secondary">Presupuestos rápidos</span>
+                        </div>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalBudgets }}</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="flex items-center gap-2">
                             <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
                                 <x-lucide-check-circle class="w-3 h-3 text-success" />
                             </div>
                             <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">
-                            {{ $approvedRequisitions }}
-                        </span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $approvedRequisitions }}</span>
                     </div>
 
                 </div>
@@ -264,45 +286,101 @@
                 // Obtener tokens de diseño dinámicamente del DOM
                 const style = getComputedStyle(document.documentElement);
                 const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
+                const successHex = style.getPropertyValue('--color-success').trim() || '#10b981';
                 const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
                 const textMuted = style.getPropertyValue('--color-text-muted').trim() || '#475569';
-                const borderLight = style.getPropertyValue('--color-border-light').trim() || 'rgba(0,0,0,0.04)';
+                const borderLight = style.getPropertyValue('--color-border-light').trim() || 'rgba(0,0,0,0.06)';
+                const fontToken = style.getPropertyValue('--font-sans').trim();
+                const fontFamily = fontToken ? fontToken.split(',')[0].replace(/['"]/g, '') : 'Plus Jakarta Sans';
     
                 new Chart(ctx, {
-                    type: 'bar',
+                    type: 'line',
                     data: {
                         labels: data.map(d => d.month),
-                        datasets: [{
-                            label: 'Gastos',
-                            data: data.map(d => d.total),
-                            backgroundColor: (ctx) => {
-                                const chart = ctx.chart;
-                                const { ctx: c, chartArea } = chart;
-                                if (!chartArea) return hexToRgba(primaryHex, 0.12);
-                                const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                                gradient.addColorStop(0, hexToRgba(primaryHex, 0.18));
-                                gradient.addColorStop(1, hexToRgba(primaryHex, 0.04));
-                                return gradient;
+                        datasets: [
+                            {
+                                label: 'Requisiciones Aprobadas',
+                                data: data.map(d => d.requisitions),
+                                borderColor: successHex,
+                                borderWidth: 2,
+                                tension: 0.35,
+                                pointRadius: 3,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: successHex,
+                                fill: true,
+                                backgroundColor: (ctx) => {
+                                    const chart = ctx.chart;
+                                    const { ctx: c, chartArea } = chart;
+                                    if (!chartArea) return hexToRgba(successHex, 0.1);
+                                    const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                                    gradient.addColorStop(0, hexToRgba(successHex, 0.22));
+                                    gradient.addColorStop(1, hexToRgba(successHex, 0.0));
+                                    return gradient;
+                                }
                             },
-                            borderColor: hexToRgba(primaryHex, 0.7),
-                            borderWidth: 1.5,
-                            borderRadius: 6,
-                            borderSkipped: false,
-                        }]
+                            {
+                                label: 'Gastos Directos',
+                                data: data.map(d => d.direct),
+                                borderColor: primaryHex,
+                                borderWidth: 2,
+                                tension: 0.35,
+                                pointRadius: 3,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: primaryHex,
+                                fill: true,
+                                backgroundColor: (ctx) => {
+                                    const chart = ctx.chart;
+                                    const { ctx: c, chartArea } = chart;
+                                    if (!chartArea) return hexToRgba(primaryHex, 0.1);
+                                    const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                                    gradient.addColorStop(0, hexToRgba(primaryHex, 0.25));
+                                    gradient.addColorStop(1, hexToRgba(primaryHex, 0.0));
+                                    return gradient;
+                                }
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
                         plugins: {
-                            legend: { display: false },
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                align: 'end',
+                                labels: {
+                                    boxWidth: 8,
+                                    boxHeight: 8,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    font: { family: fontFamily, size: 12, weight: '600' },
+                                    color: textMuted,
+                                    padding: 20
+                                }
+                            },
                             tooltip: {
                                 backgroundColor: textPrimary,
-                                titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
-                                bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
-                                padding: 10,
+                                titleFont: { family: fontFamily, size: 13, weight: '600' },
+                                bodyFont: { family: fontFamily, size: 12 },
+                                footerFont: { family: fontFamily, size: 12, weight: '700' },
+                                padding: 12,
                                 cornerRadius: 8,
+                                boxPadding: 6,
                                 callbacks: {
-                                    label: (ctx) => ` $${ctx.parsed.y.toLocaleString()}`
+                                    label: (ctx) => {
+                                        const val = ctx.parsed.y.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                        return ` ${ctx.dataset.label}: $${val}`;
+                                    },
+                                    footer: (tooltipItems) => {
+                                        let total = 0;
+                                        tooltipItems.forEach(item => total += item.parsed.y);
+                                        const totalStr = total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                        return `Total mes: $${totalStr}`;
+                                    }
                                 }
                             }
                         },
@@ -310,15 +388,19 @@
                             x: {
                                 grid: { display: false },
                                 border: { display: false },
-                                ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: textMuted }
+                                ticks: { font: { family: fontFamily, size: 11, weight: '500' }, color: textMuted }
                             },
                             y: {
                                 grid: { color: borderLight, drawBorder: false },
                                 border: { display: false, dash: [4, 4] },
                                 ticks: {
-                                    font: { family: 'Plus Jakarta Sans', size: 11 },
+                                    font: { family: fontFamily, size: 11 },
                                     color: textMuted,
-                                    callback: (v) => `$${(v / 1000).toFixed(0)}k`
+                                    callback: (v) => {
+                                        if (v >= 1000000) return `$${(v / 1000000).toFixed(1)}M`;
+                                        if (v >= 1000) return `$${(v / 1000).toFixed(0)}k`;
+                                        return `$${v}`;
+                                    }
                                 }
                             }
                         }
