@@ -8,9 +8,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use App\Livewire\Concerns\WithPerPagePagination;
+
 class NotificationIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithPerPagePagination;
 
     public string $filter = 'all'; // all, unread, read
 
@@ -35,7 +37,7 @@ class NotificationIndex extends Component
             $query->whereNotNull('read_at');
         }
 
-        return $query->latest()->paginate(20);
+        return $query->latest()->paginate($this->perPage);
     }
 
     public function markAsRead(string $id): void

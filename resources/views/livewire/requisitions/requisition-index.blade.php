@@ -380,7 +380,7 @@
                     </x-bulk-actions-bar>
                 </div>
 
-                @if($requisitions->hasPages())
+                @if($requisitions->hasPages() || $requisitions->total() > 0)
                     <x-card.footer>
                         {{ $requisitions->links() }}
                     </x-card.footer>

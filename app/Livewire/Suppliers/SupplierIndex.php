@@ -310,7 +310,7 @@ class SupplierIndex extends Component
             })
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(12);
+            ->paginate($this->perPage);
 
         $viewingSupplier = $this->viewingSupplierId
             ? Supplier::with('vendors')->find($this->viewingSupplierId)

@@ -16,9 +16,11 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use App\Livewire\Concerns\WithPerPagePagination;
+
 class ClientIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting, WithPerPagePagination;
 
     #[Url(history: true)]
     public string $search = '';
@@ -216,7 +218,7 @@ class ClientIndex extends Component
             })
             ->withCount('projects', 'quickBudgets')
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(15);
+            ->paginate($this->perPage);
 
         return view('livewire.clients.client-index', compact('clients'));
     }

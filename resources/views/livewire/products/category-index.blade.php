@@ -95,7 +95,7 @@
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
-                                                        <x-button variant="icon" icon="more-vertical" class="text-text-muted hover:text-text-primary" aria-label="Opciones" title="Opciones" />
+                                                        <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
                                                     </x-slot>
 
                                                     <x-slot name="content">
@@ -158,9 +158,7 @@
                                     <div class="flex items-center gap-2 shrink-0">
                                         <x-dropdown align="right" width="48">
                                             <x-slot name="trigger">
-                                                <button class="p-1 rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors focus:outline-none">
-                                                    <x-lucide-more-vertical class="w-5 h-5" />
-                                                </button>
+                                                <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
                                             </x-slot>
                                             <x-slot name="content">
                                                 <x-dropdown-link as="button" wire:click="openEditModal({{ $category->id }})" icon="pencil">Editar</x-dropdown-link>
@@ -244,7 +242,7 @@
             </x-button>
         </x-bulk-actions-bar>
         @endif
-        @if($categories->hasPages())
+        @if($categories->total() > 0)
             <x-card.footer class="flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="w-full sm:w-auto overflow-x-auto">
                     {{ $categories->links(data: ['scrollTo' => false]) }}

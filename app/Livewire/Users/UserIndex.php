@@ -252,7 +252,7 @@ class UserIndex extends Component
                 }
             })
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(10);
+            ->paginate($this->perPage);
 
         $roles = Role::all();
 

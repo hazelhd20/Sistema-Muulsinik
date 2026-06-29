@@ -159,7 +159,7 @@
                     </div>
 
                     {{-- Pagination --}}
-                    @if($this->notifications->hasPages())
+                    @if($this->notifications->total() > 0)
                         <div class="px-5 py-4 border-t border-border/40">
                             {{ $this->notifications->links() }}
                         </div>

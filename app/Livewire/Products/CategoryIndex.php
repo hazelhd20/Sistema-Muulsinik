@@ -14,9 +14,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use App\Livewire\Concerns\WithPerPagePagination;
+
 class CategoryIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting, WithPerPagePagination;
 
     #[Url(history: true)]
     public string $search = '';
@@ -163,7 +165,7 @@ class CategoryIndex extends Component
         $categories = Category::when($this->search, fn ($q) => $q->where('name', 'ilike', '%'.$this->search.'%'))
             ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(15);
+            ->paginate($this->perPage);
 
         return view('livewire.products.category-index', compact('categories'));
     }

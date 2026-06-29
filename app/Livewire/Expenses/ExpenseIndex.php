@@ -211,7 +211,7 @@ class ExpenseIndex extends Component
                     $q->orderBy($this->sortField, $dir);
                 }
             })
-            ->paginate(15);
+            ->paginate($this->perPage);
 
         $projects = cache()->rememberForever('projects.activos.array', fn() => Project::where('status', 'activo')->orderBy('name')->pluck('name', 'id')->toArray());
         $categories = \App\Enums\ExpenseCategory::toArray();

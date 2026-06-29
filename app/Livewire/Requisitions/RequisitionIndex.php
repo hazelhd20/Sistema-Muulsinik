@@ -61,6 +61,7 @@ class RequisitionIndex extends Component
     #[Url(history: true)]
     public string $vendorFilter = '';
 
+
     // Selección masiva
     public array $selectedRows = [];
 
@@ -376,7 +377,7 @@ class RequisitionIndex extends Component
             dateTo: $this->dateTo,
             sortField: $this->sortField,
             sortDirection: $this->sortDirection,
-            perPage: 10
+            perPage: $this->perPage
         );
 
         $projects = cache()->rememberForever('projects.activos.array', fn() => Project::where('status', 'activo')->orderBy('name')->pluck('name', 'id')->toArray());

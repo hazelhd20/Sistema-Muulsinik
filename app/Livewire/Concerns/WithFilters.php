@@ -4,6 +4,8 @@ namespace App\Livewire\Concerns;
 
 trait WithFilters
 {
+    use WithPerPagePagination;
+
     /**
      * Propiedades de filtro por defecto. Los componentes pueden sobreescribir esto
      * definiendo una propiedad $filterableProperties.
@@ -15,7 +17,7 @@ trait WithFilters
             : [
                 'search', 'statusFilter', 'periodFilter', 'dateFrom', 'dateTo', 
                 'categoryFilter', 'projectFilter', 'creatorFilter', 'vendorFilter', 
-                'userFilter', 'roleFilter', 'measureFilter', 'tab'
+                'userFilter', 'roleFilter', 'measureFilter', 'tab', 'perPage'
             ];
     }
 

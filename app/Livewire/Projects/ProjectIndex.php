@@ -248,7 +248,7 @@ class ProjectIndex extends Component
                     $q->orderBy($this->sortField, $dir);
                 }
             })
-            ->paginate(12);
+            ->paginate($this->perPage);
 
         $clients = \App\Models\Client::where('active', true)->orderBy('name')->pluck('name', 'id')->toArray();
         $statuses = ProjectStatus::toArray();

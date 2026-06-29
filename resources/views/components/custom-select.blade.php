@@ -1,4 +1,4 @@
-@props(['options' => [], 'placeholder' => 'Seleccionar...', 'textClass' => '', 'minSearch' => 10])
+@props(['options' => [], 'placeholder' => 'Seleccionar...', 'textClass' => '', 'minSearch' => 10, 'size' => 'md'])
 
 <div
     x-data="{
@@ -50,7 +50,7 @@
         role="combobox"
         aria-haspopup="listbox"
         :aria-expanded="open.toString()"
-        class="input flex items-center justify-between text-left w-full"
+        class="input flex items-center justify-between text-left w-full {{ $size === 'sm' ? '!h-8 !py-1 !px-2.5 !text-xs' : '' }}"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
         <div class="flex items-center gap-2 truncate {{ $textClass }}">
@@ -102,8 +102,8 @@
                     x-show="search === ''"
                     role="option"
                     :aria-selected="(!value || value == '') ? 'true' : 'false'"
-                    class="px-4 py-2.5 text-small cursor-pointer transition-colors"
-                    :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-zinc-100'"
+                    class="cursor-pointer transition-colors {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-small' }}"
+                    :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
                     {{ $placeholder }}
                 </div>
@@ -114,8 +114,8 @@
                     @click="value = val; close()"
                     role="option"
                     :aria-selected="value == val ? 'true' : 'false'"
-                    class="px-4 py-2.5 text-small cursor-pointer transition-colors flex items-center justify-between"
-                    :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-zinc-100'"
+                    class="cursor-pointer transition-colors flex items-center justify-between {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-small' }}"
+                    :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
                     <span x-text="label" class="truncate pr-4"></span>
                     <svg x-show="value == val" class="w-4 h-4 shrink-0 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

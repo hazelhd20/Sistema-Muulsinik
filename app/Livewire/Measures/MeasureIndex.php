@@ -15,9 +15,11 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use App\Livewire\Concerns\WithPerPagePagination;
+
 class MeasureIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting;
+    use EnforcesPermissions, WithPagination, WithSorting, WithPerPagePagination;
 
     #[Url(history: true)]
     public string $search = '';
@@ -176,7 +178,7 @@ class MeasureIndex extends Component
             })
             ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(15);
+            ->paginate($this->perPage);
 
         return view('livewire.measures.measure-index', compact('measures'));
     }
