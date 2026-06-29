@@ -23,6 +23,23 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiStructurerService
 {
+    public ?string $lastError = null;
+
+    private function classifyException(\Throwable $e): string
+    {
+        $msg = strtolower($e->getMessage());
+        if (str_contains($msg, '429') || str_contains($msg, 'quota') || str_contains($msg, 'rate limit') || str_contains($msg, 'exhausted') || str_contains($msg, 'overloaded') || str_contains($msg, 'high demand')) {
+            return 'Servidor de IA saturado temporalmente (Cuota excedida). Por favor reintenta en unos momentos.';
+        }
+        if (str_contains($msg, 'timeout') || str_contains($msg, 'timed out') || str_contains($msg, '504') || str_contains($msg, 'curl')) {
+            return 'Tiempo de espera agotado al consultar la IA. Por favor reintenta.';
+        }
+        if (str_contains($msg, '401') || str_contains($msg, '403') || str_contains($msg, 'api key')) {
+            return 'Error de autenticación o credenciales con el servicio de IA.';
+        }
+        return 'No se pudieron extraer partidas o el archivo no fue legible para la IA.';
+    }
+
     /**
      * ¿Está disponible la integración con Gemini?
      * Retorna false si no hay API key configurada.
@@ -64,13 +81,16 @@ class GeminiStructurerService
      */
     public function structureFromFile(string $filePath): ?array
     {
+        $this->lastError = null;
+
         if (! $this->isAvailable()) {
+            $this->lastError = 'Servicio de IA (Gemini) no configurado o API Key faltante.';
             return null;
         }
 
         if (! file_exists($filePath) || ! is_readable($filePath)) {
             Log::warning('Gemini Vision: Archivo no accesible.', ['path' => $filePath]);
-
+            $this->lastError = 'El archivo no es accesible o no se encuentra en el servidor.';
             return null;
         }
 
@@ -80,7 +100,7 @@ class GeminiStructurerService
                 'path' => $filePath,
                 'detected_mime' => mime_content_type($filePath),
             ]);
-
+            $this->lastError = 'Formato de archivo no soportado por el lector visual.';
             return null;
         }
 
@@ -107,6 +127,7 @@ class GeminiStructurerService
 
             return $parsed;
         } catch (\Throwable $e) {
+            $this->lastError = $this->classifyException($e);
             Log::warning('Gemini Vision: Error al procesar archivo de cotización.', [
                 'error' => $e->getMessage(),
                 'path' => $filePath,
@@ -142,7 +163,14 @@ class GeminiStructurerService
      */
     public function structureRawText(string $rawText): ?array
     {
-        if (! $this->isAvailable() || empty(trim($rawText))) {
+        $this->lastError = null;
+
+        if (! $this->isAvailable()) {
+            $this->lastError = 'Servicio de IA no configurado.';
+            return null;
+        }
+        if (empty(trim($rawText))) {
+            $this->lastError = 'El documento no contiene texto extraíble.';
             return null;
         }
 
@@ -156,6 +184,7 @@ class GeminiStructurerService
 
             return $this->parseJsonResponse($responseText);
         } catch (\Throwable $e) {
+            $this->lastError = $this->classifyException($e);
             Log::warning('Gemini AI: Error al estructurar texto de cotización.', [
                 'error' => $e->getMessage(),
                 'fallback' => 'Se usará el parser de regex como fallback.',

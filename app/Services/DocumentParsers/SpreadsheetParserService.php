@@ -85,7 +85,8 @@ class SpreadsheetParserService implements ParserInterface
                 return $aiResult;
             }
 
-            throw new \RuntimeException('La IA de Gemini no pudo estructurar la cotización y no se detectaron encabezados válidos en la hoja de cálculo. Por favor, intenta de nuevo o captura manualmente.');
+            $errorMessage = $this->gemini->lastError ?? 'No se detectaron encabezados ni partidas válidas en la hoja de cálculo.';
+            throw new \RuntimeException($errorMessage);
         }
 
         // Paso 2: leer las filas de datos

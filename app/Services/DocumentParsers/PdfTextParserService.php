@@ -51,6 +51,7 @@ class PdfTextParserService implements ParserInterface
             return $aiResult;
         }
 
-        throw new \RuntimeException('La IA de Gemini no pudo estructurar la cotización. Por favor, intenta de nuevo o captura manualmente.');
+        $errorMessage = $this->gemini->lastError ?? 'No se identificaron partidas legibles en el texto del PDF.';
+        throw new \RuntimeException($errorMessage);
     }
 }

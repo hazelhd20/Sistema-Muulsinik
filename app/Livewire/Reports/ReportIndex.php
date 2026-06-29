@@ -92,6 +92,10 @@ class ReportIndex extends Component
             'monthlyData' => [],
             'topProjects' => collect(),
             'budgetComparison' => collect(),
+            'expensesTrend' => null,
+            'transactionsTrend' => null,
+            'requisitionsTrend' => null,
+            'avgExpenseTrend' => null,
         ];
         $supplierData = ['topSuppliers' => collect()];
         $vendorData = ['topVendors' => collect()];

@@ -35,6 +35,7 @@ class VisionParserService implements ParserInterface
             'path' => $filePath,
         ]);
 
-        throw new \Exception('La IA de Gemini está experimentando alta demanda o no pudo procesar el archivo en este momento. Por favor, intenta de nuevo o continúa manualmente.');
+        $errorMessage = $this->gemini->lastError ?? 'No se identificaron partidas o el documento no pudo procesarse por visión IA.';
+        throw new \Exception($errorMessage);
     }
 }

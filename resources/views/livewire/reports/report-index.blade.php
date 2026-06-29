@@ -296,16 +296,16 @@
             {{-- KPI Cards --}}
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
                 <x-stat-card title="Gasto total del período" value="${{ number_format($totalExpenses, 0, '.', ',') }}"
-                    icon="dollar-sign" color="warning" />
+                    icon="dollar-sign" color="warning" :trend="$expensesTrend" :inverseTrend="true" trendLabel="vs periodo anterior" />
 
                 <x-stat-card title="Transacciones" value="{{ $expenseCount }}" icon="receipt" color="primary"
-                    footer="Promedio: ${{ number_format($avgExpense, 0, '.', ',') }}" />
+                    :trend="$transactionsTrend" trendLabel="vs periodo anterior" />
 
                 <x-stat-card title="Requisiciones aprobadas" value="{{ $requisitionsApproved }}" icon="check-circle"
-                    color="success" />
+                    color="success" :trend="$requisitionsTrend" trendLabel="vs periodo anterior" />
 
-                <x-stat-card title="Proyectos activos" value="{{ $activeProjects }}/{{ $totalProjects }}" icon="hard-hat"
-                    color="danger" />
+                <x-stat-card title="Ticket promedio por compra" value="${{ number_format($avgExpense, 0, '.', ',') }}" icon="credit-card"
+                    color="info" :trend="$avgExpenseTrend" :inverseTrend="true" trendLabel="vs periodo anterior" />
             </div>
 
             {{-- Charts row --}}

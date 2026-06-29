@@ -62,6 +62,41 @@ class ReportService
             ->when($projectFilter, fn ($q) => $q->where('project_id', $projectFilter))
             ->count();
 
+        // Cálculo de tendencias vs periodo anterior
+        $diffSeconds = max(1, now()->diffInSeconds($dateFrom));
+        $prevDateFrom = (clone $dateFrom)->subSeconds($diffSeconds);
+
+        if ($projectFilter) {
+            $prevDirect = (float) Expense::where('project_id', $projectFilter)->whereBetween('date', [$prevDateFrom, $dateFrom])->sum('amount');
+            $prevDistributed = (float) ExpenseAllocation::where('project_id', $projectFilter)->whereHas('expense', fn ($q) => $q->whereBetween('date', [$prevDateFrom, $dateFrom]))->sum('amount');
+            $prevReqs = (float) Requisition::where('project_id', $projectFilter)->where('status', 'aprobada')->whereBetween('created_at', [$prevDateFrom, $dateFrom])->sum('cached_total');
+            $prevTotalExpenses = $prevDirect + $prevDistributed + $prevReqs;
+            $prevExpenseCount = Expense::where('project_id', $projectFilter)->whereBetween('date', [$prevDateFrom, $dateFrom])->count();
+        } else {
+            $prevDirect = (float) Expense::whereBetween('date', [$prevDateFrom, $dateFrom])->sum('amount');
+            $prevReqs = (float) Requisition::where('status', 'aprobada')->whereBetween('created_at', [$prevDateFrom, $dateFrom])->sum('cached_total');
+            $prevTotalExpenses = $prevDirect + $prevReqs;
+            $prevExpenseCount = Expense::whereBetween('date', [$prevDateFrom, $dateFrom])->count();
+        }
+
+        $prevRequisitionsApproved = Requisition::where('status', 'aprobada')
+            ->whereBetween('created_at', [$prevDateFrom, $dateFrom])
+            ->when($projectFilter, fn ($q) => $q->where('project_id', $projectFilter))
+            ->count();
+
+        $calcTrend = function ($current, $previous) {
+            if ($previous <= 0) {
+                return $current > 0 ? 'N/A' : 0.0;
+            }
+            return round((($current - $previous) / $previous) * 100, 1);
+        };
+
+        $expensesTrend = $calcTrend($totalExpenses, $prevTotalExpenses);
+        $transactionsTrend = $calcTrend($expenseCount, $prevExpenseCount);
+        $requisitionsTrend = $calcTrend($requisitionsApproved, $prevRequisitionsApproved);
+        $prevAvgExpense = $prevExpenseCount > 0 ? $prevTotalExpenses / $prevExpenseCount : 0;
+        $avgExpenseTrend = $calcTrend($avgExpense, $prevAvgExpense);
+
         // Gastos por categoría
         if ($projectFilter) {
             // Gastos directos del proyecto
@@ -216,7 +251,11 @@ class ReportService
             'expenseByCategory',
             'monthlyData',
             'topProjects',
-            'budgetComparison'
+            'budgetComparison',
+            'expensesTrend',
+            'transactionsTrend',
+            'requisitionsTrend',
+            'avgExpenseTrend'
         );
 
     }

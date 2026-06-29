@@ -59,7 +59,7 @@
                     @endphp
 
                     <div wire:key="notification-{{ $notification['id'] }}"
-                        class="flex gap-3 px-4 py-3 border-b border-border hover:bg-surface-hover transition-colors {{ $isUnread ? 'bg-primary-50/30' : '' }}">
+                        class="flex gap-3 px-4 py-3 border-b border-border {{ $isUnread ? 'bg-primary-50/30' : '' }}">
                         {{-- Icono --}}
                         <div class="w-9 h-9 rounded-lg {{ $colorClasses }} flex items-center justify-center shrink-0">
                             <x-dynamic-component :component="'lucide-' . $notification['icon']" class="w-4 h-4" />

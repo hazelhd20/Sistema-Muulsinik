@@ -5,6 +5,8 @@
     'color' => 'primary', // primary, success, danger, warning, info
     'trend' => null, // e.g. +12, -5
     'trendLabel' => 'vs mes anterior',
+    'inverseTrend' => false,
+    'footer' => null,
     'valueSize' => 'text-h2', // text-h2 or text-h3
     'href' => null,
 ])
@@ -19,8 +21,12 @@
     ];
     $iconBgColor = $iconBgColors[$color] ?? $iconBgColors['primary'];
 
-    $isPositiveTrend = $trend !== null && floatval($trend) > 0;
-    $isNegativeTrend = $trend !== null && floatval($trend) < 0;
+    $isPositiveTrend = $trend !== null && $trend !== 'N/A' && floatval($trend) > 0;
+    $isNegativeTrend = $trend !== null && $trend !== 'N/A' && floatval($trend) < 0;
+
+    $trendColorClass = $isPositiveTrend 
+        ? ($inverseTrend ? 'text-danger' : 'text-success')
+        : ($isNegativeTrend ? ($inverseTrend ? 'text-success' : 'text-danger') : 'text-text-muted');
 
     $tag = $href ? 'a' : 'div';
     $baseClasses = 'bg-surface-card rounded-2xl border border-border p-5 transition-all duration-200 block';
@@ -44,22 +50,30 @@
     
     @if($trend !== null)
         <div class="mt-4 flex items-center gap-1.5 text-xs">
-            <span class="flex items-center font-medium {{ $isPositiveTrend ? 'text-success' : ($isNegativeTrend ? 'text-danger' : 'text-text-muted') }}">
-                @if($isPositiveTrend)
-                    <x-lucide-trending-up class="w-3.5 h-3.5 mr-1" />
-                @elseif($isNegativeTrend)
-                    <x-lucide-trending-down class="w-3.5 h-3.5 mr-1" />
-                @else
+            @if($trend === 'N/A')
+                <span class="flex items-center font-medium text-text-muted">
                     <x-lucide-minus class="w-3.5 h-3.5 mr-1" />
-                @endif
-                {{ $trend > 0 ? '+' : '' }}{{ $trend }}%
-            </span>
-            <span class="text-text-muted">{{ $trendLabel }}</span>
+                    N/A
+                </span>
+                <span class="text-text-muted">sin periodo previo</span>
+            @else
+                <span class="flex items-center font-medium {{ $trendColorClass }}">
+                    @if($isPositiveTrend)
+                        <x-lucide-trending-up class="w-3.5 h-3.5 mr-1" />
+                    @elseif($isNegativeTrend)
+                        <x-lucide-trending-down class="w-3.5 h-3.5 mr-1" />
+                    @else
+                        <x-lucide-minus class="w-3.5 h-3.5 mr-1" />
+                    @endif
+                    {{ $trend > 0 ? '+' : '' }}{{ $trend }}%
+                </span>
+                <span class="text-text-muted">{{ $trendLabel }}</span>
+            @endif
         </div>
     @endif
     
-    @if(isset($footer))
-        <div class="mt-4 pt-4 border-t border-border">
+    @if($footer)
+        <div class="mt-4 flex items-center text-xs text-text-muted font-medium">
             {{ $footer }}
         </div>
     @endif
