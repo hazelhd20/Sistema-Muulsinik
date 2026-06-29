@@ -87,7 +87,7 @@
                             placeholder="Buscar producto para agregar (carga precio histórico)...">
                         
                         @if(strlen($searchQuery) > 0)
-                            <button type="button" wire:click="$set('searchQuery', '')" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors p-1 rounded-full hover:bg-surface-hover">
+                            <button type="button" wire:click="$set('searchQuery', '')" class="absolute right-2 top-1/2 -translate-y-1/2 btn-close">
                                 <x-lucide-x class="w-4 h-4" />
                             </button>
                         @endif

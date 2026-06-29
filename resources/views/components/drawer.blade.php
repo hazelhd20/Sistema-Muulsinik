@@ -78,10 +78,10 @@
                     <div class="ml-3 flex h-7 items-center">
                         <button type="button"
                                 wire:click="$set('{{ $show }}', false)"
-                                class="relative shrink-0 p-1.5 -mr-1.5 rounded-lg text-text-muted border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 hover:bg-surface-hover hover:text-text-primary transition-colors"
+                                class="btn-close -mr-1.5"
                                 aria-label="Cerrar">
                             <span class="absolute -inset-2.5"></span>
-                            <x-lucide-x class="w-5 h-5" />
+                            <x-lucide-x class="w-4 h-4" />
                         </button>
                     </div>
                 </div>

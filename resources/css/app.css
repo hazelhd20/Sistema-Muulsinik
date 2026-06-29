@@ -258,15 +258,15 @@
         color: var(--color-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        background-color: color-mix(in srgb, var(--color-surface-main) 30%, transparent);
-        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+        background-color: var(--color-surface-th);
+        border-bottom: 1px solid var(--color-border);
     }
 
     .table-container td {
         padding: 0.75rem 1rem;
         font-size: var(--font-size-body);
         color: var(--color-text-primary);
-        border-bottom: 1px solid color-mix(in srgb, var(--color-border-light) 50%, transparent);
+        border-bottom: 1px solid var(--color-border-light);
         vertical-align: middle;
     }
 
@@ -850,7 +850,7 @@
     }
 
     /* ── Standard Button Tokens (For dynamic Alpine modals and component headers) ── */
-    .btn-primary, .btn-secondary, .btn-soft, .btn-danger, .btn-warning, .btn-success {
+    .btn-primary, .btn-secondary, .btn-soft, .btn-soft-success, .btn-soft-danger, .btn-danger, .btn-warning, .btn-success {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -868,7 +868,7 @@
         font-family: var(--font-sans);
     }
 
-    .btn-primary:disabled, .btn-secondary:disabled, .btn-soft:disabled, .btn-danger:disabled, .btn-warning:disabled, .btn-success:disabled {
+    .btn-primary:disabled, .btn-secondary:disabled, .btn-soft:disabled, .btn-soft-success:disabled, .btn-soft-danger:disabled, .btn-danger:disabled, .btn-warning:disabled, .btn-success:disabled {
         opacity: 0.55;
         cursor: not-allowed;
         box-shadow: none;
@@ -916,6 +916,36 @@
     }
     .btn-soft:active:not(:disabled) {
         background-color: var(--color-border);
+    }
+
+    .btn-soft-success {
+        background-color: var(--color-success-light);
+        color: var(--color-success);
+        font-weight: 500;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    .btn-soft-success:hover:not(:disabled) {
+        background-color: var(--color-success-light);
+        color: var(--color-success-hover);
+    }
+    .btn-soft-success:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--color-success-light) 80%, var(--color-success));
+    }
+
+    .btn-soft-danger {
+        background-color: var(--color-danger-light);
+        color: var(--color-danger);
+        font-weight: 500;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    .btn-soft-danger:hover:not(:disabled) {
+        background-color: var(--color-danger-light);
+        color: var(--color-danger-hover);
+    }
+    .btn-soft-danger:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--color-danger-light) 80%, var(--color-danger));
     }
 
     .btn-danger {
@@ -977,6 +1007,56 @@
     .btn-icon:hover:not(:disabled) {
         background-color: var(--color-surface-hover);
         color: var(--color-text-primary);
+    }
+
+    /* ── Standard Close Button (28x28px tactile box for modals, drawers, toasts, alerts) ── */
+    .btn-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
+        background-color: transparent;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
+        padding: 0;
+    }
+    .btn-close:hover:not(:disabled) {
+        background-color: var(--color-surface-hover);
+        color: var(--color-text-primary);
+    }
+    .btn-close:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--color-primary-500);
+    }
+
+    /* ── Compact Close Button (20x20px tactile box for chips and badges) ── */
+    .btn-close-sm {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid transparent;
+        background-color: transparent;
+        color: inherit;
+        opacity: 0.65;
+        cursor: pointer;
+        transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
+        padding: 0;
+    }
+    .btn-close-sm:hover:not(:disabled) {
+        opacity: 1;
+        background-color: rgba(0, 0, 0, 0.08);
+    }
+    .dark .btn-close-sm:hover:not(:disabled) {
+        background-color: rgba(255, 255, 255, 0.12);
     }
 }
 

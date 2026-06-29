@@ -22,7 +22,7 @@
     @if($dismissible)
         <button
             type="button"
-            class="ml-1 -mr-0.5 text-text-muted hover:text-danger-600 focus:outline-none rounded transition-colors cursor-pointer"
+            class="ml-1 -mr-0.5 btn-close-sm hover:text-danger-600"
             @if($attributes->has('wire:click')) wire:click="{{ $attributes->get('wire:click') }}" @endif
             @if($attributes->has('@click')) @click="{{ $attributes->get('@click') }}" @endif
             aria-label="Quitar">

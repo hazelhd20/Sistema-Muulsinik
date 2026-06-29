@@ -65,7 +65,7 @@
         @endif
     </div>
     @if($dismissible)
-        <button type="button" @click="show = false" class="btn-icon shrink-0 -mr-1 -mt-1 w-6 h-6 p-0 opacity-70 hover:opacity-100" aria-label="Cerrar alerta">
+        <button type="button" @click="show = false" class="btn-close -mr-1 -mt-1" aria-label="Cerrar alerta">
             <x-lucide-x class="w-4 h-4" />
         </button>
     @endif

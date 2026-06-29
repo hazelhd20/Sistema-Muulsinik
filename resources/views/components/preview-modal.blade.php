@@ -19,9 +19,8 @@
             <h3 class="text-h2 text-text-primary flex items-center gap-2">
                 Vista Previa del Documento
             </h3>
-            <button @click="showPreviewModal = false"
-                class="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted transition">
-                <x-lucide-x class="w-5 h-5" />
+            <button @click="showPreviewModal = false" class="btn-close -mr-1">
+                <x-lucide-x class="w-4 h-4" />
             </button>
         </div>
         <div class="flex-1 overflow-hidden bg-surface-main p-4 relative">

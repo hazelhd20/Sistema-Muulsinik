@@ -25,7 +25,7 @@
     </div>
 
     <div class="border-l border-border pl-2 shrink-0">
-        <button type="button" @click="{{ $model }} = []" class="text-text-muted hover:text-danger transition-colors p-1.5 rounded-lg hover:bg-danger/10 cursor-pointer flex items-center justify-center" title="Deseleccionar todo">
+        <button type="button" @click="{{ $model }} = []" class="btn-close hover:text-danger hover:bg-danger/10" title="Deseleccionar todo">
             <x-lucide-x class="w-4 h-4" />
         </button>
     </div>

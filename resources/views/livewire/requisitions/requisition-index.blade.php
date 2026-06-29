@@ -331,7 +331,7 @@
                                         })" variant="success" icon="check-circle">
                                     Aprobar
                                 </x-button>
-                                <x-button wire:click="openBulkRejectModal" variant="danger" icon="x-circle"
+                                <x-button wire:click="openBulkRejectModal" variant="secondary" icon="x-circle"
                                     target="openBulkRejectModal">
                                     Rechazar
                                 </x-button>

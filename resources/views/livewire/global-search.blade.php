@@ -121,7 +121,7 @@
                             wire:loading.remove
                             x-show="$wire.query"
                             @click="$wire.clear(); $refs.searchInput.focus()"
-                            class="absolute right-4 text-text-muted hover:text-text-primary p-1 rounded-md transition"
+                            class="absolute right-3 btn-close"
                         >
                             <x-lucide-x class="w-4 h-4" />
                         </button>

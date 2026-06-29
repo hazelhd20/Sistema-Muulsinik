@@ -51,8 +51,7 @@
             </div>
             <button type="button"
                     wire:click="$set('{{ $show }}', false)"
-                    class="shrink-0 p-1.5 -mt-0.5 -mr-0.5 rounded-lg text-text-muted border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500
-                           hover:bg-surface-hover hover:text-text-primary transition-colors"
+                    class="btn-close -mt-0.5 -mr-0.5"
                     aria-label="Cerrar">
                 <x-lucide-x class="w-4 h-4" />
             </button>

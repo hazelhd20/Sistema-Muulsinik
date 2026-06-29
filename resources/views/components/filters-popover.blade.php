@@ -92,8 +92,7 @@
                 <x-lucide-filter class="w-4 h-4 text-text-muted" />
                 Filtros
             </h3>
-            <button type="button" @click="open = false"
-                class="text-text-muted hover:text-text-primary transition-colors p-1 rounded-md hover:bg-surface-hover">
+            <button type="button" @click="open = false" class="btn-close -mr-1">
                 <x-lucide-x class="w-4 h-4" />
             </button>
         </div>

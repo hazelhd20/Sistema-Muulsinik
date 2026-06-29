@@ -65,7 +65,7 @@
             </div>
             
             <!-- Close Button -->
-            <button @click="remove(toast.id)" class="btn-icon shrink-0 -mr-1 w-6 h-6 p-0 text-text-muted hover:text-text-primary">
+            <button @click="remove(toast.id)" class="btn-close -mr-1">
                 <x-lucide-x class="w-4 h-4" />
             </button>
             

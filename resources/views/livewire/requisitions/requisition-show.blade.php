@@ -44,7 +44,7 @@
 
             {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
             @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
-                <x-button wire:click="openRejectModal" variant="danger" icon="x-circle" target="openRejectModal">
+                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal">
                     Rechazar
                 </x-button>
                 <x-button @click="$dispatch('confirm-action', {

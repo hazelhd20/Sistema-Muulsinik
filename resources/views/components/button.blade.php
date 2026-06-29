@@ -1,7 +1,7 @@
 @props([
     'variant' => 'primary', // primary | secondary | soft | ghost | link
                              // danger | success | warning
-                             // soft-primary | soft-danger
+                             // soft-primary | soft-danger | soft-success
                              // ghost-danger
                              // link-muted | link-danger
                              // icon | icon-primary | icon-secondary | icon-danger | icon-success | icon-warning
@@ -33,6 +33,7 @@
         'soft'          => $fullBtn . 'bg-secondary-light text-text-secondary font-medium border-border/60 hover:bg-secondary-border hover:text-text-primary hover:border-border active:bg-border',
         'soft-primary'  => $fullBtn . 'bg-primary-50 text-primary-700 font-medium border-transparent hover:bg-primary-100 hover:text-primary-800 active:bg-primary-100/80',
         'soft-danger'   => $fullBtn . 'bg-danger-light text-danger font-medium border-transparent hover:bg-danger-light hover:text-danger-hover active:bg-danger-light/80',
+        'soft-success'  => $fullBtn . 'bg-success-light text-success font-medium border-transparent hover:bg-success-light hover:text-success-hover active:bg-success-light/80',
         // Ghost
         'ghost'         => $ghostBtn . 'bg-transparent text-text-secondary font-medium hover:bg-surface-hover hover:text-text-primary active:bg-surface-main',
         'ghost-danger'  => $ghostBtn . 'bg-transparent text-text-muted font-medium hover:bg-danger-light hover:text-danger active:bg-danger-light/70',

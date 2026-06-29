@@ -159,7 +159,7 @@
                 </x-button>
 
                 @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                    <x-button wire:click="openRejectModal" variant="danger" icon="x-circle">
+                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle">
                         Rechazar
                     </x-button>
                     <x-button
