@@ -83,7 +83,7 @@ class ProjectIndex extends Component
         $this->budget = (string) $project->budget;
         $this->startDate = $project->start_date?->format('Y-m-d') ?? '';
         $this->endDate = $project->end_date?->format('Y-m-d') ?? '';
-        $this->status = $project->status;
+        $this->status = $project->status instanceof \BackedEnum ? $project->status->value : (string) $project->status;
         $this->showModal = true;
     }
 

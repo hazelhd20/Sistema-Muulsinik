@@ -97,8 +97,10 @@
         </div>
 
         {{-- Footer action --}}
-        <div class="flex justify-end">
-            <x-button type="submit" variant="primary" target="saveDocumentos" icon="check">Guardar cambios</x-button>
-        </div>
+        @if(auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
+            <div class="flex justify-end">
+                <x-button type="submit" variant="primary" target="saveDocumentos" icon="check">Guardar cambios</x-button>
+            </div>
+        @endif
     </form>
 </div>

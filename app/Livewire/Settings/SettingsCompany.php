@@ -31,6 +31,11 @@ class SettingsCompany extends Component
 
     public function saveEmpresa(): void
     {
+        if (! auth()->user()?->hasPermission('configuracion.editar') && ! auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para modificar la configuración.']);
+            return;
+        }
+
         $this->validate([
             'company_name' => 'required|string|max:150',
             'company_rfc' => 'nullable|string|max:13',
@@ -60,6 +65,11 @@ class SettingsCompany extends Component
 
     public function deleteLogo(): void
     {
+        if (! auth()->user()?->hasPermission('configuracion.editar') && ! auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para modificar la configuración.']);
+            return;
+        }
+
         if ($this->company_logo && Storage::disk('public')->exists($this->company_logo)) {
             Storage::disk('public')->delete($this->company_logo);
         }

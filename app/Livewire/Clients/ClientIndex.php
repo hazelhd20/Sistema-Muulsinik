@@ -70,12 +70,18 @@ class ClientIndex extends Component
 
     public function openCreateModal(): void
     {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para crear clientes.')) {
+            return;
+        }
         $this->resetForm();
         $this->showCreateModal = true;
     }
 
     public function openEditModal(int $clientId): void
     {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para editar clientes.')) {
+            return;
+        }
         $client = Client::findOrFail($clientId);
         $this->editingId = $client->id;
         $this->name = $client->name;

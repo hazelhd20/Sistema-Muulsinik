@@ -26,6 +26,11 @@ class SettingsDocuments extends Component
 
     public function saveDocumentos(): void
     {
+        if (! auth()->user()?->hasPermission('configuracion.editar') && ! auth()->user()?->hasPermission('*')) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No tienes permiso para modificar la configuración.']);
+            return;
+        }
+
         $this->validate([
             'req_prefix' => 'required|string|max:10',
             'req_next_number' => 'required|integer|min:1',

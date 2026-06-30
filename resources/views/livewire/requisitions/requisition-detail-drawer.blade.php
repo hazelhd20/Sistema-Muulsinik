@@ -29,7 +29,7 @@
                         <h3 class="text-h3 text-text-primary pr-4">
                             {{ $detailRequisition->number ?? 'REQ-' . str_pad($detailRequisition->id, 5, '0', STR_PAD_LEFT) }}
                         </h3>
-                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
+                        <div class="flex items-center gap-1.5 mt-1 text-sm text-text-muted">
                             <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
                             <span>Creada el {{ $detailRequisition->date?->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}</span>
                         </div>
@@ -103,7 +103,7 @@
                         @foreach($detailRequisition->items as $item)
                             <div class="flex justify-between items-center bg-surface-main/50 rounded-xl p-3.5">
                                 <div>
-                                    <p class="font-medium text-small text-text-primary leading-snug mb-1">
+                                    <p class="font-medium text-sm text-text-primary leading-snug mb-1">
                                         {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
                                     </p>
                                     <div class="flex items-center gap-2 mt-1 flex-wrap">
@@ -119,7 +119,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-medium text-small text-text-primary tabular-nums">
+                                    <p class="font-medium text-sm text-text-primary tabular-nums">
                                         ${{ number_format($item->line_subtotal_computed, 2) }}
                                     </p>
                                 </div>
@@ -130,16 +130,16 @@
 
                 {{-- Totales --}}
                 <div class="pt-4 mt-4 border-t border-border/40">
-                    <div class="flex justify-between items-center text-small mb-2">
+                    <div class="flex justify-between items-center text-sm mb-2">
                         <span class="text-text-muted">Subtotal</span>
                         <span class="font-medium text-text-primary tabular-nums">${{ number_format($detailRequisition->subtotal, 2) }}</span>
                     </div>
-                    <div class="flex justify-between items-center text-small mb-4">
+                    <div class="flex justify-between items-center text-sm mb-4">
                         <span class="text-text-muted">IVA (16%)</span>
                         <span class="font-medium text-text-primary tabular-nums">${{ number_format($detailRequisition->tax_amount, 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-4 border-t border-border">
-                        <span class="text-small font-bold text-text-primary">Total Final</span>
+                        <span class="text-sm font-bold text-text-primary">Total Final</span>
                         <span class="text-h3 font-bold text-text-primary tabular-nums">
                             ${{ number_format($detailRequisition->total, 2) }}
                         </span>

@@ -9,14 +9,14 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
 
         @php
             $hasActiveFilters = !empty($search) || !empty($statusFilter) || !empty($periodFilter);
         @endphp
         @if($projects->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <x-card class="md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
                 <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                     {{-- Search --}}
@@ -89,7 +89,7 @@
                         @endif
                     </div>
                 @endif
-            </x-card> {{-- End Header Group --}}
+            </div> {{-- End Header Group --}}
         @endif
 
         {{-- Projects Table --}}
@@ -210,15 +210,19 @@
                                                             icon="eye">
                                                             Ver detalle
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button"
-                                                            wire:click="openEditModal({{ $project->id }})" icon="pencil">
-                                                            Editar
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button"
-                                                            type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proyecto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProject', params: [{{ $project->id }}] })"
-                                                            danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
+                                                        @if(auth()->user()?->hasPermission('proyectos.editar') || auth()->user()?->hasPermission('*'))
+                                                            <x-dropdown-link as="button"
+                                                                wire:click="openEditModal({{ $project->id }})" icon="pencil">
+                                                                Editar
+                                                            </x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()?->hasPermission('proyectos.eliminar') || auth()->user()?->hasPermission('*'))
+                                                            <x-dropdown-link as="button"
+                                                                type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proyecto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProject', params: [{{ $project->id }}] })"
+                                                                danger="true" icon="trash-2">
+                                                                Eliminar
+                                                            </x-dropdown-link>
+                                                        @endif
                                                     </x-slot>
                                                 </x-dropdown>
                                             </div>
@@ -273,7 +277,7 @@
                         class="flex flex-col gap-4">
                         @if($projects->isNotEmpty())
                             @foreach($projects as $project)
-                                <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
                                     x-bind:class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                     wire:key="project-mobile-row-{{ $project->id }}">
                                     
@@ -292,8 +296,12 @@
                                                 </x-slot>
                                                 <x-slot name="content">
                                                     <x-dropdown-link as="button" @click="$dispatch('open-project-detail', { id: {{ $project->id }} })" icon="eye">Ver detalle</x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proyecto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProject', params: [{{ $project->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @if(auth()->user()?->hasPermission('proyectos.editar') || auth()->user()?->hasPermission('*'))
+                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $project->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                    @endif
+                                                    @if(auth()->user()?->hasPermission('proyectos.eliminar') || auth()->user()?->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proyecto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProject', params: [{{ $project->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @endif
                                                 </x-slot>
                                             </x-dropdown>
                                         </div>
@@ -317,11 +325,11 @@
                                         <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                                             <div>
                                                 <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Presupuesto</p>
-                                                <p class="text-small font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
+                                                <p class="text-sm font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
                                             </div>
                                             <div>
                                                 <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Gastado</p>
-                                                <p class="text-small text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
+                                                <p class="text-sm text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
                                             </div>
                                             <div class="col-span-2">
                                                 <div class="flex justify-between items-center mb-1.5">
@@ -338,19 +346,19 @@
                                             </div>
                                         </div>
                                     </div>
-                                </x-card>
+                                </div>
                             @endforeach
                         @else
                             @if($hasActiveFilters)
-                                <x-card class="p-8">
+                                <div class="p-8">
                                     <x-empty-state icon="search" title="No se encontraron resultados"
                                         message="No hay proyectos que coincidan con los filtros actuales." />
-                                </x-card>
+                                </div>
                             @else
-                                <x-card class="p-12">
+                                <div class="p-12">
                                     <x-empty-state icon="folder" title="Aún no hay proyectos"
                                         message="Comienza creando un proyecto para gestionar tus gastos y tareas." />
-                                </x-card>
+                                </div>
                             @endif
                         @endif
                     </div>
@@ -360,7 +368,7 @@
                         wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                     {{-- Cabecera de la Fila --}}
                                     <div class="flex items-center justify-between gap-2">
                                         <div class="flex items-center gap-3 min-w-0">
@@ -396,7 +404,7 @@
                                             </div>
                                         </div>
                                     </div>
-                            </x-card>
+                            </div>
                         @endfor
                     </div>
                 </div>
@@ -423,7 +431,7 @@
         {{-- Pagination Footer (Card Footer on Desktop) --}}
         @if($projects->total() > 0)
             <x-card.footer>
-                {{ $projects->links() }}
+                {{ $projects->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
     </div>

@@ -7,7 +7,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <h3 class="text-h3 text-text-primary pr-4">{{ $detailProject->name }}</h3>
-                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
+                        <div class="flex items-center gap-1.5 mt-1 text-sm text-text-muted">
                             <x-lucide-briefcase class="w-3.5 h-3.5 text-text-muted/70" />
                             <span>{{ $detailProject->client?->name ?? 'Sin cliente registrado' }}</span>
                         </div>
@@ -61,17 +61,20 @@
                         </x-data-label>
                     </div>
                 </div>
+            </div>
 
-                {{-- Acciones del Drawer --}}
-                <div class="flex justify-end gap-3 pt-6 border-t border-border mt-auto">
+            <x-slot:footer>
+                <div class="flex justify-end gap-3">
                     <x-button as="a" href="{{ route('proyectos.show', $detailProject->id) }}" variant="secondary" wire:navigate>
                         Ver Ficha Completa
                     </x-button>
-                    <x-button wire:click="$dispatch('edit-project', { id: {{ $detailProject->id }} }); showDetailDrawer = false" variant="primary" icon="pencil">
-                        Editar Proyecto
-                    </x-button>
+                    @if(auth()->user()?->hasPermission('proyectos.editar') || auth()->user()?->hasPermission('*'))
+                        <x-button wire:click="$dispatch('edit-project', { id: {{ $detailProject->id }} }); showDetailDrawer = false" variant="primary" icon="pencil">
+                            Editar Proyecto
+                        </x-button>
+                    @endif
                 </div>
-            </div>
+            </x-slot:footer>
         @else
             <div class="space-y-6">
                 <div class="flex justify-between items-start">

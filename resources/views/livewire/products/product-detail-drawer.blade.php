@@ -7,7 +7,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <h3 class="text-h3 text-text-primary pr-4">{{ $detailProduct->canonical_name }}</h3>
-                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
+                        <div class="flex items-center gap-1.5 mt-1 text-sm text-text-muted">
                             <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
                             <span>Registrado el {{ $detailProduct->created_at?->format('d/m/Y') ?? '—' }}</span>
                         </div>
@@ -39,14 +39,15 @@
                         </x-data-label>
                     </div>
                 </div>
+            </div>
 
-                {{-- Acciones del Drawer --}}
-                <div class="flex justify-end gap-3 pt-6 border-t border-border mt-auto">
+            <x-slot:footer>
+                <div class="flex justify-end gap-3">
                     <x-button wire:click="$dispatch('edit-product', { id: {{ $detailProduct->id }} }); showDetailDrawer = false" variant="primary" icon="pencil">
                         Editar Producto
                     </x-button>
                 </div>
-            </div>
+            </x-slot:footer>
         @else
             <div class="space-y-6">
                 <div class="flex justify-between items-start">

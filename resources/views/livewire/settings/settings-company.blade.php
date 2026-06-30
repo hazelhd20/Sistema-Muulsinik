@@ -20,10 +20,12 @@
                         <div class="relative shrink-0" wire:loading.class="hidden" wire:target="newLogo">
                             <img src="{{ asset('storage/' . $company_logo) }}" alt="Logo"
                                  class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-card">
-                            <button type="button" wire:click="deleteLogo"
-                                    class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
-                                <x-lucide-trash-2 class="w-3.5 h-3.5" />
-                            </button>
+                            @if(auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
+                                <button type="button" wire:click="deleteLogo"
+                                        class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
+                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+                                </button>
+                            @endif
                         </div>
                     @endif
                     <div class="flex-1 min-w-0">
@@ -83,8 +85,10 @@
         </div>
 
         {{-- Footer action --}}
-        <div class="flex justify-end">
-            <x-button type="submit" variant="primary" target="saveEmpresa" icon="check">Guardar cambios</x-button>
-        </div>
+        @if(auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
+            <div class="flex justify-end">
+                <x-button type="submit" variant="primary" target="saveEmpresa" icon="check">Guardar cambios</x-button>
+            </div>
+        @endif
     </form>
 </div>

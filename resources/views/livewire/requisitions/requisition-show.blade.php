@@ -170,7 +170,7 @@
                             @foreach($requisition->items as $item)
                                 <tr class="hover:bg-surface-hover transition-colors duration-150">
                                     <td class="pl-6 pr-4 py-3">
-                                        <p class="font-medium text-small text-text-primary">
+                                        <p class="font-medium text-sm text-text-primary">
                                             {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                         </p>
                                     </td>
@@ -178,10 +178,10 @@
                                         @if($item->product?->category?->name)
                                             <x-dynamic-badge :value="$item->product->category->name" size="xs" />
                                         @else
-                                            <span class="text-small text-text-muted">—</span>
+                                            <span class="text-sm text-text-muted">—</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-center tabular-nums text-small text-text-secondary">
+                                    <td class="px-4 py-3 text-center tabular-nums text-sm text-text-secondary">
                                         <div class="flex items-center justify-center gap-1.5">
                                             <span>{{ number_format($item->quantity, 2) }}</span>
                                             <x-badge variant="secondary" size="xs">
@@ -189,10 +189,10 @@
                                             </x-badge>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-right tabular-nums text-small text-text-secondary">
+                                    <td class="px-4 py-3 text-right tabular-nums text-sm text-text-secondary">
                                         ${{ number_format($item->unit_price, 2) }}
                                     </td>
-                                    <td class="pr-6 pl-4 py-3 text-right font-medium tabular-nums text-small text-text-primary">
+                                    <td class="pr-6 pl-4 py-3 text-right font-medium tabular-nums text-sm text-text-primary">
                                         ${{ number_format($item->line_total_computed, 2) }}
                                     </td>
                                 </tr>
@@ -213,7 +213,7 @@
                         <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover transition-colors duration-150">
                             <div class="flex justify-between items-start gap-4">
                                 <div class="min-w-0">
-                                    <p class="font-semibold text-small text-text-primary break-words">
+                                    <p class="font-semibold text-sm text-text-primary break-words">
                                         {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                     </p>
                                     <div class="mt-1">
@@ -260,8 +260,8 @@
             <div class="flex justify-end px-6 pt-6 pb-8 border-t border-border/40">
                 <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                     <div class="flex items-center justify-between gap-6">
-                        <span class="text-small text-text-secondary">Subtotal</span>
-                        <span class="text-small font-medium text-text-primary tabular-nums">
+                        <span class="text-sm text-text-secondary">Subtotal</span>
+                        <span class="text-sm font-medium text-text-primary tabular-nums">
                             ${{ number_format($requisition->subtotal, 2) }}
                         </span>
                     </div>
@@ -269,21 +269,21 @@
                     @php $discountTotal = $requisition->items->sum('line_discount_total'); @endphp
                     @if($discountTotal > 0)
                         <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-danger">Descuento</span>
-                            <span class="text-small font-medium text-danger tabular-nums">
+                            <span class="text-sm text-danger">Descuento</span>
+                            <span class="text-sm font-medium text-danger tabular-nums">
                                 -${{ number_format($discountTotal, 2) }}
                             </span>
                         </div>
                     @endif
 
                     <div class="flex items-center justify-between gap-6">
-                        <span class="text-small text-text-secondary">IVA</span>
-                        <span class="text-small font-medium text-text-primary tabular-nums">
+                        <span class="text-sm text-text-secondary">IVA</span>
+                        <span class="text-sm font-medium text-text-primary tabular-nums">
                             ${{ number_format($requisition->tax_amount, 2) }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border/40">
-                        <span class="text-body font-semibold text-text-primary">Total final</span>
+                        <span class="text-base font-semibold text-text-primary">Total final</span>
                         <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">
                             ${{ number_format($requisition->total, 2) }}
                         </span>

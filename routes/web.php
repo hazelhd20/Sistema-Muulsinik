@@ -92,6 +92,9 @@ Route::middleware('auth')->group(function () {
 
     // Configuración
     Route::get('/configuracion', function () {
+        if (! auth()->user()?->hasPermission('configuracion.ver') && ! auth()->user()?->hasPermission('configuracion.editar') && ! auth()->user()?->hasPermission('*')) {
+            abort(403, 'No tienes permiso para acceder a la configuración del sistema.');
+        }
         return redirect()->route('dashboard')->with('open_settings', true);
     })->name('settings.index');
 

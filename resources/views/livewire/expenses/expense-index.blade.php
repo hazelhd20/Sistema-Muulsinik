@@ -11,14 +11,14 @@
 
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
+    <div class="mt-4 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         
         @php
             $hasActiveFilters = !empty($search) || !empty($projectFilter) || !empty($categoryFilter) || !empty($periodFilter) || !empty($userFilter);
         @endphp
         @if($expenses->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
             {{-- Filters Bar --}}
             <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                 {{-- Search --}}
@@ -166,7 +166,7 @@
                                         @if($expense->is_distributed)
                                             <x-badge variant="primary" icon="split">Distribuido</x-badge>
                                         @else
-                                            <p class="text-body text-text-secondary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
+                                            <p class="text-sm text-text-secondary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
                                         @endif
                                     </td>
                                     <td>
@@ -176,6 +176,7 @@
                                     <td class="numeric font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
                                     <td class="actions pr-6" @click.stop="$event.stopPropagation()">
                                         <div class="flex items-center justify-end">
+                                            @if($expense->receipt_file || auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
                                             <x-dropdown align="right" width="48">
                                                 <x-slot name="trigger">
                                                     <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
@@ -187,11 +188,14 @@
                                                             Ver comprobante
                                                         </x-dropdown-link>
                                                     @endif
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">
-                                                        Eliminar
-                                                    </x-dropdown-link>
+                                                    @if(auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">
+                                                            Eliminar
+                                                        </x-dropdown-link>
+                                                    @endif
                                                 </x-slot>
                                             </x-dropdown>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -247,6 +251,7 @@
                                             <span class="font-bold text-text-primary text-base truncate">{{ $expense->concept }}</span>
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
+                                            @if($expense->receipt_file || auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
                                             <x-dropdown align="right" width="48">
                                                 <x-slot name="trigger">
                                                     <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
@@ -255,9 +260,12 @@
                                                     @if($expense->receipt_file)
                                                         <x-dropdown-link href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" icon="file-text">Ver comprobante</x-dropdown-link>
                                                     @endif
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @if(auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @endif
                                                 </x-slot>
                                             </x-dropdown>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -282,7 +290,7 @@
                                                 @if($expense->is_distributed)
                                                     <x-badge variant="primary" icon="split">Distribuido</x-badge>
                                                 @else
-                                                    <p class="text-small text-text-primary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
+                                                    <p class="text-sm text-text-primary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
                                                 @endif
                                             </div>
                                             <div>

@@ -8,7 +8,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <x-card class="mt-4 mb-6">
+    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
         @php
             $activeCount = $periodFilter ? 1 : 0;
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -16,7 +16,7 @@
 
         @if($budgets->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="md:rounded-t-lg md:bg-surface-card">
+            <div class="card md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
                 <div
                     class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between w-full p-4 md:px-6 md:py-4">
@@ -156,12 +156,12 @@
                                             @endif
                                         </td>
                                         <td class="max-w-0">
-                                            <span class="text-body text-text-secondary truncate block"
+                                            <span class="text-sm font-medium text-text-secondary truncate block"
                                                 title="{{ $budget->client?->name ?? '—' }}">{{ $budget->client?->name ?? '—' }}</span>
                                         </td>
-                                        <td class="text-body text-text-secondary">{{ $budget->created_at->format('d/m/Y') }}
+                                        <td class="text-sm font-medium text-text-secondary">{{ $budget->created_at->format('d/m/Y') }}
                                         </td>
-                                        <td class="text-center text-body">{{ $budget->items_count }}</td>
+                                        <td class="text-center text-sm font-medium text-text-secondary">{{ $budget->items_count }}</td>
                                         <td>
                                             @if($budget->status)
                                                 <x-badge variant="{{ $budget->status->color() }}">{{ $budget->status->label() }}</x-badge>
@@ -207,38 +207,55 @@
                     @if($budgets->isNotEmpty())
                         <div class="flex flex-col gap-4">
                             @foreach($budgets as $budget)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors"
-                                    :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50' : ''"
+                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
+                                    :class="selectedRows.includes('{{ $budget->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
                                     wire:key="quick-budget-mobile-card-{{ $budget->id }}">
 
-                                    <div class="flex justify-between items-start gap-2">
-                                        <div class="flex items-start gap-3">
-                                            <div class="pt-0.5">
-                                                <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
-                                            </div>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $budget->id }}" />
                                             <div class="min-w-0">
-                                                <div class="flex items-center gap-2 flex-wrap">
-                                                    <span
-                                                        class="font-bold text-text-primary text-body">{{ $budget->title }}</span>
-                                                </div>
-                                                <p class="text-xs text-text-secondary mt-1 truncate">Cliente:
-                                                    {{ $budget->client?->name ?? '—' }}</p>
+                                                <span class="font-bold text-text-primary text-base truncate block">{{ $budget->title }}</span>
+                                                <p class="text-xs text-text-secondary mt-0.5 truncate">Cliente: {{ $budget->client?->name ?? '—' }}</p>
                                             </div>
                                         </div>
-                                        <div class="text-right shrink-0">
-                                            <div class="font-bold text-text-primary text-h6">
-                                                ${{ number_format($budget->grand_total, 2, '.', ',') }}
-                                            </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            @if($budget->status)
+                                                <x-badge variant="{{ $budget->status->color() }}">{{ $budget->status->label() }}</x-badge>
+                                            @endif
+                                            
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
+                                                </x-slot>
+
+                                                <x-slot name="content">
+                                                    <x-dropdown-link href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}" icon="edit-2" wire:navigate>
+                                                        Editar
+                                                    </x-dropdown-link>
+                                                    @if(auth()->user()->hasPermission('cotizaciones.eliminar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })"
+                                                            danger="true" icon="trash-2">
+                                                            Eliminar
+                                                        </x-dropdown-link>
+                                                    @endif
+                                                </x-slot>
+                                            </x-dropdown>
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-small">
+                                    <div class="grid grid-cols-2 gap-2 bg-surface-hover/50 p-3 rounded-xl border border-border/50 text-xs">
                                         <div>
-                                            <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">
-                                                Conceptos</p>
-                                            <span class="inline-flex items-center gap-1.5 text-text-primary">
-                                                <x-lucide-list class="w-3.5 h-3.5 text-text-muted" />
+                                            <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Monto Total</p>
+                                            <div class="font-bold text-text-primary text-base tabular-nums">
+                                                ${{ number_format($budget->grand_total, 2, '.', ',') }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-text-muted font-medium text-[11px] uppercase tracking-wider mb-1">Conceptos</p>
+                                            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-text-primary mt-0.5">
+                                                <x-lucide-list class="w-4 h-4 text-text-muted" />
                                                 {{ $budget->items_count }}
                                             </span>
                                         </div>
@@ -248,38 +265,12 @@
                                                 <span class="text-text-secondary line-clamp-2">{{ $budget->description }}</span>
                                             </div>
                                         @endif
-                                        <div
-                                            class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
+                                        <div class="col-span-2 flex items-center justify-between mt-1 pt-2 border-t border-border/50">
                                             <div class="flex items-center gap-1.5 text-text-secondary">
                                                 <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted" />
                                                 <span>Registro: {{ $budget->created_at->format('d/m/Y') }}</span>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-end pt-2 border-t border-border mt-1">
-                                        <x-dropdown align="right" width="48">
-                                            <x-slot name="trigger">
-                                                <x-button variant="secondary" class="w-full justify-center">
-                                                    <x-lucide-more-horizontal class="w-4 h-4" />
-                                                    <span class="ml-2">Opciones</span>
-                                                </x-button>
-                                            </x-slot>
-
-                                            <x-slot name="content">
-                                                <x-dropdown-link href="{{ route('cotizador.wizard', ['id' => $budget->id]) }}"
-                                                    icon="edit-2" wire:navigate>
-                                                    Editar
-                                                </x-dropdown-link>
-                                                @if(auth()->user()->hasPermission('cotizaciones.eliminar') || auth()->user()->hasPermission('*'))
-                                                    <x-dropdown-link as="button" type="button"
-                                                        @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta cotización? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteBudget', params: [{{ $budget->id }}] })"
-                                                        danger="true" icon="trash-2">
-                                                        Eliminar
-                                                    </x-dropdown-link>
-                                                @endif
-                                            </x-slot>
-                                        </x-dropdown>
                                     </div>
                                 </div>
                             @endforeach
@@ -416,7 +407,7 @@
                 {{ $budgets->links(data: ['scrollTo' => false]) }}
             </x-card.footer>
         @endif
-    </x-card>
+    </div>
 
     {{-- Delete / Action Modals --}}
     <x-confirm-modal />

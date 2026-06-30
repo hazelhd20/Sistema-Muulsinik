@@ -40,7 +40,9 @@
                         <x-dropdown-link as="button" wire:click="openRejectModal({{ $req->id }})" danger="true" icon="x-circle">Rechazar</x-dropdown-link>
                     @endif
                     @if(in_array($req->status, ['borrador', 'rechazada']))
-                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Requisición', description: 'Esta acción es permanente y no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteRequisition', params: [{{ $req->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                        @if(auth()->user()->hasPermission('requisiciones.eliminar') || auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
+                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Requisición', description: 'Esta acción es permanente y no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteRequisition', params: [{{ $req->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                        @endif
                     @endif
                 </x-slot>
             </x-dropdown>

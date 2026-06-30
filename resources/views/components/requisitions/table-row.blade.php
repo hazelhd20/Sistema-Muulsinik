@@ -7,22 +7,22 @@
     <td class="actions text-center pl-4 pr-2" @click.stop="$event.stopPropagation()">
         <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
     </td>
-    <td class="font-semibold text-text-primary truncate max-w-0" title="{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}">
+    <td class="text-sm font-bold text-text-primary truncate max-w-0" title="{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}">
         {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
     </td>
-    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->project->name ?? '—' }}">
+    <td class="text-sm font-medium truncate max-w-0 text-text-secondary" title="{{ $req->project->name ?? '—' }}">
         {{ $req->project->name ?? '—' }}
     </td>
-    <td class="text-text-secondary">
+    <td class="text-sm font-medium text-text-secondary">
         {{ $req->date?->format('d/m/Y') }}
     </td>
-    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->creator->name ?? '—' }}">
+    <td class="text-sm font-medium truncate max-w-0 text-text-secondary" title="{{ $req->creator->name ?? '—' }}">
         {{ $req->creator->name ?? '—' }}
     </td>
-    <td class="truncate max-w-0 text-text-secondary" title="{{ $req->supplier_name }}">
+    <td class="text-sm font-medium truncate max-w-0 text-text-secondary" title="{{ $req->supplier_name }}">
         {{ $req->supplier_name }}
     </td>
-    <td class="text-right font-semibold tabular-nums text-text-primary numeric">
+    <td class="text-sm font-bold text-right tabular-nums text-text-primary numeric">
         ${{ number_format($req->total, 2, '.', ',') }}
     </td>
     <td class="py-3">
@@ -68,7 +68,9 @@
                     @endif
 
                     @if(in_array($req->status, ['borrador', 'rechazada']))
-                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Requisición', description: 'Esta acción es permanente y no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteRequisition', params: [{{ $req->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                        @if(auth()->user()->hasPermission('requisiciones.eliminar') || auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
+                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Requisición', description: 'Esta acción es permanente y no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteRequisition', params: [{{ $req->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                        @endif
                     @endif
                 </x-slot>
             </x-dropdown>

@@ -293,7 +293,7 @@ class QuickBudgetWizard extends Component
     }
 
     #[Layout('components.layouts.app')]
-    #[Title('Cotizador - Editar')]
+    #[Title('Cotización Rápida')]
     public function render()
     {
         $itemTypes = [

@@ -60,7 +60,7 @@
                         <x-button wire:key="process-btn" x-data="{ visible: true }" x-show="visible"
                             @file-removed.window="visible = false" type="button" wire:click="processUpload"
                             wire:loading.attr="disabled" target="processUpload" variant="primary"
-                            class="w-full text-small font-medium tracking-wide py-2.5 rounded-xl shadow-sm" icon="scan-line">
+                            class="w-full text-sm font-medium tracking-wide py-2.5 rounded-xl shadow-sm" icon="scan-line">
                             Procesar Documentos
                         </x-button>
                     </div>
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <h2 class="text-h3 font-medium text-text-primary mb-2 tracking-tight">Analizando documento</h2>
-                        <p class="text-small text-text-muted max-w-xs mx-auto leading-relaxed mb-4">
+                        <p class="text-sm text-text-muted max-w-xs mx-auto leading-relaxed mb-4">
                             Extrayendo datos con inteligencia artificial.<br>
                             Puede tomar hasta 30 segundos.
                         </p>
@@ -123,7 +123,7 @@
 
                         {{-- Título y descripción --}}
                         <h2 class="text-h3 font-medium text-text-primary mb-2 tracking-tight">Error al procesar</h2>
-                        <p class="text-small text-text-muted mb-6">No fue posible extraer los datos del documento
+                        <p class="text-sm text-text-muted mb-6">No fue posible extraer los datos del documento
                             automáticamente.</p>
 
                         {{-- Caja de mensaje de error con color semántico --}}
@@ -406,7 +406,7 @@
                                             <div class="relative">
                                                 <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
                                                     <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                        class="input input-inline {{ $productBorder }} text-small w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                        class="input input-inline {{ $productBorder }} text-sm w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
                                                         placeholder="Nombre del producto">
                                                 </x-conflict-popover>
                                                 {{-- Indicadores estáticos (no interactivos) --}}
@@ -440,7 +440,7 @@
                                         {{-- Cantidad --}}
                                         <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
-                                                step="0.01" class="input input-inline text-center tabular-nums text-small w-full"
+                                                step="0.01" class="input input-inline text-center tabular-nums text-sm w-full"
                                                 placeholder="0">
                                         </td>
 
@@ -459,7 +459,7 @@
                                         {{-- Precio Unitario --}}
                                         <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
-                                                step="0.01" class="input input-inline text-right tabular-nums text-small w-full"
+                                                step="0.01" class="input input-inline text-right tabular-nums text-sm w-full"
                                                 placeholder="0.00">
                                             @if(($item['discount_percent'] ?? 0) > 0)
                                                 <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs">
@@ -475,13 +475,13 @@
 
                                         {{-- Subtotal --}}
                                         <td
-                                            class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
+                                            class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-sm align-middle">
                                             ${{ number_format($item['line_subtotal'], 2, '.', ',') }}
                                         </td>
 
                                         {{-- Total con IVA --}}
                                         <td
-                                            class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
+                                            class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-sm align-middle">
                                             ${{ number_format($item['line_total'], 2, '.', ',') }}
                                         </td>
 
@@ -581,12 +581,12 @@
 
                                 <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-small text-text-muted">Subtotal</span>
+                                        <span class="text-sm text-text-muted">Subtotal</span>
                                         <span
-                                            class="text-small font-medium">${{ number_format($item['line_subtotal'], 2, '.', ',') }}</span>
+                                            class="text-sm font-medium">${{ number_format($item['line_subtotal'], 2, '.', ',') }}</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
+                                        <span class="text-sm font-medium text-text-secondary">Total c/IVA</span>
                                         <span
                                             class="font-bold text-text-primary tabular-nums">${{ number_format($item['line_total'], 2, '.', ',') }}</span>
                                     </div>
@@ -608,12 +608,12 @@
                         <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                             <div class="flex flex-col gap-3">
                                 @if($hasAnyDiscount)
-                                    <div class="flex items-center justify-between text-small">
+                                    <div class="flex items-center justify-between text-sm">
                                         <span class="text-text-muted">Subtotal bruto</span>
                                         <span
                                             class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between text-small text-success">
+                                    <div class="flex items-center justify-between text-sm text-success">
                                         <span class="flex items-center gap-1.5 font-medium">
                                             <x-lucide-tag class="w-3.5 h-3.5" wire:ignore />
                                             Descuento total
@@ -623,12 +623,12 @@
                                     </div>
                                     <div class="h-px bg-border/40 my-1"></div>
                                 @endif
-                                <div class="flex items-center justify-between text-small">
+                                <div class="flex items-center justify-between text-sm">
                                     <span class="text-text-muted">Subtotal s/IVA</span>
                                     <span
                                         class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
                                 </div>
-                                <div class="flex items-center justify-between text-small">
+                                <div class="flex items-center justify-between text-sm">
                                     <span class="text-text-muted">IVA (16%)</span>
                                     <span class="font-medium text-text-muted tabular-nums">
                                         @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
@@ -639,7 +639,7 @@
                             </div>
 
                             <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
-                                <span class="text-body font-semibold text-text-primary">Total final</span>
+                                <span class="text-base font-semibold text-text-primary">Total final</span>
                                 <span
                                     class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
@@ -647,7 +647,7 @@
                             {{-- Botón de Acción --}}
                             <div class="pt-6 mt-6">
                                 <x-button type="submit" variant="primary"
-                                    class="w-full py-3 rounded-xl shadow-sm text-small tracking-wide" target="saveRequisition"
+                                    class="w-full py-3 rounded-xl shadow-sm text-sm tracking-wide" target="saveRequisition"
                                     icon="check-circle">
                                     Confirmar y Crear Requisición
                                 </x-button>

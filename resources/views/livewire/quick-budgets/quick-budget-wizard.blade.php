@@ -216,12 +216,12 @@
                                     <td class="pl-6 pr-4 py-4">
                                         @if($item['product_id'])
                                             <div class="flex flex-col">
-                                                <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
+                                                <span class="text-sm font-semibold text-text-primary">{{ $item['concept'] }}</span>
                                             </div>
                                         @else
                                             <div class="flex flex-col gap-2">
                                                 <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
-                                                    class="input input-inline text-small w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-danger bg-danger-light' : '' }}"
+                                                    class="input input-inline text-sm w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-danger bg-danger-light' : '' }}"
                                                     placeholder="Escribe un concepto...">
                                                 @error('items.'.$index.'.concept')
                                                     <p class="text-danger-active text-[10px] font-medium leading-tight mt-0.5">{{ $message }}</p>

@@ -179,10 +179,12 @@
                     </div>
                 </div>
 
-                <button x-data x-on:click="$dispatch('open-settings')" class="nav-link w-full text-left cursor-pointer">
-                    <x-lucide-settings class="w-4 h-4 shrink-0" aria-hidden="true" />
-                    <span>Configuración</span>
-                </button>
+                @if(auth()->user()?->hasPermission('configuracion.ver') || auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
+                    <button x-data x-on:click="$dispatch('open-settings')" class="nav-link w-full text-left cursor-pointer">
+                        <x-lucide-settings class="w-4 h-4 shrink-0" aria-hidden="true" />
+                        <span>Configuración</span>
+                    </button>
+                @endif
 
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
@@ -257,10 +259,12 @@
         </div>
     </div>
 
-    <livewire:settings.settings-index />
+    @if(auth()->user()?->hasPermission('configuracion.ver') || auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
+        <livewire:settings.settings-index />
 
-    @if(session('open_settings') || request()->query('settings') === 'true')
-        <div x-data x-init="$nextTick(() => $dispatch('open-settings'))"></div>
+        @if(session('open_settings') || request()->query('settings') === 'true')
+            <div x-data x-init="$nextTick(() => $dispatch('open-settings'))"></div>
+        @endif
     @endif
 
     @livewireScripts

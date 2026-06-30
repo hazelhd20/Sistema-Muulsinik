@@ -59,11 +59,19 @@ class ReportIndex extends Component
 
     public function exportCsv(\App\Actions\Reports\ExportReportAction $exportAction)
     {
+        if ($this->denyUnless('reportes.ver')) {
+            return null;
+        }
+
         return $exportAction->executeCsv($this->activeTab, $this->getDateFrom(), $this->projectFilter ?: null);
     }
 
     public function exportExcel(\App\Actions\Reports\ExportReportAction $exportAction)
     {
+        if ($this->denyUnless('reportes.ver')) {
+            return null;
+        }
+
         return $exportAction->executeExcel($this->activeTab, $this->getDateFrom(), $this->projectFilter ?: null);
     }
 

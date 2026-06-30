@@ -146,19 +146,19 @@
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($project->requisitions as $requisition)
                                 <tr class="hover:bg-surface-hover transition-colors duration-150">
-                                    <td class="pl-6 pr-4 py-3 font-medium text-small text-text-primary">
+                                    <td class="pl-6 pr-4 py-3 font-medium text-sm text-text-primary">
                                         {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
-                                    <td class="px-4 py-3 text-small text-text-muted">
+                                    <td class="px-4 py-3 text-sm text-text-muted">
                                         {{ $requisition->supplier_name }}
                                     </td>
-                                    <td class="px-4 py-3 text-small text-text-secondary">
+                                    <td class="px-4 py-3 text-sm text-text-secondary">
                                         {{ $requisition->creator?->name ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-small text-text-muted tabular-nums">
+                                    <td class="px-4 py-3 text-sm text-text-muted tabular-nums">
                                         {{ $requisition->date?->format('d/m/Y') ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-right font-semibold text-small text-text-primary tabular-nums">
+                                    <td class="px-4 py-3 text-right font-semibold text-sm text-text-primary tabular-nums">
                                         ${{ number_format($requisition->total, 2) }}
                                     </td>
                                     <td class="px-4 py-3">
@@ -218,19 +218,19 @@
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($project->expenses as $expense)
                                 <tr class="hover:bg-surface-hover transition-colors duration-150">
-                                    <td class="pl-6 pr-4 py-3 font-medium text-small text-text-primary">
+                                    <td class="pl-6 pr-4 py-3 font-medium text-sm text-text-primary">
                                         {{ $expense->concept }}
                                     </td>
-                                    <td class="px-4 py-3 text-small">
+                                    <td class="px-4 py-3 text-sm">
                                         <x-dynamic-badge :value="$expense->category_name" />
                                     </td>
-                                    <td class="px-4 py-3 text-small text-text-secondary">
+                                    <td class="px-4 py-3 text-sm text-text-secondary">
                                         {{ $expense->user?->name ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-small text-text-muted tabular-nums">
+                                    <td class="px-4 py-3 text-sm text-text-muted tabular-nums">
                                         {{ $expense->date?->format('d/m/Y') ?? '—' }}
                                     </td>
-                                    <td class="pr-6 pl-4 py-3 text-right font-semibold text-small text-text-primary tabular-nums">
+                                    <td class="pr-6 pl-4 py-3 text-right font-semibold text-sm text-text-primary tabular-nums">
                                         ${{ number_format($expense->amount, 2) }}
                                     </td>
                                 </tr>

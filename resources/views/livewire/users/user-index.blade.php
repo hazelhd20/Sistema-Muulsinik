@@ -133,7 +133,7 @@
                                                 <td>
                                                     <x-status-badge :status="$user->active ? 'activo' : 'inactivo'" :map="['activo' => 'success', 'inactivo' => 'danger']" />
                                                 </td>
-                                                <td class="text-body text-text-secondary">
+                                                <td class="text-sm font-medium text-text-secondary">
                                                     {{ $user->created_at->format('d/m/Y') }}
                                                 </td>
                                                 <td class="actions" @click.stop>
@@ -370,16 +370,8 @@
                     </x-form-field>
                 </div>
 
-                <div class="flex items-center mt-2">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model="active"
-                            class="rounded border-border accent-primary-600 focus:ring-primary-500"
-                            @if(auth()->id() === $editingId) disabled @endif>
-                        <span class="text-sm font-medium text-text-primary">Usuario activo</span>
-                    </label>
-                    @if(auth()->id() === $editingId)
-                        <span class="text-xs text-text-muted ml-2">(No puedes desactivar tu propia cuenta)</span>
-                    @endif
+                <div class="pt-2">
+                    <x-toggle wire:model="active" label="Usuario Activo" description="{{ auth()->id() === $editingId ? 'No puedes desactivar tu propia cuenta.' : 'Los usuarios inactivos no tienen acceso al sistema.' }}" :disabled="auth()->id() === $editingId" />
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-border">

@@ -5,13 +5,13 @@
             <nav class="space-y-1">
                 <button type="button" @click="tab = 'empresa'" 
                         :class="tab === 'empresa' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-text-secondary hover:bg-surface-hover'"
-                        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-body transition-all duration-150 text-left cursor-pointer">
+                        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all duration-150 text-left cursor-pointer">
                     <x-lucide-building-2 class="w-4 h-4 shrink-0" />
                     <span>Empresa</span>
                 </button>
                 <button type="button" @click="tab = 'documentos'" 
                         :class="tab === 'documentos' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-text-secondary hover:bg-surface-hover'"
-                        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-body transition-all duration-150 text-left cursor-pointer">
+                        class="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all duration-150 text-left cursor-pointer">
                     <x-lucide-file-text class="w-4 h-4 shrink-0" />
                     <span>Documentos</span>
                 </button>

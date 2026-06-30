@@ -2,9 +2,11 @@
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Productos">
         <x-slot:actions>
-            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
-                Nuevo Producto
-            </x-button>
+            @if(auth()->user()->hasPermission('productos.crear') || auth()->user()->hasPermission('*'))
+                <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+                    Nuevo Producto
+                </x-button>
+            @endif
         </x-slot:actions>
     </x-page-header>
 
@@ -160,12 +162,16 @@
                                                         <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">
                                                             Ver detalles
                                                         </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
-                                                            Editar
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
+                                                        @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
+                                                                Editar
+                                                            </x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">
+                                                                Eliminar
+                                                            </x-dropdown-link>
+                                                        @endif
                                                     </x-slot>
                                                 </x-dropdown>
                                             </div>
@@ -227,8 +233,12 @@
                                             </x-slot>
                                             <x-slot name="content">
                                                 <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">Ver detalles</x-dropdown-link>
-                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                @endif
+                                                @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                @endif
                                             </x-slot>
                                         </x-dropdown>
                                     </div>

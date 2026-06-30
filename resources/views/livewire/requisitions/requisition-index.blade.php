@@ -44,7 +44,7 @@
 
                 @if($requisitions->isNotEmpty() || $hasActiveFilters)
                     {{-- Header Group (Search + Filters + Chips) --}}
-                    <x-card class="md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+                    <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                         {{-- Filters Bar --}}
                         <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
                             {{-- Search: compact width --}}
@@ -144,7 +144,7 @@
                                 @endif
                             </div>
                         @endif
-                    </x-card> {{-- End Header Group --}}
+                    </div> {{-- End Header Group --}}
                 @endif
 
                 <div class="relative">

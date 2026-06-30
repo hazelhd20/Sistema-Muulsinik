@@ -10,12 +10,16 @@
             <span class="text-text-secondary font-normal">aquí está el resumen de hoy.</span>
         </x-slot:heading>
         <x-slot:actions>
-            <x-button href="{{ url('/requisiciones') }}" variant="secondary" icon="clipboard-list">
-                Requisiciones
-            </x-button>
-            <x-button href="{{ url('/gastos') }}" variant="primary" icon="plus">
-                Nuevo gasto
-            </x-button>
+            @if(auth()->user()?->hasPermission('requisiciones.ver') || auth()->user()?->hasPermission('*'))
+                <x-button href="{{ url('/requisiciones') }}" variant="secondary" icon="clipboard-list">
+                    Requisiciones
+                </x-button>
+            @endif
+            @if(auth()->user()?->hasPermission('gastos.crear') || auth()->user()?->hasPermission('*'))
+                <x-button href="{{ url('/gastos') }}" variant="primary" icon="plus">
+                    Nuevo gasto
+                </x-button>
+            @endif
         </x-slot:actions>
     </x-page-header>
 
@@ -85,10 +89,12 @@
         <x-card>
             <x-card.header title="Métricas">
                 <x-slot:action>
-                    <a href="{{ url('/reportes') }}" class="link-more">
-                        Ver reportes
-                        <x-lucide-arrow-right class="w-3 h-3" />
-                    </a>
+                    @if(auth()->user()?->hasPermission('reportes.ver') || auth()->user()?->hasPermission('*'))
+                        <a href="{{ url('/reportes') }}" class="link-more">
+                            Ver reportes
+                            <x-lucide-arrow-right class="w-3 h-3" />
+                        </a>
+                    @endif
                 </x-slot:action>
             </x-card.header>
             <x-card.body class="pt-0 flex flex-col justify-between">
@@ -99,9 +105,9 @@
                             <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
                                 <x-lucide-building-2 class="w-3 h-3 text-primary-600" />
                             </div>
-                            <span class="text-small text-text-secondary">Cartera de clientes</span>
+                            <span class="text-sm text-text-secondary">Cartera de clientes</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalClients }}</span>
+                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalClients }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -109,9 +115,9 @@
                             <div class="w-5 h-5 rounded bg-purple-50 flex items-center justify-center">
                                 <x-lucide-briefcase class="w-3 h-3 text-purple-600" />
                             </div>
-                            <span class="text-small text-text-secondary">Total proyectos</span>
+                            <span class="text-sm text-text-secondary">Total proyectos</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
+                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -119,9 +125,9 @@
                             <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
                                 <x-lucide-package class="w-3 h-3 text-warning" />
                             </div>
-                            <span class="text-small text-text-secondary">Catálogo de productos</span>
+                            <span class="text-sm text-text-secondary">Catálogo de productos</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProducts }}</span>
+                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalProducts }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -129,9 +135,9 @@
                             <div class="w-5 h-5 rounded bg-danger-light flex items-center justify-center">
                                 <x-lucide-users class="w-3 h-3 text-danger" />
                             </div>
-                            <span class="text-small text-text-secondary">Proveedores</span>
+                            <span class="text-sm text-text-secondary">Proveedores</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
+                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -139,9 +145,9 @@
                             <div class="w-5 h-5 rounded bg-cyan-50 flex items-center justify-center">
                                 <x-lucide-file-text class="w-3 h-3 text-cyan-600" />
                             </div>
-                            <span class="text-small text-text-secondary">Presupuestos rápidos</span>
+                            <span class="text-sm text-text-secondary">Presupuestos rápidos</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalBudgets }}</span>
+                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalBudgets }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -149,9 +155,9 @@
                             <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
                                 <x-lucide-check-circle class="w-3 h-3 text-success" />
                             </div>
-                            <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
+                            <span class="text-sm text-text-secondary">Requisiciones aprobadas</span>
                         </div>
-                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $approvedRequisitions }}</span>
+                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $approvedRequisitions }}</span>
                     </div>
 
                 </div>
@@ -166,10 +172,12 @@
         <x-card>
             <x-card.header title="Proyectos Recientes">
                 <x-slot:action>
-                    <a href="{{ url('/proyectos') }}" class="link-more">
-                        Ver todos
-                        <x-lucide-arrow-right class="w-3 h-3" />
-                    </a>
+                    @if(auth()->user()?->hasPermission('proyectos.ver') || auth()->user()?->hasPermission('*'))
+                        <a href="{{ url('/proyectos') }}" class="link-more">
+                            Ver todos
+                            <x-lucide-arrow-right class="w-3 h-3" />
+                        </a>
+                    @endif
                 </x-slot:action>
             </x-card.header>
             @if($recentProjects->isEmpty())
@@ -190,13 +198,13 @@
                     @foreach($recentProjects as $project)
                         <tr @click="Livewire.navigate('{{ route('proyectos.show', $project->id) }}')" class="cursor-pointer group hover:bg-surface-hover transition-colors duration-150">
                             <td>
-                                <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
+                                <p class="font-medium text-text-primary text-sm">{{ $project->name }}</p>
                                 <p class="text-xs text-text-muted">{{ $project->client?->name ?? '—' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
                             </td>
-                            <td class="text-right text-small font-semibold text-text-primary tabular-nums">
+                            <td class="text-right text-sm font-semibold text-text-primary tabular-nums">
                                 ${{ number_format($project->budget, 0, '.', ',') }}
                             </td>
                         </tr>
@@ -211,10 +219,12 @@
         <x-card>
             <x-card.header title="Requisiciones Recientes">
                 <x-slot:action>
-                    <a href="{{ url('/requisiciones') }}" class="link-more">
-                        Ver todas
-                        <x-lucide-arrow-right class="w-3 h-3" />
-                    </a>
+                    @if(auth()->user()?->hasPermission('requisiciones.ver') || auth()->user()?->hasPermission('*'))
+                        <a href="{{ url('/requisiciones') }}" class="link-more">
+                            Ver todas
+                            <x-lucide-arrow-right class="w-3 h-3" />
+                        </a>
+                    @endif
                 </x-slot:action>
             </x-card.header>
             @if($recentRequisitions->isEmpty())
@@ -235,7 +245,7 @@
                     @foreach($recentRequisitions as $req)
                         <tr @click="Livewire.navigate('{{ route('requisiciones.show', $req->id) }}')" class="cursor-pointer group hover:bg-surface-hover transition-colors duration-150">
                             <td>
-                                <p class="font-medium text-text-primary text-small">
+                                <p class="font-medium text-text-primary text-sm">
                                     {{ $req->number ?? 'REQ-' . $req->id }}
                                 </p>
                                 <p class="text-xs text-text-muted">{{ $req->creator->name ?? '' }}</p>
@@ -243,7 +253,7 @@
                             <td>
                                 <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                             </td>
-                            <td class="text-small text-text-secondary">{{ $req->project->name ?? '—' }}</td>
+                            <td class="text-sm text-text-secondary">{{ $req->project->name ?? '—' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
