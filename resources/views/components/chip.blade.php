@@ -9,7 +9,7 @@
         'lg' => 'px-3 py-1.5 text-sm',             // 14px
         'md' => '',                                // 12px (Hereda el estándar base de .chip)
         'sm' => 'px-2 py-0.5 text-xs',             // 12px compacto
-        'xs' => 'px-1.5 py-0.5 text-[10px]',       // 10px ultra compacto
+        'xs' => 'px-1.5 py-0.5 text-2xs',          // 10px ultra compacto
         default => '',
     };
 @endphp

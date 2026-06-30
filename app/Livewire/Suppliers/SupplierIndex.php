@@ -233,6 +233,18 @@ class SupplierIndex extends Component
         $this->selectedRows = array_diff($this->selectedRows, [$supplierId]);
     }
 
+    public function toggleActive(int $supplierId): void
+    {
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para modificar proveedores.')) {
+            return;
+        }
+
+        $supplier = app(SupplierRepository::class)->toggleActive($supplierId);
+
+        $status = $supplier->active ? 'activado' : 'desactivado';
+        $this->dispatch('toast', ['icon' => 'success', 'message' => "Proveedor {$status} correctamente."]);
+    }
+
     public function toggleAll($supplierIds): void
     {
         if ($this->allSelected) {
@@ -316,7 +328,20 @@ class SupplierIndex extends Component
             ? Supplier::with('vendors')->find($this->viewingSupplierId)
             : null;
 
-        $categories = Supplier::select('category')->whereNotNull('category')->distinct()->pluck('category', 'category')->toArray();
+        $dbCategories = Supplier::select('category')->whereNotNull('category')->where('category', '!=', '')->distinct()->pluck('category')->toArray();
+        $defaultCategories = [
+            'Materiales de Construcción',
+            'Ferretería y Tlapalería',
+            'Maquinaria y Equipo',
+            'Subcontratos y Mano de Obra',
+            'Logística y Fletes',
+            'Servicios Profesionales'
+        ];
+        $categories = collect(array_merge($defaultCategories, $dbCategories))
+            ->unique()
+            ->sort()
+            ->mapWithKeys(fn ($item) => [$item => $item])
+            ->toArray();
 
         return view('livewire.suppliers.supplier-index', compact('suppliers', 'categories', 'viewingSupplier'));
     }

@@ -150,6 +150,18 @@ class ClientIndex extends Component
         $this->selectedRows = array_diff($this->selectedRows, [$clientId]);
     }
 
+    public function toggleActive(int $clientId): void
+    {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar clientes.')) {
+            return;
+        }
+
+        $client = app(ClientRepository::class)->toggleActive($clientId);
+
+        $status = $client->active ? 'activado' : 'desactivado';
+        $this->dispatch('toast', ['icon' => 'success', 'message' => "Cliente {$status} correctamente."]);
+    }
+
     public function toggleAll($clientIds): void
     {
         if ($this->allSelected) {

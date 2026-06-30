@@ -184,18 +184,21 @@
                         :aria-selected="value == opt.value ? 'true' : 'false'"
                         @click="selectOption(opt)"
                         @mouseenter="activeIndex = index"
-                        class="px-4 py-2.5 text-small cursor-pointer transition-colors"
-                        :class="{ 'bg-primary-50 text-primary-900': activeIndex === index, 'text-text-primary hover:bg-zinc-100': activeIndex !== index }"
+                        class="px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between"
+                        :class="{ 'bg-primary-50 text-primary-700 font-medium': activeIndex === index || value == opt.value, 'text-text-primary hover:bg-surface-hover': activeIndex !== index && value != opt.value }"
                     >
-                        <span x-html="highlight(opt.label)" class="truncate"></span>
+                        <span x-html="highlight(opt.label)" class="truncate pr-4"></span>
+                        <svg x-show="value == opt.value" class="w-4 h-4 shrink-0 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
                     </div>
                 </template>
             </template>
             
             <template x-if="filteredOptions.length === 0">
-                <div class="px-4 py-3 text-center text-small text-text-muted">
-                    <p>No se encontraron resultados.</p>
-                    <p class="text-[10px] mt-1 text-primary-600">Presiona Enter para usar "<span x-text="value" class="font-semibold"></span>"</p>
+                <div class="px-4 py-3 text-center text-sm text-text-muted">
+                    <p>No se encontraron resultados en el catálogo.</p>
+                    <p class="text-xs mt-1 text-primary-600 font-medium">Presiona Enter para registrar "<span x-text="value" class="font-bold"></span>"</p>
                 </div>
             </template>
         </div>

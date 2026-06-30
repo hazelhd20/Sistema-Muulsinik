@@ -11,8 +11,8 @@
     $sizeClasses = match($size) {
         'lg' => 'px-3 py-1.5 text-xs',             // 12px
         'md' => '',                                // 11px (Hereda el estándar base de .badge)
-        'sm' => 'px-2 py-0.5 text-[10px]',         // 10px
-        'xs' => 'px-1.5 py-0.5 text-[9px]',        // 9px
+        'sm' => 'px-2 py-0.5 text-2xs',            // 10px
+        'xs' => 'px-1.5 py-0.5 text-3xs',          // 9px
         default => '',
     };
     $caseClasses = $normalCase ? 'normal-case font-semibold tracking-normal' : '';

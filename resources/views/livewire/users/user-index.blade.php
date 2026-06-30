@@ -375,7 +375,7 @@
                         <input type="checkbox" wire:model="active"
                             class="rounded border-border accent-primary-600 focus:ring-primary-500"
                             @if(auth()->id() === $editingId) disabled @endif>
-                        <span class="text-small font-medium text-text-primary">Usuario activo</span>
+                        <span class="text-sm font-medium text-text-primary">Usuario activo</span>
                     </label>
                     @if(auth()->id() === $editingId)
                         <span class="text-xs text-text-muted ml-2">(No puedes desactivar tu propia cuenta)</span>

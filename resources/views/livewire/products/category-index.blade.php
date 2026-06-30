@@ -83,12 +83,12 @@
                                         </td>
                                         <td>
                                             @if($category->products_count > 0)
-                                                <x-badge variant="info">{{ $category->products_count }} productos</x-badge>
+                                                <span class="text-sm font-medium text-text-secondary">{{ $category->products_count }} producto{{ $category->products_count !== 1 ? 's' : '' }}</span>
                                             @else
-                                                <x-badge variant="secondary">Sin productos</x-badge>
+                                                <span class="text-sm font-normal text-text-muted">Sin productos</span>
                                             @endif
                                         </td>
-                                        <td class="text-text-muted text-small">
+                                        <td class="text-sm font-medium text-text-muted">
                                             {{ $category->created_at->format('d/m/Y') }}
                                         </td>
                                         <td class="actions pr-4 py-3" @click.stop>
@@ -171,12 +171,12 @@
                                 {{-- Contenido Indentado --}}
                                 <div class="pl-8 flex flex-col gap-3">
                                     <div class="flex flex-col gap-2">
-                                        <p class="text-[10px] text-text-muted uppercase font-semibold">Productos</p>
+                                        <p class="text-2xs text-text-muted uppercase font-semibold">Productos</p>
                                         <div>
                                             @if($category->products_count > 0)
-                                                <x-badge variant="info">{{ $category->products_count }} productos</x-badge>
+                                                <span class="text-sm font-medium text-text-secondary">{{ $category->products_count }} producto{{ $category->products_count !== 1 ? 's' : '' }}</span>
                                             @else
-                                                <x-badge variant="secondary">Sin productos</x-badge>
+                                                <span class="text-sm font-normal text-text-muted">Sin productos</span>
                                             @endif
                                         </div>
                                     </div>

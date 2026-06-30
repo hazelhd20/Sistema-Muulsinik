@@ -102,7 +102,7 @@
                     x-show="search === ''"
                     role="option"
                     :aria-selected="(!value || value == '') ? 'true' : 'false'"
-                    class="cursor-pointer transition-colors {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-small' }}"
+                    class="cursor-pointer transition-colors {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm' }}"
                     :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
                     {{ $placeholder }}
@@ -114,7 +114,7 @@
                     @click="value = val; close()"
                     role="option"
                     :aria-selected="value == val ? 'true' : 'false'"
-                    class="cursor-pointer transition-colors flex items-center justify-between {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-small' }}"
+                    class="cursor-pointer transition-colors flex items-center justify-between {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm' }}"
                     :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
                     <span x-text="label" class="truncate pr-4"></span>
@@ -124,7 +124,7 @@
                 </div>
             </template>
             
-            <div x-show="Object.keys(filteredOptions).length === 0" class="px-4 py-3 text-small text-text-muted text-center">
+            <div x-show="Object.keys(filteredOptions).length === 0" class="px-4 py-3 text-sm text-text-muted text-center">
                 No se encontraron resultados
             </div>
         </div>

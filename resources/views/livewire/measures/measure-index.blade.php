@@ -82,21 +82,21 @@
                                         <td class="max-w-0">
                                             <p class="font-medium text-text-primary truncate" title="{{ $measure->name }}">{{ $measure->name }}</p>
                                         </td>
-                                        <td>
+                                        <td class="text-sm font-medium text-text-secondary">
                                             @if($measure->abbreviation)
-                                                <x-chip size="sm">{{ $measure->abbreviation }}</x-chip>
+                                                {{ strtolower($measure->abbreviation) }}
                                             @else
                                                 <span class="text-text-muted">—</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($measure->products_count > 0)
-                                                <x-badge variant="info">{{ $measure->products_count }} productos</x-badge>
+                                                <span class="text-sm font-medium text-text-secondary">{{ $measure->products_count }} producto{{ $measure->products_count !== 1 ? 's' : '' }}</span>
                                             @else
-                                                <x-badge variant="secondary">Sin productos</x-badge>
+                                                <span class="text-sm font-normal text-text-muted">Sin productos</span>
                                             @endif
                                         </td>
-                                        <td class="text-text-muted text-small">
+                                        <td class="text-sm font-medium text-text-muted">
                                             {{ $measure->created_at->format('d/m/Y') }}
                                         </td>
                                         <td class="actions pr-4 py-3" @click.stop>
@@ -166,7 +166,7 @@
                                         <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
                                         <span class="font-bold text-text-primary text-base truncate">{{ $measure->name }}</span>
                                         @if($measure->abbreviation)
-                                            <x-chip size="sm">{{ $measure->abbreviation }}</x-chip>
+                                            <span class="text-sm font-medium text-text-secondary">({{ strtolower($measure->abbreviation) }})</span>
                                         @endif
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
@@ -185,12 +185,12 @@
                                 {{-- Contenido Indentado --}}
                                 <div class="pl-8 flex flex-col gap-3">
                                     <div class="flex flex-col gap-2">
-                                        <p class="text-[10px] text-text-muted uppercase font-semibold">Productos</p>
+                                        <p class="text-2xs text-text-muted uppercase font-semibold">Productos</p>
                                         <div>
                                             @if($measure->products_count > 0)
-                                                <x-badge variant="info">{{ $measure->products_count }} productos</x-badge>
+                                                <span class="text-sm font-medium text-text-secondary">{{ $measure->products_count }} producto{{ $measure->products_count !== 1 ? 's' : '' }}</span>
                                             @else
-                                                <x-badge variant="secondary">Sin productos</x-badge>
+                                                <span class="text-sm font-normal text-text-muted">Sin productos</span>
                                             @endif
                                         </div>
                                     </div>

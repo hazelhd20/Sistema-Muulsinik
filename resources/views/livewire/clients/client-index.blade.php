@@ -34,7 +34,7 @@
                             <x-button type="button" @click="clearFilters()" variant="link-muted">
                                 Limpiar filtros
                             </x-button>
-                            <x-button type="button" @click="$wire.set('activeFilter', filterActive); open = false" variant="primary">
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
                                 Aplicar Filtros
                             </x-button>
                         </x-slot>
@@ -137,6 +137,9 @@
                                                     <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">
                                                         Editar
                                                     </x-dropdown-link>
+                                                    <x-dropdown-link as="button" wire:click="toggleActive({{ $client->id }})" icon="power">
+                                                        {{ $client->active ? 'Desactivar' : 'Activar' }}
+                                                    </x-dropdown-link>
                                                     <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">
                                                         Eliminar
                                                     </x-dropdown-link>
@@ -198,6 +201,7 @@
                                                 </x-slot>
                                                 <x-slot name="content">
                                                     <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                    <x-dropdown-link as="button" wire:click="toggleActive({{ $client->id }})" icon="power">{{ $client->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
                                                     <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente?', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                                 </x-slot>
                                             </x-dropdown>
@@ -206,11 +210,11 @@
                                     <div class="pl-8 flex flex-col gap-3">
                                         <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                                             <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">RFC</p>
+                                                <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">RFC</p>
                                                 <p class="text-xs text-text-secondary">{{ $client->rfc ?: '—' }}</p>
                                             </div>
                                             <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Estado</p>
+                                                <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Estado</p>
                                                 @if($client->active)
                                                     <x-badge variant="success">Activo</x-badge>
                                                 @else

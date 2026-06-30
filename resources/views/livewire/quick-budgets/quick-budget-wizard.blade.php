@@ -319,11 +319,12 @@
                                     <div class="flex flex-col p-3 bg-surface-card rounded-lg border border-border">
                                         <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <select wire:model.live="items.{{ $index }}.item_type" class="text-[9px] bg-surface-hover border border-border/50 rounded text-text-muted font-bold uppercase tracking-wider cursor-pointer hover:border-primary-300 hover:text-primary-600 focus:ring-0 py-0.5 px-1.5 h-auto leading-tight transition-colors">
-                                                <option value="material">Material</option>
-                                                <option value="labor">Mano de Obra</option>
-                                                <option value="service">Servicio</option>
-                                            </select>
+                                            <div class="flex-1">
+                                                <x-custom-select wire:model.live="items.{{ $index }}.item_type"
+                                                    :options="$itemTypes"
+                                                    minSearch="10"
+                                                    placeholder="Tipo" />
+                                            </div>
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
                                                 {{ $item['measure_abbr'] }}
                                             </span>
@@ -333,11 +334,12 @@
                                     <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
                                         class="input w-full" placeholder="Escribe un concepto...">
                                     <div class="mt-2 flex gap-2">
-                                        <select wire:model.live="items.{{ $index }}.item_type" class="text-[9px] bg-surface-hover border border-border/50 rounded text-text-muted font-bold uppercase tracking-wider cursor-pointer hover:border-primary-300 hover:text-primary-600 focus:ring-0 py-1.5 px-2 h-auto leading-tight transition-colors">
-                                            <option value="material">Material</option>
-                                            <option value="labor">Mano de Obra</option>
-                                            <option value="service">Servicio</option>
-                                        </select>
+                                        <div class="flex-1">
+                                            <x-custom-select wire:model.live="items.{{ $index }}.item_type"
+                                                :options="$itemTypes"
+                                                minSearch="10"
+                                                placeholder="Tipo" />
+                                        </div>
                                         <div class="flex-1">
                                             <x-custom-select wire:model.live="items.{{ $index }}.measure_id"
                                                 :options="$measures"

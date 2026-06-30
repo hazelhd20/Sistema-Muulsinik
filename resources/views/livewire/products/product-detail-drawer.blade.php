@@ -25,7 +25,7 @@
                     </x-data-label>
                     <x-data-label label="Unidad">
                         @if($detailProduct->measure && $detailProduct->measure->abbreviation)
-                            <x-chip size="sm">{{ $detailProduct->measure->abbreviation }}</x-chip>
+                            <x-badge variant="secondary" size="sm" :normalCase="true">{{ $detailProduct->measure->abbreviation }}</x-badge>
                         @else
                             <span class="text-text-muted">—</span>
                         @endif

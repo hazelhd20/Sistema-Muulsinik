@@ -68,12 +68,13 @@
                 >
                     <colgroup>
                         <col class="w-14">           {{-- Checkbox --}}
-                        <col class="w-[30%]">        {{-- Proveedor --}}
-                        <col class="w-[15%]">        {{-- RFC --}}
-                        <col class="w-[15%]">        {{-- Categoría --}}
-                        <col class="w-[10%]">        {{-- Vendedores --}}
-                        <col class="w-[18%]">        {{-- Notas --}}
-                        <col class="w-24">           {{-- Acciones --}}
+                        <col class="w-[26%]">        {{-- Proveedor --}}
+                        <col class="w-[14%]">        {{-- RFC --}}
+                        <col class="w-[14%]">        {{-- Categoría --}}
+                        <col class="w-[11%]">        {{-- Vendedores --}}
+                        <col class="w-[11%]">        {{-- Estado --}}
+                        <col class="w-[14%]">        {{-- Notas --}}
+                        <col class="w-28">           {{-- Acciones --}}
                     </colgroup>
                     <thead class="bg-surface-th border-b border-border/40">
                             <tr>
@@ -90,6 +91,7 @@
                                 <x-sortable-header field="category" label="Categoría" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <th>Vendedores</th>
+                                <th>Estado</th>
                                 <th>Notas</th>
                                 <th class="actions text-right pr-4">Acciones</th>
                             </tr>
@@ -97,7 +99,7 @@
                         <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, previousPage, nextPage, gotoPage">
                             @if($suppliers->isEmpty() && $hasActiveFilters)
                                 <tr>
-                                    <td colspan="7" class="p-8">
+                                    <td colspan="8" class="p-8">
                                         <x-empty-state icon="search" title="No se encontraron proveedores" message="Intenta ajustar tus filtros de búsqueda." />
                                     </td>
                                 </tr>
@@ -115,31 +117,38 @@
                                         </td>
                                         <td>
                                             @if($supplier->rfc)
-                                                <span class="text-xs text-text-muted font-mono">{{ $supplier->rfc }}</span>
+                                                <span class="text-sm font-mono text-text-secondary uppercase tracking-wider">{{ $supplier->rfc }}</span>
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-sm font-medium text-text-muted">—</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($supplier->category)
                                                 <x-dynamic-badge :value="$supplier->category" />
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-sm font-medium text-text-muted">—</span>
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="text-text-secondary">
+                                            <span class="text-sm font-medium text-text-secondary">
                                                 {{ $supplier->vendors_count }}
                                                 vendedor{{ $supplier->vendors_count !== 1 ? 'es' : '' }}
                                             </span>
                                         </td>
+                                        <td>
+                                            @if($supplier->active)
+                                                <x-badge variant="success">Activo</x-badge>
+                                            @else
+                                                <x-badge variant="danger">Inactivo</x-badge>
+                                            @endif
+                                        </td>
                                         <td class="max-w-0">
                                             @if($supplier->notes)
                                                 <div title="{{ $supplier->notes }}">
-                                                    <span class="text-text-secondary truncate">{{ $supplier->notes }}</span>
+                                                    <span class="text-sm font-normal text-text-secondary truncate">{{ $supplier->notes }}</span>
                                                 </div>
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-sm font-medium text-text-muted">—</span>
                                             @endif
                                         </td>
                                         <td class="actions pr-4 py-3" @click.stop>
@@ -155,6 +164,9 @@
                                                         </x-dropdown-link>
                                                         <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">
                                                             Editar
+                                                        </x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $supplier->id }})" icon="power">
+                                                            {{ $supplier->active ? 'Desactivar' : 'Activar' }}
                                                         </x-dropdown-link>
                                                         <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })" danger="true" icon="trash-2">
                                                             Eliminar
@@ -184,6 +196,9 @@
                                     </td>
                                     <td>
                                         <x-skeleton class="h-4 rounded w-20" />
+                                    </td>
+                                    <td>
+                                        <x-skeleton class="h-5 rounded w-16 rounded-full" />
                                     </td>
                                     <td>
                                         <x-skeleton class="h-4 rounded w-40" />
@@ -223,6 +238,7 @@
                                             <x-slot name="content">
                                                 <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})" icon="users">Ver vendedores</x-dropdown-link>
                                                 <x-dropdown-link as="button" wire:click="openEditSupplierModal({{ $supplier->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                <x-dropdown-link as="button" wire:click="toggleActive({{ $supplier->id }})" icon="power">{{ $supplier->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
                                                 <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
                                             </x-slot>
                                         </x-dropdown>
@@ -235,7 +251,7 @@
                                     <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
                                         <span class="flex items-center gap-1.5 truncate">
                                             <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0" />
-                                            <span class="truncate font-mono">{{ $supplier->rfc ?? 'Sin RFC' }}</span>
+                                            <span class="truncate font-mono uppercase">{{ $supplier->rfc ?? 'Sin RFC' }}</span>
                                         </span>
                                         <span class="flex items-center gap-1.5">
                                             <x-lucide-users class="w-3.5 h-3.5 shrink-0" />
@@ -246,11 +262,19 @@
                                     {{-- Datos y Detalles --}}
                                     <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                                         <div>
-                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
+                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
                                             @if($supplier->category)
                                                 <x-dynamic-badge :value="$supplier->category" />
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-xs font-medium text-text-muted">—</span>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Estado</p>
+                                            @if($supplier->active)
+                                                <x-badge variant="success">Activo</x-badge>
+                                            @else
+                                                <x-badge variant="danger">Inactivo</x-badge>
                                             @endif
                                         </div>
                                         @if($supplier->notes)
@@ -355,7 +379,7 @@
                         <input wire:model="rfc" type="text" class="input" maxlength="13" placeholder="XAXX010101000">
                     </x-form-field>
                     <x-form-field label="Categoría">
-                        <input wire:model="category" type="text" class="input" placeholder="Ej. Materiales">
+                        <x-custom-combobox wire:model="category" :options="$categories" placeholder="Seleccionar o escribir rubro..." />
                     </x-form-field>
                     <div class="col-span-2">
                         <x-form-field label="Notas">
@@ -373,38 +397,51 @@
         </x-modal>
     @endif
 
-    {{-- Vendors Modal --}}
+    {{-- Vendors Drawer --}}
     @if($showVendorsModal && $viewingSupplier)
-        <x-modal show="showVendorsModal" title="Vendedores" :subtitle="$viewingSupplier->trade_name" maxWidth="md">
-            <div class="p-6">
-
-                {{-- Existing vendors --}}
-                <div class="space-y-3 mb-4">
-                    @forelse($viewingSupplier->vendors as $vendor)
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-main">
-                            <div>
-                                <p class="text-body font-medium text-text-primary">{{ $vendor->name }}</p>
-                                <p class="text-xs text-text-muted">
-                                    {{ $vendor->phone ?? '' }}{{ $vendor->phone && $vendor->email ? ' · ' : '' }}{{ $vendor->email ?? '' }}
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <x-button wire:click="openEditVendor({{ $vendor->id }})" variant="icon-primary" icon="edit-2" title="Editar" />
-                                <x-button type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este vendedor? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteVendor', params: [{{ $vendor->id }}] })"
-                                    variant="icon-danger" icon="trash-2" title="Eliminar" />
+        <x-drawer show="showVendorsModal" title="Vendedores" :subtitle="$viewingSupplier->trade_name" maxWidth="md">
+            {{-- Existing vendors list --}}
+            <div class="space-y-3">
+                @forelse($viewingSupplier->vendors as $vendor)
+                    <div class="flex items-start justify-between p-3.5 rounded-xl border border-border/60 bg-surface-main/50 transition-colors hover:bg-surface-main">
+                        <div class="min-w-0 pr-2">
+                            <p class="text-sm font-bold text-text-primary truncate">{{ $vendor->name }}</p>
+                            <div class="flex flex-col gap-1 mt-1.5 text-xs text-text-secondary">
+                                @if($vendor->phone)
+                                    <span class="flex items-center gap-1.5 truncate">
+                                        <x-lucide-phone class="w-3.5 h-3.5 shrink-0 text-text-muted" />
+                                        <span>{{ $vendor->phone }}</span>
+                                    </span>
+                                @endif
+                                @if($vendor->email)
+                                    <span class="flex items-center gap-1.5 truncate">
+                                        <x-lucide-mail class="w-3.5 h-3.5 shrink-0 text-text-muted" />
+                                        <span>{{ $vendor->email }}</span>
+                                    </span>
+                                @endif
+                                @if(!$vendor->phone && !$vendor->email)
+                                    <span class="text-text-muted italic">Sin datos de contacto</span>
+                                @endif
                             </div>
                         </div>
-                    @empty
-                        <p class="text-body text-text-muted text-center py-4">Sin vendedores registrados</p>
-                    @endforelse
-                </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <x-button wire:click="openEditVendor({{ $vendor->id }})" variant="icon-primary" icon="edit-2" title="Editar" />
+                            <x-button type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este vendedor? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteVendor', params: [{{ $vendor->id }}] })"
+                                variant="icon-danger" icon="trash-2" title="Eliminar" />
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-12">
+                        <x-empty-state icon="users" title="Sin vendedores" message="Aún no hay vendedores registrados para este proveedor." />
+                    </div>
+                @endforelse
+            </div>
 
-                {{-- Add vendor form --}}
+            <x-slot name="footer">
                 @if($showAddVendor)
-                    <form wire:submit="saveVendor" class="space-y-3 p-4 rounded-lg border border-border bg-surface-main">
+                    <form wire:submit="saveVendor" class="space-y-3">
                         <x-form-field error="{{ $errors->first('vendorName') }}">
-                            <input wire:model="vendorName" type="text" class="input"
-                                placeholder="Nombre del vendedor *">
+                            <input wire:model="vendorName" type="text" class="input" placeholder="Nombre del vendedor *">
                         </x-form-field>
                         <div class="grid grid-cols-2 gap-3">
                             <x-form-field error="{{ $errors->first('vendorPhone') }}">
@@ -414,20 +451,20 @@
                                 <input wire:model="vendorEmail" type="email" class="input" placeholder="Correo">
                             </x-form-field>
                         </div>
-                        <div class="flex gap-2">
-                            <x-button type="submit" variant="primary" target="saveVendor" class="text-xs">
-                                {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar' }}
-                            </x-button>
+                        <div class="flex justify-end gap-2 pt-1">
                             <x-button wire:click="$set('showAddVendor', false)" variant="soft" class="text-xs">Cancelar</x-button>
+                            <x-button type="submit" variant="primary" target="saveVendor" class="text-xs">
+                                {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar Vendedor' }}
+                            </x-button>
                         </div>
                     </form>
                 @else
-                    <x-button wire:click="$set('showAddVendor', true)" variant="soft" icon="user-plus" class="w-full">
+                    <x-button wire:click="$set('showAddVendor', true)" variant="primary" icon="user-plus" class="w-full">
                         Agregar Vendedor
                     </x-button>
                 @endif
-            </div>
-        </x-modal>
+            </x-slot>
+        </x-drawer>
     @endif
     <x-confirm-modal />
 </div>

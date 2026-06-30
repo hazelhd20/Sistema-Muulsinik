@@ -77,10 +77,11 @@
                 >
                     <colgroup>
                         <col class="w-14">           {{-- Checkbox --}}
-                        <col class="w-[40%]">        {{-- Producto --}}
-                        <col class="w-[20%]">        {{-- Categoría --}}
-                        <col class="w-[10%]">        {{-- Medida --}}
-                        <col class="w-[15%]">        {{-- Fecha de Registro --}}
+                        <col class="w-4/12">         {{-- Producto --}}
+                        <col class="w-2/12">         {{-- Categoría --}}
+                        <col class="w-2/12">         {{-- Tipo --}}
+                        <col class="w-1/12">         {{-- Medida --}}
+                        <col class="w-2/12">         {{-- Fecha de Registro --}}
                         <col class="w-28">           {{-- Acciones --}}
                     </colgroup>
                     <thead class="bg-surface-th border-b border-border/40">
@@ -94,6 +95,7 @@
                                 <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <th>Categoría</th>
+                                <x-sortable-header field="item_type" label="Tipo" :sortField="$sortField" :sortDirection="$sortDirection" />
                                 <th>Medida</th>
                                 <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
                                 <th class="actions text-right pr-4">Acciones</th>
@@ -102,7 +104,7 @@
                         <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage">
                             @if($products->isEmpty() && $hasActiveFilters)
                                 <tr>
-                                    <td colspan="6" class="p-8">
+                                    <td colspan="7" class="p-8">
                                         <x-empty-state icon="search" title="No se encontraron productos" message="Intenta ajustar tus filtros de búsqueda." />
                                     </td>
                                 </tr>
@@ -124,22 +126,27 @@
                                             @if($product->category)
                                                 <x-dynamic-badge :value="$product->category->name" />
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-sm font-medium text-text-muted">—</span>
                                             @endif
-                                            <div class="mt-1">
-                                                <x-badge variant="outline" class="text-[10px]">
-                                                    {{ $product->item_type === 'labor' ? 'Mano de Obra' : ($product->item_type === 'service' ? 'Servicio' : 'Material') }}
-                                                </x-badge>
-                                            </div>
                                         </td>
-                                        <td class="text-body text-text-secondary">
+                                        <td class="text-sm font-medium text-text-secondary">
+                                            @php
+                                                $typeLabel = match($product->item_type) {
+                                                    'labor' => 'Mano de Obra',
+                                                    'service' => 'Servicio',
+                                                    default => 'Material',
+                                                };
+                                            @endphp
+                                            {{ $typeLabel }}
+                                        </td>
+                                        <td class="text-sm font-medium text-text-secondary">
                                             @if($product->measure && $product->measure->abbreviation)
-                                                <x-chip size="sm">{{ $product->measure->abbreviation }}</x-chip>
+                                                {{ strtolower($product->measure->abbreviation) }}
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-sm font-medium text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="text-text-muted text-small">
+                                        <td class="text-sm font-medium text-text-muted">
                                             {{ $product->created_at->format('d/m/Y') }}
                                         </td>
                                         <td class="actions pr-4 py-3" @click.stop>
@@ -242,25 +249,37 @@
                                     {{-- Datos y Detalles --}}
                                     <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                                         <div>
-                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
+                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
                                             @if($product->category)
                                                 <x-dynamic-badge :value="$product->category->name" />
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-xs font-medium text-text-muted">—</span>
                                             @endif
                                         </div>
                                         <div>
-                                            <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Unidad</p>
+                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Tipo</p>
+                                            @php
+                                                $typeLabel = match($product->item_type) {
+                                                    'labor' => 'Mano de Obra',
+                                                    'service' => 'Servicio',
+                                                    default => 'Material',
+                                                };
+                                            @endphp
+                                            <p class="text-xs font-medium text-text-secondary">{{ $typeLabel }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Unidad</p>
                                             @if($product->measure && $product->measure->abbreviation)
-                                                <x-chip size="sm">{{ $product->measure->abbreviation }}</x-chip>
+                                                <p class="text-xs font-medium text-text-secondary">{{ strtolower($product->measure->abbreviation) }}</p>
                                             @else
-                                                <span class="text-text-muted">—</span>
+                                                <span class="text-xs font-medium text-text-muted">—</span>
                                             @endif
                                         </div>
-                                        <div class="col-span-2">
-                                            <div class="flex items-center gap-1.5 text-xs text-text-secondary">
+                                        <div>
+                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Registro</p>
+                                            <div class="flex items-center gap-1 text-xs text-text-secondary mt-0.5">
                                                 <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted shrink-0" />
-                                                <span>Registro: {{ $product->created_at->format('d/m/Y') }}</span>
+                                                <span>{{ $product->created_at->format('d/m/Y') }}</span>
                                             </div>
                                         </div>
                                     </div>

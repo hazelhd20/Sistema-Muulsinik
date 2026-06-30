@@ -112,9 +112,9 @@
                                         @endif
                                         <span class="text-xs font-medium text-text-muted flex items-center">
                                             {{ number_format($item->quantity, 2) }}
-                                            <x-chip size="xs" class="ml-1.5">
+                                            <x-badge variant="secondary" size="xs" :normalCase="true" class="ml-1.5">
                                                 {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
-                                            </x-chip>
+                                            </x-badge>
                                         </span>
                                     </div>
                                 </div>

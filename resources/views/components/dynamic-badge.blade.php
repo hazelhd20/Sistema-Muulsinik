@@ -4,24 +4,24 @@
 ])
 @php
     $colors = [
-        'bg-primary-50 text-primary-700 border-primary-200/50',
-        'bg-purple-50 text-purple-700 border-purple-200/50',
-        'bg-indigo-50 text-indigo-700 border-indigo-200/50',
-        'bg-cyan-50 text-cyan-700 border-cyan-200/50',
-        'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/50',
-        'bg-violet-50 text-violet-700 border-violet-200/50',
-        'bg-sky-50 text-sky-700 border-sky-200/50',
-        'bg-teal-50 text-teal-700 border-teal-200/50',
-        'bg-pink-50 text-pink-700 border-pink-200/50',
-        'bg-slate-50 text-slate-700 border-slate-200/50',
+        'bg-primary-50 text-primary-700',
+        'bg-purple-50 text-purple-700',
+        'bg-indigo-50 text-indigo-700',
+        'bg-cyan-50 text-cyan-700',
+        'bg-fuchsia-50 text-fuchsia-700',
+        'bg-violet-50 text-violet-700',
+        'bg-sky-50 text-sky-700',
+        'bg-teal-50 text-teal-700',
+        'bg-pink-50 text-pink-700',
+        'bg-slate-50 text-slate-700',
     ];
     $hash = crc32($value ?? '');
     $colorClass = $colors[$hash % count($colors)];
     $sizeClasses = match($size) {
         'lg' => 'px-3 py-1.5 text-xs',
         'md' => '',
-        'sm' => 'px-2 py-0.5 text-[10px]',
-        'xs' => 'px-1.5 py-0.5 text-[9px]',
+        'sm' => 'px-2 py-0.5 text-2xs',
+        'xs' => 'px-1.5 py-0.5 text-3xs',
         default => '',
     };
 @endphp

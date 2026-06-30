@@ -16,6 +16,8 @@
     --font-size-body: clamp(0.8125rem, 0.3vw + 0.625rem, 0.875rem);
     --font-size-small: clamp(0.75rem, 0.2vw + 0.6rem, 0.8125rem);
     --font-size-xs: clamp(0.6875rem, 0.15vw + 0.56rem, 0.75rem);
+    --font-size-2xs: 0.625rem;
+    --font-size-3xs: 0.5625rem;
 
     /* Logo sidebar */
     --logo-size: clamp(1.625rem, 1.5vw + 0.875rem, 2.25rem);
