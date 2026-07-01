@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-main/30">
         <div class="flex items-center gap-3 min-w-0">
             <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
-            <span class="font-bold text-text-primary text-base truncate">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
+            <span class="font-bold text-text-primary text-sm sm:text-base truncate">{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</span>
             <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
         </div>
         <div class="flex items-center gap-2 shrink-0">
@@ -56,13 +56,13 @@
         {{-- Datos Financieros / Detalles --}}
         <div class="grid grid-cols-2 gap-x-4 gap-y-4 pt-3 border-t border-border/40">
             <div>
-                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Proyecto</p>
+                <p class="text-xs text-text-muted uppercase font-semibold tracking-wider mb-1">Proyecto</p>
                 <p class="text-sm font-medium text-text-primary truncate" title="{{ $req->project->name ?? 'Sin proyecto' }}">
                     {{ $req->project->name ?? 'Sin proyecto' }}
                 </p>
             </div>
             <div>
-                <p class="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">Proveedor</p>
+                <p class="text-xs text-text-muted uppercase font-semibold tracking-wider mb-1">Proveedor</p>
                 @php
                     $proveedorName = $req->vendor?->supplier?->trade_name 
                         ?? $req->vendor?->name 
@@ -75,9 +75,9 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-between pt-4 mt-1 border-t border-border/40">
+        <div class="flex items-center justify-between pt-3 mt-1 border-t border-border/40">
             <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total</p>
-            <p class="font-bold text-lg text-text-primary tabular-nums">
+            <p class="font-bold text-base sm:text-lg text-text-primary tabular-nums">
                 ${{ number_format($req->total, 2, '.', ',') }}
             </p>
         </div>

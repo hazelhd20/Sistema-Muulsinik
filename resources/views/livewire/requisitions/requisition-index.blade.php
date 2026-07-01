@@ -15,7 +15,7 @@
         </x-page-header>
 
         {{-- Tabs de Navegación --}}
-        <div class="tab-nav mb-6">
+        <div class="tab-nav mb-3 sm:mb-6">
             <button @click="tab = 'todas'" :class="tab === 'todas' ? 'active' : ''" class="tab-btn">
                 Requisiciones
             </button>

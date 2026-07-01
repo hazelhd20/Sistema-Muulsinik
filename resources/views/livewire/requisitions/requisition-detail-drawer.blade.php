@@ -40,7 +40,7 @@
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
                     <x-data-label label="Proyecto">
                         <div class="flex items-center gap-1.5">
                             <x-lucide-hard-hat class="w-3.5 h-3.5 text-text-muted/70" />
@@ -54,7 +54,7 @@
                         </div>
                     </x-data-label>
                     
-                    <div class="col-span-2">
+                    <div class="col-span-1 sm:col-span-2">
                         @php
                             $proveedorName = $detailRequisition->vendor?->supplier?->trade_name 
                                 ?? $detailRequisition->vendor?->name 
@@ -70,7 +70,7 @@
                     </div>
 
                     @if($detailRequisition->approver && in_array($detailRequisition->status, ['aprobada', 'rechazada']))
-                        <div class="col-span-2">
+                        <div class="col-span-1 sm:col-span-2">
                             <x-data-label label="{{ $detailRequisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por' }}">
                                 <div class="flex items-center gap-1.5">
                                     <x-dynamic-component :component="$detailRequisition->status === 'aprobada' ? 'lucide-user-check' : 'lucide-user-x'" class="w-3.5 h-3.5 text-text-muted/70" />
@@ -89,7 +89,7 @@
                 @endif
 
                 {{-- Partidas --}}
-                <div class="mt-8 mb-6">
+                <div class="mt-6">
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="text-xs font-semibold text-text-muted uppercase tracking-wider">
                             Productos
@@ -99,81 +99,95 @@
                             {{ $detailRequisition->items->count() }} {{ $detailRequisition->items->count() === 1 ? 'artículo' : 'artículos' }}
                         </span>
                     </div>
-                    <div class="flex flex-col gap-3">
-                        @foreach($detailRequisition->items as $item)
-                            <div class="flex justify-between items-center bg-surface-main/50 rounded-xl p-3.5">
-                                <div>
-                                    <p class="font-medium text-sm text-text-primary leading-snug mb-1">
-                                        {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
-                                    </p>
-                                    <div class="flex items-center gap-2 mt-1 flex-wrap">
-                                        @if($item->product?->category?->name)
+                    <div class="divide-y divide-border/60 border-t border-b border-border/60">
+                        @foreach($detailRequisition->items as $index => $item)
+                            <div class="py-2.5 flex flex-col gap-1.5">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-medium text-sm text-text-primary leading-snug break-words">
+                                            <span class="text-text-muted font-normal mr-1">#{{ $index + 1 }}</span>
+                                            {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
+                                        </p>
+                                    </div>
+                                    @if($item->product?->category?->name)
+                                        <div class="shrink-0 pt-0.5">
                                             <x-dynamic-badge :value="$item->product->category->name" size="xs" />
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="flex items-baseline justify-between gap-2 pt-0.5">
+                                    <div class="text-xs text-text-secondary font-medium">
+                                        <span class="text-text-primary font-semibold">{{ number_format($item->quantity, 2) }}</span>
+                                        <span class="uppercase">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
+                                        @if($item->unit_price > 0)
+                                            <span class="text-text-muted mx-1">×</span>
+                                            <span>${{ number_format($item->unit_price, 2) }}</span>
                                         @endif
-                                        <span class="text-xs font-medium text-text-muted flex items-center">
-                                            {{ number_format($item->quantity, 2) }}
-                                            <x-badge variant="secondary" size="xs" :normalCase="true" class="ml-1.5">
-                                                {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
-                                            </x-badge>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <span class="font-bold text-sm text-text-primary tabular-nums">
+                                            ${{ number_format($item->line_subtotal_computed ?? $item->line_total_computed ?? 0, 2) }}
                                         </span>
                                     </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-medium text-sm text-text-primary tabular-nums">
-                                        ${{ number_format($item->line_subtotal_computed, 2) }}
-                                    </p>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 </div>
 
-                {{-- Totales --}}
-                <div class="pt-4 mt-4 border-t border-border/40">
-                    <div class="flex justify-between items-center text-sm mb-2">
-                        <span class="text-text-muted">Subtotal</span>
+                {{-- Desglose contable rápido --}}
+                <div class="pt-3.5 flex flex-col gap-2 text-xs text-text-secondary">
+                    <div class="flex justify-between items-center">
+                        <span>Subtotal s/IVA</span>
                         <span class="font-medium text-text-primary tabular-nums">${{ number_format($detailRequisition->subtotal, 2) }}</span>
                     </div>
-                    <div class="flex justify-between items-center text-sm mb-4">
-                        <span class="text-text-muted">IVA (16%)</span>
+                    <div class="flex justify-between items-center">
+                        <span>IVA (16%)</span>
                         <span class="font-medium text-text-primary tabular-nums">${{ number_format($detailRequisition->tax_amount, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-4 border-t border-border">
-                        <span class="text-sm font-bold text-text-primary">Total Final</span>
-                        <span class="text-h3 font-bold text-text-primary tabular-nums">
-                            ${{ number_format($detailRequisition->total, 2) }}
-                        </span>
                     </div>
                 </div>
 
-                {{-- (Acciones movidas al slot :footer del drawer) --}}
                 </div>
             @endif
         </div>
         
         @if($detailRequisition)
         <x-slot:footer>
-            <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 w-full" wire:loading.remove wire:target="showDetail">
-                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" class="w-full sm:w-auto justify-center" wire:navigate>
-                    Ver Ficha Completa
-                </x-button>
+            <div class="flex flex-col gap-3 w-full" wire:loading.remove wire:target="showDetail">
+                {{-- Sticky Total Banner --}}
+                <div class="flex items-center justify-between pb-1">
+                    <div class="flex flex-col">
+                        <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Importe Total</span>
+                        <span class="text-xs text-text-secondary">IVA (16%) incluido</span>
+                    </div>
+                    <span class="text-xl font-extrabold text-text-primary tabular-nums tracking-tight">
+                        ${{ number_format($detailRequisition->total, 2) }}
+                    </span>
+                </div>
 
-                @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" class="w-full sm:w-auto justify-center">
-                        Rechazar
+                {{-- Action Buttons --}}
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 w-full">
+                    <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" class="flex-1 sm:flex-initial justify-center" wire:navigate>
+                        Ver Ficha Completa
                     </x-button>
-                    <x-button
-                        @click="$dispatch('confirm-action', {
-                            title: 'Aprobar Requisición',
-                            description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                            confirmLabel: 'Aprobar',
-                            variant: 'success',
-                            onConfirmCallback: () => $wire.approve({{ $detailRequisition->id }})
-                        })"
-                        variant="success" icon="check-circle" class="w-full sm:w-auto justify-center">
-                        Aprobar
-                    </x-button>
-                @endif
+
+                    @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
+                        <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" class="flex-1 sm:flex-initial justify-center">
+                            Rechazar
+                        </x-button>
+                        <x-button
+                            @click="$dispatch('confirm-action', {
+                                title: 'Aprobar Requisición',
+                                description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                                confirmLabel: 'Aprobar',
+                                variant: 'success',
+                                onConfirmCallback: () => $wire.approve({{ $detailRequisition->id }})
+                            })"
+                            variant="success" icon="check-circle" class="flex-1 sm:flex-initial justify-center">
+                            Aprobar
+                        </x-button>
+                    @endif
+                </div>
             </div>
         </x-slot:footer>
         @endif

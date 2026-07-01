@@ -93,7 +93,7 @@
 
                 {{-- Footer sticky (opcional) --}}
                 @if(isset($footer))
-                    <div class="shrink-0 px-6 py-4 border-t border-border bg-surface-card">
+                    <div class="shrink-0 px-6 py-4 border-t border-border/80 bg-surface-card shadow-[0_-6px_16px_rgba(0,0,0,0.05)] z-10 relative">
                         {{ $footer }}
                     </div>
                 @endif

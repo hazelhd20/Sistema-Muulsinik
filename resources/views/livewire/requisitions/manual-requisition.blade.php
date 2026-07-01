@@ -232,7 +232,7 @@
 
                                 <div class="mt-2 flex justify-between items-center pt-3 border-t border-border/50">
                                     <span class="text-sm font-medium text-text-secondary">Total Línea:</span>
-                                    <span class="font-bold text-h3 text-text-primary tabular-nums">
+                                    <span class="font-bold text-sm text-text-primary tabular-nums">
                                         ${{ number_format($item['total'], 2, '.', ',') }}
                                     </span>
                                 </div>
@@ -241,8 +241,9 @@
                 </div>
 
                 {{-- Totales (calculados en ManualRequisition::render()) --}}
-                <div class="flex justify-end px-6 pt-6 pb-8 border-t border-border/40">
-                    <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
+                <div class="p-5 sm:px-6 sm:py-6 border-t border-border/60">
+                    <div class="md:flex md:justify-end">
+                        <x-totals-summary class="w-full md:w-1/3 min-w-[280px]">
                         <div class="flex items-center justify-between gap-6">
                             <span class="text-sm text-text-muted">Subtotal s/IVA</span>
                             <span class="text-sm font-medium text-text-secondary tabular-nums">
@@ -256,8 +257,8 @@
                             </span>
                         </div>
                         <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
-                            <span class="text-base font-semibold text-text-primary">Total final</span>
-                            <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">
+                            <span class="text-sm sm:text-base font-bold text-text-primary">Total final</span>
+                            <span class="text-xl sm:text-2xl font-extrabold text-text-primary tabular-nums tracking-tight">
                                 ${{ number_format($totals['total'], 2, '.', ',') }}
                             </span>
                         </div>
@@ -271,6 +272,7 @@
                             </x-button>
                         </div>
                     </x-totals-summary>
+                    </div>
                 </div>
             @else
                 <div class="px-6 pb-6 pt-2">

@@ -588,7 +588,7 @@
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm font-medium text-text-secondary">Total c/IVA</span>
                                         <span
-                                            class="font-bold text-text-primary tabular-nums">${{ number_format($item['line_total'], 2, '.', ',') }}</span>
+                                            class="font-bold text-sm text-text-primary tabular-nums">${{ number_format($item['line_total'], 2, '.', ',') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -639,9 +639,9 @@
                             </div>
 
                             <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
-                                <span class="text-base font-semibold text-text-primary">Total final</span>
+                                <span class="text-sm sm:text-base font-bold text-text-primary">Total final</span>
                                 <span
-                                    class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                    class="text-xl sm:text-2xl font-extrabold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
 
                             {{-- Botón de Acción --}}

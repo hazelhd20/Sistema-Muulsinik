@@ -209,7 +209,7 @@
         <div class="flex-1 flex flex-col min-w-0">
 
             {{-- Top Bar ──────────────────────────── --}}
-            <header class="sticky top-0 z-35">
+            <header class="sticky top-0 z-35 bg-surface-main/90 backdrop-blur-md border-b border-border/40">
                 <div class="flex items-center justify-between h-14 px-5 lg:px-6 max-w-screen-2xl mx-auto w-full">
 
                     {{-- Left: Hamburger (mobile) + Breadcrumbs (desktop) --}}

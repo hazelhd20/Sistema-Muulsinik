@@ -10,8 +10,8 @@
 ])
 
 <div @class([
-    'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-2 transition-all duration-150',
-    'sticky top-0 z-30 bg-surface-main/85 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-4' => $sticky,
+    'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-6 pb-1 sm:pb-2 transition-all duration-150',
+    'sticky top-14 z-30 bg-surface-main/90 backdrop-blur-md border-b border-border/40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-3 pb-3 sm:pt-4 sm:pb-4' => $sticky,
 ])>
     <div class="flex-1 min-w-0">
         {{-- Nivel Superior: Breadcrumbs teletransportados a Topbar (Desktop) y locales en Móvil --}}

@@ -11,7 +11,7 @@
         <x-slot:actions>
             {{-- Acción secundaria siempre visible --}}
             <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary"
-                icon="printer">
+                icon="printer" class="flex-1 sm:flex-initial justify-center">
                 Imprimir
             </x-button>
 
@@ -25,7 +25,7 @@
                                     variant: 'success',
                                     action: 'submitForApproval',
                                     params: []
-                                })" variant="success" icon="check-circle">
+                                })" variant="success" icon="check-circle" class="flex-1 sm:flex-initial justify-center">
                         Aprobar Requisición
                     </x-button>
                 @else
@@ -36,7 +36,7 @@
                                     variant: 'primary',
                                     action: 'submitForApproval',
                                     params: []
-                                })" variant="primary" icon="send">
+                                })" variant="primary" icon="send" class="flex-1 sm:flex-initial justify-center">
                         Solicitar Aprobación
                     </x-button>
                 @endif
@@ -44,7 +44,7 @@
 
             {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
             @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
-                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal">
+                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal" class="flex-1 sm:flex-initial justify-center">
                     Rechazar
                 </x-button>
                 <x-button @click="$dispatch('confirm-action', {
@@ -54,7 +54,7 @@
                             variant: 'success',
                             action: 'approve',
                             params: []
-                        })" variant="success" icon="check-circle">
+                        })" variant="success" icon="check-circle" class="flex-1 sm:flex-initial justify-center">
                     Aprobar
                 </x-button>
             @endif
@@ -206,46 +206,38 @@
                 @endif
             </div>
 
-            {{-- Mobile Cards --}}
-            <div class="md:hidden flex flex-col divide-y divide-border/40 border-t border-border/40">
+            {{-- Mobile Cards (Clean Receipt Row Pattern) --}}
+            <div class="md:hidden divide-y divide-border/60 border-t border-border/40">
                 @if($requisition->items->isNotEmpty())
-                    @foreach($requisition->items as $item)
-                        <div class="p-4 flex flex-col gap-3 bg-surface-card hover:bg-surface-hover transition-colors duration-150">
-                            <div class="flex justify-between items-start gap-4">
-                                <div class="min-w-0">
-                                    <p class="font-semibold text-sm text-text-primary break-words">
+                    @foreach($requisition->items as $index => $item)
+                        <div class="py-3 px-4 sm:py-3.5 sm:px-5 flex flex-col gap-1.5 hover:bg-surface-hover/50 transition-colors duration-150">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-medium text-sm text-text-primary leading-snug break-words">
+                                        <span class="text-text-muted font-normal mr-1">#{{ $index + 1 }}</span>
                                         {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                     </p>
-                                    <div class="mt-1">
-                                        @if($item->product?->category?->name)
-                                            <x-dynamic-badge :value="$item->product->category->name" size="xs" />
-                                        @else
-                                            <span class="text-xs text-text-muted">—</span>
-                                        @endif
-                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4 mt-1 pt-3 border-t border-border/40">
-                                <x-data-label label="Cantidad">
-                                    <div class="flex items-center gap-1.5 mt-0.5">
-                                        <span>{{ number_format($item->quantity, 2) }}</span>
-                                        <x-badge variant="secondary" size="xs">
-                                            {{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}
-                                        </x-badge>
+                                @if($item->product?->category?->name)
+                                    <div class="shrink-0 pt-0.5">
+                                        <x-dynamic-badge :value="$item->product->category->name" size="xs" />
                                     </div>
-                                </x-data-label>
-
-                                <x-data-label label="Precio Unitario" align="right">
-                                    ${{ number_format($item->unit_price, 2) }}
-                                </x-data-label>
+                                @endif
                             </div>
 
-                            <div class="flex justify-between items-center mt-1 pt-3 border-t border-border/40">
-                                <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Línea</span>
-                                <span class="font-bold text-lg text-text-primary tabular-nums">
-                                    ${{ number_format($item->line_total_computed, 2) }}
-                                </span>
+                            {{-- Fila de cálculo tipo factura/recibo --}}
+                            <div class="flex items-baseline justify-between pt-0.5 gap-2">
+                                <div class="text-xs text-text-secondary font-medium">
+                                    <span class="text-text-primary font-semibold">{{ number_format($item->quantity, 2) }}</span>
+                                    <span class="uppercase">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
+                                    <span class="text-text-muted mx-1">×</span>
+                                    <span>${{ number_format($item->unit_price, 2) }}</span>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <span class="font-bold text-sm text-text-primary tabular-nums">
+                                        ${{ number_format($item->line_total_computed, 2) }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -257,38 +249,40 @@
             </div>
 
             {{-- Totales --}}
-            <div class="flex justify-end px-6 pt-6 pb-8 border-t border-border/40">
-                <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
-                    <div class="flex items-center justify-between gap-6">
-                        <span class="text-sm text-text-secondary">Subtotal</span>
-                        <span class="text-sm font-medium text-text-primary tabular-nums">
-                            ${{ number_format($requisition->subtotal, 2) }}
-                        </span>
-                    </div>
-
-                    @php $discountTotal = $requisition->items->sum('line_discount_total'); @endphp
-                    @if($discountTotal > 0)
+            <div class="p-5 sm:px-6 sm:py-6 border-t border-border/60">
+                <div class="md:flex md:justify-end">
+                    <x-totals-summary class="w-full md:w-1/3 min-w-[280px]">
                         <div class="flex items-center justify-between gap-6">
-                            <span class="text-sm text-danger">Descuento</span>
-                            <span class="text-sm font-medium text-danger tabular-nums">
-                                -${{ number_format($discountTotal, 2) }}
+                            <span class="text-sm text-text-secondary">Subtotal</span>
+                            <span class="text-sm font-medium text-text-primary tabular-nums">
+                                ${{ number_format($requisition->subtotal, 2) }}
                             </span>
                         </div>
-                    @endif
 
-                    <div class="flex items-center justify-between gap-6">
-                        <span class="text-sm text-text-secondary">IVA</span>
-                        <span class="text-sm font-medium text-text-primary tabular-nums">
-                            ${{ number_format($requisition->tax_amount, 2) }}
-                        </span>
-                    </div>
-                    <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border/40">
-                        <span class="text-base font-semibold text-text-primary">Total final</span>
-                        <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">
-                            ${{ number_format($requisition->total, 2) }}
-                        </span>
-                    </div>
-                </x-totals-summary>
+                        @php $discountTotal = $requisition->items->sum('line_discount_total'); @endphp
+                        @if($discountTotal > 0)
+                            <div class="flex items-center justify-between gap-6">
+                                <span class="text-sm text-danger">Descuento</span>
+                                <span class="text-sm font-medium text-danger tabular-nums">
+                                    -${{ number_format($discountTotal, 2) }}
+                                </span>
+                            </div>
+                        @endif
+
+                        <div class="flex items-center justify-between gap-6">
+                            <span class="text-sm text-text-secondary">IVA</span>
+                            <span class="text-sm font-medium text-text-primary tabular-nums">
+                                ${{ number_format($requisition->tax_amount, 2) }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border/60">
+                            <span class="text-sm sm:text-base font-bold text-text-primary">Total final</span>
+                            <span class="text-xl sm:text-2xl font-extrabold text-text-primary tabular-nums tracking-tight">
+                                ${{ number_format($requisition->total, 2) }}
+                            </span>
+                        </div>
+                    </x-totals-summary>
+                </div>
             </div>
         </x-card>
 
