@@ -9,10 +9,10 @@
      * Clases pre-calculadas en PHP para no mezclar expresiones PHP
      * dentro de atributos Alpine (:class usa sólo JS).
      */
-    $panelWidth = $columns >= 2 ? 'w-[34rem]' : 'w-80 sm:w-[26rem]';
+    $panelWidth = $columns >= 2 ? 'w-[calc(100vw-2.5rem)] sm:w-[34rem]' : 'w-[calc(100vw-2.5rem)] sm:w-[26rem]';
     $classDown  = $align === 'right' ? 'top-full mt-2 origin-top-right'    : 'top-full mt-2 origin-top-left';
     $classUp    = $align === 'right' ? 'bottom-full mb-2 origin-bottom-right' : 'bottom-full mb-2 origin-bottom-left';
-    $gridClass  = $columns >= 2 ? 'grid grid-cols-2 gap-x-5 gap-y-4' : 'space-y-4';
+    $gridClass  = $columns >= 2 ? 'grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-x-5 sm:gap-y-4' : 'space-y-4';
 @endphp
 
 <div
@@ -60,7 +60,7 @@
 >
     {{-- ── Trigger ── --}}
     <div x-ref="trigger" @click="toggle()" :aria-expanded="open.toString()">
-        <x-button type="button" variant="soft" icon="filter" class="shrink-0"
+        <x-button type="button" variant="soft" icon="filter" class="shrink-0 !bg-surface-card md:!bg-secondary-light shadow-sm md:shadow-none"
             x-bind:class="{ 'bg-primary-50 border-primary-200 text-primary-700': {{ $activeCount }} > 0 || open }">
             Filtros
             @if($activeCount > 0)

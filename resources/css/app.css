@@ -574,20 +574,45 @@
     /* ── Section row (Stripe settings pattern) ──
        Two-column: left = label+description, right = control
     */
+    /* ── Section row variants ──
+       Ambas variantes comparten borde inferior entre filas.
+       El contenedor padre debe ser .space-y-0 para que los
+       selectores :first-child / :last-child funcionen correctamente
+       sin importar si se mezclan los dos tipos de fila.
+    */
     .section-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
         align-items: start;
-        padding: 1.375rem 0;
+        padding: 1.25rem 0;
         border-bottom: 1px solid var(--color-border);
     }
 
-    .section-row:first-child {
+    @media (max-width: 640px) {
+        .section-row {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+    }
+
+    .section-row-stacked {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.25rem 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    /* Eliminar padding superior del primer elemento y borde inferior del último,
+       sin importar qué variante sea. */
+    .space-y-0 > .section-row:first-child,
+    .space-y-0 > .section-row-stacked:first-child {
         padding-top: 0;
     }
 
-    .section-row:last-child {
+    .space-y-0 > .section-row:last-child,
+    .space-y-0 > .section-row-stacked:last-child {
         padding-bottom: 0;
         border-bottom: none;
     }
@@ -604,6 +629,12 @@
         color: var(--color-text-muted);
         margin-top: 0.25rem;
         line-height: 1.5;
+    }
+
+    /* Cuando section-row-desc aparece sin un section-row-label precedente
+       (p.ej. en Términos y condiciones), no necesita margin-top. */
+    .section-row-stacked > .section-row-desc:first-child {
+        margin-top: 0;
     }
 
     @media (max-width: 640px) {
@@ -782,6 +813,18 @@
 
     .tab-btn.active i[data-lucide] {
         color: #ffffff;
+    }
+
+    @media (max-width: 640px) {
+        .tab-nav {
+            display: flex;
+            width: 100%;
+        }
+        .tab-btn {
+            flex: 1 1 0%;
+            justify-content: center;
+            padding: 0.5rem 0.5rem;
+        }
     }
 
     /* ── Kbd shortcut indicator (Linear-inspired) ── */

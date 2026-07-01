@@ -84,7 +84,7 @@
         <x-card class="mb-6">
             <x-card.header title="Detalles Generales" />
             <x-card.body>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                     <x-data-label label="Fecha">
                         <div class="flex items-center gap-1.5">
                             <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />

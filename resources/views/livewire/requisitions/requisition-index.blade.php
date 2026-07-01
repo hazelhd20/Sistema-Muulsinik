@@ -4,11 +4,11 @@
         <x-page-header subtitle="Compras" title="Requisiciones" :sticky="true">
             <x-slot:actions>
                 <x-button href="{{ route('requisiciones.manual', ['source' => $tab]) }}" variant="secondary" icon="plus"
-                    wire:navigate>
+                    class="flex-1 sm:flex-initial justify-center" wire:navigate>
                     Nueva Manual
                 </x-button>
                 <x-button href="{{ route('requisiciones.upload', ['source' => $tab]) }}" variant="primary"
-                    icon="scan-line" wire:navigate>
+                    icon="scan-line" class="flex-1 sm:flex-initial justify-center" wire:navigate>
                     Subir Cotización
                 </x-button>
             </x-slot:actions>
@@ -44,9 +44,9 @@
 
                 @if($requisitions->isNotEmpty() || $hasActiveFilters)
                     {{-- Header Group (Search + Filters + Chips) --}}
-                    <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+                    <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                         {{-- Filters Bar --}}
-                        <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+                        <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                             {{-- Search: compact width --}}
                             <div class="flex-1 min-w-0">
                                 <x-search-input wire:model.live.debounce.300ms="search"
@@ -105,7 +105,7 @@
 
                         {{-- Active Chips Row --}}
                         @if($activeCount > 0)
-                            <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                            <div class="flex flex-wrap items-center gap-2 pb-3 md:px-6 md:pb-4 pt-1">
                                 @if($statusFilter)
                                     @php
                                         $statusNames = ['borrador' => 'Borrador', 'pendiente' => 'Pendiente', 'aprobada' => 'Aprobada', 'rechazada' => 'Rechazada'];

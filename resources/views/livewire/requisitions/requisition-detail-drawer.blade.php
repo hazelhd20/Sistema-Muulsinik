@@ -153,13 +153,13 @@
         
         @if($detailRequisition)
         <x-slot:footer>
-            <div class="flex justify-end gap-3" wire:loading.remove wire:target="showDetail">
-                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" wire:navigate>
+            <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 w-full" wire:loading.remove wire:target="showDetail">
+                <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" class="w-full sm:w-auto justify-center" wire:navigate>
                     Ver Ficha Completa
                 </x-button>
 
                 @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle">
+                    <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" class="w-full sm:w-auto justify-center">
                         Rechazar
                     </x-button>
                     <x-button
@@ -170,7 +170,7 @@
                             variant: 'success',
                             onConfirmCallback: () => $wire.approve({{ $detailRequisition->id }})
                         })"
-                        variant="success" icon="check-circle">
+                        variant="success" icon="check-circle" class="w-full sm:w-auto justify-center">
                         Aprobar
                     </x-button>
                 @endif

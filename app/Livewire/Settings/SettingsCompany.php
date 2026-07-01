@@ -18,6 +18,7 @@ class SettingsCompany extends Component
     public string $company_email = '';
     public ?string $company_logo = null;
     public $newLogo = null;
+    public bool $remove_logo = false;
 
     public function mount(): void
     {
@@ -27,6 +28,13 @@ class SettingsCompany extends Component
         $this->company_phone = Setting::get('company_phone', '');
         $this->company_email = Setting::get('company_email', '');
         $this->company_logo = Setting::get('company_logo');
+    }
+
+    public function updatedNewLogo(): void
+    {
+        if ($this->newLogo) {
+            $this->remove_logo = false;
+        }
     }
 
     public function saveEmpresa(): void
@@ -45,11 +53,22 @@ class SettingsCompany extends Component
             'newLogo' => 'nullable|image|max:1024',
         ]);
 
-        if ($this->newLogo) {
+        if ($this->remove_logo && ! $this->newLogo) {
+            if ($this->company_logo && Storage::disk('public')->exists($this->company_logo)) {
+                Storage::disk('public')->delete($this->company_logo);
+            }
+            Setting::set('company_logo', null, 'string');
+            $this->company_logo = null;
+            $this->remove_logo = false;
+        } elseif ($this->newLogo) {
+            if ($this->company_logo && Storage::disk('public')->exists($this->company_logo)) {
+                Storage::disk('public')->delete($this->company_logo);
+            }
             $path = $this->newLogo->store('company', 'public');
             $this->company_logo = $path;
             Setting::set('company_logo', $path, 'string');
             $this->newLogo = null;
+            $this->remove_logo = false;
         }
 
         Setting::set('company_name', $this->company_name, 'string');
@@ -70,15 +89,8 @@ class SettingsCompany extends Component
             return;
         }
 
-        if ($this->company_logo && Storage::disk('public')->exists($this->company_logo)) {
-            Storage::disk('public')->delete($this->company_logo);
-        }
-
-        Setting::set('company_logo', null, 'string');
-        $this->company_logo = null;
-        Setting::clearCache();
-
-        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Logo eliminado.']);
+        $this->remove_logo = true;
+        $this->newLogo = null;
     }
 
     public function render()

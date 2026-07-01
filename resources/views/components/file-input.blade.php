@@ -28,6 +28,8 @@
         get fileName() { return this.files.length ? this.files[0].name : null; },
         get fileSize() { return this.files.length ? this.files[0].size : null; },
         get fileExt() { return this.files.length ? this.files[0].ext : null; },
+        get fileUrl() { return this.files.length ? this.files[0].url : null; },
+        get fileType() { return this.files.length ? this.files[0].type : null; },
         get iconData() { return this.getIconData(this.fileExt); },
         
         getIconData(ext) {
@@ -148,8 +150,8 @@
         @change="handleFile($event)"
         x-on:livewire-upload-start="uploading = true; progress = 0"
         x-on:livewire-upload-progress="progress = $event.detail.progress"
-        x-on:livewire-upload-finish="uploading = false; files.forEach(f => f.isUploading = false);"
-        x-on:livewire-upload-error="uploading = false; files.forEach(f => f.isUploading = false);"
+        x-on:livewire-upload-finish="progress = 100; setTimeout(() => { uploading = false; files.forEach(f => f.isUploading = false); }, 300);"
+        x-on:livewire-upload-error="uploading = false; progress = 0; files.forEach(f => f.isUploading = false);"
     >
 
     @if($variant === 'dropzone')
@@ -245,8 +247,8 @@
         {{-- ═══════ COMPACT-INLINE VARIANT (thumbnail preview beside picker) ═══════ --}}
         <div class="flex items-center gap-3">
             {{-- Inline thumbnail --}}
-            <div x-show="fileName && previewUrl && previewType && previewType.startsWith('image/')" x-cloak class="relative shrink-0">
-                <img :src="previewUrl" class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-card" />
+            <div x-show="fileName && fileUrl && fileType && fileType.startsWith('image/')" x-cloak class="relative shrink-0">
+                <img :src="fileUrl" class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1 bg-surface-card" />
                 <button type="button" @click="removeFile()"
                     class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-surface-hover transition">
                     <x-lucide-x class="w-3.5 h-3.5" wire:ignore />
@@ -254,7 +256,7 @@
             </div>
 
             {{-- Non-image file selected --}}
-            <div x-show="fileName && !(previewType && previewType.startsWith('image/'))" x-cloak class="relative shrink-0">
+            <div x-show="fileName && !(fileType && fileType.startsWith('image/'))" x-cloak class="relative shrink-0">
                 <div class="h-16 w-16 rounded-lg flex items-center justify-center border border-border bg-surface-card"
                      :class="iconData.bg">
                     <div :class="iconData.color" class="flex items-center justify-center">

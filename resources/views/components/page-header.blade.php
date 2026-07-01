@@ -70,7 +70,7 @@
     
     {{-- Bloque Derecho: Acciones --}}
     @if(isset($actions))
-        <div class="flex flex-wrap items-center gap-2 self-start sm:self-center shrink-0 pt-1 sm:pt-0">
+        <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-start sm:justify-end shrink-0 pt-2 sm:pt-0">
             {{ $actions }}
         </div>
     @endif
