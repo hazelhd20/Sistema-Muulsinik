@@ -26,10 +26,10 @@
                     {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 text-text-primary pr-4">
+                        <h3 class="text-h2 font-bold text-text-primary pr-4">
                             {{ $detailRequisition->number ?? 'REQ-' . str_pad($detailRequisition->id, 5, '0', STR_PAD_LEFT) }}
                         </h3>
-                        <div class="flex items-center gap-1.5 mt-1 text-sm text-text-muted">
+                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
                             <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
                             <span>Creada el {{ $detailRequisition->date?->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}</span>
                         </div>
@@ -91,10 +91,10 @@
                 {{-- Partidas --}}
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                        <h4 class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             Productos
                         </h4>
-                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
                             <x-lucide-package class="w-3.5 h-3.5" />
                             {{ $detailRequisition->items->count() }} {{ $detailRequisition->items->count() === 1 ? 'artículo' : 'artículos' }}
                         </span>
@@ -104,7 +104,7 @@
                             <div class="py-2.5 flex flex-col gap-1.5">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0 flex-1">
-                                        <p class="font-medium text-sm text-text-primary leading-snug break-words">
+                                        <p class="font-medium text-body text-text-primary leading-snug break-words">
                                             <span class="text-text-muted font-normal mr-1">#{{ $index + 1 }}</span>
                                             {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
                                         </p>
@@ -116,7 +116,7 @@
                                     @endif
                                 </div>
                                 <div class="flex items-baseline justify-between gap-2 pt-0.5">
-                                    <div class="text-xs text-text-secondary font-medium">
+                                    <div class="text-small text-text-secondary font-medium">
                                         <span class="text-text-primary font-semibold">{{ number_format($item->quantity, 2) }}</span>
                                         <span class="uppercase">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
                                         @if($item->unit_price > 0)
@@ -125,7 +125,7 @@
                                         @endif
                                     </div>
                                     <div class="text-right shrink-0">
-                                        <span class="font-bold text-sm text-text-primary tabular-nums">
+                                        <span class="font-bold text-body text-text-primary tabular-nums">
                                             ${{ number_format($item->line_subtotal_computed ?? $item->line_total_computed ?? 0, 2) }}
                                         </span>
                                     </div>
@@ -136,7 +136,7 @@
                 </div>
 
                 {{-- Desglose contable rápido --}}
-                <div class="pt-3.5 flex flex-col gap-2 text-xs text-text-secondary">
+                <div class="pt-3.5 flex flex-col gap-2 text-small text-text-secondary">
                     <div class="flex justify-between items-center">
                         <span>Subtotal s/IVA</span>
                         <span class="font-medium text-text-primary tabular-nums">${{ number_format($detailRequisition->subtotal, 2) }}</span>
@@ -157,10 +157,10 @@
                 {{-- Sticky Total Banner --}}
                 <div class="flex items-center justify-between pb-1">
                     <div class="flex flex-col">
-                        <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Importe Total</span>
-                        <span class="text-xs text-text-secondary">IVA (16%) incluido</span>
+                        <span class="text-xs-fluid font-bold text-text-muted uppercase tracking-wider">Importe Total</span>
+                        <span class="text-small text-text-secondary">IVA (16%) incluido</span>
                     </div>
-                    <span class="text-xl font-extrabold text-text-primary tabular-nums tracking-tight">
+                    <span class="text-h1 font-extrabold text-text-primary tabular-nums tracking-tight">
                         ${{ number_format($detailRequisition->total, 2) }}
                     </span>
                 </div>

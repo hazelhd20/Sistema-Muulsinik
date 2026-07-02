@@ -13,12 +13,12 @@
                             </div>
                             <div class="min-w-0 flex-1 sm:flex-initial">
                                 <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="text-sm font-semibold text-text-primary">Procesando cotización</p>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold tracking-wide bg-primary-50 text-primary-700">
+                                    <p class="text-body font-semibold text-text-primary">Procesando cotización</p>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs-fluid font-bold tracking-wide bg-primary-50 text-primary-700">
                                         Analizando
                                     </span>
                                 </div>
-                                <p class="text-xs text-text-muted truncate max-w-md mt-0.5">
+                                <p class="text-small text-text-muted truncate max-w-md mt-0.5">
                                     Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
@@ -44,14 +44,14 @@
                                     $title = $supplierName ? "Borrador: {$supplierName}" : "Borrador de Requisición listo";
                                 @endphp
                                 <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="text-sm font-semibold text-text-primary">{{ $title }}</p>
+                                    <p class="text-body font-semibold text-text-primary">{{ $title }}</p>
                                     @if($total)
-                                        <span class="text-[11px] font-semibold text-text-primary bg-surface-main px-2 py-0.5 rounded-md tabular-nums">
+                                        <span class="text-xs font-bold text-text-primary bg-surface-main px-2 py-0.5 rounded-md tabular-nums">
                                             ${{ number_format((float)$total, 2) }}
                                         </span>
                                     @endif
                                 </div>
-                                <p class="text-xs text-text-muted truncate max-w-md mt-0.5">
+                                <p class="text-small text-text-muted truncate max-w-md mt-0.5">
                                     Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>
@@ -70,17 +70,17 @@
                                 @endphp
                                 <div class="flex items-center gap-2 mb-1">
                                     <p class="text-sm font-semibold text-text-primary">Error de extracción</p>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold tracking-wide bg-danger-light text-danger" title="{{ $pq->error_message }}">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs-fluid font-bold tracking-wide bg-danger-light text-danger" title="{{ $pq->error_message }}">
                                         <x-dynamic-component :component="'lucide-' . $badgeIcon" class="w-3 h-3" wire:ignore />
                                         {{ $badgeText }}
                                     </span>
                                 </div>
                                 @if($pq->error_message)
-                                    <p class="text-xs text-text-secondary font-medium mt-0.5 truncate max-w-[260px] sm:max-w-sm" title="{{ $pq->error_message }}">
+                                    <p class="text-small text-text-secondary font-medium mt-0.5 truncate max-w-[260px] sm:max-w-sm" title="{{ $pq->error_message }}">
                                         {{ $pq->error_message }}
                                     </p>
                                 @endif
-                                <p class="text-xs text-text-muted truncate max-w-md mt-0.5">
+                                <p class="text-small text-text-muted truncate max-w-md mt-0.5">
                                     Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
                                 </p>
                             </div>

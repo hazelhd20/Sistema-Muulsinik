@@ -93,7 +93,7 @@
                                 <x-lucide-file-search class="w-6 h-6 text-primary-600" />
                             </div>
                         </div>
-                        <h2 class="text-h3 font-medium text-text-primary mb-2 tracking-tight">Analizando documento</h2>
+                        <h2 class="text-h2 font-bold text-text-primary mb-2 tracking-tight">Analizando documento</h2>
                         <p class="text-sm text-text-muted max-w-xs mx-auto leading-relaxed mb-4">
                             Extrayendo datos con inteligencia artificial.<br>
                             Puede tomar hasta 30 segundos.
@@ -122,7 +122,7 @@
                         </div>
 
                         {{-- Título y descripción --}}
-                        <h2 class="text-h3 font-medium text-text-primary mb-2 tracking-tight">Error al procesar</h2>
+                        <h2 class="text-h2 font-bold text-text-primary mb-2 tracking-tight">Error al procesar</h2>
                         <p class="text-sm text-text-muted mb-6">No fue posible extraer los datos del documento
                             automáticamente.</p>
 
@@ -262,7 +262,7 @@
         <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
             <x-card class="mb-6">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-                    <h3 class="font-medium text-text-primary tracking-tight">Información General</h3>
+                    <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Información General</h3>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
                         <x-button type="button"
@@ -348,7 +348,7 @@
             <x-card class="mb-6 overflow-hidden">
                 <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <h3 class="font-medium text-text-primary tracking-tight">Productos</h3>
+                        <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
                             <span
                                 class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
@@ -370,7 +370,7 @@
                         <table class="w-full text-left table-inputs-compact">
                             <thead>
                                 <tr
-                                    class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                    class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                     <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[26%]">Producto</th>
                                     <th class="px-4 py-3 whitespace-nowrap w-[13%]">Categoría</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap w-[8%]">Cant.</th>
@@ -581,14 +581,14 @@
 
                                 <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm text-text-muted">Subtotal</span>
+                                        <span class="text-small text-text-muted">Subtotal</span>
                                         <span
-                                            class="text-sm font-medium">${{ number_format($item['line_subtotal'], 2, '.', ',') }}</span>
+                                            class="text-small font-medium">${{ number_format($item['line_subtotal'], 2, '.', ',') }}</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm font-medium text-text-secondary">Total c/IVA</span>
+                                        <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
                                         <span
-                                            class="font-bold text-sm text-text-primary tabular-nums">${{ number_format($item['line_total'], 2, '.', ',') }}</span>
+                                            class="font-bold text-body text-text-primary tabular-nums">${{ number_format($item['line_total'], 2, '.', ',') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -608,12 +608,12 @@
                         <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                             <div class="flex flex-col gap-3">
                                 @if($hasAnyDiscount)
-                                    <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center justify-between text-small">
                                         <span class="text-text-muted">Subtotal bruto</span>
                                         <span
                                             class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalBruto, 2, '.', ',') }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between text-sm text-success">
+                                    <div class="flex items-center justify-between text-small text-success">
                                         <span class="flex items-center gap-1.5 font-medium">
                                             <x-lucide-tag class="w-3.5 h-3.5" wire:ignore />
                                             Descuento total
@@ -623,12 +623,12 @@
                                     </div>
                                     <div class="h-px bg-border/40 my-1"></div>
                                 @endif
-                                <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">Subtotal s/IVA</span>
                                     <span
                                         class="font-medium text-text-secondary tabular-nums">${{ number_format($subtotalSinIva, 2, '.', ',') }}</span>
                                 </div>
-                                <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center justify-between text-small">
                                     <span class="text-text-muted">IVA (16%)</span>
                                     <span class="font-medium text-text-muted tabular-nums">
                                         @if($totalIva > 0) ${{ number_format($totalIva, 2, '.', ',') }}
@@ -639,9 +639,9 @@
                             </div>
 
                             <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
-                                <span class="text-sm sm:text-base font-bold text-text-primary">Total final</span>
+                                <span class="text-h3 font-bold text-text-primary">Total final</span>
                                 <span
-                                    class="text-xl sm:text-2xl font-extrabold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
+                                    class="text-h1 font-extrabold text-text-primary tabular-nums tracking-tight">${{ number_format($totalConIva, 2, '.', ',') }}</span>
                             </div>
 
                             {{-- Botón de Acción --}}

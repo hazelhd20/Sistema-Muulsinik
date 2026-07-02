@@ -7,28 +7,28 @@
     <td class="actions text-center pl-4 pr-2" @click.stop="$event.stopPropagation()">
         <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
     </td>
-    <td class="text-sm font-bold text-text-primary truncate max-w-0" title="{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}">
+    <td class="text-body font-bold text-text-primary truncate max-w-0" title="{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}">
         {{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
     </td>
-    <td class="text-sm font-medium truncate max-w-0 text-text-secondary" title="{{ $req->project->name ?? '—' }}">
+    <td class="text-body font-medium truncate max-w-0 text-text-secondary" title="{{ $req->project->name ?? '—' }}">
         {{ $req->project->name ?? '—' }}
     </td>
-    <td class="text-sm font-medium text-text-secondary">
+    <td class="text-body font-medium text-text-secondary">
         {{ $req->date?->format('d/m/Y') }}
     </td>
-    <td class="text-sm font-medium truncate max-w-0 text-text-secondary" title="{{ $req->creator->name ?? '—' }}">
+    <td class="text-body font-medium truncate max-w-0 text-text-secondary" title="{{ $req->creator->name ?? '—' }}">
         {{ $req->creator->name ?? '—' }}
     </td>
-    <td class="text-sm font-medium truncate max-w-0 text-text-secondary" title="{{ $req->supplier_name }}">
+    <td class="text-body font-medium truncate max-w-0 text-text-secondary" title="{{ $req->supplier_name }}">
         {{ $req->supplier_name }}
     </td>
-    <td class="text-sm font-bold text-right tabular-nums text-text-primary numeric">
+    <td class="text-body font-bold text-right tabular-nums text-text-primary numeric">
         ${{ number_format($req->total, 2, '.', ',') }}
     </td>
     <td class="py-3">
         <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
         @if($req->status === 'rechazada' && $req->rejection_comment)
-            <p class="text-[10px] text-danger mt-1 truncate max-w-0" title="{{ $req->rejection_comment }}">
+            <p class="text-xs-fluid text-danger mt-1 truncate max-w-0" title="{{ $req->rejection_comment }}">
                 {{ $req->rejection_comment }}
             </p>
         @endif

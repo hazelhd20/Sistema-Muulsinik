@@ -31,12 +31,12 @@
             <livewire:requisitions.pending-quotations-list />
         </div>
 
-        <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table" 
-             x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
-             x-init="totalOnPageStatic = {{ $requisitions->count() }}; init()" data-total-on-page="{{ $requisitions->count() }}">
+        <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table"
+            x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
+            x-init="totalOnPageStatic = {{ $requisitions->count() }}; init()"
+            data-total-on-page="{{ $requisitions->count() }}">
             {{-- Unified Datagrid Card Container --}}
-            <div
-                class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
+            <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
                 @php
                     $activeCount = ($statusFilter ? 1 : 0) + ($projectFilter ? 1 : 0) + ($periodFilter ? 1 : 0) + ($creatorFilter ? 1 : 0) + ($vendorFilter ? 1 : 0);
                     $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -44,7 +44,8 @@
 
                 @if($requisitions->isNotEmpty() || $hasActiveFilters)
                     {{-- Header Group (Search + Filters + Chips) --}}
-                    <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+                    <div
+                        class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                         {{-- Filters Bar --}}
                         <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                             {{-- Search: compact width --}}
@@ -93,9 +94,9 @@
                                 </div>
 
                                 <x-slot name="footer">
-                                        <x-button type="button" @click="clearFilters()" variant="link-muted">
-                                            Limpiar filtros
-                                        </x-button>
+                                    <x-button type="button" @click="clearFilters()" variant="link-muted">
+                                        Limpiar filtros
+                                    </x-button>
                                     <x-button type="button" @click="applyFilters(); open = false" variant="primary">
                                         Aplicar Filtros
                                     </x-button>
@@ -138,7 +139,8 @@
                                 @endif
 
                                 @if($activeCount > 1)
-                                    <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="!text-xs !min-h-0 ml-auto">
+                                    <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser"
+                                        class="!text-xs !min-h-0 ml-auto">
                                         Limpiar todo
                                     </x-button>
                                 @endif
@@ -177,10 +179,8 @@
                                 <thead class="bg-surface-main border-b border-border/40">
                                     <tr>
                                         <th class="actions text-center pl-4 pr-2">
-                                            <x-table-checkbox 
-                                                x-bind:checked="allSelected"
-                                                @change="toggleAll({{ json_encode($requisitions->pluck('id')->toArray()) }})"
-                                            />
+                                            <x-table-checkbox x-bind:checked="allSelected"
+                                                @change="toggleAll({{ json_encode($requisitions->pluck('id')->toArray()) }})" />
                                         </th>
                                         <x-sortable-header field="number" label="Folio" :sortField="$sortField"
                                             :sortDirection="$sortDirection" />
@@ -280,7 +280,8 @@
                                 wire:target="search, statusFilter, projectFilter, periodFilter, creatorFilter, vendorFilter, previousPage, nextPage, gotoPage"
                                 class="hidden flex flex-col gap-4 mt-2">
                                 @for($i = 0; $i < 4; $i++)
-                                    <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                                    <x-card
+                                        class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                         <div class="flex items-center justify-between gap-2">
                                             <div class="flex items-center gap-3 min-w-0">
                                                 <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
@@ -319,31 +320,33 @@
 
                     {{-- Bulk Actions Bar --}}
                     <x-bulk-actions-bar>
-                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                            <div x-show="canApproveSelection" x-cloak class="flex items-center gap-2">
-                                <x-button @click="$dispatch('confirm-action', {
-                                            title: 'Aprobar Seleccionadas',
-                                            description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
-                                            confirmLabel: 'Aprobar seleccionadas',
-                                            variant: 'success',
-                                            action: 'approveSelected',
-                                            params: []
-                                        })" variant="success" icon="check-circle">
-                                    Aprobar
-                                </x-button>
-                                <x-button wire:click="openBulkRejectModal" variant="secondary" icon="x-circle"
-                                    target="openBulkRejectModal">
-                                    Rechazar
-                                </x-button>
-                            </div>
-                        @endif
+                        {{-- Vista Escritorio: Todos los botones visibles --}}
+                        <div class="hidden sm:flex items-center gap-2">
+                            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                                <div x-show="canApproveSelection" x-cloak class="flex items-center gap-2">
+                                    <x-button @click="$dispatch('confirm-action', {
+                                                    title: 'Aprobar Seleccionadas',
+                                                    description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
+                                                    confirmLabel: 'Aprobar seleccionadas',
+                                                    variant: 'success',
+                                                    action: 'approveSelected',
+                                                    params: []
+                                                })" variant="success" icon="check-circle">
+                                        Aprobar
+                                    </x-button>
+                                    <x-button wire:click="openBulkRejectModal" variant="secondary" icon="x-circle"
+                                        target="openBulkRejectModal">
+                                        Rechazar
+                                    </x-button>
+                                </div>
+                            @endif
 
-                        <div class="h-8 w-px bg-border/40 mx-1 hidden sm:block"></div>
+                            <div class="h-8 w-px bg-border/40 mx-1"></div>
 
-                        {{-- Menú de Exportación --}}
-                        <x-dropdown align="top" width="56">
-                            <x-slot name="trigger">
+                            {{-- Menú de Exportación (Inline CSS positioning) --}}
+                            <div class="relative inline-flex" x-data="{ open: false }" @click.outside="open = false">
                                 <x-button variant="secondary" icon="file-down"
+                                    @click="open = !open"
                                     wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed"
                                     wire:loading.attr="disabled">
                                     <span wire:loading.remove
@@ -351,32 +354,119 @@
                                     <span wire:loading
                                         wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportando...</span>
                                 </x-button>
-                            </x-slot>
-                            <x-slot name="content">
-                                <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
-                                    Resumen (CSV)
-                                </x-dropdown-link>
-                                <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
-                                    Detallado con Ítems (CSV)
-                                </x-dropdown-link>
-                                <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
-                                    PDFs en ZIP
-                                </x-dropdown-link>
-                            </x-slot>
-                        </x-dropdown>
 
-                        @if(auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
-                            <x-button @click="$dispatch('confirm-action', {
-                                title: 'Eliminar Seleccionadas',
-                                description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
-                                confirmLabel: 'Eliminar',
-                                variant: 'danger',
-                                action: 'deleteSelected',
-                                params: []
-                            })" variant="danger" icon="trash-2">
-                                Eliminar
-                            </x-button>
-                        @endif
+                                <div x-show="open"
+                                     x-transition:enter="transition-premium"
+                                     x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                     x-transition:leave="transition-premium"
+                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                     x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                     class="absolute z-50 bottom-full left-0 mb-2 w-56 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden"
+                                     style="display: none;"
+                                     @click="open = false">
+                                    <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
+                                        Resumen (CSV)
+                                    </x-dropdown-link>
+                                    <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
+                                        Detallado con Ítems (CSV)
+                                    </x-dropdown-link>
+                                    <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
+                                        PDFs en ZIP
+                                    </x-dropdown-link>
+                                </div>
+                            </div>
+
+                            @if(auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
+                                <x-button @click="$dispatch('confirm-action', {
+                                        title: 'Eliminar Seleccionadas',
+                                        description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
+                                        confirmLabel: 'Eliminar',
+                                        variant: 'danger',
+                                        action: 'deleteSelected',
+                                        params: []
+                                    })" variant="danger" icon="trash-2">
+                                    Eliminar
+                                </x-button>
+                            @endif
+                        </div>
+
+                        {{-- Vista Móvil: 1 Botón Principal Contextual + Menú de 3 Puntos --}}
+                        <div class="flex sm:hidden items-center gap-1.5">
+                            @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                                <div x-show="canApproveSelection" x-cloak>
+                                    <x-button size="sm" @click="$dispatch('confirm-action', {
+                                                    title: 'Aprobar Seleccionadas',
+                                                    description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
+                                                    confirmLabel: 'Aprobar',
+                                                    variant: 'success',
+                                                    action: 'approveSelected',
+                                                    params: []
+                                                })" variant="success" icon="check-circle">
+                                        Aprobar
+                                    </x-button>
+                                </div>
+                                <div x-show="!canApproveSelection" x-cloak>
+                                    <x-button size="sm" wire:click="exportPdfZip" variant="secondary" icon="file-archive"
+                                        wire:loading.attr="disabled" wire:target="exportPdfZip">
+                                        <span wire:loading.remove wire:target="exportPdfZip">Exportar ZIP</span>
+                                        <span wire:loading wire:target="exportPdfZip">ZIP...</span>
+                                    </x-button>
+                                </div>
+                            @else
+                                <div>
+                                    <x-button size="sm" wire:click="exportPdfZip" variant="secondary" icon="file-archive"
+                                        wire:loading.attr="disabled" wire:target="exportPdfZip">
+                                        <span wire:loading.remove wire:target="exportPdfZip">Exportar ZIP</span>
+                                        <span wire:loading wire:target="exportPdfZip">ZIP...</span>
+                                    </x-button>
+                                </div>
+                            @endif
+
+                            <div class="relative inline-flex" x-data="{ open: false }" @click.outside="open = false">
+                                <x-button size="sm" variant="secondary" icon="more-vertical" aria-label="Más opciones" title="Más opciones" @click="open = !open" />
+
+                                <div x-show="open"
+                                     x-transition:enter="transition-premium"
+                                     x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                     x-transition:leave="transition-premium"
+                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                     x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                     class="absolute z-50 bottom-full right-0 mb-2 w-56 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden"
+                                     style="display: none;"
+                                     @click="open = false">
+                                    @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                                        <div x-show="canApproveSelection">
+                                            <x-dropdown-link as="button" wire:click="openBulkRejectModal" icon="x-circle">
+                                                Rechazar seleccionadas
+                                            </x-dropdown-link>
+                                        </div>
+                                    @endif
+                                    <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
+                                        Exportar Resumen (CSV)
+                                    </x-dropdown-link>
+                                    <x-dropdown-link as="button" wire:click="exportCsvDetailed" icon="list-checks">
+                                        Exportar Detallado (CSV)
+                                    </x-dropdown-link>
+                                    <x-dropdown-link as="button" wire:click="exportPdfZip" icon="file-archive">
+                                        Exportar PDFs en ZIP
+                                    </x-dropdown-link>
+                                    @if(auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
+                                        <x-dropdown-link as="button" @click="$dispatch('confirm-action', {
+                                            title: 'Eliminar Seleccionadas',
+                                            description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
+                                            confirmLabel: 'Eliminar',
+                                            variant: 'danger',
+                                            action: 'deleteSelected',
+                                            params: []
+                                        })" danger="true" icon="trash-2">
+                                            Eliminar seleccionadas
+                                        </x-dropdown-link>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </x-bulk-actions-bar>
                 </div>
 

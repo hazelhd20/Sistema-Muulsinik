@@ -3,14 +3,23 @@
 @php
 switch ($align) {
     case 'left':
-        $anchorPosition = 'bottom-start';
+    case 'bottom-start':
+        $anchorPosition = 'bottom.start';
         break;
     case 'top':
         $anchorPosition = 'top';
         break;
+    case 'top-end':
+    case 'top-right':
+        $anchorPosition = 'top.end';
+        break;
+    case 'top-start':
+    case 'top-left':
+        $anchorPosition = 'top.start';
+        break;
     case 'right':
     default:
-        $anchorPosition = 'bottom-end';
+        $anchorPosition = 'bottom.end';
         break;
 }
 
