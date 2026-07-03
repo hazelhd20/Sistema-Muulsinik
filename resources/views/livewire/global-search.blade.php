@@ -172,7 +172,7 @@
                                 </x-empty-state>
                             @elseif(!$hasAnyResults && strlen($query) < 2)
                                 <div class="py-6 px-4">
-                                    <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Acciones Rápidas</h3>
+                                    <h3 class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-3">Acciones Rápidas</h3>
                                     <div class="space-y-1">
                                         <a href="{{ route('requisiciones.index') }}" wire:navigate class="flex items-center gap-3 px-3 py-2 hover:bg-surface-hover transition-colors group rounded-md">
                                             <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0"><x-lucide-clipboard-list class="w-4 h-4 text-primary-600" /></div>
@@ -198,7 +198,7 @@
                                 @foreach($categories as $key => $label)
                                     @if(!empty($results[$key]))
                                         <div class="mb-4 last:mb-0">
-                                            <h2 class="px-3 py-1 text-xs font-semibold text-text-muted uppercase tracking-wider">{{ $label }}</h2>
+                                            <h2 class="px-3 py-1 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">{{ $label }}</h2>
                                             <div class="mt-2 space-y-1">
                                                 @foreach($results[$key] as $item)
                                                     <x-search-result-item 
@@ -225,7 +225,7 @@
                     </div>
 
                     {{-- Footer / Legend --}}
-                    <div class="hidden sm:flex flex-wrap items-center justify-between text-xs text-text-muted dropdown-footer">
+                    <div class="hidden sm:flex flex-wrap items-center justify-between text-xs-fluid text-text-muted dropdown-footer">
                         <div class="flex gap-4">
                             <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↵</kbd> para seleccionar</span>
                             <span class="flex items-center gap-1"><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↓</kbd><kbd class="rounded border border-border bg-surface-main px-1.5 py-0.5 font-sans font-medium text-text-secondary">↑</kbd> para navegar</span>

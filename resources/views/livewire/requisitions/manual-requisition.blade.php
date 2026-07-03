@@ -50,14 +50,14 @@
                 <div class="flex items-center gap-3">
                     <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Productos</h3>
                     @if(count($form->items) > 0)
-                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
                             <x-lucide-package class="w-3.5 h-3.5" />
                             {{ count($form->items) }} {{ count($form->items) === 1 ? 'artículo' : 'artículos' }}
                         </span>
                     @endif
                 </div>
                 <div class="flex-shrink-0">
-                    <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs w-full sm:w-auto justify-center">
+                    <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs-fluid w-full sm:w-auto justify-center">
                         Concepto Manual
                     </x-button>
                 </div>
@@ -86,17 +86,17 @@
                                         <button type="button" wire:click="addProduct({{ $index }})"
                                             class="w-full text-left px-4 py-2.5 hover:bg-surface-hover flex items-center justify-between group transition-colors">
                                             <div>
-                                                <p class="text-sm font-medium text-text-primary group-hover:text-primary-600">
+                                                <p class="text-body font-medium text-text-primary group-hover:text-primary-600">
                                                     {{ $product['name'] }}</p>
                                                 <div class="flex items-center gap-2 mt-0.5">
-                                                    <span class="text-xs text-text-muted">{{ $product['category'] }}</span>
+                                                    <span class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
                                                     <x-badge variant="secondary">{{ $product['measure_abbr'] }}</x-badge>
                                                 </div>
                                             </div>
                                             @if($product['last_price'] > 0)
                                                 <div class="text-right">
-                                                    <p class="text-xs text-text-muted">Último costo</p>
-                                                    <p class="text-sm font-semibold text-text-primary">
+                                                    <p class="text-xs-fluid text-text-muted">Último costo</p>
+                                                    <p class="text-body font-semibold text-text-primary">
                                                         ${{ number_format($product['last_price'], 2) }}</p>
                                                 </div>
                                             @endif
@@ -107,8 +107,8 @@
                         </div>
                     @elseif(strlen($searchQuery) >= 2 && empty($searchResults))
                         <div x-show="open" x-cloak class="absolute z-[45] mt-1 w-full bg-surface-card rounded-xl shadow-lg border border-border overflow-hidden animate-scale-in p-4 text-center">
-                            <p class="text-sm text-text-muted">No se encontraron productos en el catálogo.</p>
-                            <p class="text-xs text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
+                            <p class="text-small text-text-muted">No se encontraron productos en el catálogo.</p>
+                            <p class="text-xs-fluid text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
                                 Da clic en "Concepto Manual" para agregarlo tú mismo.
                             </p>
                         </div>
@@ -139,7 +139,7 @@
                                     wire:key="item-row-{{ $item['id'] ?? $i }}">
                                     <td class="pl-6 pr-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.name" type="text"
-                                            class="input input-inline text-sm w-full"
+                                            class="input input-inline text-small w-full"
                                             placeholder="Nombre del producto">
                                     </td>
                                     <td class="px-4 py-4">
@@ -150,7 +150,7 @@
                                     <td class="px-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.quantity" type="number"
                                             step="0.01"
-                                            class="input input-inline text-center tabular-nums text-sm w-full"
+                                            class="input input-inline text-center tabular-nums text-small w-full"
                                             placeholder="0">
                                     </td>
                                     <td class="px-4 py-4">
@@ -165,15 +165,15 @@
                                     <td class="px-4 py-4">
                                         <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number"
                                             step="0.01"
-                                            class="input input-inline text-right tabular-nums text-sm w-full"
+                                            class="input input-inline text-right tabular-nums text-small w-full"
                                             placeholder="0.00">
                                     </td>
                                     <td
-                                        class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-sm align-middle">
+                                        class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
                                         ${{ number_format($item['subtotal'], 2, '.', ',') }}
                                     </td>
                                     <td
-                                        class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-sm align-middle">
+                                        class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
                                         ${{ number_format($item['total'], 2, '.', ',') }}
                                     </td>
                                     <td class="pr-6 pl-4 py-4 text-center">
@@ -191,7 +191,7 @@
                         <div class="bg-surface-main rounded-xl p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
                             {{-- Card Header --}}
                             <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
-                                <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                     Artículo {{ $i + 1 }}
                                 </span>
                                 <button type="button" wire:click="removeItem({{ $i }})" class="text-danger opacity-70 hover:opacity-100 p-1 -mr-1 transition-opacity">
@@ -223,7 +223,7 @@
                                     </x-form-field>
                                     <x-form-field label="Precio U.">
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-muted pointer-events-none">$</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
                                             <input wire:model.live.debounce.400ms="form.items.{{ $i }}.unit_price" type="number" step="0.01"
                                                 class="input w-full pl-7" placeholder="0.00">
                                         </div>
@@ -266,7 +266,7 @@
                         {{-- Botón de Acción --}}
                         <div class="pt-6 mt-6">
                             <x-button type="submit" variant="primary" target="createRequisition"
-                                class="w-full py-3 rounded-xl shadow-sm text-sm tracking-wide"
+                                class="w-full py-3 rounded-xl shadow-sm text-small tracking-wide"
                                 icon="check-circle">
                                 Crear Requisición
                             </x-button>

@@ -46,7 +46,7 @@
                                 <div class="flex items-center gap-2 mb-0.5">
                                     <p class="text-body font-semibold text-text-primary">{{ $title }}</p>
                                     @if($total)
-                                        <span class="text-xs font-bold text-text-primary bg-surface-main px-2 py-0.5 rounded-md tabular-nums">
+                                        <span class="text-xs-fluid font-bold text-text-primary bg-surface-main px-2 py-0.5 rounded-md tabular-nums">
                                             ${{ number_format((float)$total, 2) }}
                                         </span>
                                     @endif
@@ -69,7 +69,7 @@
                                     $badgeText = $isRateLimit ? 'IA Saturada • Reintentar' : 'Revisión manual requerida';
                                 @endphp
                                 <div class="flex items-center gap-2 mb-1">
-                                    <p class="text-sm font-semibold text-text-primary">Error de extracción</p>
+                                    <p class="text-body font-semibold text-text-primary">Error de extracción</p>
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs-fluid font-bold tracking-wide bg-danger-light text-danger" title="{{ $pq->error_message }}">
                                         <x-dynamic-component :component="'lucide-' . $badgeIcon" class="w-3 h-3" wire:ignore />
                                         {{ $badgeText }}

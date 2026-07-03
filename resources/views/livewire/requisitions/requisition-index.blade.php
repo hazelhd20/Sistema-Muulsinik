@@ -140,7 +140,7 @@
 
                                 @if($activeCount > 1)
                                     <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser"
-                                        class="!text-xs !min-h-0 ml-auto">
+                                        class="!min-h-0 ml-auto">
                                         Limpiar todo
                                     </x-button>
                                 @endif

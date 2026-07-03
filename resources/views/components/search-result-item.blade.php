@@ -30,11 +30,11 @@
         <div class="flex items-center gap-2">
             <p class="text-small font-medium text-text-primary truncate group-hover:text-primary-600 transition-colors">{!! $title !!}</p>
             @if($typeLabel)
-                <span class="badge badge-secondary shrink-0 text-[0.6rem] py-0.5 px-1.5 opacity-60">{{ $typeLabel }}</span>
+                <span class="badge badge-secondary shrink-0 text-xs-fluid py-0.5 px-1.5 opacity-60">{{ $typeLabel }}</span>
             @endif
         </div>
         @if(!empty($subtitle))
-            <p class="text-xs text-text-muted truncate">{!! $subtitle !!}</p>
+            <p class="text-xs-fluid text-text-muted truncate">{!! $subtitle !!}</p>
         @endif
     </div>
     <x-lucide-arrow-right class="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />

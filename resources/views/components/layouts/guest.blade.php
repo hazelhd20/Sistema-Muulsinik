@@ -24,14 +24,14 @@
                  alt="Muulsinik ERP"
                  class="object-contain mb-1"
                  style="height: clamp(2.5rem, 4vw + 1rem, 3.5rem);">
-            <p class="text-xs text-text-muted font-medium tracking-wider uppercase mt-2">
+            <p class="text-xs-fluid text-text-muted font-medium tracking-wider uppercase mt-2">
                 Sistema de Gestión Operativa
             </p>
         </div>
 
         {{ $slot }}
 
-        <p class="text-center mt-5" style="font-size: 0.625rem; color: var(--color-text-muted); letter-spacing: 0.04em;">
+        <p class="text-center text-xs-fluid text-text-muted opacity-75 tracking-wider mt-5">
             MUULSINIK ERP &nbsp;·&nbsp; {{ date('Y') }} &nbsp;·&nbsp; v1.0
         </p>
     </div>

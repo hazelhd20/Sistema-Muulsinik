@@ -20,7 +20,7 @@
 
         <div x-show="open" x-cloak
             @click.outside="if (! $refs.trigger.contains($event.target)) open = false"
-            x-anchor.bottom-end.offset.4="$refs.trigger"
+            x-anchor.bottom.end.offset.4="$refs.trigger"
             x-transition:enter="transition-premium"
             x-transition:enter-start="opacity-0 scale-95"
             x-transition:enter-end="opacity-100 scale-100"
@@ -33,7 +33,7 @@
         <div class="dropdown-header">
             <h3 class="dropdown-header-title">Notificaciones</h3>
             @if($unreadCount > 0)
-                <x-button wire:click="markAllAsRead" variant="link" class="!text-xs !min-h-0">
+                <x-button wire:click="markAllAsRead" variant="link" class="!text-xs-fluid !min-h-0">
                     Marcar todas como leídas
                 </x-button>
             @endif
@@ -75,11 +75,11 @@
                                     <x-pulse-indicator color="primary" class="shrink-0 mt-1" />
                                 @endif
                             </div>
-                            <p class="text-xs text-text-secondary mt-0.5 leading-relaxed">
+                            <p class="text-xs-fluid text-text-secondary mt-0.5 leading-relaxed">
                                 {{ $notification['message'] }}
                             </p>
                             <div class="flex items-center justify-between mt-2">
-                                <span class="text-xs text-text-muted" 
+                                <span class="text-xs-fluid text-text-muted" 
                                     x-data="{ 
                                         time: '{{ $notification['created_at_iso'] }}', 
                                         relative: '{{ $notification['created_at'] }}' 
@@ -99,14 +99,14 @@
                                         <x-button href="{{ $notification['action_url'] }}" 
                                             wire:navigate
                                             wire:click="markAsRead('{{ $notification['id'] }}')"
-                                            variant="link" class="!text-xs !min-h-0">
+                                            variant="link" class="!text-xs-fluid !min-h-0">
                                             {{ $notification['action_text'] }}
                                         </x-button>
                                     @else
                                         <x-button href="{{ $notification['action_url'] }}" 
                                             download
                                             wire:click="markAsRead('{{ $notification['id'] }}')"
-                                            variant="link" class="!text-xs !min-h-0">
+                                            variant="link" class="!text-xs-fluid !min-h-0">
                                             {{ $notification['action_text'] }}
                                         </x-button>
                                     @endif

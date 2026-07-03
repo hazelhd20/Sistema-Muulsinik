@@ -67,7 +67,7 @@ class RequisitionIndex extends Component
 
     public function mount(): void
     {
-        if (! auth()->user()?->hasPermission('requisiciones.ver') && ! auth()->user()?->hasPermission('*')) {
+        if (!auth()->user()?->hasPermission('requisiciones.ver') && !auth()->user()?->hasPermission('*')) {
             abort(403, 'No tienes permiso para ver requisiciones.');
         }
 

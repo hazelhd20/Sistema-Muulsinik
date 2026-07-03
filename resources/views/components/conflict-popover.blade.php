@@ -192,7 +192,7 @@ $cfg = $shouldRender ? match($type) {
         <template x-teleport="body">
             <div x-show="open"
                  x-cloak
-                 x-anchor.bottom-end.offset.4="$refs.trigger"
+                 x-anchor.bottom.end.offset.4="$refs.trigger"
                  @click.outside="open = false"
                  @keydown.window.escape="open = false"
                  x-transition:enter="transition-premium"
@@ -212,10 +212,10 @@ $cfg = $shouldRender ? match($type) {
                            class="w-4 h-4 {{ $cfg['headerColor'] }} shrink-0 mt-0.5"
                            wire:ignore />
                         <div>
-                            <p class="text-xs font-semibold text-text-primary leading-tight">
+                            <p class="text-xs-fluid font-semibold text-text-primary leading-tight">
                                 {{ $cfg['title'] }}
                             </p>
-                            <p class="text-xs text-text-muted mt-0.5 leading-relaxed">
+                            <p class="text-xs-fluid text-text-muted mt-0.5 leading-relaxed">
                                 {{ $cfg['subtitle'] }}
                             </p>
                         </div>
@@ -226,10 +226,10 @@ $cfg = $shouldRender ? match($type) {
                         @foreach($cfg['rows'] as $row)
                             <div class="flex items-start justify-between gap-2
                                 {{ isset($row['separator']) && $row['separator'] ? 'pt-1.5 border-t border-border' : '' }}">
-                                <span class="text-xs text-text-muted shrink-0">
+                                <span class="text-xs-fluid text-text-muted shrink-0">
                                     {{ $row['label'] }}
                                 </span>
-                                <span class="text-xs {{ $row['weight'] }} {{ $row['color'] }} text-right leading-tight">
+                                <span class="text-xs-fluid {{ $row['weight'] }} {{ $row['color'] }} text-right leading-tight">
                                     {{ $row['value'] }}
                                 </span>
                             </div>

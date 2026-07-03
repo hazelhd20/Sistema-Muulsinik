@@ -24,7 +24,7 @@
                     <div wire:key="step-indicator-{{ $num }}" class="relative z-10 flex flex-col items-center flex-1">
                         {{-- Label (Top) --}}
                         <span
-                            class="text-xs font-semibold tracking-wider uppercase mb-3 transition-colors duration-300 {{ $step === $num ? 'text-primary-600' : ($step > $num ? 'text-text-primary' : 'text-text-muted') }}">
+                            class="text-xs-fluid font-semibold tracking-wider uppercase mb-3 transition-colors duration-300 {{ $step === $num ? 'text-primary-600' : ($step > $num ? 'text-text-primary' : 'text-text-muted') }}">
                             {{ $label }}
                         </span>
 
@@ -60,12 +60,12 @@
                         <x-button wire:key="process-btn" x-data="{ visible: true }" x-show="visible"
                             @file-removed.window="visible = false" type="button" wire:click="processUpload"
                             wire:loading.attr="disabled" target="processUpload" variant="primary"
-                            class="w-full text-sm font-medium tracking-wide py-2.5 rounded-xl shadow-sm" icon="scan-line">
+                            class="w-full text-small font-medium tracking-wide py-2.5 rounded-xl shadow-sm" icon="scan-line">
                             Procesar Documentos
                         </x-button>
                     </div>
                 @endif
-                @error('files') <span class="text-xs text-danger mt-2 block">{{ $message }}</span> @enderror
+                @error('files') <span class="text-xs-fluid text-danger mt-2 block">{{ $message }}</span> @enderror
             </x-card>
         </div>
     @endif
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <h2 class="text-h2 font-bold text-text-primary mb-2 tracking-tight">Analizando documento</h2>
-                        <p class="text-sm text-text-muted max-w-xs mx-auto leading-relaxed mb-4">
+                        <p class="text-small text-text-muted max-w-xs mx-auto leading-relaxed mb-4">
                             Extrayendo datos con inteligencia artificial.<br>
                             Puede tomar hasta 30 segundos.
                         </p>
@@ -106,7 +106,7 @@
                         <x-button
                             href="{{ $source === 'borradores' ? route('requisiciones.index', ['tab' => 'borradores']) : route('requisiciones.index') }}"
                             variant="ghost" icon="arrow-left"
-                            class="text-xs text-text-muted hover:text-text-primary shadow-none border-transparent hover:bg-surface-hover transition-colors duration-150"
+                            class="text-xs-fluid text-text-muted hover:text-text-primary shadow-none border-transparent hover:bg-surface-hover transition-colors duration-150"
                             wire:navigate>
                             Volver mientras se procesa
                         </x-button>
@@ -123,7 +123,7 @@
 
                         {{-- Título y descripción --}}
                         <h2 class="text-h2 font-bold text-text-primary mb-2 tracking-tight">Error al procesar</h2>
-                        <p class="text-sm text-text-muted mb-6">No fue posible extraer los datos del documento
+                        <p class="text-small text-text-muted mb-6">No fue posible extraer los datos del documento
                             automáticamente.</p>
 
                         {{-- Caja de mensaje de error con color semántico --}}
@@ -143,7 +143,7 @@
                             <div class="flex items-center gap-3 my-1">
                                 <div class="flex-1 h-px bg-border/50"></div>
                                 <span
-                                    class="text-xs font-medium tracking-wide uppercase text-text-muted whitespace-nowrap">opciones
+                                    class="text-xs-fluid font-medium tracking-wide uppercase text-text-muted whitespace-nowrap">opciones
                                     manuales</span>
                                 <div class="flex-1 h-px bg-border/50"></div>
                             </div>
@@ -177,7 +177,7 @@
         @if($totalCount > 1)
             <div class="mb-6 border-b border-border/40 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div class="flex-1 min-w-0">
-                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-3">
+                    <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider block mb-3">
                         Progreso de revisión
                     </span>
                     <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
@@ -205,7 +205,7 @@
                                 $displayLabel = \Illuminate\Support\Str::limit($label, 22);
 
                                 // Clases de estado dinámicas
-                                $tabClass = 'flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-all duration-200 whitespace-nowrap ';
+                                $tabClass = 'flex items-center gap-2 px-4 py-2 rounded-xl border text-xs-fluid font-medium transition-all duration-200 whitespace-nowrap ';
                                 if ($isCurrent) {
                                     $tabClass .= 'bg-primary-50 border-primary-300 text-primary-700 shadow-sm ring-1 ring-primary-300 font-semibold scale-[1.02]';
                                 } elseif ($isCompleted) {
@@ -236,22 +236,22 @@
                 <div class="flex items-center gap-2 shrink-0 pb-2">
                     @if($prevId)
                         <x-button type="button" wire:click="setActiveTab({{ $prevId }})" variant="secondary" icon="chevron-left"
-                            class="text-xs py-2 rounded-xl">
+                            class="text-xs-fluid py-2 rounded-xl">
                             Anterior
                         </x-button>
                     @else
-                        <x-button type="button" disabled variant="secondary" icon="chevron-left" class="text-xs py-2 rounded-xl">
+                        <x-button type="button" disabled variant="secondary" icon="chevron-left" class="text-xs-fluid py-2 rounded-xl">
                             Anterior
                         </x-button>
                     @endif
 
                     @if($nextId)
                         <x-button type="button" wire:click="setActiveTab({{ $nextId }})" variant="secondary"
-                            iconRight="chevron-right" class="text-xs py-2 rounded-xl">
+                            iconRight="chevron-right" class="text-xs-fluid py-2 rounded-xl">
                             Siguiente
                         </x-button>
                     @else
-                        <x-button type="button" disabled variant="secondary" iconRight="chevron-right" class="text-xs py-2 rounded-xl">
+                        <x-button type="button" disabled variant="secondary" iconRight="chevron-right" class="text-xs-fluid py-2 rounded-xl">
                             Siguiente
                         </x-button>
                     @endif
@@ -267,7 +267,7 @@
                     @if($quotation)
                         <x-button type="button"
                             @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
-                            variant="soft" icon="file-search" class="text-xs">
+                            variant="soft" icon="file-search" class="text-xs-fluid">
                             Ver documento original
                         </x-button>
                     @endif
@@ -351,14 +351,14 @@
                         <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
                             <span
-                                class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                                class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
                                 <x-lucide-package class="w-3.5 h-3.5" />
                                 {{ count($items) }} {{ count($items) === 1 ? 'artículo' : 'artículos' }}
                             </span>
                         @endif
                     </div>
                     <div>
-                        <x-button wire:click="addItem" variant="soft" icon="plus" class="text-xs">
+                        <x-button wire:click="addItem" variant="soft" icon="plus" class="text-xs-fluid">
                             Agregar producto
                         </x-button>
                     </div>
@@ -406,7 +406,7 @@
                                             <div class="relative">
                                                 <x-conflict-popover type="fuzzy-product" :item="$item" :index="$i">
                                                     <input wire:model.live.debounce.600ms="items.{{ $i }}.name" type="text"
-                                                        class="input input-inline {{ $productBorder }} text-sm w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
+                                                        class="input input-inline {{ $productBorder }} text-small w-full {{ $hasProductIndicator ? 'pr-8' : '' }}"
                                                         placeholder="Nombre del producto">
                                                 </x-conflict-popover>
                                                 {{-- Indicadores estáticos (no interactivos) --}}
@@ -440,7 +440,7 @@
                                         {{-- Cantidad --}}
                                         <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.quantity" type="number"
-                                                step="0.01" class="input input-inline text-center tabular-nums text-sm w-full"
+                                                step="0.01" class="input input-inline text-center tabular-nums text-small w-full"
                                                 placeholder="0">
                                         </td>
 
@@ -459,10 +459,10 @@
                                         {{-- Precio Unitario --}}
                                         <td class="px-4 py-4">
                                             <input wire:model.live.debounce.400ms="items.{{ $i }}.unit_price" type="number"
-                                                step="0.01" class="input input-inline text-right tabular-nums text-sm w-full"
+                                                step="0.01" class="input input-inline text-right tabular-nums text-small w-full"
                                                 placeholder="0.00">
                                             @if(($item['discount_percent'] ?? 0) > 0)
-                                                <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs">
+                                                <div class="mt-0.5 flex items-center justify-end gap-1.5 text-xs-fluid">
                                                     <span class="text-text-muted line-through tabular-nums">
                                                         ${{ number_format($item['unit_price_original'] ?? 0, 2, '.', ',') }}
                                                     </span>
@@ -475,13 +475,13 @@
 
                                         {{-- Subtotal --}}
                                         <td
-                                            class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-sm align-middle">
+                                            class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small align-middle">
                                             ${{ number_format($item['line_subtotal'], 2, '.', ',') }}
                                         </td>
 
                                         {{-- Total con IVA --}}
                                         <td
-                                            class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-sm align-middle">
+                                            class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
                                             ${{ number_format($item['line_total'], 2, '.', ',') }}
                                         </td>
 
@@ -518,7 +518,7 @@
 
                                 {{-- Card Header --}}
                                 <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
-                                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                    <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                         Artículo {{ $i + 1 }}
                                     </span>
                                     <button type="button" wire:click="removeItem({{ $i }})"
@@ -647,7 +647,7 @@
                             {{-- Botón de Acción --}}
                             <div class="pt-6 mt-6">
                                 <x-button type="submit" variant="primary"
-                                    class="w-full py-3 rounded-xl shadow-sm text-sm tracking-wide" target="saveRequisition"
+                                    class="w-full py-3 rounded-xl shadow-sm text-small tracking-wide" target="saveRequisition"
                                     icon="check-circle">
                                     Confirmar y Crear Requisición
                                 </x-button>

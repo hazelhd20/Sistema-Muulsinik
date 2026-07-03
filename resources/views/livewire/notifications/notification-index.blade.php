@@ -91,7 +91,7 @@
                                                 {{ $data['message'] ?? '' }}
                                             </p>
                                         </div>
-                                        <span class="text-xs text-text-muted shrink-0 whitespace-nowrap">
+                                        <span class="text-xs-fluid text-text-muted shrink-0 whitespace-nowrap">
                                             {{ $notification->created_at->locale('es')->diffForHumans() }}
                                         </span>
                                     </div>
@@ -103,7 +103,7 @@
                                                 href="{{ $data['action_url'] ?? '#' }}"
                                                 wire:navigate
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                variant="link" class="!text-xs !min-h-0 !py-1 !px-0"
+                                                variant="link" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                             >
                                                 {{ $data['action_text'] ?? 'Ver detalle' }}
                                             </x-button>
@@ -112,7 +112,7 @@
                                                 href="{{ $data['action_url'] ?? '#' }}"
                                                 download
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                variant="link" class="!text-xs !min-h-0 !py-1 !px-0"
+                                                variant="link" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                             >
                                                 {{ $data['action_text'] ?? 'Ver detalle' }}
                                             </x-button>
@@ -123,14 +123,14 @@
                                         @if($isUnread)
                                             <x-button
                                                 wire:click="markAsRead('{{ $notification->id }}')"
-                                                variant="link-muted" class="!text-xs !min-h-0 !py-1 !px-0"
+                                                variant="link-muted" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                             >
                                                 Marcar como leída
                                             </x-button>
                                         @else
                                             <x-button
                                                 wire:click="markAsUnread('{{ $notification->id }}')"
-                                                variant="link-muted" class="!text-xs !min-h-0 !py-1 !px-0"
+                                                variant="link-muted" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                             >
                                                 Marcar como no leída
                                             </x-button>
@@ -140,7 +140,7 @@
 
                                         <x-button
                                             wire:click="delete('{{ $notification->id }}')"
-                                            variant="link-danger-muted" class="!text-xs !min-h-0 !py-1 !px-0"
+                                            variant="link-danger-muted" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                         >
                                             Eliminar
                                         </x-button>
