@@ -4,7 +4,7 @@
     class="group hover:bg-surface-hover transition-colors duration-150"
     :class="selectedRows.includes('{{ $req->id }}') ? 'bg-primary-50/50' : ''">
     
-    <td class="actions text-center pl-4 pr-2" @click.stop="$event.stopPropagation()">
+    <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
         <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
     </td>
     <td class="text-body font-bold text-text-primary truncate max-w-0" title="{{ $req->number ?? 'REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT) }}">
@@ -33,7 +33,7 @@
             </p>
         @endif
     </td>
-    <td class="actions pr-4 py-3" @click.stop="$event.stopPropagation()">
+    <td class="actions pr-6 py-3" @click.stop="$event.stopPropagation()">
         <div class="flex items-center justify-end">
             <x-dropdown align="right" width="48">
                 <x-slot name="trigger">

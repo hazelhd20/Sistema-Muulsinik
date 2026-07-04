@@ -186,9 +186,9 @@
                 </div>
 
                 {{-- Mobile Cards --}}
-                <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
+                <div class="md:hidden flex flex-col gap-4 p-3 sm:p-6">
                     @foreach($itemsWithTotals as $i => $item)
-                        <div class="bg-surface-main rounded-xl p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
+                        <div class="bg-surface-main rounded-xl p-3.5 sm:p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
                             {{-- Card Header --}}
                             <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
                                 <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">

@@ -5,22 +5,34 @@
                 <x-card wire:key="pending-quotation-{{ $pq->id }}" 
                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 transition-colors duration-200">
 
-                    <div class="flex items-start sm:items-center gap-3.5 w-full sm:w-auto">
+                    <div class="flex items-start sm:items-center gap-3.5 w-full sm:w-auto min-w-0 flex-1">
                         @if($pq->isProcessing() || $pq->status === 'pending')
                             {{-- Estado: procesando --}}
                             <div class="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0 shadow-sm">
                                 <span class="spinner-processing !w-5 !h-5 !border-2"></span>
                             </div>
-                            <div class="min-w-0 flex-1 sm:flex-initial">
+                            <div class="min-w-0 flex-1">
+                                @php
+                                    $rawName = (string) ($pq->original_filename ?? 'documento');
+                                    $info = pathinfo($rawName);
+                                    $fileNameOnly = $info['filename'] ?? $rawName;
+                                    $fileExt = isset($info['extension']) ? '.' . $info['extension'] : '';
+                                @endphp
                                 <div class="flex items-center gap-2 mb-0.5">
                                     <p class="text-body font-semibold text-text-primary">Procesando cotización</p>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs-fluid font-bold tracking-wide bg-primary-50 text-primary-700">
-                                        Analizando
-                                    </span>
+                                    <x-badge variant="primary" size="sm">Analizando</x-badge>
                                 </div>
-                                <p class="text-small text-text-muted truncate max-w-md mt-0.5">
-                                    Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
-                                </p>
+                                <div class="flex items-center gap-2 text-small text-text-muted mt-1 min-w-0 max-w-lg">
+                                    <span class="inline-flex items-center min-w-0 font-medium text-text-secondary" title="{{ $rawName }}">
+                                        <span class="truncate">{{ $fileNameOnly }}</span><span class="shrink-0">{{ $fileExt }}</span>
+                                    </span>
+                                    @if($pq->created_at)
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-text-muted shrink-0">
+                                            <x-lucide-clock class="w-3.5 h-3.5 text-text-muted/70 shrink-0" wire:ignore />
+                                            <span>{{ $pq->created_at->locale('es')->diffForHumans() }}</span>
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
                         @elseif($pq->isCompleted())
@@ -28,7 +40,7 @@
                             <div class="w-10 h-10 rounded-xl bg-success-light text-success flex items-center justify-center shrink-0 shadow-sm">
                                 <x-lucide-file-edit class="w-5 h-5" wire:ignore />
                             </div>
-                            <div class="min-w-0 flex-1 sm:flex-initial">
+                            <div class="min-w-0 flex-1">
                                 @php
                                     $supplierName = !empty($pq->draft_state['supplierName']) 
                                         ? $pq->draft_state['supplierName'] 
@@ -42,18 +54,31 @@
                                     }
 
                                     $title = $supplierName ? "Borrador: {$supplierName}" : "Borrador de Requisición listo";
+
+                                    $rawName = (string) ($pq->original_filename ?? 'documento');
+                                    $info = pathinfo($rawName);
+                                    $fileNameOnly = $info['filename'] ?? $rawName;
+                                    $fileExt = isset($info['extension']) ? '.' . $info['extension'] : '';
                                 @endphp
                                 <div class="flex items-center gap-2 mb-0.5">
                                     <p class="text-body font-semibold text-text-primary">{{ $title }}</p>
                                     @if($total)
-                                        <span class="text-xs-fluid font-bold text-text-primary bg-surface-main px-2 py-0.5 rounded-md tabular-nums">
+                                        <x-badge variant="secondary" size="sm" class="tabular-nums font-bold">
                                             ${{ number_format((float)$total, 2) }}
+                                        </x-badge>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-2 text-small text-text-muted mt-1 min-w-0 max-w-lg">
+                                    <span class="inline-flex items-center min-w-0 font-medium text-text-secondary" title="{{ $rawName }}">
+                                        <span class="truncate">{{ $fileNameOnly }}</span><span class="shrink-0">{{ $fileExt }}</span>
+                                    </span>
+                                    @if($pq->created_at)
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-text-muted shrink-0">
+                                            <x-lucide-clock class="w-3.5 h-3.5 text-text-muted/70 shrink-0" wire:ignore />
+                                            <span>{{ $pq->created_at->locale('es')->diffForHumans() }}</span>
                                         </span>
                                     @endif
                                 </div>
-                                <p class="text-small text-text-muted truncate max-w-md mt-0.5">
-                                    Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
-                                </p>
                             </div>
 
                         @else
@@ -61,28 +86,40 @@
                             <div class="w-10 h-10 rounded-xl bg-danger-light text-danger flex items-center justify-center shrink-0 shadow-sm">
                                 <x-lucide-file-x class="w-5 h-5" wire:ignore />
                             </div>
-                            <div class="min-w-0 flex-1 sm:flex-initial">
+                            <div class="min-w-0 flex-1">
                                 @php
                                     $errLower = strtolower($pq->error_message ?? '');
                                     $isRateLimit = str_contains($errLower, 'saturado') || str_contains($errLower, 'demanda') || str_contains($errLower, 'cuota') || str_contains($errLower, 'reintenta');
                                     $badgeIcon = $isRateLimit ? 'clock' : 'alert-circle';
                                     $badgeText = $isRateLimit ? 'IA Saturada • Reintentar' : 'Revisión manual requerida';
+
+                                    $rawName = (string) ($pq->original_filename ?? 'documento');
+                                    $info = pathinfo($rawName);
+                                    $fileNameOnly = $info['filename'] ?? $rawName;
+                                    $fileExt = isset($info['extension']) ? '.' . $info['extension'] : '';
                                 @endphp
                                 <div class="flex items-center gap-2 mb-1">
                                     <p class="text-body font-semibold text-text-primary">Error de extracción</p>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs-fluid font-bold tracking-wide bg-danger-light text-danger" title="{{ $pq->error_message }}">
-                                        <x-dynamic-component :component="'lucide-' . $badgeIcon" class="w-3 h-3" wire:ignore />
+                                    <x-badge variant="danger" size="sm" :icon="$badgeIcon" title="{{ $pq->error_message }}">
                                         {{ $badgeText }}
-                                    </span>
+                                    </x-badge>
                                 </div>
                                 @if($pq->error_message)
                                     <p class="text-small text-text-secondary font-medium mt-0.5 truncate max-w-[260px] sm:max-w-sm" title="{{ $pq->error_message }}">
                                         {{ $pq->error_message }}
                                     </p>
                                 @endif
-                                <p class="text-small text-text-muted truncate max-w-md mt-0.5">
-                                    Archivo: {{ $pq->original_filename }} &bull; {{ $pq->created_at->locale('es')->diffForHumans() }}
-                                </p>
+                                <div class="flex items-center gap-2 text-small text-text-muted mt-1 min-w-0 max-w-lg">
+                                    <span class="inline-flex items-center min-w-0 font-medium text-text-secondary" title="{{ $rawName }}">
+                                        <span class="truncate">{{ $fileNameOnly }}</span><span class="shrink-0">{{ $fileExt }}</span>
+                                    </span>
+                                    @if($pq->created_at)
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-text-muted shrink-0">
+                                            <x-lucide-clock class="w-3.5 h-3.5 text-text-muted/70 shrink-0" wire:ignore />
+                                            <span>{{ $pq->created_at->locale('es')->diffForHumans() }}</span>
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         @endif
                     </div>

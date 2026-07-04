@@ -115,6 +115,7 @@
                             <span>{{ $proveedorName }}</span>
                         </div>
                     </x-data-label>
+                    
 
                     @if($requisition->approver && in_array($requisition->status, ['aprobada', 'rechazada']))
                         <x-data-label label="{{ $requisition->status === 'aprobada' ? 'Aprobada por' : 'Rechazada por' }}">
@@ -170,7 +171,7 @@
                             @foreach($requisition->items as $item)
                                 <tr class="hover:bg-surface-hover transition-colors duration-150">
                                     <td class="pl-6 pr-4 py-3">
-                                        <p class="font-medium text-body text-text-primary">
+                                        <p class="font-bold text-body text-text-primary">
                                             {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                         </p>
                                     </td>
@@ -210,11 +211,10 @@
             <div class="md:hidden divide-y divide-border/60 border-t border-border/40">
                 @if($requisition->items->isNotEmpty())
                     @foreach($requisition->items as $index => $item)
-                        <div class="py-3 px-4 sm:py-3.5 sm:px-5 flex flex-col gap-1.5 hover:bg-surface-hover/50 transition-colors duration-150">
+                        <div class="py-3 px-4 sm:py-3.5 sm:px-6 flex flex-col gap-1.5 hover:bg-surface-hover/50 transition-colors duration-150">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0 flex-1">
-                                    <p class="font-medium text-body text-text-primary leading-snug break-words">
-                                        <span class="text-text-muted font-normal mr-1">#{{ $index + 1 }}</span>
+                                    <p class="font-bold text-body text-text-primary leading-snug break-words">
                                         {{ $item->product?->canonical_name ?? 'Producto no encontrado' }}
                                     </p>
                                 </div>
@@ -228,8 +228,8 @@
                             {{-- Fila de cálculo tipo factura/recibo --}}
                             <div class="flex items-baseline justify-between pt-0.5 gap-2">
                                 <div class="text-small text-text-secondary font-medium">
-                                    <span class="text-text-primary font-semibold">{{ number_format($item->quantity, 2) }}</span>
-                                    <span class="uppercase">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
+                                    <span>{{ number_format($item->quantity, 2) }}</span>
+                                    <span class="uppercase ml-0.5">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
                                     <span class="text-text-muted mx-1">×</span>
                                     <span>${{ number_format($item->unit_price, 2) }}</span>
                                 </div>

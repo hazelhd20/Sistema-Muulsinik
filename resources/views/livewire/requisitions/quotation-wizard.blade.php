@@ -261,19 +261,19 @@
 
         <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
             <x-card class="mb-6">
-                <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <div class="px-4 sm:px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Información General</h3>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
                         <x-button type="button"
                             @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
                             variant="soft" icon="file-search" class="text-xs-fluid">
-                            Ver documento original
+                            Ver documento
                         </x-button>
                     @endif
                 </div>
 
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <x-form-field label="Proyecto" :required="true" :error="$errors->first('projectId')">
                             <x-custom-select wire:model="projectId" :options="$projects->pluck('name', 'id')->toArray()"
@@ -346,7 +346,7 @@
 
 
             <x-card class="mb-6 overflow-hidden">
-                <div class="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <div class="px-4 sm:px-6 py-4 border-b border-border/40 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
@@ -498,7 +498,7 @@
                     </div>
 
                     {{-- Formulario de productos (Mobile) --}}
-                    <div class="md:hidden flex flex-col gap-4 px-6 pt-6">
+                    <div class="md:hidden flex flex-col gap-4 p-3 sm:p-6">
                         @foreach($items as $i => $item)
                             @php
                                 $productStatus = $item['_match']['product']['status'] ?? '';
@@ -513,7 +513,7 @@
                                 $hasCatConflict = isset($item['conflict']['category']);
                                 $hasUnitConflict = isset($item['conflict']['unit']);
                             @endphp
-                            <div class="bg-surface-main rounded-xl p-5 relative flex flex-col gap-3"
+                            <div class="bg-surface-main rounded-xl p-3.5 sm:p-5 relative flex flex-col gap-3"
                                 wire:key="mobile-item-{{ $item['id'] ?? $i }}">
 
                                 {{-- Card Header --}}
@@ -604,7 +604,7 @@
                         $hasAnyDiscount = $this->hasAnyDiscount();
                         $subtotalBruto = $this->subtotalBruto();
                     @endphp
-                    <div class="flex justify-end px-8 pt-8 pb-8 border-t border-border/40">
+                    <div class="flex justify-end px-4 sm:px-6 md:px-8 py-6 md:py-8 border-t border-border/40">
                         <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                             <div class="flex flex-col gap-3">
                                 @if($hasAnyDiscount)

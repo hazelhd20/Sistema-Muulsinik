@@ -5,7 +5,7 @@
     wire:key="req-mobile-card-{{ $req->id }}">
 
     {{-- Cabecera de la Fila --}}
-    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-main/30">
+    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
         <div class="flex items-center gap-3 min-w-0">
             <x-table-checkbox x-model="selectedRows" value="{{ $req->id }}" />
             <span
@@ -101,7 +101,7 @@
 
     {{-- Barra de Acciones --}}
     @if(in_array($req->status, ['pendiente', 'borrador']))
-        <div class="px-4 py-3 bg-surface-main/60 border-t border-border/40 flex items-center justify-end gap-2.5">
+        <div class="px-4 py-3 bg-surface-card border-t border-border/40 flex items-center justify-end gap-2.5">
             @if($req->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
                 <x-button as="button" type="button" size="sm" variant="secondary" icon="x-circle"
                     @click.stop="$wire.openRejectModal({{ $req->id }})">
@@ -115,7 +115,7 @@
                 @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                     <x-button as="button" type="button" size="sm" variant="success" icon="check-circle"
                         @click.stop="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.', confirmLabel: 'Aprobar', variant: 'success', action: 'submitForApproval', params: [{{ $req->id }}] })">
-                        Aprobar ahora
+                        Aprobar
                     </x-button>
                 @else
                     <x-button as="button" type="button" size="sm" variant="primary" icon="send"

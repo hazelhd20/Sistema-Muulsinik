@@ -301,9 +301,9 @@
                 </div>
 
                 {{-- Formulario de conceptos (Mobile) --}}
-                <div class="md:hidden flex flex-col gap-4 px-6 pt-6 pb-2">
+                <div class="md:hidden flex flex-col gap-4 p-3 sm:p-6 pb-2">
                     @foreach($items as $index => $item)
-                        <div class="bg-surface-main rounded-xl p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $index }}">
+                        <div class="bg-surface-main rounded-xl p-3.5 sm:p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $index }}">
                             <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
                                 <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
                                     Concepto {{ $index + 1 }}

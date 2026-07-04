@@ -2,7 +2,7 @@
     {{-- Header --}}
     <x-page-header subtitle="Gestión" title="Proyectos" icon="hard-hat">
         <x-slot:actions>
-            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus" class="flex-1 sm:flex-initial justify-center">
                 Nuevo Proyecto
             </x-button>
         </x-slot:actions>
@@ -16,9 +16,9 @@
         @endphp
         @if($projects->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+                <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                     {{-- Search --}}
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar proyecto o cliente..." />
@@ -83,7 +83,7 @@
                         @endif
 
                         @if($activeCount > 1)
-                            <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="!text-xs !min-h-0 ml-auto">
+                            <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="!min-h-0 ml-auto">
                                 Limpiar todo
                             </x-button>
                         @endif
@@ -120,13 +120,11 @@
                             <col class="w-[9%]">         {{-- Estado --}}
                             <col class="w-28">           {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-th border-b border-border">
+                        <thead class="bg-surface-main border-b border-border/40">
                             <tr>
-                                <th class="actions text-center pl-6 pr-2">
-                                    <input type="checkbox"
-                                        class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-bind:checked="allSelected"
-                                        x-on:change="toggleAll({{ json_encode($projects->pluck('id')->toArray()) }})" />
+                                <th class="actions pl-6 pr-2 text-left">
+                                    <x-table-checkbox x-bind:checked="allSelected"
+                                        @change="toggleAll({{ json_encode($projects->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre del Proyecto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
@@ -156,28 +154,28 @@
                                     <tr wire:key="project-row-{{ $project->id }}"
                                         class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="actions text-center pl-6 pr-2" @click.stop>
+                                        <td class="actions pl-6 pr-2 text-left" @click.stop>
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                         </td>
-                                        <td class="font-semibold text-text-primary truncate max-w-0" title="{{ $project->name }}">
+                                        <td class="text-body font-bold text-text-primary truncate max-w-0" title="{{ $project->name }}">
                                             {{ $project->name }}
                                         </td>
-                                        <td class="truncate text-text-secondary max-w-0" title="{{ $project->client?->name ?? '—' }}">
+                                        <td class="text-body font-medium truncate text-text-secondary max-w-0" title="{{ $project->client?->name ?? '—' }}">
                                             {{ $project->client?->name ?? '—' }}
                                         </td>
                                         <td>
-                                            <div class="text-text-primary">
+                                            <div class="text-body font-medium text-text-secondary">
                                                 {{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}
                                             </div>
                                         </td>
                                         <td class="numeric">
-                                            <div class="text-text-primary font-medium tabular-nums text-right">
+                                            <div class="text-body font-bold text-text-primary tabular-nums text-right">
                                                 ${{ number_format($project->budget, 0, '.', ',') }}</div>
-                                            <div class="text-xs text-text-muted mt-0.5 tabular-nums text-right">
+                                            <div class="text-xs-fluid text-text-muted mt-0.5 tabular-nums text-right">
                                                 ${{ number_format($project->total_expenses, 0, '.', ',') }} gastado</div>
                                         </td>
                                         <td class="min-w-[120px]">
-                                            <div class="flex items-center justify-between text-xs mb-1.5">
+                                            <div class="flex items-center justify-between text-xs-fluid mb-1.5">
                                                 <span
                                                     class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                                             </div>
@@ -197,7 +195,7 @@
                                                 <span class="text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="actions pr-6" @click.stop>
+                                        <td class="actions pr-6 py-3" @click.stop>
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
@@ -236,8 +234,8 @@
                             class="hidden">
                             @for($i = 0; $i < 6; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="actions text-center pl-6 pr-2">
-                                        <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
+                                    <td class="actions pl-6 pr-2 text-left">
+                                        <x-skeleton class="w-4 h-4 rounded-sm" />
                                     </td>
                                     <td>
                                         <x-skeleton class="h-4 rounded w-32" />
@@ -259,7 +257,7 @@
                                     <td>
                                         <x-skeleton class="h-6 rounded-full w-20" />
                                     </td>
-                                    <td class="actions pr-6">
+                                    <td class="actions pr-6 py-3">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
@@ -277,15 +275,15 @@
                         class="flex flex-col gap-4">
                         @if($projects->isNotEmpty())
                             @foreach($projects as $project)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                    x-bind:class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                    x-bind:class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                     wire:key="project-mobile-row-{{ $project->id }}">
                                     
                                     {{-- Cabecera de la Fila --}}
-                                    <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
-                                            <span class="font-bold text-text-primary text-base truncate">{{ $project->name }}</span>
+                                            <span class="font-bold text-text-primary text-h3 truncate">{{ $project->name }}</span>
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
@@ -307,34 +305,34 @@
                                         </div>
                                     </div>
 
-                                    {{-- Contenido Indentado --}}
-                                    <div class="pl-8 flex flex-col gap-3">
+                                    {{-- Contenido Principal --}}
+                                    <div class="p-4 flex flex-col gap-4">
                                         {{-- Subtítulo --}}
-                                        <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+                                        <div class="text-small text-text-muted flex flex-wrap items-center gap-x-4 gap-y-2">
                                             <span class="flex items-center gap-1.5 truncate">
-                                                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
-                                                <span class="truncate">{{ $project->client?->name ?? 'Sin cliente' }}</span>
+                                                <x-lucide-user class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                                <span class="truncate font-medium">{{ $project->client?->name ?? 'Sin cliente' }}</span>
                                             </span>
                                             <span class="flex items-center gap-1.5">
-                                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
-                                                <span>{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                                <span class="font-medium">{{ $project->start_date?->format('d/m/Y') ?? 'Sin fecha' }}</span>
                                             </span>
                                         </div>
 
                                         {{-- Datos Financieros --}}
-                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-border/40">
                                             <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Presupuesto</p>
-                                                <p class="text-sm font-semibold text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
+                                                <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-1">Presupuesto</p>
+                                                <p class="text-body font-medium text-text-primary tabular-nums">${{ number_format($project->budget, 0, '.', ',') }}</p>
                                             </div>
                                             <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Gastado</p>
-                                                <p class="text-sm text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
+                                                <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-1">Gastado</p>
+                                                <p class="text-body font-medium text-text-primary tabular-nums">${{ number_format($project->total_expenses, 0, '.', ',') }}</p>
                                             </div>
-                                            <div class="col-span-2">
+                                            <div class="col-span-2 pt-1">
                                                 <div class="flex justify-between items-center mb-1.5">
-                                                    <span class="text-[10px] text-text-muted uppercase font-semibold">Ejecución</span>
-                                                    <span class="text-[10px] font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
+                                                    <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Ejecución</span>
+                                                    <span class="text-xs-fluid font-bold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                                                 </div>
                                                 <div class="w-full h-1.5 bg-surface-main rounded-full overflow-hidden">
                                                     @php
@@ -346,7 +344,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </x-card>
                             @endforeach
                         @else
                             @if($hasActiveFilters)
@@ -368,43 +366,47 @@
                         wire:target="search, statusFilter, periodFilter, previousPage, nextPage, gotoPage"
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
-                                    {{-- Cabecera de la Fila --}}
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3 min-w-0">
-                                            <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
-                                            <x-skeleton class="h-5 w-32 rounded" />
-                                        </div>
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <x-skeleton class="h-6 w-16 rounded-full" />
-                                            <x-skeleton class="w-5 h-5 rounded-md" />
-                                        </div>
+                            <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden opacity-{{ 100 - ($i * 15) }}">
+                                {{-- Cabecera de la Fila --}}
+                                <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                        <x-skeleton class="h-5 w-32 rounded" />
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <x-skeleton class="h-6 w-16 rounded-full" />
+                                        <x-skeleton class="w-8 h-8 rounded-md" />
+                                    </div>
+                                </div>
+
+                                {{-- Contenido Principal --}}
+                                <div class="p-4 flex flex-col gap-4">
+                                    {{-- Subtítulo --}}
+                                    <div class="flex flex-wrap gap-2">
+                                        <x-skeleton class="h-3 w-28 rounded" />
+                                        <x-skeleton class="h-3 w-24 rounded" />
                                     </div>
 
-                                    {{-- Contenido Indentado --}}
-                                    <div class="pl-8 flex flex-col gap-3">
-                                        {{-- Subtítulo --}}
-                                        <div class="flex flex-wrap gap-2">
-                                            <x-skeleton class="h-3 w-24 rounded" />
-                                            <x-skeleton class="h-3 w-20 rounded" />
+                                    {{-- Datos Financieros --}}
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-border/40">
+                                        <div>
+                                            <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
+                                            <x-skeleton class="h-4 w-24 rounded" />
                                         </div>
-
-                                        {{-- Datos Financieros --}}
-                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                            <div>
-                                                <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
-                                                <x-skeleton class="h-4 w-20 rounded" />
+                                        <div>
+                                            <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
+                                            <x-skeleton class="h-4 w-24 rounded" />
+                                        </div>
+                                        <div class="col-span-2 pt-1">
+                                            <div class="flex justify-between items-center mb-1.5">
+                                                <x-skeleton class="h-3 w-16 rounded" />
+                                                <x-skeleton class="h-3 w-8 rounded" />
                                             </div>
-                                            <div>
-                                                <x-skeleton class="h-3 w-16 mb-1.5 rounded" />
-                                                <x-skeleton class="h-4 w-20 rounded" />
-                                            </div>
-                                            <div class="col-span-2">
-                                                <x-skeleton class="h-1.5 w-full rounded-full" />
-                                            </div>
+                                            <x-skeleton class="h-1.5 w-full rounded-full" />
                                         </div>
                                     </div>
-                            </div>
+                                </div>
+                            </x-card>
                         @endfor
                     </div>
                 </div>
@@ -420,7 +422,7 @@
                             variant: 'danger',
                             action: 'bulkDelete',
                             params: []
-                        })" variant="danger" icon="trash-2">
+                        })" variant="danger" icon="trash-2" size="sm">
                         Eliminar
                     </x-button>
                 </x-bulk-actions-bar>

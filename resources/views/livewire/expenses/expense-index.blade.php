@@ -18,9 +18,9 @@
         @endphp
         @if($expenses->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
             {{-- Filters Bar --}}
-            <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+            <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                 {{-- Search --}}
                 <div class="flex-1 min-w-0">
                     <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar gasto..." />
@@ -92,7 +92,7 @@
             @endif
 
             @if($activeCount > 1)
-                <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="!text-xs !min-h-0 ml-auto">
+                <x-button wire:click="clearAllFilters" variant="link-danger-muted" icon="eraser" class="text-xs-fluid !min-h-0 ml-auto">
                     Limpiar todo
                 </x-button>
             @endif
@@ -124,15 +124,13 @@
                             <col class="w-[17%]">        {{-- Categoría --}}
                             <col class="w-[12%]">        {{-- Fecha --}}
                             <col class="w-[12%]">        {{-- Monto --}}
-                            <col class="w-[11%]">        {{-- Acciones --}}
+                            <col class="w-28">           {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-th border-b border-border/40">
+                        <thead class="bg-surface-main border-b border-border/40">
                             <tr>
-                                <th class="actions text-center pl-6 pr-2">
-                                    <input type="checkbox"
-                                        class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-bind:checked="allSelected"
-                                        x-on:change="toggleAll({{ json_encode($expenses->pluck('id')->toArray()) }})" />
+                                <th class="actions pl-6 pr-2 text-left">
+                                    <x-table-checkbox x-bind:checked="allSelected"
+                                        @change="toggleAll({{ json_encode($expenses->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="concept" label="Concepto" :sortField="$sortField" :sortDirection="$sortDirection" />
                                 <x-sortable-header field="project_id" label="Proyecto" :sortField="$sortField" :sortDirection="$sortDirection" />
@@ -155,26 +153,26 @@
                                 <tr wire:key="expense-row-{{ $expense->id }}"
                                     class="group hover:bg-surface-hover transition-colors duration-150"
                                     :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="actions text-center pl-6 pr-2" @click.stop="$event.stopPropagation()">
+                                    <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                         <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
                                     </td>
                                     <td class="pr-2 max-w-0">
-                                        <p class="font-semibold text-text-primary truncate" title="{{ $expense->concept }}">{{ $expense->concept }}</p>
-                                        <p class="text-xs text-text-muted truncate" title="Por: {{ $expense->user->name ?? '—' }}">Por: {{ $expense->user->name ?? '—' }}</p>
+                                        <p class="text-body font-bold text-text-primary truncate" title="{{ $expense->concept }}">{{ $expense->concept }}</p>
+                                        <p class="text-small text-text-muted truncate" title="Por: {{ $expense->user->name ?? '—' }}">Por: {{ $expense->user->name ?? '—' }}</p>
                                     </td>
                                     <td class="pr-2 max-w-0">
                                         @if($expense->is_distributed)
                                             <x-badge variant="primary" icon="split">Distribuido</x-badge>
                                         @else
-                                            <p class="text-sm text-text-secondary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
+                                            <p class="text-body font-medium text-text-secondary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
                                         @endif
                                     </td>
                                     <td>
                                         <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
                                     </td>
-                                    <td class="text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
-                                    <td class="numeric font-semibold text-text-primary">${{ number_format($expense->amount, 2, '.', ',') }}</td>
-                                    <td class="actions pr-6" @click.stop="$event.stopPropagation()">
+                                    <td class="text-body font-medium text-text-secondary">{{ $expense->date->format('d/m/Y') }}</td>
+                                    <td class="text-body font-bold text-right tabular-nums text-text-primary numeric">${{ number_format($expense->amount, 2, '.', ',') }}</td>
+                                    <td class="actions pr-6 py-3" @click.stop="$event.stopPropagation()">
                                         <div class="flex items-center justify-end">
                                             @if($expense->receipt_file || auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
                                             <x-dropdown align="right" width="48">
@@ -205,8 +203,8 @@
                         <tbody wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="actions text-center pl-6 pr-2">
-                                        <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
+                                    <td class="actions pl-6 pr-2 text-left">
+                                        <x-skeleton class="w-4 h-4 rounded-sm" />
                                     </td>
                                     <td>
                                         <x-skeleton class="h-4 rounded w-48 mb-1.5" />
@@ -224,7 +222,7 @@
                                     <td class="numeric">
                                         <x-skeleton class="h-4 rounded w-20 ml-auto" />
                                     </td>
-                                    <td class="actions pr-6">
+                                    <td class="actions pr-6 py-3">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
@@ -239,16 +237,25 @@
                 <div class="md:hidden flex flex-col gap-4 mt-2">
                     <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($expenses->isNotEmpty())
+                            {{-- Barra de Selección en Móvil --}}
+                            <div class="flex items-center justify-between gap-3 p-3 px-4 rounded-xl border border-border/60 bg-surface-card shadow-sm">
+                                <label class="flex items-center gap-3 cursor-pointer text-small font-medium text-text-secondary select-none">
+                                    <x-table-checkbox x-on:change="toggleAll({{ json_encode($expenses->pluck('id')->toArray()) }})" />
+                                    <span>Seleccionar todo en la página</span>
+                                </label>
+                                <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">{{ $expenses->count() }} {{ $expenses->count() === 1 ? 'gasto' : 'gastos' }}</span>
+                            </div>
+
                             @foreach($expenses as $expense)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                     :class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                     x-bind:class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                      wire:key="expense-mobile-card-{{ $expense->id }}">
                                     
-                                    {{-- Cabecera de la Fila --}}
-                                    <div class="flex items-center justify-between gap-2">
+                                    {{-- Cabecera de la Tarjeta --}}
+                                    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $expense->id }}" />
-                                            <span class="font-bold text-text-primary text-base truncate">{{ $expense->concept }}</span>
+                                            <span class="font-bold text-text-primary text-h3 truncate">{{ $expense->concept }}</span>
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             @if($expense->receipt_file || auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
@@ -269,41 +276,41 @@
                                         </div>
                                     </div>
 
-                                    {{-- Contenido Indentado --}}
-                                    <div class="pl-8 flex flex-col gap-3">
+                                    {{-- Contenido de la Tarjeta --}}
+                                    <div class="p-4 flex flex-col gap-3">
                                         {{-- Subtítulo --}}
-                                        <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
-                                            <span class="flex items-center gap-1.5 truncate">
-                                                <x-lucide-user class="w-3.5 h-3.5 shrink-0" />
+                                        <div class="text-small text-text-muted flex flex-wrap items-center gap-x-4 gap-y-2">
+                                            <span class="flex items-center gap-1.5 font-medium truncate">
+                                                <x-lucide-user class="w-3.5 h-3.5 shrink-0 opacity-70" />
                                                 <span class="truncate">{{ $expense->user->name ?? 'Sin usuario' }}</span>
                                             </span>
-                                            <span class="flex items-center gap-1.5">
-                                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0" />
+                                            <span class="flex items-center gap-1.5 font-medium">
+                                                <x-lucide-calendar class="w-3.5 h-3.5 shrink-0 opacity-70" />
                                                 <span>{{ $expense->date->format('d/m/Y') }}</span>
                                             </span>
                                         </div>
 
                                         {{-- Datos Financieros --}}
-                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 pt-1 border-t border-border/40">
                                             <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Proyecto</p>
+                                                <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-1">Proyecto</p>
                                                 @if($expense->is_distributed)
                                                     <x-badge variant="primary" icon="split">Distribuido</x-badge>
                                                 @else
-                                                    <p class="text-sm text-text-primary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
+                                                    <p class="text-body font-medium text-text-primary truncate" title="{{ $expense->project->name ?? '—' }}">{{ $expense->project->name ?? '—' }}</p>
                                                 @endif
                                             </div>
                                             <div>
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
+                                                <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-1">Categoría</p>
                                                 <x-dynamic-badge :value="$categories[$expense->category] ?? $expense->category" />
                                             </div>
-                                            <div class="col-span-2">
-                                                <p class="text-[10px] text-text-muted uppercase font-semibold mb-0.5">Monto</p>
-                                                <p class="font-bold text-text-primary tabular-nums">${{ number_format($expense->amount, 2, '.', ',') }}</p>
+                                            <div class="col-span-2 pt-1 border-t border-border/40">
+                                                <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-1">Monto</p>
+                                                <p class="font-bold text-h2 text-text-primary tabular-nums">${{ number_format($expense->amount, 2, '.', ',') }}</p>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </x-card>
                             @endforeach
                         @else
                             @if($hasActiveFilters)
@@ -412,7 +419,7 @@
                             <input type="checkbox" wire:model.live="isDistributed" id="isDistributed"
                                 class="rounded border-border accent-primary-600 focus:ring-primary-500 w-3 h-3">
                             <label for="isDistributed"
-                                class="text-[10px] uppercase font-bold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
+                                class="text-xs-fluid uppercase font-semibold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
                                 (Activos)</label>
                         </div>
                     </div>

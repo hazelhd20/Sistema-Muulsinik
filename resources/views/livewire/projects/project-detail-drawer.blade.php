@@ -6,8 +6,8 @@
                 {{-- Resumen principal --}}
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-h3 text-text-primary pr-4">{{ $detailProject->name }}</h3>
-                        <div class="flex items-center gap-1.5 mt-1 text-sm text-text-muted">
+                        <h3 class="text-h2 font-bold text-text-primary pr-4">{{ $detailProject->name }}</h3>
+                        <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
                             <x-lucide-briefcase class="w-3.5 h-3.5 text-text-muted/70" />
                             <span>{{ $detailProject->client?->name ?? 'Sin cliente registrado' }}</span>
                         </div>
@@ -19,12 +19,12 @@
                 <div class="bg-surface-main/50 p-4 rounded-xl">
                     <div class="flex justify-between items-end mb-3">
                         <div>
-                            <p class="text-text-muted text-xs font-medium mb-0.5">Presupuesto</p>
+                            <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Presupuesto</p>
                             <p class="font-bold text-h2 text-text-primary">${{ number_format($detailProject->budget, 2) }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-text-muted text-xs font-medium mb-0.5">Gastado</p>
-                            <p class="font-semibold text-text-primary">${{ number_format($detailProject->total_expenses, 2) }}</p>
+                            <p class="text-text-muted text-xs-fluid font-medium mb-0.5">Gastado</p>
+                            <p class="font-bold text-h2 text-text-primary">${{ number_format($detailProject->total_expenses, 2) }}</p>
                         </div>
                     </div>
                     <div class="w-full h-2 bg-surface-main rounded-full overflow-hidden mb-1">
@@ -34,7 +34,7 @@
                         @endphp
                         <div class="{{ $barColor }} h-full rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
                     </div>
-                    <div class="text-right text-xs text-text-muted">
+                    <div class="text-right text-xs-fluid text-text-muted">
                         {{ $detailProject->budget_used_percent }}% utilizado
                     </div>
                 </div>

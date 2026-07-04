@@ -104,8 +104,7 @@
                             <div class="py-2.5 flex flex-col gap-1.5">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0 flex-1">
-                                        <p class="font-medium text-body text-text-primary leading-snug break-words">
-                                            <span class="text-text-muted font-normal mr-1">#{{ $index + 1 }}</span>
+                                        <p class="font-bold text-body text-text-primary leading-snug break-words">
                                             {{ $item->product?->canonical_name ?? 'Producto desconocido' }}
                                         </p>
                                     </div>
@@ -117,8 +116,8 @@
                                 </div>
                                 <div class="flex items-baseline justify-between gap-2 pt-0.5">
                                     <div class="text-small text-text-secondary font-medium">
-                                        <span class="text-text-primary font-semibold">{{ number_format($item->quantity, 2) }}</span>
-                                        <span class="uppercase">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
+                                        <span>{{ number_format($item->quantity, 2) }}</span>
+                                        <span class="uppercase ml-0.5">{{ $item->product?->measure?->abbreviation ?? $item->measure?->abbreviation ?? 'pza' }}</span>
                                         @if($item->unit_price > 0)
                                             <span class="text-text-muted mx-1">×</span>
                                             <span>${{ number_format($item->unit_price, 2) }}</span>
@@ -160,7 +159,7 @@
                         <span class="text-xs-fluid font-bold text-text-muted uppercase tracking-wider">Importe Total</span>
                         <span class="text-small text-text-secondary">IVA (16%) incluido</span>
                     </div>
-                    <span class="text-h1 font-extrabold text-text-primary tabular-nums tracking-tight">
+                    <span class="text-h1 font-bold text-text-primary tabular-nums tracking-tight">
                         ${{ number_format($detailRequisition->total, 2) }}
                     </span>
                 </div>

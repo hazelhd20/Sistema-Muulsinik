@@ -174,11 +174,11 @@
                                     <col class="w-[16%]"> {{-- Proveedor --}}
                                     <col class="w-[8%]"> {{-- Total --}}
                                     <col class="w-[8%]"> {{-- Estado --}}
-                                    <col class="w-24"> {{-- Acciones --}}
+                                    <col class="w-28"> {{-- Acciones --}}
                                 </colgroup>
                                 <thead class="bg-surface-main border-b border-border/40">
                                     <tr>
-                                        <th class="actions text-center pl-4 pr-2">
+                                        <th class="actions pl-6 pr-2 text-left">
                                             <x-table-checkbox x-bind:checked="allSelected"
                                                 @change="toggleAll({{ json_encode($requisitions->pluck('id')->toArray()) }})" />
                                         </th>
@@ -188,13 +188,13 @@
                                             :sortDirection="$sortDirection" />
                                         <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
                                             :sortDirection="$sortDirection" />
-                                        <th>Creador</th>
-                                        <th>Proveedor</th>
+                                        <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Creador</th>
+                                        <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Proveedor</th>
                                         <x-sortable-header field="total" label="Total" :sortField="$sortField"
                                             :sortDirection="$sortDirection" align="right" class="numeric" />
                                         <x-sortable-header field="status" label="Estado" :sortField="$sortField"
                                             :sortDirection="$sortDirection" />
-                                        <th class="actions text-right pr-4">Acciones</th>
+                                        <th class="actions pr-6 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody wire:loading.class="hidden"
@@ -217,8 +217,8 @@
                                     class="hidden">
                                     @for($i = 0; $i < 5; $i++)
                                         <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                            <td class="text-center">
-                                                <x-skeleton class="w-4 h-4 rounded mx-auto" />
+                                            <td class="actions pl-6 pr-2 text-left">
+                                                <x-skeleton class="w-4 h-4 rounded-sm" />
                                             </td>
                                             <td>
                                                 <x-skeleton class="h-4 rounded w-16" />
@@ -241,10 +241,9 @@
                                             <td>
                                                 <x-skeleton class="h-6 rounded w-20" />
                                             </td>
-                                            <td class="text-right">
-                                                <div class="flex justify-end gap-1">
-                                                    <x-skeleton class="w-8 h-8 rounded" />
-                                                    <x-skeleton class="w-8 h-8 rounded" />
+                                            <td class="actions pr-6 py-3">
+                                                <div class="flex items-center justify-end">
+                                                    <x-skeleton class="w-8 h-8 rounded-md" />
                                                 </div>
                                             </td>
                                         </tr>
@@ -325,13 +324,13 @@
                             @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                                 <div x-show="canApproveSelection" x-cloak class="flex items-center gap-2">
                                     <x-button @click="$dispatch('confirm-action', {
-                                                    title: 'Aprobar Seleccionadas',
-                                                    description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
-                                                    confirmLabel: 'Aprobar seleccionadas',
-                                                    variant: 'success',
-                                                    action: 'approveSelected',
-                                                    params: []
-                                                })" variant="success" icon="check-circle">
+                                                        title: 'Aprobar Seleccionadas',
+                                                        description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
+                                                        confirmLabel: 'Aprobar seleccionadas',
+                                                        variant: 'success',
+                                                        action: 'approveSelected',
+                                                        params: []
+                                                    })" variant="success" icon="check-circle">
                                         Aprobar
                                     </x-button>
                                     <x-button wire:click="openBulkRejectModal" variant="secondary" icon="x-circle"
@@ -345,8 +344,7 @@
 
                             {{-- Menú de Exportación (Inline CSS positioning) --}}
                             <div class="relative inline-flex" x-data="{ open: false }" @click.outside="open = false">
-                                <x-button variant="secondary" icon="file-down"
-                                    @click="open = !open"
+                                <x-button variant="secondary" icon="file-down" @click="open = !open"
                                     wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed"
                                     wire:loading.attr="disabled">
                                     <span wire:loading.remove
@@ -355,16 +353,14 @@
                                         wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportando...</span>
                                 </x-button>
 
-                                <div x-show="open"
-                                     x-transition:enter="transition-premium"
-                                     x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                     x-transition:leave="transition-premium"
-                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                     x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                                     class="absolute z-50 bottom-full left-0 mb-2 w-56 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden"
-                                     style="display: none;"
-                                     @click="open = false">
+                                <div x-show="open" x-transition:enter="transition-premium"
+                                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave="transition-premium"
+                                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                    class="absolute z-50 bottom-full left-0 mb-2 w-56 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden"
+                                    style="display: none;" @click="open = false">
                                     <x-dropdown-link as="button" wire:click="exportCsvSummary" icon="table">
                                         Resumen (CSV)
                                     </x-dropdown-link>
@@ -379,13 +375,13 @@
 
                             @if(auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
                                 <x-button @click="$dispatch('confirm-action', {
-                                        title: 'Eliminar Seleccionadas',
-                                        description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
-                                        confirmLabel: 'Eliminar',
-                                        variant: 'danger',
-                                        action: 'deleteSelected',
-                                        params: []
-                                    })" variant="danger" icon="trash-2">
+                                            title: 'Eliminar Seleccionadas',
+                                            description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
+                                            confirmLabel: 'Eliminar',
+                                            variant: 'danger',
+                                            action: 'deleteSelected',
+                                            params: []
+                                        })" variant="danger" icon="trash-2">
                                     Eliminar
                                 </x-button>
                             @endif
@@ -396,13 +392,13 @@
                             @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                                 <div x-show="canApproveSelection" x-cloak>
                                     <x-button size="sm" @click="$dispatch('confirm-action', {
-                                                    title: 'Aprobar Seleccionadas',
-                                                    description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
-                                                    confirmLabel: 'Aprobar',
-                                                    variant: 'success',
-                                                    action: 'approveSelected',
-                                                    params: []
-                                                })" variant="success" icon="check-circle">
+                                                        title: 'Aprobar Seleccionadas',
+                                                        description: 'Se aprobarán todas las requisiciones pendientes de tu selección.',
+                                                        confirmLabel: 'Aprobar',
+                                                        variant: 'success',
+                                                        action: 'approveSelected',
+                                                        params: []
+                                                    })" variant="success" icon="check-circle">
                                         Aprobar
                                     </x-button>
                                 </div>
@@ -424,22 +420,21 @@
                             @endif
 
                             <div class="relative inline-flex" x-data="{ open: false }" @click.outside="open = false">
-                                <x-button size="sm" variant="secondary" icon="more-vertical" aria-label="Más opciones" title="Más opciones" @click="open = !open" />
+                                <x-button size="sm" variant="secondary" icon="more-vertical" aria-label="Más opciones"
+                                    title="Más opciones" @click="open = !open" />
 
-                                <div x-show="open"
-                                     x-transition:enter="transition-premium"
-                                     x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                     x-transition:leave="transition-premium"
-                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                     x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                                     class="absolute z-50 bottom-full right-0 mb-2 w-56 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden"
-                                     style="display: none;"
-                                     @click="open = false">
+                                <div x-show="open" x-transition:enter="transition-premium"
+                                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave="transition-premium"
+                                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                    class="absolute z-50 bottom-full right-0 mb-2 w-56 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden"
+                                    style="display: none;" @click="open = false">
                                     @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
                                         <div x-show="canApproveSelection">
                                             <x-dropdown-link as="button" wire:click="openBulkRejectModal" icon="x-circle">
-                                                Rechazar seleccionadas
+                                                Rechazar
                                             </x-dropdown-link>
                                         </div>
                                     @endif
@@ -454,14 +449,14 @@
                                     </x-dropdown-link>
                                     @if(auth()->user()->hasPermission('requisiciones.editar') || auth()->user()->hasPermission('*'))
                                         <x-dropdown-link as="button" @click="$dispatch('confirm-action', {
-                                            title: 'Eliminar Seleccionadas',
-                                            description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
-                                            confirmLabel: 'Eliminar',
-                                            variant: 'danger',
-                                            action: 'deleteSelected',
-                                            params: []
-                                        })" danger="true" icon="trash-2">
-                                            Eliminar seleccionadas
+                                                title: 'Eliminar Seleccionadas',
+                                                description: 'Se eliminarán permanentemente los borradores y rechazadas de tu selección.',
+                                                confirmLabel: 'Eliminar',
+                                                variant: 'danger',
+                                                action: 'deleteSelected',
+                                                params: []
+                                            })" danger="true" icon="trash-2">
+                                            Eliminar
                                         </x-dropdown-link>
                                     @endif
                                 </div>

@@ -69,9 +69,9 @@
                         @if($title instanceof \Illuminate\View\ComponentSlot)
                             {{ $title }}
                         @else
-                            <h2 class="text-h2 font-semibold text-text-primary leading-snug">{{ $title }}</h2>
+                            <h2 class="text-h2 font-bold text-text-primary leading-snug">{{ $title }}</h2>
                             @if($subtitle)
-                                <p class="text-sm text-text-secondary mt-0.5">{{ $subtitle }}</p>
+                                <p class="text-small font-medium text-text-secondary mt-0.5">{{ $subtitle }}</p>
                             @endif
                         @endif
                     </div>

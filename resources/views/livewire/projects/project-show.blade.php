@@ -70,7 +70,7 @@
                     $barColor = $percent >= 90 ? 'bg-danger' : ($percent >= 70 ? 'bg-warning' : 'bg-primary-600');
                 @endphp
                 <div class="mt-6 pt-6 border-t border-border/40">
-                    <div class="flex items-center justify-between text-xs mb-2">
+                    <div class="flex items-center justify-between text-xs-fluid mb-2">
                         <span class="text-text-muted">Ejecución del presupuesto</span>
                         <span class="font-semibold text-text-primary tabular-nums">{{ $project->budget_used_percent }}%</span>
                     </div>
@@ -80,7 +80,7 @@
                         </div>
                     </div>
                     @if($project->budget_used_percent > 100)
-                        <p class="text-xs text-danger mt-1.5 flex items-center gap-1">
+                        <p class="text-xs-fluid text-danger mt-1.5 flex items-center gap-1">
                             <x-lucide-alert-triangle class="w-3.5 h-3.5" />
                             El gasto acumulado supera el presupuesto asignado.
                         </p>
@@ -122,7 +122,7 @@
             <x-card.header title="Requisiciones">
                 <x-slot:action>
                     @if($project->requisitions->count() > 0)
-                        <span class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
+                        <span class="text-xs-fluid font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
                             {{ $project->requisitions->count() }} {{ $project->requisitions->count() === 1 ? 'requisición' : 'requisiciones' }}
                         </span>
                     @endif
@@ -132,7 +132,7 @@
             <div class="w-full overflow-x-auto">
                 @if($project->requisitions->isNotEmpty())
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                        <thead class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap">Número</th>
                                 <th class="px-4 py-3 whitespace-nowrap">Proveedor</th>
@@ -146,19 +146,19 @@
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($project->requisitions as $requisition)
                                 <tr class="hover:bg-surface-hover transition-colors duration-150">
-                                    <td class="pl-6 pr-4 py-3 font-medium text-sm text-text-primary">
+                                    <td class="pl-6 pr-4 py-3 font-medium text-body text-text-primary">
                                         {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-text-muted">
+                                    <td class="px-4 py-3 text-body text-text-muted">
                                         {{ $requisition->supplier_name }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-text-secondary">
+                                    <td class="px-4 py-3 text-body text-text-secondary">
                                         {{ $requisition->creator?->name ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-text-muted tabular-nums">
+                                    <td class="px-4 py-3 text-body text-text-muted tabular-nums">
                                         {{ $requisition->date?->format('d/m/Y') ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-right font-semibold text-sm text-text-primary tabular-nums">
+                                    <td class="px-4 py-3 text-right font-semibold text-body text-text-primary tabular-nums">
                                         ${{ number_format($requisition->total, 2) }}
                                     </td>
                                     <td class="px-4 py-3">
@@ -196,7 +196,7 @@
             <x-card.header title="Gastos Directos">
                 <x-slot:action>
                     @if($project->expenses->count() > 0)
-                        <span class="text-xs font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
+                        <span class="text-xs-fluid font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
                             {{ $project->expenses->count() }} {{ $project->expenses->count() === 1 ? 'gasto' : 'gastos' }}
                         </span>
                     @endif
@@ -206,7 +206,7 @@
             <div class="w-full overflow-x-auto">
                 @if($project->expenses->isNotEmpty())
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                        <thead class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap">Concepto</th>
                                 <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
@@ -218,19 +218,19 @@
                         <tbody class="divide-y divide-border/40 border-b border-border/40">
                             @foreach($project->expenses as $expense)
                                 <tr class="hover:bg-surface-hover transition-colors duration-150">
-                                    <td class="pl-6 pr-4 py-3 font-medium text-sm text-text-primary">
+                                    <td class="pl-6 pr-4 py-3 font-medium text-body text-text-primary">
                                         {{ $expense->concept }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm">
+                                    <td class="px-4 py-3 text-body">
                                         <x-dynamic-badge :value="$expense->category_name" />
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-text-secondary">
+                                    <td class="px-4 py-3 text-body text-text-secondary">
                                         {{ $expense->user?->name ?? '—' }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-text-muted tabular-nums">
+                                    <td class="px-4 py-3 text-body text-text-muted tabular-nums">
                                         {{ $expense->date?->format('d/m/Y') ?? '—' }}
                                     </td>
-                                    <td class="pr-6 pl-4 py-3 text-right font-semibold text-sm text-text-primary tabular-nums">
+                                    <td class="pr-6 pl-4 py-3 text-right font-semibold text-body text-text-primary tabular-nums">
                                         ${{ number_format($expense->amount, 2) }}
                                     </td>
                                 </tr>

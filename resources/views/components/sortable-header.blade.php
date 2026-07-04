@@ -21,9 +21,9 @@
 
 
 <th wire:click="sortBy('{{ $field }}')" 
-    {{ $attributes->merge(['class' => 'cursor-pointer group transition-colors duration-150 hover:bg-surface-main']) }}>
+    {{ $attributes->merge(['class' => 'cursor-pointer group transition-colors duration-150 hover:bg-surface-main text-xs-fluid font-semibold uppercase tracking-wider']) }}>
     <div class="flex items-center gap-1.5 {{ $alignClass }}">
-        <span class="{{ $isActive ? 'text-text-primary' : 'text-text-muted group-hover:text-text-primary' }} font-semibold transition-colors">{{ $label }}</span>
+        <span class="{{ $isActive ? 'text-text-primary' : 'text-text-muted group-hover:text-text-primary' }} transition-colors">{{ $label }}</span>
         <x-dynamic-component :component="'lucide-' . $icon" 
            class="w-3.5 h-3.5 {{ $isActive ? 'text-text-primary' : 'text-text-muted opacity-0 group-hover:opacity-100 transition-opacity' }}" />
     </div>

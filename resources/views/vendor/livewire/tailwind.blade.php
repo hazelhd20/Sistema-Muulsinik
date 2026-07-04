@@ -15,7 +15,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
         
         {{-- Mobile View --}}
         @if ($paginator->hasPages())
-            <div class="flex justify-between flex-1 sm:hidden gap-2">
+            <div class="flex justify-between flex-1 md:hidden gap-2.5">
                 @if ($paginator->onFirstPage())
                     <span class="relative inline-flex items-center justify-center flex-1 px-3 h-8 text-xs font-medium text-text-muted bg-surface-card border border-border cursor-default pointer-events-none rounded-md opacity-40 gap-1">
                         <x-lucide-chevron-left class="w-3.5 h-3.5" />
@@ -43,7 +43,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
         @endif
 
         {{-- Desktop View (3 columnas simétricas) --}}
-        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between w-full">
+        <div class="hidden md:flex md:flex-1 md:items-center md:justify-between w-full">
             {{-- Izquierda: Texto de resultados --}}
             <div class="flex-1 flex justify-start">
                 <p class="text-xs text-text-muted leading-5">

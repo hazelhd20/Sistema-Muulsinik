@@ -31,8 +31,8 @@
     };
     
     $descClasses = match($variant) {
-        'page' => 'text-sm text-text-secondary max-w-md leading-relaxed',
-        default => 'text-xs text-text-secondary max-w-sm',
+        'page' => 'text-body text-text-secondary max-w-md leading-relaxed',
+        default => 'text-small text-text-secondary max-w-sm',
     };
 @endphp
 
