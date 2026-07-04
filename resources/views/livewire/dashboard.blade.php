@@ -66,7 +66,7 @@
         <x-card class="lg:col-span-2">
             <x-card.header title="Gastos Mensuales" subtitle="Últimos 6 meses">
                 <x-slot:action>
-                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
+                    <span class="inline-flex items-center gap-1 text-xs-fluid font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
                         ${{ number_format($totalExpenses, 0, '.', ',') }}
                         <span class="font-normal text-text-muted">acumulado</span>
                     </span>
@@ -105,9 +105,9 @@
                             <div class="w-5 h-5 rounded bg-primary-50 flex items-center justify-center">
                                 <x-lucide-building-2 class="w-3 h-3 text-primary-600" />
                             </div>
-                            <span class="text-sm text-text-secondary">Cartera de clientes</span>
+                            <span class="text-small text-text-secondary">Cartera de clientes</span>
                         </div>
-                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalClients }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalClients }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -115,9 +115,9 @@
                             <div class="w-5 h-5 rounded bg-purple-50 flex items-center justify-center">
                                 <x-lucide-briefcase class="w-3 h-3 text-purple-600" />
                             </div>
-                            <span class="text-sm text-text-secondary">Total proyectos</span>
+                            <span class="text-small text-text-secondary">Total proyectos</span>
                         </div>
-                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProjects }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -125,9 +125,9 @@
                             <div class="w-5 h-5 rounded bg-warning-light flex items-center justify-center">
                                 <x-lucide-package class="w-3 h-3 text-warning" />
                             </div>
-                            <span class="text-sm text-text-secondary">Catálogo de productos</span>
+                            <span class="text-small text-text-secondary">Catálogo de productos</span>
                         </div>
-                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalProducts }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalProducts }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -135,9 +135,9 @@
                             <div class="w-5 h-5 rounded bg-danger-light flex items-center justify-center">
                                 <x-lucide-users class="w-3 h-3 text-danger" />
                             </div>
-                            <span class="text-sm text-text-secondary">Proveedores</span>
+                            <span class="text-small text-text-secondary">Proveedores</span>
                         </div>
-                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalSuppliers }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -145,9 +145,9 @@
                             <div class="w-5 h-5 rounded bg-cyan-50 flex items-center justify-center">
                                 <x-lucide-file-text class="w-3 h-3 text-cyan-600" />
                             </div>
-                            <span class="text-sm text-text-secondary">Presupuestos rápidos</span>
+                            <span class="text-small text-text-secondary">Presupuestos rápidos</span>
                         </div>
-                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $totalBudgets }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $totalBudgets }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -155,9 +155,9 @@
                             <div class="w-5 h-5 rounded bg-success-light flex items-center justify-center">
                                 <x-lucide-check-circle class="w-3 h-3 text-success" />
                             </div>
-                            <span class="text-sm text-text-secondary">Requisiciones aprobadas</span>
+                            <span class="text-small text-text-secondary">Requisiciones aprobadas</span>
                         </div>
-                        <span class="text-sm font-semibold text-text-primary tabular-nums">{{ $approvedRequisitions }}</span>
+                        <span class="text-small font-semibold text-text-primary tabular-nums">{{ $approvedRequisitions }}</span>
                     </div>
 
                 </div>
@@ -198,13 +198,13 @@
                     @foreach($recentProjects as $project)
                         <tr @click="Livewire.navigate('{{ route('proyectos.show', $project->id) }}')" class="cursor-pointer group hover:bg-surface-hover transition-colors duration-150">
                             <td>
-                                <p class="font-medium text-text-primary text-sm">{{ $project->name }}</p>
-                                <p class="text-xs text-text-muted">{{ $project->client?->name ?? '—' }}</p>
+                                <p class="font-medium text-text-primary text-small">{{ $project->name }}</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $project->client?->name ?? '—' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$project->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
                             </td>
-                            <td class="text-right text-sm font-semibold text-text-primary tabular-nums">
+                            <td class="text-right text-small font-semibold text-text-primary tabular-nums">
                                 ${{ number_format($project->budget, 0, '.', ',') }}
                             </td>
                         </tr>
@@ -245,15 +245,15 @@
                     @foreach($recentRequisitions as $req)
                         <tr @click="Livewire.navigate('{{ route('requisiciones.show', $req->id) }}')" class="cursor-pointer group hover:bg-surface-hover transition-colors duration-150">
                             <td>
-                                <p class="font-medium text-text-primary text-sm">
+                                <p class="font-medium text-text-primary text-small">
                                     {{ $req->number ?? 'REQ-' . $req->id }}
                                 </p>
-                                <p class="text-xs text-text-muted">{{ $req->creator->name ?? '' }}</p>
+                                <p class="text-xs-fluid text-text-muted">{{ $req->creator->name ?? '' }}</p>
                             </td>
                             <td>
                                 <x-status-badge :status="$req->status" :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
                             </td>
-                            <td class="text-sm text-text-secondary">{{ $req->project->name ?? '—' }}</td>
+                            <td class="text-small text-text-secondary">{{ $req->project->name ?? '—' }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -32,11 +32,11 @@
                         </div>
                     @endif
                     @if($remove_logo && !$newLogo)
-                        <div class="h-16 px-3.5 bg-danger-light border border-danger-border rounded-lg flex items-center gap-2.5 text-xs text-danger shrink-0">
+                        <div class="h-16 px-3.5 bg-danger-light border border-danger-border rounded-lg flex items-center gap-2.5 text-xs-fluid text-danger shrink-0">
                             <x-lucide-trash-2 class="w-4 h-4 shrink-0" />
                             <span class="font-medium">Por eliminar</span>
                             <button type="button" wire:click="$set('remove_logo', false)"
-                                    class="px-2 py-1 bg-surface-card hover:bg-surface-hover text-text-primary border border-border rounded font-medium transition text-[11px] shadow-2xs ml-1">
+                                    class="px-2 py-1 bg-surface-card hover:bg-surface-hover text-text-primary border border-border rounded font-medium transition text-xs-fluid shadow-2xs ml-1">
                                 Deshacer
                             </button>
                         </div>

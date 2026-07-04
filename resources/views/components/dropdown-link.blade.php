@@ -1,7 +1,7 @@
 @props(['as' => 'button', 'href' => '#', 'danger' => false, 'success' => false, 'icon' => null, 'iconRight' => null])
 
 @php
-    $baseClasses = 'flex items-center gap-2 px-4 py-2.5 text-sm font-medium w-full text-left transition-colors duration-150 ';
+    $baseClasses = 'flex items-center gap-2 px-4 py-2.5 text-small font-medium w-full text-left transition-colors duration-150 ';
     if ($danger) {
         $classes = $baseClasses . 'text-danger hover:bg-danger-light hover:text-danger-active';
     } elseif ($success) {

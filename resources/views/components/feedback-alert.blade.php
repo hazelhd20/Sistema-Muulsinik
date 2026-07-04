@@ -25,7 +25,7 @@ $iconColor = match($variant) {
     @if($icon)
         <x-dynamic-component :component="'lucide-' . $icon" class="w-4 h-4 mt-0.5 shrink-0 {{ $iconColor }}" wire:ignore />
     @endif
-    <div class="flex-1 text-xs leading-relaxed">
+    <div class="flex-1 text-xs-fluid leading-relaxed">
         {{ $slot }}
     </div>
 </div>

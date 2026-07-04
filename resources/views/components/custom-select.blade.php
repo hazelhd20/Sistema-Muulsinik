@@ -50,7 +50,7 @@
         role="combobox"
         aria-haspopup="listbox"
         :aria-expanded="open.toString()"
-        class="input flex items-center justify-between text-left w-full {{ $size === 'sm' ? '!h-8 !py-1 !px-2.5 !text-xs' : '' }}"
+        class="input flex items-center justify-between text-left w-full {{ $size === 'sm' ? '!h-8 !py-1 !px-2.5 !text-xs-fluid' : '' }}"
         :class="{ 'border-primary-400 ring-2 ring-primary-50': open }"
     >
         <div class="flex items-center gap-2 truncate {{ $textClass }}">
@@ -88,7 +88,7 @@
                     type="text" 
                     x-model="search" 
                     placeholder="Buscar..." 
-                    class="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-50"
+                    class="w-full pl-9 pr-3 py-1.5 text-xs-fluid border border-border rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-50"
                     @keydown.escape="close()"
                 >
             </div>
@@ -102,7 +102,7 @@
                     x-show="search === ''"
                     role="option"
                     :aria-selected="(!value || value == '') ? 'true' : 'false'"
-                    class="cursor-pointer transition-colors {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm' }}"
+                    class="cursor-pointer transition-colors {{ $size === 'sm' ? 'px-3 py-1.5 text-xs-fluid' : 'px-4 py-2.5 text-small' }}"
                     :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
                     {{ $placeholder }}
@@ -114,7 +114,7 @@
                     @click="value = val; close()"
                     role="option"
                     :aria-selected="value == val ? 'true' : 'false'"
-                    class="cursor-pointer transition-colors flex items-center justify-between {{ $size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm' }}"
+                    class="cursor-pointer transition-colors flex items-center justify-between {{ $size === 'sm' ? 'px-3 py-1.5 text-xs-fluid' : 'px-4 py-2.5 text-small' }}"
                     :class="value == val ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
                     <span x-text="label" class="truncate pr-4"></span>
@@ -124,7 +124,7 @@
                 </div>
             </template>
             
-            <div x-show="Object.keys(filteredOptions).length === 0" class="px-4 py-3 text-sm text-text-muted text-center">
+            <div x-show="Object.keys(filteredOptions).length === 0" class="px-4 py-3 text-small text-text-muted text-center">
                 No se encontraron resultados
             </div>
         </div>

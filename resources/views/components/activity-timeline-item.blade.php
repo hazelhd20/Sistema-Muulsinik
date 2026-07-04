@@ -22,11 +22,11 @@
             <p class="text-small font-medium text-text-primary">
                 {{ $activity->description ?? ucfirst(__($activity->action)) }}
             </p>
-            <span class="text-xs text-text-muted whitespace-nowrap" title="{{ $activity->created_at->format('d/m/Y H:i:s') }}">
+            <span class="text-xs-fluid text-text-muted whitespace-nowrap" title="{{ $activity->created_at->format('d/m/Y H:i:s') }}">
                 {{ $activity->created_at->diffForHumans() }}
             </span>
         </div>
-        <div class="text-xs text-text-muted flex items-center gap-1.5">
+        <div class="text-xs-fluid text-text-muted flex items-center gap-1.5">
             <x-lucide-user class="w-3.5 h-3.5" />
             {{ $activity->user ? $activity->user->name : 'Sistema' }}
         </div>
@@ -40,7 +40,7 @@
                         <span class="{{ $actionConfig['color'] }}">{{ strtoupper($activity->new_values['status'] ?? '—') }}</span>
                     </div>
                 @else
-                    <pre class="text-xs text-text-secondary font-mono leading-relaxed">{{ json_encode(['De' => $activity->old_values, 'A' => $activity->new_values], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                    <pre class="text-xs-fluid text-text-secondary font-mono leading-relaxed">{{ json_encode(['De' => $activity->old_values, 'A' => $activity->new_values], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 @endif
             </div>
         @endif

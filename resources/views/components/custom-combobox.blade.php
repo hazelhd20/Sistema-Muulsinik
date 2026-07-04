@@ -184,7 +184,7 @@
                         :aria-selected="value == opt.value ? 'true' : 'false'"
                         @click="selectOption(opt)"
                         @mouseenter="activeIndex = index"
-                        class="px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between"
+                        class="px-4 py-2.5 text-small cursor-pointer transition-colors flex items-center justify-between"
                         :class="{ 'bg-primary-50 text-primary-700 font-medium': activeIndex === index || value == opt.value, 'text-text-primary hover:bg-surface-hover': activeIndex !== index && value != opt.value }"
                     >
                         <span x-html="highlight(opt.label)" class="truncate pr-4"></span>
@@ -196,9 +196,9 @@
             </template>
             
             <template x-if="filteredOptions.length === 0">
-                <div class="px-4 py-3 text-center text-sm text-text-muted">
+                <div class="px-4 py-3 text-center text-small text-text-muted">
                     <p>No se encontraron resultados en el catálogo.</p>
-                    <p class="text-xs mt-1 text-primary-600 font-medium">Presiona Enter para registrar "<span x-text="value" class="font-bold"></span>"</p>
+                    <p class="text-xs-fluid mt-1 text-primary-600 font-medium">Presiona Enter para registrar "<span x-text="value" class="font-bold"></span>"</p>
                 </div>
             </template>
         </div>

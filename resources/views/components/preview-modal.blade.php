@@ -15,7 +15,7 @@
     @keydown.escape.window="showPreviewModal = false">
     <div class="modal-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px]" @click="showPreviewModal = false"></div>
     <div class="modal-panel w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden bg-surface-card shadow-2xl rounded-xl border border-border relative">
-        <div class="px-5 py-4 border-b border-border flex items-center justify-between bg-surface-card">
+        <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border flex items-center justify-between bg-surface-card">
             <h3 class="text-h2 font-semibold text-text-primary flex items-center gap-2">
                 Vista Previa del Documento
             </h3>

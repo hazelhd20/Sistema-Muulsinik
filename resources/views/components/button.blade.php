@@ -15,12 +15,12 @@
 ])
 
 @php
-    $base = 'inline-flex items-center justify-center transition-all duration-150 cursor-pointer whitespace-nowrap disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none relative ';
+    $base = 'items-center justify-center transition-all duration-150 cursor-pointer whitespace-nowrap disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none relative ';
     
-    $fullBtn = $base . 'gap-1.5 px-4 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border tracking-wide ';
-    $ghostBtn = $base . 'gap-1.5 px-3 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border border-transparent ';
-    $linkBtn = $base . 'gap-1 min-h-[2.25rem] text-[length:var(--font-size-small)] border-none ';
-    $iconBtn = $base . 'rounded-[0.4375rem] min-w-[2.25rem] min-h-[2.25rem] border border-transparent ';
+    $fullBtn = 'flex w-full sm:inline-flex sm:w-auto ' . $base . 'gap-1.5 px-4 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border tracking-wide ';
+    $ghostBtn = 'flex w-full sm:inline-flex sm:w-auto ' . $base . 'gap-1.5 px-3 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border border-transparent ';
+    $linkBtn = 'inline-flex ' . $base . 'gap-1 min-h-[2.25rem] text-[length:var(--font-size-small)] border-none ';
+    $iconBtn = 'inline-flex ' . $base . 'rounded-[0.4375rem] min-w-[2.25rem] min-h-[2.25rem] border border-transparent ';
 
     $baseClasses = match($variant) {
         // Solid

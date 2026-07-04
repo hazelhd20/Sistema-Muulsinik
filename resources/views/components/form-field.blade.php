@@ -19,12 +19,12 @@
     {{ $slot }}
     
     @if($hint)
-        <p class="mt-1.5 text-xs text-text-muted">{{ $hint }}</p>
+        <p class="mt-1.5 text-xs-fluid text-text-muted">{{ $hint }}</p>
     @endif
     
     @if($error)
         <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
-            <p class="mt-1.5 text-xs text-danger flex items-center gap-1 font-medium">
+            <p class="mt-1.5 text-xs-fluid text-danger flex items-center gap-1 font-medium">
                 <x-lucide-circle-alert class="w-3.5 h-3.5 shrink-0" />
                 <span>{{ $error }}</span>
             </p>

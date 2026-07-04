@@ -9,55 +9,61 @@
     @endphp
     <x-page-header :breadcrumbs="$breadcrumbs" :title="$folio" :status="$requisition->status" :sticky="true">
         <x-slot:actions>
-            {{-- Acción secundaria siempre visible --}}
-            <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary"
-                icon="printer" class="flex-1 sm:flex-initial justify-center">
-                Imprimir
-            </x-button>
+            <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 w-full sm:w-auto">
+                {{-- Acción secundaria utilitaria --}}
+                <x-button href="{{ route('requisiciones.pdf', $requisition->id) }}" target="_blank" variant="secondary"
+                    icon="printer" class="w-full sm:w-auto justify-center">
+                    Imprimir
+                </x-button>
 
-            {{-- ── Workflow: Borrador → Pendiente (o Aprobada si admin) ── --}}
-            @if($requisition->status === 'borrador' && $requisition->created_by === auth()->id())
-                @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                    <x-button @click="$dispatch('confirm-action', {
-                                    title: 'Aprobar Requisición',
-                                    description: 'Tienes permisos de aprobación. La requisición se aprobará automáticamente.',
-                                    confirmLabel: 'Aprobar ahora',
-                                    variant: 'success',
-                                    action: 'submitForApproval',
-                                    params: []
-                                })" variant="success" icon="check-circle" class="flex-1 sm:flex-initial justify-center">
-                        Aprobar Requisición
-                    </x-button>
-                @else
-                    <x-button @click="$dispatch('confirm-action', {
-                                    title: 'Solicitar Aprobación',
-                                    description: 'La requisición será enviada a los aprobadores del sistema.',
-                                    confirmLabel: 'Enviar a aprobación',
-                                    variant: 'primary',
-                                    action: 'submitForApproval',
-                                    params: []
-                                })" variant="primary" icon="send" class="flex-1 sm:flex-initial justify-center">
-                        Solicitar Aprobación
-                    </x-button>
+                {{-- ── Workflow: Borrador → Pendiente (o Aprobada si admin) ── --}}
+                @if($requisition->status === 'borrador' && $requisition->created_by === auth()->id())
+                    <div class="w-full sm:w-auto flex items-center">
+                        @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
+                            <x-button @click="$dispatch('confirm-action', {
+                                            title: 'Aprobar Requisición',
+                                            description: 'Tienes permisos de aprobación. La requisición se aprobará automáticamente.',
+                                            confirmLabel: 'Aprobar ahora',
+                                            variant: 'success',
+                                            action: 'submitForApproval',
+                                            params: []
+                                        })" variant="success" icon="check-circle" class="w-full sm:w-auto justify-center">
+                                Aprobar Requisición
+                            </x-button>
+                        @else
+                            <x-button @click="$dispatch('confirm-action', {
+                                            title: 'Solicitar Aprobación',
+                                            description: 'La requisición será enviada a los aprobadores del sistema.',
+                                            confirmLabel: 'Enviar a aprobación',
+                                            variant: 'primary',
+                                            action: 'submitForApproval',
+                                            params: []
+                                        })" variant="primary" icon="send" class="w-full sm:w-auto justify-center">
+                                Solicitar Aprobación
+                            </x-button>
+                        @endif
+                    </div>
                 @endif
-            @endif
 
-            {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
-            @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
-                <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal" class="flex-1 sm:flex-initial justify-center">
-                    Rechazar
-                </x-button>
-                <x-button @click="$dispatch('confirm-action', {
-                            title: 'Aprobar Requisición',
-                            description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                            confirmLabel: 'Aprobar',
-                            variant: 'success',
-                            action: 'approve',
-                            params: []
-                        })" variant="success" icon="check-circle" class="flex-1 sm:flex-initial justify-center">
-                    Aprobar
-                </x-button>
-            @endif
+                {{-- ── Workflow: Pendiente → Aprobada / Rechazada ── --}}
+                @if((auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')) && $requisition->status === 'pendiente')
+                    <div class="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
+                        <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" target="openRejectModal" class="w-full sm:w-auto justify-center">
+                            Rechazar
+                        </x-button>
+                        <x-button @click="$dispatch('confirm-action', {
+                                    title: 'Aprobar Requisición',
+                                    description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                                    confirmLabel: 'Aprobar',
+                                    variant: 'success',
+                                    action: 'approve',
+                                    params: []
+                                })" variant="success" icon="check-circle" class="w-full sm:w-auto justify-center">
+                            Aprobar
+                        </x-button>
+                    </div>
+                @endif
+            </div>
         </x-slot:actions>
     </x-page-header>
 
@@ -158,7 +164,7 @@
                 @if($requisition->items->isNotEmpty())
                     <table class="w-full text-left border-collapse">
                         <thead
-                            class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
+                            class="bg-surface-th border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap">Producto</th>
                                 <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
@@ -249,40 +255,40 @@
             </div>
 
             {{-- Totales --}}
-            <div class="p-5 sm:px-6 sm:py-6 border-t border-border/60">
-                <div class="md:flex md:justify-end">
-                    <x-totals-summary class="w-full md:w-1/3 min-w-[280px]">
-                        <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-text-secondary">Subtotal</span>
-                            <span class="text-small font-medium text-text-primary tabular-nums">
+            <div class="flex justify-end p-4 sm:p-6 border-t border-border/60">
+                <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between text-small">
+                            <span class="text-text-secondary">Subtotal</span>
+                            <span class="font-medium text-text-primary tabular-nums">
                                 ${{ number_format($requisition->subtotal, 2) }}
                             </span>
                         </div>
 
                         @php $discountTotal = $requisition->items->sum('line_discount_total'); @endphp
                         @if($discountTotal > 0)
-                            <div class="flex items-center justify-between gap-6">
-                                <span class="text-small text-danger">Descuento</span>
-                                <span class="text-small font-medium text-danger tabular-nums">
+                            <div class="flex items-center justify-between text-small">
+                                <span class="text-danger">Descuento</span>
+                                <span class="font-medium text-danger tabular-nums">
                                     -${{ number_format($discountTotal, 2) }}
                                 </span>
                             </div>
                         @endif
 
-                        <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-text-secondary">IVA</span>
-                            <span class="text-small font-medium text-text-primary tabular-nums">
+                        <div class="flex items-center justify-between text-small">
+                            <span class="text-text-secondary">IVA (16%)</span>
+                            <span class="font-medium text-text-primary tabular-nums">
                                 ${{ number_format($requisition->tax_amount, 2) }}
                             </span>
                         </div>
-                        <div class="flex items-center justify-between gap-6 pt-3 mt-1 border-t border-border/60">
-                            <span class="text-h3 font-bold text-text-primary">Total final</span>
-                            <span class="text-h1 font-extrabold text-text-primary tabular-nums tracking-tight">
-                                ${{ number_format($requisition->total, 2) }}
-                            </span>
-                        </div>
-                    </x-totals-summary>
-                </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
+                        <span class="text-h3 font-bold text-text-primary">Total final</span>
+                        <span class="text-h1 font-extrabold text-text-primary tabular-nums tracking-tight">
+                            ${{ number_format($requisition->total, 2) }}
+                        </span>
+                    </div>
+                </x-totals-summary>
             </div>
         </x-card>
 

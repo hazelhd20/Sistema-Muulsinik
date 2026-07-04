@@ -64,12 +64,12 @@
             </div>
 
             <x-slot:footer>
-                <div class="flex justify-end gap-3">
-                    <x-button as="a" href="{{ route('proyectos.show', $detailProject->id) }}" variant="secondary" wire:navigate>
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 w-full">
+                    <x-button as="a" href="{{ route('proyectos.show', $detailProject->id) }}" variant="secondary" class="w-full sm:w-auto justify-center" wire:navigate>
                         Ver Ficha Completa
                     </x-button>
                     @if(auth()->user()?->hasPermission('proyectos.editar') || auth()->user()?->hasPermission('*'))
-                        <x-button wire:click="$dispatch('edit-project', { id: {{ $detailProject->id }} }); showDetailDrawer = false" variant="primary" icon="pencil">
+                        <x-button wire:click="$dispatch('edit-project', { id: {{ $detailProject->id }} }); showDetailDrawer = false" variant="primary" icon="pencil" class="w-full sm:w-auto justify-center">
                             Editar Proyecto
                         </x-button>
                     @endif

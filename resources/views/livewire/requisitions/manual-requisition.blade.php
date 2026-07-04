@@ -12,7 +12,7 @@
     <form wire:submit="createRequisition" class="space-y-6">
         {{-- 1. Datos Generales --}}
         <x-card class="mb-6">
-            <x-card.header title="Datos Generales" />
+            <x-card.header title="Información General" />
             <x-card.body>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-form-field label="Proyecto" required error="{{ $errors->first('form.projectId') }}">
@@ -46,14 +46,13 @@
 
         {{-- 2. Productos --}}
         <x-card class="mb-6 overflow-hidden">
-            <div class="px-6 py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Productos</h3>
                     @if(count($form->items) > 0)
-                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
-                            <x-lucide-package class="w-3.5 h-3.5" />
+                        <x-badge variant="secondary" size="md" icon="package" :normal-case="true">
                             {{ count($form->items) }} {{ count($form->items) === 1 ? 'artículo' : 'artículos' }}
-                        </span>
+                        </x-badge>
                     @endif
                 </div>
                 <div class="flex-shrink-0">
@@ -63,7 +62,7 @@
                 </div>
             </div>
 
-            <div class="px-6 py-5">
+            <div class="p-4 sm:p-6">
                 {{-- Search Product --}}
                 <div x-data="{ open: true }" class="relative max-w-lg" @click.outside="open = false">
                     <div class="relative">
@@ -122,7 +121,7 @@
                 <div class="hidden md:block w-full overflow-x-auto">
                     <table class="w-full text-left table-inputs-compact">
                         <thead>
-                            <tr class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
+                            <tr class="bg-surface-th border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[30%]">Producto</th>
                                 <th class="px-4 py-3 whitespace-nowrap w-[15%]">Categoría</th>
                                 <th class="px-4 py-3 text-center whitespace-nowrap w-[10%]">Cant.</th>
@@ -186,9 +185,9 @@
                 </div>
 
                 {{-- Mobile Cards --}}
-                <div class="md:hidden flex flex-col gap-4 p-3 sm:p-6">
+                <div class="md:hidden divide-y divide-border/40">
                     @foreach($itemsWithTotals as $i => $item)
-                        <div class="bg-surface-main rounded-xl p-3.5 sm:p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
+                        <div class="p-4 sm:p-6 relative flex flex-col gap-3.5 hover:bg-surface-hover/30 transition-colors" wire:key="mobile-item-{{ $item['id'] ?? $i }}">
                             {{-- Card Header --}}
                             <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
                                 <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
@@ -230,31 +229,36 @@
                                     </x-form-field>
                                 </div>
 
-                                <div class="mt-2 flex justify-between items-center pt-3 border-t border-border/50">
-                                    <span class="text-small font-medium text-text-secondary">Total Línea:</span>
-                                    <span class="font-bold text-body text-text-primary tabular-nums">
-                                        ${{ number_format($item['total'], 2, '.', ',') }}
-                                    </span>
+                                <div class="mt-2 flex flex-col gap-1 pt-3 border-t border-border/50">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-small text-text-muted">Subtotal</span>
+                                        <span class="text-small font-medium">${{ number_format($item['subtotal'], 2, '.', ',') }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-small font-medium text-text-secondary">Total c/IVA</span>
+                                        <span class="font-bold text-body text-text-primary tabular-nums">${{ number_format($item['total'], 2, '.', ',') }}</span>
+                                    </div>
                                 </div>
                         </div>
                     @endforeach
                 </div>
 
                 {{-- Totales (calculados en ManualRequisition::render()) --}}
-                <div class="p-5 sm:px-6 sm:py-6 border-t border-border/60">
-                    <div class="md:flex md:justify-end">
-                        <x-totals-summary class="w-full md:w-1/3 min-w-[280px]">
-                        <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-text-muted">Subtotal s/IVA</span>
-                            <span class="text-small font-medium text-text-secondary tabular-nums">
-                                ${{ number_format($totals['subtotal'], 2, '.', ',') }}
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-text-muted">IVA (16%)</span>
-                            <span class="text-small font-medium text-text-muted tabular-nums">
-                                ${{ number_format($totals['iva'], 2, '.', ',') }}
-                            </span>
+                <div class="flex justify-end p-4 sm:p-6 border-t border-border/60">
+                    <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center justify-between text-small">
+                                <span class="text-text-muted">Subtotal s/IVA</span>
+                                <span class="font-medium text-text-secondary tabular-nums">
+                                    ${{ number_format($totals['subtotal'], 2, '.', ',') }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-small">
+                                <span class="text-text-muted">IVA (16%)</span>
+                                <span class="font-medium text-text-muted tabular-nums">
+                                    ${{ number_format($totals['iva'], 2, '.', ',') }}
+                                </span>
+                            </div>
                         </div>
                         <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
                             <span class="text-h3 font-bold text-text-primary">Total final</span>
@@ -272,10 +276,9 @@
                             </x-button>
                         </div>
                     </x-totals-summary>
-                    </div>
                 </div>
             @else
-                <div class="px-6 pb-6 pt-2">
+                <div class="p-4 sm:p-6">
                     <x-empty-state icon="package-plus" title="Sin productos"
                         message="Busca un producto del catálogo arriba o agrega un concepto manual."
                         class="py-12" />

@@ -94,10 +94,9 @@
                         <h4 class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             Productos
                         </h4>
-                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
-                            <x-lucide-package class="w-3.5 h-3.5" />
+                        <x-badge variant="secondary" size="md" icon="package" :normal-case="true">
                             {{ $detailRequisition->items->count() }} {{ $detailRequisition->items->count() === 1 ? 'artículo' : 'artículos' }}
-                        </span>
+                        </x-badge>
                     </div>
                     <div class="divide-y divide-border/60 border-t border-b border-border/60">
                         @foreach($detailRequisition->items as $index => $item)
@@ -166,25 +165,27 @@
 
                 {{-- Action Buttons --}}
                 <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 w-full">
-                    <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" class="flex-1 sm:flex-initial justify-center" wire:navigate>
+                    <x-button as="a" href="{{ route('requisiciones.show', $detailRequisition->id) }}" variant="secondary" class="w-full sm:w-auto justify-center" wire:navigate>
                         Ver Ficha Completa
                     </x-button>
 
                     @if($detailRequisition->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                        <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" class="flex-1 sm:flex-initial justify-center">
-                            Rechazar
-                        </x-button>
-                        <x-button
-                            @click="$dispatch('confirm-action', {
-                                title: 'Aprobar Requisición',
-                                description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
-                                confirmLabel: 'Aprobar',
-                                variant: 'success',
-                                onConfirmCallback: () => $wire.approve({{ $detailRequisition->id }})
-                            })"
-                            variant="success" icon="check-circle" class="flex-1 sm:flex-initial justify-center">
-                            Aprobar
-                        </x-button>
+                        <div class="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
+                            <x-button wire:click="openRejectModal" variant="secondary" icon="x-circle" class="w-full sm:w-auto justify-center">
+                                Rechazar
+                            </x-button>
+                            <x-button
+                                @click="$dispatch('confirm-action', {
+                                    title: 'Aprobar Requisición',
+                                    description: 'Cambiará a estado Aprobada y se notificará al solicitante.',
+                                    confirmLabel: 'Aprobar',
+                                    variant: 'success',
+                                    onConfirmCallback: () => $wire.approve({{ $detailRequisition->id }})
+                                })"
+                                variant="success" icon="check-circle" class="w-full sm:w-auto justify-center">
+                                Aprobar
+                            </x-button>
+                        </div>
                     @endif
                 </div>
             </div>

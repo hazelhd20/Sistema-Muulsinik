@@ -314,8 +314,8 @@
                 <x-card class="lg:col-span-2 p-6 flex flex-col h-full">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h2 class="text-sm font-semibold text-text-primary">Tendencia de Gastos</h2>
-                            <p class="text-xs text-text-muted">Últimos 12 meses</p>
+                            <h2 class="text-body font-semibold text-text-primary">Tendencia de Gastos</h2>
+                            <p class="text-xs-fluid text-text-muted">Últimos 12 meses</p>
                         </div>
                     </div>
                     @if(collect($monthlyData)->sum('total') == 0)
@@ -418,7 +418,7 @@
 
                 {{-- Distribución por categoría (donut) --}}
                 <x-card class="p-6 flex flex-col h-full">
-                    <h2 class="text-sm font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
+                    <h2 class="text-body font-semibold text-text-primary mb-4">Gastos por Categoría</h2>
                     @if($expenseByCategory->isEmpty())
                         <div wire:key="overview-category-empty"
                             class="flex-1 flex flex-col items-center justify-center min-h-[260px]">
@@ -488,7 +488,7 @@
                                     $catColors = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-chart-3)', 'var(--color-chart-4)', 'var(--color-chart-5)', 'var(--color-chart-6)', 'var(--color-chart-7)'];
                                 @endphp
                                 @foreach($expenseByCategory->take(5) as $i => $cat)
-                                    <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center justify-between text-small">
                                         <div class="flex items-center gap-2">
                                             <div class="w-2.5 h-2.5 rounded-full"
                                                 style="background: {{ $catColors[$i] ?? 'var(--color-chart-10)' }}">
@@ -509,7 +509,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {{-- Presupuesto vs Gasto --}}
                 <x-card class="p-6 flex flex-col h-full">
-                    <h2 class="text-sm font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
+                    <h2 class="text-body font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
                     @if($budgetComparison->isEmpty())
                         <div wire:key="overview-budget-empty"
                             class="flex-1 flex flex-col items-center justify-center min-h-[200px]">
@@ -524,9 +524,9 @@
                                     $barColor = $comp['percent'] >= 90 ? 'bg-danger' : ($comp['percent'] >= 70 ? 'bg-warning' : 'bg-primary-600');
                                 @endphp
                                 <div>
-                                    <div class="flex items-center justify-between text-sm mb-1">
+                                    <div class="flex items-center justify-between text-small mb-1">
                                         <span class="font-medium text-text-primary truncate max-w-[60%]">{{ $comp['name'] }}</span>
-                                        <span class="text-text-muted text-xs">
+                                        <span class="text-text-muted text-xs-fluid">
                                             ${{ number_format($comp['spent'], 0, '.', ',') }} /
                                             ${{ number_format($comp['budget'], 0, '.', ',') }}
                                         </span>
@@ -536,9 +536,9 @@
                                             style="width: {{ $p }}%"></div>
                                     </div>
                                     <div class="flex justify-between mt-0.5">
-                                        <span class="text-xs text-text-muted">{{ $comp['percent'] }}% usado</span>
+                                        <span class="text-xs-fluid text-text-muted">{{ $comp['percent'] }}% usado</span>
                                         @if($comp['percent'] >= 90)
-                                            <span class="text-xs font-semibold text-danger">⚠ Sobrepresupuesto</span>
+                                            <span class="text-xs-fluid font-semibold text-danger">⚠ Sobrepresupuesto</span>
                                         @endif
                                     </div>
                                 </div>
@@ -550,7 +550,7 @@
                 {{-- Top 5 proyectos por gasto --}}
                 <x-card class="flex flex-col h-full overflow-hidden">
                     <div class="px-6 pt-6 pb-4">
-                        <h2 class="text-sm font-semibold text-text-primary">Top Proyectos por Gasto</h2>
+                        <h2 class="text-body font-semibold text-text-primary">Top Proyectos por Gasto</h2>
                     </div>
                     @if($topProjects->isEmpty())
                         <div wire:key="overview-projects-empty"
@@ -574,17 +574,17 @@
                                         <tr>
                                             <td>
                                                 <span
-                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
+                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                                     {{ $i + 1 }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <p class="font-medium">{{ $proj->name }}</p>
-                                                <p class="text-xs text-text-muted">{{ $proj->client?->name ?? '—' }}</p>
+                                                <p class="text-xs-fluid text-text-muted">{{ $proj->client?->name ?? '—' }}</p>
                                             </td>
-                                            <td class="text-right text-sm text-text-secondary">
+                                            <td class="text-right text-small text-text-secondary">
                                                 ${{ number_format($proj->budget, 0, '.', ',') }}</td>
-                                            <td class="text-right text-sm font-semibold text-text-primary">
+                                            <td class="text-right text-small font-semibold text-text-primary">
                                                 ${{ number_format($proj->total_spent, 0, '.', ',') }}</td>
                                         </tr>
                                     @endforeach
@@ -602,7 +602,7 @@
         @if($activeTab === 'suppliers')
             <x-card class="{{ $topSuppliers->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }} overflow-hidden">
                 <div class="px-6 pt-6 pb-4 flex items-center justify-between">
-                    <h2 class="text-sm font-semibold text-text-primary">Compras por Proveedor</h2>
+                    <h2 class="text-body font-semibold text-text-primary">Compras por Proveedor</h2>
                 </div>
                 @if($topSuppliers->isEmpty())
                     <div wire:key="suppliers-table-empty" class="flex-1 flex flex-col items-center justify-center py-8">
@@ -627,7 +627,7 @@
                                     <tr>
                                         <td>
                                             <span
-                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
+                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                                 {{ $i + 1 }}
                                             </span>
                                         </td>
@@ -639,8 +639,8 @@
                                                 <span class="text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="text-center text-sm tabular-nums">{{ $supplier->total_requisitions }}</td>
-                                        <td class="text-center text-sm tabular-nums">{{ $supplier->total_items }}</td>
+                                        <td class="text-center text-small tabular-nums">{{ $supplier->total_requisitions }}</td>
+                                        <td class="text-center text-small tabular-nums">{{ $supplier->total_items }}</td>
                                         <td class="text-right font-semibold text-text-primary tabular-nums">
                                             ${{ number_format($supplier->total_amount, 2, '.', ',') }}</td>
                                     </tr>
@@ -658,7 +658,7 @@
         @if($activeTab === 'vendors')
             <x-card class="{{ $topVendors->isEmpty() ? 'flex flex-col min-h-[250px]' : '' }} overflow-hidden">
                 <div class="px-6 pt-6 pb-4 flex items-center justify-between">
-                    <h2 class="text-sm font-semibold text-text-primary">Compras por Vendedor</h2>
+                    <h2 class="text-body font-semibold text-text-primary">Compras por Vendedor</h2>
                 </div>
                 @if($topVendors->isEmpty())
                     <div wire:key="vendors-table-empty" class="flex-1 flex flex-col items-center justify-center py-8">
@@ -682,13 +682,13 @@
                                     <tr>
                                         <td>
                                             <span
-                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
+                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                                 {{ $i + 1 }}
                                             </span>
                                         </td>
                                         <td class="font-medium text-text-primary">{{ $vendor->vendor_name }}</td>
-                                        <td class="text-sm text-text-secondary">{{ $vendor->supplier_name }}</td>
-                                        <td class="text-center text-sm tabular-nums">{{ $vendor->total_requisitions }}</td>
+                                        <td class="text-small text-text-secondary">{{ $vendor->supplier_name }}</td>
+                                        <td class="text-center text-small tabular-nums">{{ $vendor->total_requisitions }}</td>
                                         <td class="text-right font-semibold text-text-primary tabular-nums">
                                             ${{ number_format($vendor->total_amount, 2, '.', ',') }}</td>
                                     </tr>
@@ -709,7 +709,7 @@
                 {{-- Tabla de productos --}}
                 <x-card class="lg:col-span-2 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }} overflow-hidden">
                     <div class="px-6 pt-6 pb-4">
-                        <h2 class="text-sm font-semibold text-text-primary">Productos Más Comprados</h2>
+                        <h2 class="text-body font-semibold text-text-primary">Productos Más Comprados</h2>
                     </div>
                     @if($topProducts->isEmpty())
                         <div wire:key="products-table-empty"
@@ -736,7 +736,7 @@
                                         <tr>
                                             <td>
                                                 <span
-                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center">
+                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
                                                     {{ $i + 1 }}
                                                 </span>
                                             </td>
@@ -744,7 +744,7 @@
                                                 <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
                                                 @if($product->measure_abbr)
                                                     <x-badge variant="secondary"
-                                                        class="text-[10px]">{{ $product->measure_abbr }}</x-badge>
+                                                        class="text-2xs">{{ $product->measure_abbr }}</x-badge>
                                                 @endif
                                             </td>
                                             <td>
@@ -754,11 +754,11 @@
                                                     <span class="text-text-muted">—</span>
                                                 @endif
                                             </td>
-                                            <td class="text-center text-sm tabular-nums">{{ $product->times_purchased }}</td>
-                                            <td class="text-center text-sm tabular-nums">
+                                            <td class="text-center text-small tabular-nums">{{ $product->times_purchased }}</td>
+                                            <td class="text-center text-small tabular-nums">
                                                 {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}
                                             </td>
-                                            <td class="text-right text-sm text-text-secondary tabular-nums">
+                                            <td class="text-right text-small text-text-secondary tabular-nums">
                                                 ${{ number_format($product->avg_price, 2, '.', ',') }}</td>
                                             <td class="text-right font-semibold text-text-primary tabular-nums">
                                                 ${{ number_format($product->total_amount, 2, '.', ',') }}</td>
@@ -772,7 +772,7 @@
 
                 {{-- Donut por categoría de producto --}}
                 <x-card class="p-6 flex flex-col {{ $topProducts->isEmpty() ? 'h-full' : '' }}">
-                    <h2 class="text-sm font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
+                    <h2 class="text-body font-semibold text-text-primary mb-4">Compras por Categoría de Producto</h2>
                     @if($topProducts->isEmpty() || $productsByCategory->isEmpty())
                         <div wire:key="products-chart-empty"
                             class="flex-1 flex flex-col items-center justify-center min-h-[250px]">
@@ -844,7 +844,7 @@
                                     $pcColors = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-chart-3)', 'var(--color-chart-4)', 'var(--color-chart-5)', 'var(--color-chart-6)', 'var(--color-chart-7)', 'var(--color-chart-8)', 'var(--color-chart-9)', 'var(--color-chart-10)'];
                                 @endphp
                                 @foreach($productsByCategory->take(6) as $i => $pc)
-                                    <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center justify-between text-small">
                                         <div class="flex items-center gap-2">
                                             <div class="w-2.5 h-2.5 rounded-full"
                                                 style="background: {{ $pcColors[$i] ?? 'var(--color-chart-10)' }}">

@@ -14,17 +14,13 @@
     'sticky top-14 z-30 bg-surface-main/90 backdrop-blur-md border-b border-border/40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-3 pb-3 sm:pt-4 sm:pb-4' => $sticky,
 ])>
     <div class="flex-1 min-w-0">
-        {{-- Nivel Superior: Breadcrumbs teletransportados a Topbar (Desktop) y locales en Móvil --}}
+        {{-- Nivel Superior: Breadcrumbs teletransportados a Topbar (Header global) en todos los dispositivos --}}
         @if(isset($breadcrumbs) && count($breadcrumbs) > 0)
             @push('topbar-breadcrumbs')
                 <x-breadcrumbs :links="$breadcrumbs" />
             @endpush
-
-            <div class="lg:hidden mb-2">
-                <x-breadcrumbs :links="$breadcrumbs" />
-            </div>
         @elseif($subtitle || $backUrl)
-            <div class="flex items-center gap-2 mb-1.5 text-xs font-semibold text-text-muted tracking-widest uppercase select-none">
+            <div class="flex items-center gap-2 mb-1.5 text-xs-fluid font-semibold text-text-muted tracking-widest uppercase select-none">
                 @if($backUrl)
                     <a href="{!! $backUrl !!}" wire:navigate class="btn-icon shrink-0 w-6 h-6 p-0 -ml-1 text-text-muted hover:text-text-primary transition-colors" title="Volver">
                         <x-lucide-arrow-left class="w-4 h-4" />

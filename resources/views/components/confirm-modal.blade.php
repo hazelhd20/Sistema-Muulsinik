@@ -84,7 +84,7 @@
             </div>
 
             {{-- ── Acciones ── --}}
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-2.5">
 
                 {{-- Cancelar --}}
                 <button type="button"

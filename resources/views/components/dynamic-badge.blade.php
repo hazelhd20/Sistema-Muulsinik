@@ -13,12 +13,12 @@
         'bg-sky-50 text-sky-700',
         'bg-teal-50 text-teal-700',
         'bg-pink-50 text-pink-700',
-        'bg-slate-50 text-slate-700',
+        'bg-slate-100 text-slate-800 font-semibold',
     ];
     $hash = crc32($value ?? '');
     $colorClass = $colors[$hash % count($colors)];
     $sizeClasses = match($size) {
-        'lg' => 'px-3 py-1.5 text-xs',
+        'lg' => 'px-3 py-1.5 text-xs-fluid',
         'md' => '',
         'sm' => 'px-2 py-0.5 text-2xs',
         'xs' => 'px-1.5 py-0.5 text-3xs',

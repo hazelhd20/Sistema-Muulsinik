@@ -120,7 +120,7 @@
                             <col class="w-[9%]">         {{-- Estado --}}
                             <col class="w-28">           {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-main border-b border-border/40">
+                        <thead class="bg-surface-th border-b border-border/40">
                             <tr>
                                 <th class="actions pl-6 pr-2 text-left">
                                     <x-table-checkbox x-bind:checked="allSelected"
@@ -134,7 +134,7 @@
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" class="numeric" align="right" />
-                                <th>Ejecución</th>
+                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Ejecución</th>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <th class="actions pr-6 text-right">Acciones</th>
@@ -154,7 +154,7 @@
                                     <tr wire:key="project-row-{{ $project->id }}"
                                         class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $project->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="actions pl-6 pr-2 text-left" @click.stop>
+                                        <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $project->id }}" />
                                         </td>
                                         <td class="text-body font-bold text-text-primary truncate max-w-0" title="{{ $project->name }}">
@@ -195,7 +195,7 @@
                                                 <span class="text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="actions pr-6 py-3" @click.stop>
+                                        <td class="actions pr-6 py-3" @click.stop="$event.stopPropagation()">
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
@@ -348,15 +348,15 @@
                             @endforeach
                         @else
                             @if($hasActiveFilters)
-                                <div class="p-8">
+                                <x-card class="p-8 sm:p-12 text-center">
                                     <x-empty-state icon="search" title="No se encontraron resultados"
                                         message="No hay proyectos que coincidan con los filtros actuales." />
-                                </div>
+                                </x-card>
                             @else
-                                <div class="p-12">
+                                <x-card class="p-8 sm:p-12 text-center">
                                     <x-empty-state icon="folder" title="Aún no hay proyectos"
                                         message="Comienza creando un proyecto para gestionar tus gastos y tareas." />
-                                </div>
+                                </x-card>
                             @endif
                         @endif
                     </div>
@@ -422,7 +422,7 @@
                             variant: 'danger',
                             action: 'bulkDelete',
                             params: []
-                        })" variant="danger" icon="trash-2" size="sm">
+                        })" variant="danger" icon="trash-2">
                         Eliminar
                     </x-button>
                 </x-bulk-actions-bar>
@@ -474,7 +474,7 @@
                     </x-form-field>
                 @endif
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary"
                         target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-button>

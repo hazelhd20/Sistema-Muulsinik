@@ -48,7 +48,7 @@
     {{-- ═══════ PASO 1: UPLOAD ═══════ --}}
     @if($step === 1)
         <div class="max-w-2xl mx-auto">
-            <x-card class="p-8 transition-all duration-300">
+            <x-card class="p-4 sm:p-6 md:p-8 transition-all duration-300">
                 <x-file-input wire:model="uploadQueue" :multiple="true" variant="dropzone"
                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" maxSize="20 MB" :formats="['PDF', 'XLSX', 'JPG', 'PNG']"
                     title="Arrastra tus cotizaciones aquí" subtitle="o haz clic para seleccionar archivos"
@@ -74,7 +74,7 @@
     @if($step === 2)
         <div @if($processingStatus === 'processing' || $processingStatus === 'pending')
         wire:poll.2s.visible="checkProcessingStatus" @endif>
-            <x-card class="max-w-lg mx-auto p-10 text-center transition-all duration-300" x-data>
+            <x-card class="max-w-lg mx-auto p-6 sm:p-10 text-center transition-all duration-300" x-data>
                 @if($processingStatus === 'processing' || $processingStatus === 'pending')
                     {{-- Minimalist Premium Loader --}}
                     <div class="mb-8">
@@ -261,15 +261,17 @@
 
         <form wire:submit="saveRequisition" x-data wire:key="form-{{ $activeQuotationId }}"> {{-- General Info --}}
             <x-card class="mb-6">
-                <div class="px-4 sm:px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Información General</h3>
                     {{-- $quotation se resuelve en QuotationWizard::render() --}}
                     @if($quotation)
-                        <x-button type="button"
-                            @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
-                            variant="soft" icon="file-search" class="text-xs-fluid">
-                            Ver documento
-                        </x-button>
+                        <div class="flex-shrink-0">
+                            <x-button type="button"
+                                @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
+                                variant="soft" icon="file-search" class="text-xs-fluid w-full sm:w-auto justify-center">
+                                Ver documento
+                            </x-button>
+                        </div>
                     @endif
                 </div>
 
@@ -346,19 +348,17 @@
 
 
             <x-card class="mb-6 overflow-hidden">
-                <div class="px-4 sm:px-6 py-4 border-b border-border/40 flex items-center justify-between">
+                <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <div class="flex items-center gap-3">
                         <h3 class="text-h3 font-semibold text-text-primary tracking-tight">Productos</h3>
                         @if(count($items) > 0)
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
-                                <x-lucide-package class="w-3.5 h-3.5" />
+                            <x-badge variant="secondary" size="md" icon="package" :normal-case="true">
                                 {{ count($items) }} {{ count($items) === 1 ? 'artículo' : 'artículos' }}
-                            </span>
+                            </x-badge>
                         @endif
                     </div>
-                    <div>
-                        <x-button wire:click="addItem" variant="soft" icon="plus" class="text-xs-fluid">
+                    <div class="flex-shrink-0">
+                        <x-button wire:click="addItem" variant="soft" icon="plus" class="text-xs-fluid w-full sm:w-auto justify-center">
                             Agregar producto
                         </x-button>
                     </div>
@@ -370,7 +370,7 @@
                         <table class="w-full text-left table-inputs-compact">
                             <thead>
                                 <tr
-                                    class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
+                                    class="bg-surface-th border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                     <th class="pl-6 pr-4 py-3 whitespace-nowrap w-[26%]">Producto</th>
                                     <th class="px-4 py-3 whitespace-nowrap w-[13%]">Categoría</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap w-[8%]">Cant.</th>
@@ -498,7 +498,7 @@
                     </div>
 
                     {{-- Formulario de productos (Mobile) --}}
-                    <div class="md:hidden flex flex-col gap-4 p-3 sm:p-6">
+                    <div class="md:hidden divide-y divide-border/40">
                         @foreach($items as $i => $item)
                             @php
                                 $productStatus = $item['_match']['product']['status'] ?? '';
@@ -513,7 +513,7 @@
                                 $hasCatConflict = isset($item['conflict']['category']);
                                 $hasUnitConflict = isset($item['conflict']['unit']);
                             @endphp
-                            <div class="bg-surface-main rounded-xl p-3.5 sm:p-5 relative flex flex-col gap-3"
+                            <div class="p-4 sm:p-6 relative flex flex-col gap-3.5 hover:bg-surface-hover/30 transition-colors"
                                 wire:key="mobile-item-{{ $item['id'] ?? $i }}">
 
                                 {{-- Card Header --}}
@@ -604,7 +604,7 @@
                         $hasAnyDiscount = $this->hasAnyDiscount();
                         $subtotalBruto = $this->subtotalBruto();
                     @endphp
-                    <div class="flex justify-end px-4 sm:px-6 md:px-8 py-6 md:py-8 border-t border-border/40">
+                    <div class="flex justify-end p-4 sm:p-6 border-t border-border/60">
                         <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                             <div class="flex flex-col gap-3">
                                 @if($hasAnyDiscount)
@@ -655,7 +655,7 @@
                         </x-totals-summary>
                     </div>
                 @else
-                    <div class="px-6 pb-6 pt-2">
+                    <div class="p-4 sm:p-6">
                         <x-empty-state icon="package-open" title="Sin productos detectados"
                             message="Agrégalos manualmente con el botón Agregar." class="py-12" />
                     </div>

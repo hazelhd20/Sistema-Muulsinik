@@ -3,7 +3,7 @@
         <div class="space-y-3">
             @foreach($pendingQuotations as $pq)
                 <x-card wire:key="pending-quotation-{{ $pq->id }}" 
-                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 transition-colors duration-200">
+                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-6 transition-colors duration-200">
 
                     <div class="flex items-start sm:items-center gap-3.5 w-full sm:w-auto min-w-0 flex-1">
                         @if($pq->isProcessing() || $pq->status === 'pending')
@@ -27,7 +27,7 @@
                                         <span class="truncate">{{ $fileNameOnly }}</span><span class="shrink-0">{{ $fileExt }}</span>
                                     </span>
                                     @if($pq->created_at)
-                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-text-muted shrink-0">
+                                        <span class="inline-flex items-center gap-1 text-xs-fluid font-medium text-text-muted shrink-0">
                                             <x-lucide-clock class="w-3.5 h-3.5 text-text-muted/70 shrink-0" wire:ignore />
                                             <span>{{ $pq->created_at->locale('es')->diffForHumans() }}</span>
                                         </span>
@@ -73,7 +73,7 @@
                                         <span class="truncate">{{ $fileNameOnly }}</span><span class="shrink-0">{{ $fileExt }}</span>
                                     </span>
                                     @if($pq->created_at)
-                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-text-muted shrink-0">
+                                        <span class="inline-flex items-center gap-1 text-xs-fluid font-medium text-text-muted shrink-0">
                                             <x-lucide-clock class="w-3.5 h-3.5 text-text-muted/70 shrink-0" wire:ignore />
                                             <span>{{ $pq->created_at->locale('es')->diffForHumans() }}</span>
                                         </span>
@@ -114,7 +114,7 @@
                                         <span class="truncate">{{ $fileNameOnly }}</span><span class="shrink-0">{{ $fileExt }}</span>
                                     </span>
                                     @if($pq->created_at)
-                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-text-muted shrink-0">
+                                        <span class="inline-flex items-center gap-1 text-xs-fluid font-medium text-text-muted shrink-0">
                                             <x-lucide-clock class="w-3.5 h-3.5 text-text-muted/70 shrink-0" wire:ignore />
                                             <span>{{ $pq->created_at->locale('es')->diffForHumans() }}</span>
                                         </span>
@@ -153,7 +153,7 @@
             @endforeach
         </div>
     @else
-        <x-card class="p-8">
+        <x-card class="p-4 sm:p-6">
             <x-empty-state
                 icon="check-square"
                 title="No hay borradores pendientes"

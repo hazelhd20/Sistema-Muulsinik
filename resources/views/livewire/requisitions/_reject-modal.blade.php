@@ -14,7 +14,7 @@
             ? 'Indica el motivo del rechazo para todas las seleccionadas (obligatorio)'
             : 'Indica el motivo del rechazo (obligatorio)'"
         maxWidth="md">
-        <form wire:submit="confirmReject" class="p-5 space-y-4">
+        <form wire:submit="confirmReject" class="p-4 sm:p-6 space-y-4">
             <x-form-field label="Motivo del rechazo" :required="true" :error="$errors->first('rejectionComment')">
                 <textarea wire:model="rejectionComment"
                     class="input"
@@ -22,7 +22,7 @@
                     placeholder="Explica por qué esta requisición fue rechazada..."
                     aria-required="true"></textarea>
             </x-form-field>
-            <div class="flex justify-end gap-3 pt-4 border-t border-border">
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                 <x-button wire:click="$set('showRejectModal', false)" variant="soft">
                     Cancelar
                 </x-button>

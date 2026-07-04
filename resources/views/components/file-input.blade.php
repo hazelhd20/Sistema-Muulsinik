@@ -192,7 +192,7 @@
                                     default        => 'file',
                                 };
                             @endphp
-                            <span class="px-2.5 py-1 rounded-md {{ $fmtColors }} text-[10px] font-medium tracking-wide flex items-center gap-1">
+                            <span class="px-2.5 py-1 rounded-md {{ $fmtColors }} text-2xs font-medium tracking-wide flex items-center gap-1">
                                 <x-dynamic-component :component="'lucide-' . $fmtIcon" class="w-3 h-3" stroke-width="2" wire:ignore />
                                 {{ strtoupper($fmt) }}
                             </span>
@@ -200,7 +200,7 @@
                     </div>
                 @endif
 
-                <p class="text-[11px] text-text-muted mt-2 font-medium tracking-wide uppercase">Máximo {{ $maxSize }}</p>
+                <p class="text-xs-fluid text-text-muted mt-2 font-medium tracking-wide uppercase">Máximo {{ $maxSize }}</p>
             </div>
         </div>
 
@@ -220,12 +220,12 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="text-small font-semibold text-text-primary truncate tracking-tight" x-text="file.name"></p>
-                            <p x-show="!file.isUploading" class="text-xs text-text-muted mt-0.5 font-medium"><span x-text="file.size"></span> KB</p>
+                            <p x-show="!file.isUploading" class="text-xs-fluid text-text-muted mt-0.5 font-medium"><span x-text="file.size"></span> KB</p>
                             <div x-show="file.isUploading" class="flex items-center gap-3 mt-1.5">
                                 <div class="flex-1 h-1.5 bg-primary-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-primary-600 rounded-full transition-all duration-300" :style="'width:' + progress + '%'"></div>
                                 </div>
-                                <span class="text-[11px] text-primary-600 font-bold tabular-nums shrink-0" x-text="progress + '%'"></span>
+                                <span class="text-xs-fluid text-primary-600 font-bold tabular-nums shrink-0" x-text="progress + '%'"></span>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0 pl-2">
@@ -291,14 +291,14 @@
                         <x-lucide-upload class="w-4 h-4 text-primary-600 shrink-0" wire:ignore />
                         <div class="min-w-0">
                             <p class="text-body text-text-primary" x-text="fileName ? 'Cambiar archivo' : 'Seleccionar archivo'"></p>
-                            <p x-show="!uploading" class="text-xs text-text-muted">
+                            <p x-show="!uploading" class="text-xs-fluid text-text-muted">
                                 {{ $hint ?: strtoupper(str_replace('.', '', str_replace(',', ', ', $accept))) . '. Máximo ' . $maxSize . '.' }}
                             </p>
                             <div x-show="uploading" x-cloak class="flex items-center gap-2 mt-0.5">
                                 <div class="flex-1 h-1.5 bg-primary-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-primary-600 rounded-full transition-all duration-300" :style="'width:' + progress + '%'"></div>
                                 </div>
-                                <span class="text-xs text-primary-600 font-medium tabular-nums shrink-0" x-text="progress + '%'"></span>
+                                <span class="text-xs-fluid text-primary-600 font-medium tabular-nums shrink-0" x-text="progress + '%'"></span>
                             </div>
                         </div>
                     </div>
@@ -327,7 +327,7 @@
                 </div>
                 <div class="min-w-0">
                     <p class="text-body text-text-primary">Seleccionar archivo</p>
-                    <p class="text-xs text-text-muted">
+                    <p class="text-xs-fluid text-text-muted">
                         {{ $hint ?: strtoupper(str_replace('.', '', str_replace(',', ', ', $accept))) . '. Máximo ' . $maxSize . '.' }}
                     </p>
                 </div>
@@ -347,12 +347,12 @@
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
-                    <p x-show="!uploading" class="text-xs text-text-muted"><span x-text="fileSize"></span> KB</p>
+                    <p x-show="!uploading" class="text-xs-fluid text-text-muted"><span x-text="fileSize"></span> KB</p>
                     <div x-show="uploading" class="flex items-center gap-2 mt-1">
                         <div class="flex-1 h-1.5 bg-primary-100 rounded-full overflow-hidden">
                             <div class="h-full bg-primary-600 rounded-full transition-all duration-300" :style="'width:' + progress + '%'"></div>
                         </div>
-                        <span class="text-xs text-primary-600 font-medium tabular-nums shrink-0" x-text="progress + '%'"></span>
+                        <span class="text-xs-fluid text-primary-600 font-medium tabular-nums shrink-0" x-text="progress + '%'"></span>
                     </div>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">

@@ -23,12 +23,12 @@
     @if($label || $description)
         <div class="flex flex-col min-w-0">
             @if($label)
-                <label for="{{ $id }}" class="text-sm font-medium text-text-primary cursor-pointer select-none">
+                <label for="{{ $id }}" class="text-small font-medium text-text-primary cursor-pointer select-none">
                     {{ $label }}
                 </label>
             @endif
             @if($description)
-                <p class="text-xs text-text-muted mt-0.5">
+                <p class="text-xs-fluid text-text-muted mt-0.5">
                     {{ $description }}
                 </p>
             @endif

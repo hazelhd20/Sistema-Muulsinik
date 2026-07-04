@@ -85,7 +85,7 @@
 
         <div class="flex items-center justify-between pt-3 mt-1 border-t border-border/40">
             <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">Total</p>
-            <p class="font-bold text-h2 text-text-primary tabular-nums">
+            <p class="font-extrabold text-h1 text-text-primary tabular-nums tracking-tight">
                 ${{ number_format($req->total, 2, '.', ',') }}
             </p>
         </div>
@@ -101,24 +101,26 @@
 
     {{-- Barra de Acciones --}}
     @if(in_array($req->status, ['pendiente', 'borrador']))
-        <div class="px-4 py-3 bg-surface-card border-t border-border/40 flex items-center justify-end gap-2.5">
+        <div class="px-4 py-3 bg-surface-card border-t border-border/40">
             @if($req->status === 'pendiente' && (auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*')))
-                <x-button as="button" type="button" size="sm" variant="secondary" icon="x-circle"
-                    @click.stop="$wire.openRejectModal({{ $req->id }})">
-                    Rechazar
-                </x-button>
-                <x-button as="button" type="button" size="sm" variant="success" icon="check-circle"
-                    @click.stop="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Cambiará a estado Aprobada y se notificará al solicitante.', confirmLabel: 'Aprobar', variant: 'success', action: 'approve', params: [{{ $req->id }}] })">
-                    Aprobar
-                </x-button>
+                <div class="grid grid-cols-2 gap-2 w-full">
+                    <x-button as="button" type="button" size="sm" variant="secondary" icon="x-circle"
+                        @click.stop="$wire.openRejectModal({{ $req->id }})">
+                        Rechazar
+                    </x-button>
+                    <x-button as="button" type="button" size="sm" variant="success" icon="check-circle"
+                        @click.stop="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Cambiará a estado Aprobada y se notificará al solicitante.', confirmLabel: 'Aprobar', variant: 'success', action: 'approve', params: [{{ $req->id }}] })">
+                        Aprobar
+                    </x-button>
+                </div>
             @elseif($req->status === 'borrador' && $req->created_by === auth()->id())
                 @if(auth()->user()->hasPermission('requisiciones.aprobar') || auth()->user()->hasPermission('*'))
-                    <x-button as="button" type="button" size="sm" variant="success" icon="check-circle"
+                    <x-button as="button" type="button" size="sm" variant="success" icon="check-circle" class="w-full justify-center"
                         @click.stop="$dispatch('confirm-action', { title: 'Aprobar Requisición', description: 'Al tener permisos de aprobación, la requisición se aprobará automáticamente.', confirmLabel: 'Aprobar', variant: 'success', action: 'submitForApproval', params: [{{ $req->id }}] })">
                         Aprobar
                     </x-button>
                 @else
-                    <x-button as="button" type="button" size="sm" variant="primary" icon="send"
+                    <x-button as="button" type="button" size="sm" variant="primary" icon="send" class="w-full justify-center"
                         @click.stop="$dispatch('confirm-action', { title: 'Solicitar Aprobación', description: 'La requisición será enviada a los aprobadores del sistema.', confirmLabel: 'Enviar a aprobación', variant: 'primary', action: 'submitForApproval', params: [{{ $req->id }}] })">
                         Solicitar aprobación
                     </x-button>

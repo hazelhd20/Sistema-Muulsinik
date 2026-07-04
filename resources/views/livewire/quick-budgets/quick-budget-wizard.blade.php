@@ -56,7 +56,7 @@
                 <div class="flex items-center gap-3">
                     <h3 class="font-medium text-text-primary tracking-tight">Conceptos y Materiales</h3>
                     @if(count($items) > 0)
-                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs font-medium text-text-muted">
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
                             <x-lucide-list class="w-3.5 h-3.5" />
                             {{ count($items) }} {{ count($items) === 1 ? 'concepto' : 'conceptos' }}
                         </span>
@@ -67,7 +67,7 @@
                         <x-toggle wire:model.live="advancedMode" label="Modo Avanzado" />
                     </div>
                     <div class="flex-shrink-0">
-                        <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs w-full sm:w-auto justify-center">
+                        <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs-fluid w-full sm:w-auto justify-center">
                             Concepto Manual
                         </x-button>
                     </div>
@@ -143,8 +143,8 @@
                                                         <p class="text-small font-medium text-text-primary group-hover:text-primary-600">
                                                             {{ $product['name'] }}</p>
                                                         <div class="flex items-center gap-2 mt-0.5">
-                                                            <span class="text-xs text-text-muted">{{ $product['category'] }}</span>
-                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
+                                                            <span class="text-xs-fluid text-text-muted">{{ $product['category'] }}</span>
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary text-3xs font-bold uppercase tracking-wider">
                                                                 {{ $product['measure_abbr'] }}
                                                             </span>
                                                         </div>
@@ -152,14 +152,14 @@
                                                     @if($product['last_price'] > 0)
                                                         <div class="text-right flex flex-col items-end">
                                                             <div class="flex items-center gap-1 group/history relative">
-                                                                <span class="text-[10px] uppercase tracking-wider text-text-muted font-medium">Costo ref.</span>
+                                                                <span class="text-2xs uppercase tracking-wider text-text-muted font-medium">Costo ref.</span>
                                                                 @if(count($product['history'] ?? []) > 0)
                                                                     <div x-data="{ showHistory: false }" @mouseenter="showHistory = true" @mouseleave="showHistory = false">
                                                                         <x-lucide-history class="w-3.5 h-3.5 text-primary-500 hover:text-primary-600 transition-colors" />
                                                                         <div x-show="showHistory" x-cloak class="absolute right-0 top-full mt-1 bg-surface-main border border-border shadow-md rounded-lg p-3 z-[60] min-w-[140px] pointer-events-none">
-                                                                            <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 border-b border-border/50 pb-1.5">Últimas Compras</p>
+                                                                            <p class="text-2xs font-bold text-text-muted uppercase tracking-wider mb-2 border-b border-border/50 pb-1.5">Últimas Compras</p>
                                                                             @foreach($product['history'] as $h)
-                                                                                <div class="flex justify-between items-center gap-4 text-xs mb-1.5 last:mb-0">
+                                                                                <div class="flex justify-between items-center gap-4 text-xs-fluid mb-1.5 last:mb-0">
                                                                                     <span class="text-text-muted font-medium">{{ $h['date'] }}</span>
                                                                                     <span class="font-bold text-text-primary tabular-nums">${{ number_format($h['price'], 2) }}</span>
                                                                                 </div>
@@ -179,7 +179,7 @@
                                 @else
                                     <div class="p-4 text-center">
                                         <p class="text-small text-text-muted">No se encontraron productos en el catálogo.</p>
-                                        <p class="text-xs text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
+                                        <p class="text-xs-fluid text-primary-600 mt-1 cursor-pointer hover:underline" wire:click="addManualItem">
                                             Da clic en "Concepto Manual" para agregarlo tú mismo.
                                         </p>
                                     </div>
@@ -196,7 +196,7 @@
                 <div class="hidden md:block w-full overflow-x-auto">
                     <table class="w-full text-left table-inputs-compact">
                         <thead>
-                            <tr class="bg-surface-main border-b border-border/40 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            <tr class="bg-surface-th border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap {{ $advancedMode ? 'w-[25%]' : 'w-[30%]' }}">Concepto</th>
                                 <th class="px-4 py-3 text-left whitespace-nowrap w-[10%]">Tipo</th>
                                 <th class="px-4 py-3 text-left whitespace-nowrap w-[10%]">Unidad</th>
@@ -216,15 +216,15 @@
                                     <td class="pl-6 pr-4 py-4">
                                         @if($item['product_id'])
                                             <div class="flex flex-col">
-                                                <span class="text-sm font-semibold text-text-primary">{{ $item['concept'] }}</span>
+                                                <span class="text-small font-semibold text-text-primary">{{ $item['concept'] }}</span>
                                             </div>
                                         @else
                                             <div class="flex flex-col gap-2">
                                                 <input type="text" wire:model.live.debounce.300ms="items.{{ $index }}.concept"
-                                                    class="input input-inline text-sm w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-danger bg-danger-light' : '' }}"
+                                                    class="input input-inline text-small w-full {{ $errors->has('items.'.$index.'.concept') ? 'border-danger bg-danger-light' : '' }}"
                                                     placeholder="Escribe un concepto...">
                                                 @error('items.'.$index.'.concept')
-                                                    <p class="text-danger-active text-[10px] font-medium leading-tight mt-0.5">{{ $message }}</p>
+                                                    <p class="text-danger-active text-2xs font-medium leading-tight mt-0.5">{{ $message }}</p>
                                                 @enderror
                                             </div>
                                         @endif
@@ -237,7 +237,7 @@
                                     </td>
                                     <td class="px-4 py-4 {{ $advancedMode ? 'align-top pt-5' : 'align-middle' }}">
                                         @if($item['product_id'])
-                                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-hover text-text-secondary border border-border/60 text-[10px] font-bold uppercase tracking-wider">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-hover text-text-secondary text-2xs font-bold uppercase tracking-wider">
                                                 {{ $item['measure_abbr'] }}
                                             </span>
                                         @else
@@ -253,7 +253,7 @@
                                                 class="input text-center tabular-nums text-small w-full py-1.5 shadow-sm transition-colors {{ $errors->has('items.'.$index.'.quantity') ? 'border-danger focus:border-danger bg-danger-light' : 'border-border/60 bg-surface-card focus:border-primary-500' }}">
                                         </div>
                                         @error('items.'.$index.'.quantity')
-                                            <p class="text-danger-active text-[10px] font-medium leading-tight mt-1 text-center">{{ current(explode(' ', $message)) }} inv.</p>
+                                            <p class="text-danger-active text-2xs font-medium leading-tight mt-1 text-center">{{ current(explode(' ', $message)) }} inv.</p>
                                         @enderror
                                     </td>
                                     @if($advancedMode)
@@ -266,7 +266,7 @@
                                                 {{ ($item['unit_cost'] ?? 0) == 0 ? 'bg-warning-50 border-warning-300 text-warning-800' : 'bg-surface-card border-border/60' }}">
                                         </div>
                                         @if(($item['unit_cost'] ?? 0) == 0)
-                                            <p class="text-[9px] text-warning-600 mt-1 text-right leading-tight tracking-tight">Sin historial,<br>ingresa costo</p>
+                                            <p class="text-3xs text-warning-600 mt-1 text-right leading-tight tracking-tight">Sin historial,<br>ingresa costo</p>
                                         @endif
                                     </td>
                                     @endif
@@ -279,13 +279,13 @@
                                             
                                             @if($advancedMode)
                                             <!-- Indicador de Margen -->
-                                            <div class="absolute -top-7 right-0 bg-surface-main text-[10px] font-bold text-text-secondary border border-border/80 px-2 py-0.5 rounded opacity-0 group-hover/margin:opacity-100 transition-opacity pointer-events-none shadow-sm whitespace-nowrap z-10">
+                                            <div class="absolute -top-7 right-0 bg-surface-main text-2xs font-bold text-text-secondary border border-border/80 px-2 py-0.5 rounded opacity-0 group-hover/margin:opacity-100 transition-opacity pointer-events-none shadow-sm whitespace-nowrap z-10">
                                                 Margen: {{ number_format($item['margin_percent'] ?? 0, 1) }}%
                                             </div>
                                             @endif
                                         </div>
                                         @error('items.'.$index.'.unit_price')
-                                            <p class="text-danger-active text-[10px] font-medium leading-tight mt-1 text-right">Monto inv.</p>
+                                            <p class="text-danger-active text-2xs font-medium leading-tight mt-1 text-right">Monto inv.</p>
                                         @enderror
                                     </td>
                                     <td class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small {{ $advancedMode ? 'align-top pt-6' : 'align-middle' }}">
@@ -301,11 +301,11 @@
                 </div>
 
                 {{-- Formulario de conceptos (Mobile) --}}
-                <div class="md:hidden flex flex-col gap-4 p-3 sm:p-6 pb-2">
+                <div class="md:hidden divide-y divide-border/40 pb-2">
                     @foreach($items as $index => $item)
-                        <div class="bg-surface-main rounded-xl p-3.5 sm:p-5 relative flex flex-col gap-3" wire:key="mobile-item-{{ $index }}">
+                        <div class="p-4 sm:p-6 relative flex flex-col gap-3.5 hover:bg-surface-hover/30 transition-colors" wire:key="mobile-item-{{ $index }}">
                             <div class="flex justify-between items-center border-b border-border/40 pb-2 mb-1">
-                                <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                     Concepto {{ $index + 1 }}
                                 </span>
                                 <button type="button" wire:click="removeItem({{ $index }})" class="text-danger opacity-70 hover:opacity-100 p-1 -mr-1 transition-opacity">
@@ -314,7 +314,7 @@
                             </div>
                             
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs font-medium text-text-primary">Producto</label>
+                                <label class="text-xs-fluid font-medium text-text-primary">Producto</label>
                                 @if($item['product_id'])
                                     <div class="flex flex-col p-3 bg-surface-card rounded-lg border border-border">
                                         <span class="text-body font-medium text-text-primary">{{ $item['concept'] }}</span>
@@ -325,7 +325,7 @@
                                                     minSearch="10"
                                                     placeholder="Tipo" />
                                             </div>
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary border border-border text-[9px] font-bold uppercase tracking-wider">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-hover text-text-secondary text-3xs font-bold uppercase tracking-wider">
                                                 {{ $item['measure_abbr'] }}
                                             </span>
                                         </div>
@@ -352,7 +352,7 @@
                             <div class="grid {{ $advancedMode ? 'grid-cols-2' : 'grid-cols-1' }} gap-3">
                                 @if($advancedMode)
                                 <div>
-                                    <label class="text-xs font-medium text-text-primary mb-1 block">Costo U.</label>
+                                    <label class="text-xs-fluid font-medium text-text-primary mb-1 block">Costo U.</label>
                                     <div class="relative">
                                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
                                         <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_cost" step="0.01"
@@ -361,23 +361,23 @@
                                 </div>
                                 @endif
                                 <div>
-                                    <label class="text-xs font-medium text-text-primary mb-1 block">Cantidad</label>
+                                    <label class="text-xs-fluid font-medium text-text-primary mb-1 block">Cantidad</label>
                                     <div class="relative">
                                         <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.quantity" step="0.01"
                                             class="input w-full pr-8" placeholder="0">
-                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs-fluid text-text-muted pointer-events-none">{{ $item['measure_abbr'] }}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="text-xs font-medium text-text-primary mb-1 block">{{ $advancedMode ? 'Precio Venta (P.U.)' : 'Precio Unitario' }}</label>
+                                <label class="text-xs-fluid font-medium text-text-primary mb-1 block">{{ $advancedMode ? 'Precio Venta (P.U.)' : 'Precio Unitario' }}</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-small text-text-muted pointer-events-none">$</span>
                                     <input type="number" wire:model.live.debounce.500ms="items.{{ $index }}.unit_price" step="0.01"
                                         class="input w-full pl-7 font-medium text-text-primary" placeholder="0.00">
                                     @if($advancedMode)
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted bg-surface-card px-1 rounded pointer-events-none border border-border/50">M. {{ number_format($item['margin_percent'] ?? 0, 1) }}%</span>
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-2xs font-bold text-text-muted bg-surface-card px-1 rounded pointer-events-none border border-border/50">M. {{ number_format($item['margin_percent'] ?? 0, 1) }}%</span>
                                     @endif
                                 </div>
                             </div>
@@ -403,7 +403,7 @@
                                 </div>
                                 <div>
                                     <h4 class="text-small font-semibold text-text-primary">Desglose de IVA</h4>
-                                    <p class="text-[11px] text-text-muted mt-0.5">Calcula 16% sobre venta</p>
+                                    <p class="text-xs-fluid text-text-muted mt-0.5">Calcula 16% sobre venta</p>
                                 </div>
                             </div>
                             <div>
@@ -443,7 +443,7 @@
                         @endif
                         <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
                             <span class="text-body font-semibold text-text-primary">Total Presupuestado</span>
-                            <span class="text-2xl font-bold text-text-primary tabular-nums tracking-tight">
+                            <span class="text-h1 font-bold text-text-primary tabular-nums tracking-tight">
                                 ${{ number_format($this->grand_total, 2) }}
                             </span>
                         </div>

@@ -11,7 +11,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
+    <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
             $activeCount = ($categoryFilter ? 1 : 0) + ($measureFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -19,9 +19,9 @@
 
         @if($products->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+                <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                     {{-- Search --}}
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar producto..." />
@@ -52,7 +52,7 @@
 
                 {{-- Active Chips Row --}}
                 @if($activeCount > 0)
-                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                <div class="flex flex-wrap items-center gap-2 pb-3 md:px-6 md:pb-4 pt-1">
                     @if($categoryFilter)
                         <x-filter-chip label="Categoría" :value="$categories[$categoryFilter] ?? $categoryFilter" wire:click="$set('categoryFilter', '')" />
                     @endif
@@ -88,19 +88,17 @@
                     </colgroup>
                     <thead class="bg-surface-th border-b border-border/40">
                             <tr>
-                                <th class="actions text-center pl-4 pr-2">
-                                    <input type="checkbox"
-                                        class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-bind:checked="allSelected"
-                                        x-on:change="toggleAll({{ json_encode($products->pluck('id')->toArray()) }})" />
+                                <th class="actions pl-6 pr-2 text-left">
+                                    <x-table-checkbox x-bind:checked="allSelected"
+                                        @change="toggleAll({{ json_encode($products->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th>Categoría</th>
+                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Categoría</th>
                                 <x-sortable-header field="item_type" label="Tipo" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th>Medida</th>
+                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Medida</th>
                                 <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th class="actions text-right pr-4">Acciones</th>
+                                <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage">
@@ -115,23 +113,23 @@
                                     <tr wire:key="product-row-{{ $product->id }}"
                                         class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="actions pl-4 pr-2 text-center" @click.stop>
+                                        <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
                                         </td>
                                         <td class="max-w-0">
-                                            <p class="font-semibold text-text-primary truncate" title="{{ $product->canonical_name }}">{{ $product->canonical_name }}</p>
+                                            <p class="text-body font-bold text-text-primary truncate" title="{{ $product->canonical_name }}">{{ $product->canonical_name }}</p>
                                             @if($product->description)
-                                                <p class="text-xs text-text-muted truncate" title="{{ $product->description }}">{{ $product->description }}</p>
+                                                <p class="text-xs-fluid text-text-muted truncate" title="{{ $product->description }}">{{ $product->description }}</p>
                                             @endif
                                         </td>
                                         <td>
                                             @if($product->category)
                                                 <x-dynamic-badge :value="$product->category->name" />
                                             @else
-                                                <span class="text-sm font-medium text-text-muted">—</span>
+                                                <span class="text-small font-medium text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="text-sm font-medium text-text-secondary">
+                                        <td class="text-body font-medium text-text-secondary">
                                             @php
                                                 $typeLabel = match($product->item_type) {
                                                     'labor' => 'Mano de Obra',
@@ -141,17 +139,17 @@
                                             @endphp
                                             {{ $typeLabel }}
                                         </td>
-                                        <td class="text-sm font-medium text-text-secondary">
+                                        <td class="text-body font-medium text-text-secondary">
                                             @if($product->measure && $product->measure->abbreviation)
                                                 {{ strtolower($product->measure->abbreviation) }}
                                             @else
-                                                <span class="text-sm font-medium text-text-muted">—</span>
+                                                <span class="text-small font-medium text-text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="text-sm font-medium text-text-muted">
+                                        <td class="text-body font-medium text-text-muted">
                                             {{ $product->created_at->format('d/m/Y') }}
                                         </td>
-                                        <td class="actions pr-4 py-3" @click.stop>
+                                        <td class="actions pr-6 py-3" @click.stop="$event.stopPropagation()">
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
@@ -183,8 +181,8 @@
                         <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="actions pl-4 pr-2 text-center">
-                                        <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
+                                    <td class="actions pl-6 pr-2 text-left">
+                                        <x-skeleton class="w-4 h-4 rounded-sm" />
                                     </td>
                                     <td>
                                         <x-skeleton class="h-4 rounded w-48 mb-1.5" />
@@ -199,7 +197,10 @@
                                     <td>
                                         <x-skeleton class="h-4 rounded w-20" />
                                     </td>
-                                    <td class="actions pr-4 py-3">
+                                    <td>
+                                        <x-skeleton class="h-4 rounded w-24" />
+                                    </td>
+                                    <td class="actions pr-6 py-3">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
@@ -208,139 +209,137 @@
                             @endfor
                         </tbody>
                     </table>
-        </x-card.table>
+                </x-card.table>
 
-        <div class="md:hidden flex flex-col gap-4 mt-2">
-            {{-- Tarjetas Móviles (Mobile View) --}}
-            <div class="flex flex-col">
-                <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
-                    @if($products->isNotEmpty())
-                        @foreach($products as $product)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                 :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
-                                 wire:key="product-mobile-card-{{ $product->id }}">
-                                 
-                                {{-- Cabecera de la Fila --}}
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
-                                        <span class="font-bold text-text-primary text-base truncate">{{ $product->canonical_name }}</span>
+                <div class="md:hidden flex flex-col gap-4 mt-2">
+                    {{-- Tarjetas Móviles (Mobile View) --}}
+                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                        @if($products->isNotEmpty())
+                            @foreach($products as $product)
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                     x-bind:class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
+                                     wire:key="product-mobile-card-{{ $product->id }}">
+                                     
+                                    {{-- Cabecera de la Fila --}}
+                                    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
+                                            <span class="font-bold text-text-primary text-h3 truncate">{{ $product->canonical_name }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <x-dropdown align="right" width="48">
+                                                <x-slot name="trigger">
+                                                    <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
+                                                </x-slot>
+                                                <x-slot name="content">
+                                                    <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">Ver detalles</x-dropdown-link>
+                                                    @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                    @endif
+                                                    @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @endif
+                                                </x-slot>
+                                            </x-dropdown>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        <x-dropdown align="right" width="48">
-                                            <x-slot name="trigger">
-                                                <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
-                                            </x-slot>
-                                            <x-slot name="content">
-                                                <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">Ver detalles</x-dropdown-link>
-                                                @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
-                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
+
+                                    {{-- Contenido Principal --}}
+                                    <div class="p-4 flex flex-col gap-4">
+                                        {{-- Subtítulo --}}
+                                        @if($product->description)
+                                            <div class="text-small text-text-muted flex flex-wrap items-center gap-x-4 gap-y-2">
+                                                <span class="flex items-center gap-1.5 truncate">
+                                                    <x-lucide-align-left class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                                    <span class="truncate">{{ $product->description }}</span>
+                                                </span>
+                                            </div>
+                                        @endif
+
+                                        {{-- Datos y Detalles --}}
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-border/40">
+                                            <div>
+                                                <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Categoría</p>
+                                                @if($product->category)
+                                                    <x-dynamic-badge :value="$product->category->name" />
+                                                @else
+                                                    <span class="text-body font-medium text-text-muted">—</span>
                                                 @endif
-                                                @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Tipo</p>
+                                                @php
+                                                    $typeLabel = match($product->item_type) {
+                                                        'labor' => 'Mano de Obra',
+                                                        'service' => 'Servicio',
+                                                        default => 'Material',
+                                                    };
+                                                @endphp
+                                                <p class="text-body font-medium text-text-secondary">{{ $typeLabel }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Unidad</p>
+                                                @if($product->measure && $product->measure->abbreviation)
+                                                    <p class="text-body font-medium text-text-secondary">{{ strtolower($product->measure->abbreviation) }}</p>
+                                                @else
+                                                    <span class="text-body font-medium text-text-muted">—</span>
                                                 @endif
-                                            </x-slot>
-                                        </x-dropdown>
-                                    </div>
-                                </div>
-
-                                {{-- Contenido Indentado --}}
-                                <div class="pl-8 flex flex-col gap-3">
-                                    {{-- Subtítulo --}}
-                                    @if($product->description)
-                                    <div class="text-xs text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
-                                        <span class="flex items-center gap-1.5 truncate">
-                                            <x-lucide-align-left class="w-3.5 h-3.5 shrink-0" />
-                                            <span class="truncate">{{ $product->description }}</span>
-                                        </span>
-                                    </div>
-                                    @endif
-
-                                    {{-- Datos y Detalles --}}
-                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                        <div>
-                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Categoría</p>
-                                            @if($product->category)
-                                                <x-dynamic-badge :value="$product->category->name" />
-                                            @else
-                                                <span class="text-xs font-medium text-text-muted">—</span>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Tipo</p>
-                                            @php
-                                                $typeLabel = match($product->item_type) {
-                                                    'labor' => 'Mano de Obra',
-                                                    'service' => 'Servicio',
-                                                    default => 'Material',
-                                                };
-                                            @endphp
-                                            <p class="text-xs font-medium text-text-secondary">{{ $typeLabel }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Unidad</p>
-                                            @if($product->measure && $product->measure->abbreviation)
-                                                <p class="text-xs font-medium text-text-secondary">{{ strtolower($product->measure->abbreviation) }}</p>
-                                            @else
-                                                <span class="text-xs font-medium text-text-muted">—</span>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Registro</p>
-                                            <div class="flex items-center gap-1 text-xs text-text-secondary mt-0.5">
-                                                <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted shrink-0" />
-                                                <span>{{ $product->created_at->format('d/m/Y') }}</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Registro</p>
+                                                <div class="flex items-center gap-1.5 text-body text-text-secondary font-medium">
+                                                    <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted shrink-0" />
+                                                    <span>{{ $product->created_at->format('d/m/Y') }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    @elseif($hasActiveFilters)
-                        <div class="p-12">
-                            <x-empty-state icon="search" title="No se encontraron productos" message="Intenta ajustar tus filtros de búsqueda." />
-                        </div>
-                    @else
-                        <div class="p-12">
-                            <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
-                        </div>
-                    @endif
-                </div>
+                                </x-card>
+                            @endforeach
+                        @elseif($hasActiveFilters)
+                            <x-card class="p-8 sm:p-12 text-center">
+                                <x-empty-state icon="search" title="No se encontraron productos" message="Intenta ajustar tus filtros de búsqueda." />
+                            </x-card>
+                        @else
+                            <x-card class="p-8 sm:p-12 text-center">
+                                <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
+                            </x-card>
+                        @endif
+                    </div>
 
-                {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
-                    @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
-                                    <x-skeleton class="h-5 w-48 rounded" />
-                                </div>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <x-skeleton class="w-7 h-7 rounded-md" />
-                                </div>
-                            </div>
-                            <div class="pl-8 flex flex-col gap-3">
-                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                    <div>
-                                        <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
-                                        <x-skeleton class="h-5 w-24 rounded-full" />
+                    {{-- Skeletons Móviles --}}
+                    <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                        @for($i = 0; $i < 4; $i++)
+                            <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
+                                        <x-skeleton class="h-5 w-48 rounded" />
                                     </div>
-                                    <div>
-                                        <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
-                                        <x-skeleton class="h-5 w-16 rounded-full" />
-                                    </div>
-                                    <div class="col-span-2">
-                                        <x-skeleton class="h-3 w-32 rounded" />
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <x-skeleton class="w-7 h-7 rounded-md" />
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    @endfor
+                                <div class="pl-8 flex flex-col gap-3">
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div>
+                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                            <x-skeleton class="h-5 w-24 rounded-full" />
+                                        </div>
+                                        <div>
+                                            <x-skeleton class="h-2 w-12 mb-1.5 rounded" />
+                                            <x-skeleton class="h-5 w-16 rounded-full" />
+                                        </div>
+                                        <div class="col-span-2">
+                                            <x-skeleton class="h-3 w-32 rounded" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </x-card>
+                        @endfor
+                    </div>
                 </div>
             </div>
-        </div>
-
         </div>
 
         {{-- Bulk Actions Bar --}}
@@ -395,7 +394,7 @@
                     <textarea wire:model="description" class="input" rows="2"
                         placeholder="Descripción técnica opcional..."></textarea>
                 </x-form-field>
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveProduct">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}

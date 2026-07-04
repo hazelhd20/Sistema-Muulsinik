@@ -11,16 +11,16 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
+    <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
             $hasActiveFilters = !empty($search);
         @endphp
 
         @if($measures->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group (Search + Filters + Chips) --}}
-            <div class="card md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+            <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
                 {{-- Filters Bar --}}
-                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+                <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
                     </div>
@@ -51,19 +51,17 @@
                     </colgroup>
                     <thead class="bg-surface-th border-b border-border/40">
                             <tr>
-                                <th class="actions text-center pl-4 pr-2">
-                                    <input type="checkbox"
-                                        class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                        x-bind:checked="allSelected"
-                                        x-on:change="toggleAll({{ json_encode($measures->pluck('id')->toArray()) }})" />
+                                <th class="actions pl-6 pr-2 text-left">
+                                    <x-table-checkbox x-bind:checked="allSelected"
+                                        @change="toggleAll({{ json_encode($measures->pluck('id')->toArray()) }})" />
                                 </th>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="abbreviation" label="Abreviación" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th>Productos</th>
+                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Productos</th>
                                 <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th class="actions text-right pr-4">Acciones</th>
+                                <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage">
@@ -78,13 +76,13 @@
                                     <tr wire:key="measure-row-{{ $measure->id }}"
                                         class="group hover:bg-surface-hover transition-colors duration-150"
                                         :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50' : ''">
-                                        <td class="actions pl-4 pr-2 text-center" @click.stop>
+                                        <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
                                         </td>
                                         <td class="max-w-0">
-                                            <p class="font-medium text-text-primary truncate" title="{{ $measure->name }}">{{ $measure->name }}</p>
+                                            <p class="text-body font-bold text-text-primary truncate" title="{{ $measure->name }}">{{ $measure->name }}</p>
                                         </td>
-                                        <td class="text-sm font-medium text-text-secondary">
+                                        <td class="text-body font-medium text-text-secondary">
                                             @if($measure->abbreviation)
                                                 {{ strtolower($measure->abbreviation) }}
                                             @else
@@ -93,15 +91,15 @@
                                         </td>
                                         <td>
                                             @if($measure->products_count > 0)
-                                                <span class="text-sm font-medium text-text-secondary">{{ $measure->products_count }} producto{{ $measure->products_count !== 1 ? 's' : '' }}</span>
+                                                <span class="text-body font-medium text-text-secondary">{{ $measure->products_count }} producto{{ $measure->products_count !== 1 ? 's' : '' }}</span>
                                             @else
-                                                <span class="text-sm font-normal text-text-muted">Sin productos</span>
+                                                <span class="text-body font-normal text-text-muted">Sin productos</span>
                                             @endif
                                         </td>
-                                        <td class="text-sm font-medium text-text-muted">
+                                        <td class="text-body font-medium text-text-muted">
                                             {{ $measure->created_at->format('d/m/Y') }}
                                         </td>
-                                        <td class="actions pr-4 py-3" @click.stop>
+                                        <td class="actions pr-6 py-3" @click.stop="$event.stopPropagation()">
                                             <div class="flex items-center justify-end">
                                                 <x-dropdown align="right" width="48">
                                                     <x-slot name="trigger">
@@ -130,8 +128,8 @@
                         <tbody wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                    <td class="actions pl-4 pr-2 text-center">
-                                        <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
+                                    <td class="actions pl-6 pr-2 text-left">
+                                        <x-skeleton class="w-4 h-4 rounded-sm" />
                                     </td>
                                     <td>
                                         <x-skeleton class="h-4 rounded w-48" />
@@ -145,7 +143,7 @@
                                     <td>
                                         <x-skeleton class="h-4 rounded w-20" />
                                     </td>
-                                    <td class="actions pr-4 py-3">
+                                    <td class="actions pr-6 py-3">
                                         <div class="flex items-center justify-end">
                                             <x-skeleton class="w-8 h-8 rounded-md" />
                                         </div>
@@ -162,17 +160,17 @@
                 <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($measures->isNotEmpty())
                         @foreach($measures as $measure)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                 :class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300' : ''"
+                            <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                 x-bind:class="selectedRows.includes('{{ $measure->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                  wire:key="measure-mobile-card-{{ $measure->id }}">
                                  
                                 {{-- Cabecera de la Fila --}}
-                                <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
-                                        <span class="font-bold text-text-primary text-base truncate">{{ $measure->name }}</span>
+                                        <span class="font-bold text-text-primary text-h3 truncate">{{ $measure->name }}</span>
                                         @if($measure->abbreviation)
-                                            <span class="text-sm font-medium text-text-secondary">({{ strtolower($measure->abbreviation) }})</span>
+                                            <span class="text-body font-medium text-text-secondary">({{ strtolower($measure->abbreviation) }})</span>
                                         @endif
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
@@ -193,39 +191,39 @@
                                 </div>
 
                                 {{-- Contenido Indentado --}}
-                                <div class="pl-8 flex flex-col gap-3">
-                                    <div class="flex flex-col gap-2">
-                                        <p class="text-2xs text-text-muted uppercase font-semibold">Productos</p>
+                                <div class="p-4 flex flex-col gap-3">
+                                    <div class="flex flex-col gap-1">
+                                        <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider">Productos</p>
                                         <div>
                                             @if($measure->products_count > 0)
-                                                <span class="text-sm font-medium text-text-secondary">{{ $measure->products_count }} producto{{ $measure->products_count !== 1 ? 's' : '' }}</span>
+                                                <span class="text-body font-medium text-text-secondary">{{ $measure->products_count }} producto{{ $measure->products_count !== 1 ? 's' : '' }}</span>
                                             @else
-                                                <span class="text-sm font-normal text-text-muted">Sin productos</span>
+                                                <span class="text-body font-normal text-text-muted">Sin productos</span>
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-1.5 text-xs text-text-secondary">
+                                    <div class="flex items-center gap-1.5 text-body text-text-secondary font-medium pt-2 border-t border-border/40">
                                         <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted shrink-0" />
                                         <span>Registro: {{ $measure->created_at->format('d/m/Y') }}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </x-card>
                         @endforeach
                     @elseif($hasActiveFilters)
-                        <div class="p-12">
+                        <x-card class="p-8 sm:p-12 text-center">
                             <x-empty-state icon="search" title="No se encontraron medidas" message="Intenta ajustar tus filtros de búsqueda." />
-                        </div>
+                        </x-card>
                     @else
-                        <div class="p-12">
+                        <x-card class="p-8 sm:p-12 text-center">
                             <x-empty-state icon="ruler" title="No se encontraron medidas." />
-                        </div>
+                        </x-card>
                     @endif
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
+                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 4; $i++)
-                        <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                        <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex items-center justify-between gap-2">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
@@ -243,10 +241,12 @@
                                 </div>
                                 <x-skeleton class="h-4 w-32 rounded" />
                             </div>
-                        </div>
+                        </x-card>
                     @endfor
                 </div>
             </div>
+        </div>
+        </div>
         </div>
 
         @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
@@ -286,7 +286,7 @@
                 <x-form-field label="Abreviación" error="{{ $errors->first('abbreviation') }}">
                     <input type="text" wire:model="abbreviation" class="input" placeholder="Ej. pza, m">
                 </x-form-field>
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="save">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Medida' }}

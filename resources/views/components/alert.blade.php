@@ -50,7 +50,7 @@
             <h4 class="text-small font-semibold {{ $currentTitleColor }}">{{ $title }}</h4>
         @endif
         
-        <div class="{{ $title ? 'mt-1 opacity-90 text-sm' : 'text-sm font-medium' }}">
+        <div class="{{ $title ? 'mt-1 opacity-90 text-small' : 'text-small font-medium' }}">
             @if($message)
                 <span>{{ $message }}</span>
             @else
@@ -59,7 +59,7 @@
         </div>
 
         @if(isset($footer))
-            <div class="mt-2 text-xs opacity-75">
+            <div class="mt-2 text-xs-fluid opacity-75">
                 {{ $footer }}
             </div>
         @endif

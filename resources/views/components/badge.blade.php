@@ -9,7 +9,7 @@
 
 @php
     $sizeClasses = match($size) {
-        'lg' => 'px-3 py-1.5 text-xs',             // 12px
+        'lg' => 'px-3 py-1.5 text-xs-fluid',       // 12px fluido
         'md' => '',                                // 11px (Hereda el estándar base de .badge)
         'sm' => 'px-2 py-0.5 text-2xs',            // 10px
         'xs' => 'px-1.5 py-0.5 text-3xs',          // 9px

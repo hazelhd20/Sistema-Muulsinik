@@ -11,7 +11,7 @@
     </x-page-header>
 
     {{-- Unified Datagrid Card Container --}}
-    <div class="mt-4 mb-6 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-lg">
+    <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
             $activeCount = ($activeFilter !== '' ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
@@ -19,8 +19,8 @@
 
         @if($clients->isNotEmpty() || $hasActiveFilters)
             {{-- Header Group --}}
-            <div class="card md:rounded-t-lg md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
-                <div class="flex flex-row gap-3 items-center justify-between w-full p-4 md:px-6 md:py-4">
+            <div class="bg-transparent border-0 shadow-none md:card md:rounded-t-xl md:bg-surface-card md:border-0 md:shadow-none mb-4 md:mb-0">
+                <div class="flex flex-row gap-2.5 items-center justify-between w-full py-1 md:px-6 md:py-4">
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar por nombre, RFC o email..." />
                     </div>
@@ -45,7 +45,7 @@
 
                 {{-- Active Chips Row --}}
                 @if($activeCount > 0)
-                <div class="flex flex-wrap items-center gap-2 px-4 pb-4 md:px-6 md:pb-4 pt-0">
+                <div class="flex flex-wrap items-center gap-2 pb-3 md:px-6 md:pb-4 pt-1">
                     @if($activeFilter !== '')
                         <x-filter-chip label="Estado" :value="$activeFilter === '1' ? 'Activos' : 'Inactivos'" wire:click="$set('activeFilter', '')" />
                     @endif
@@ -74,17 +74,15 @@
                     </colgroup>
                     <thead class="bg-surface-th border-b border-border/40">
                         <tr>
-                            <th class="actions text-center pl-4 pr-2">
-                                <input type="checkbox"
-                                    class="w-4 h-4 rounded-sm text-primary-600 focus:ring-primary-500 border-border bg-surface-card cursor-pointer"
-                                    x-bind:checked="allSelected"
-                                    x-on:change="toggleAll({{ json_encode($clients->pluck('id')->toArray()) }})" />
+                            <th class="actions pl-6 pr-2 text-left">
+                                <x-table-checkbox x-bind:checked="allSelected"
+                                    @change="toggleAll({{ json_encode($clients->pluck('id')->toArray()) }})" />
                             </th>
                             <x-sortable-header field="name" label="Nombre Comercial" :sortField="$sortField" :sortDirection="$sortDirection" />
                             <x-sortable-header field="rfc" label="RFC" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <th>Contacto</th>
-                            <th>Estado</th>
-                            <th class="actions text-right pr-4">Acciones</th>
+                            <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Contacto</th>
+                            <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Estado</th>
+                            <th class="actions pr-6 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage">
@@ -97,29 +95,29 @@
                         @else
                             @foreach($clients as $client)
                                 <tr wire:key="client-row-{{ $client->id }}" class="group hover:bg-surface-hover transition-colors duration-150" :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50' : ''">
-                                    <td class="actions pl-4 pr-2 text-center" @click.stop>
+                                    <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                         <x-table-checkbox x-model="selectedRows" value="{{ $client->id }}" />
                                     </td>
                                     <td class="max-w-0">
-                                        <p class="font-semibold text-text-primary truncate" title="{{ $client->name }}">{{ $client->name }}</p>
+                                        <p class="text-body font-bold text-text-primary truncate" title="{{ $client->name }}">{{ $client->name }}</p>
                                         @if($client->legal_name)
-                                            <p class="text-xs text-text-muted truncate" title="{{ $client->legal_name }}">{{ $client->legal_name }}</p>
+                                            <p class="text-xs-fluid text-text-muted truncate" title="{{ $client->legal_name }}">{{ $client->legal_name }}</p>
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="text-text-secondary {{ !$client->rfc ? 'text-text-muted italic' : '' }}">
+                                        <span class="text-body text-text-secondary font-mono {{ !$client->rfc ? 'text-text-muted italic !font-sans' : '' }}">
                                             {{ $client->rfc ?: 'Sin RFC' }}
                                         </span>
                                     </td>
                                     <td class="max-w-0">
                                         @if($client->email)
-                                            <p class="text-sm text-text-secondary truncate"><x-lucide-mail class="w-3 h-3 inline mr-1 text-text-muted"/>{{ $client->email }}</p>
+                                            <p class="text-small text-text-secondary truncate"><x-lucide-mail class="w-3 h-3 inline mr-1 text-text-muted"/>{{ $client->email }}</p>
                                         @endif
                                         @if($client->phone)
-                                            <p class="text-sm text-text-secondary truncate"><x-lucide-phone class="w-3 h-3 inline mr-1 text-text-muted"/>{{ $client->phone }}</p>
+                                            <p class="text-small text-text-secondary truncate"><x-lucide-phone class="w-3 h-3 inline mr-1 text-text-muted"/>{{ $client->phone }}</p>
                                         @endif
                                         @if(!$client->email && !$client->phone)
-                                            <span class="text-text-muted italic text-sm">Sin contacto</span>
+                                            <span class="text-text-muted italic text-small">Sin contacto</span>
                                         @endif
                                     </td>
                                     <td>
@@ -129,7 +127,7 @@
                                             <x-badge variant="danger">Inactivo</x-badge>
                                         @endif
                                     </td>
-                                    <td class="actions pr-4 py-3" @click.stop>
+                                    <td class="actions pr-6 py-3" @click.stop="$event.stopPropagation()">
                                         <div class="flex items-center justify-end">
                                             <x-dropdown align="right" width="48">
                                                 <x-slot name="trigger">
@@ -160,8 +158,8 @@
                     <tbody wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="hidden">
                         @for($i = 0; $i < 5; $i++)
                             <tr class="opacity-{{ 100 - ($i * 15) }}">
-                                <td class="actions pl-4 pr-2 text-center">
-                                    <x-skeleton class="w-4 h-4 rounded-sm mx-auto" />
+                                <td class="actions pl-6 pr-2 text-left">
+                                    <x-skeleton class="w-4 h-4 rounded-sm" />
                                 </td>
                                 <td>
                                     <x-skeleton class="h-4 rounded w-48 mb-1.5" />
@@ -177,7 +175,7 @@
                                 <td>
                                     <x-skeleton class="h-5 rounded w-16 rounded-full" />
                                 </td>
-                                <td class="actions pr-4 py-3">
+                                <td class="actions pr-6 py-3">
                                     <div class="flex items-center justify-end">
                                         <x-skeleton class="w-8 h-8 rounded-md" />
                                     </div>
@@ -193,14 +191,20 @@
                     <div wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($clients->isNotEmpty())
                             @foreach($clients as $client)
-                                <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm"
-                                     :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50 border-primary-300' : ''">
-                                    <div class="flex items-center justify-between gap-2">
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                     x-bind:class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
+                                     wire:key="client-mobile-card-{{ $client->id }}">
+                                    <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $client->id }}" />
-                                            <span class="font-bold text-text-primary text-base truncate">{{ $client->name }}</span>
+                                            <span class="font-bold text-text-primary text-h3 truncate">{{ $client->name }}</span>
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
+                                            @if($client->active)
+                                                <x-badge variant="success">Activo</x-badge>
+                                            @else
+                                                <x-badge variant="danger">Inactivo</x-badge>
+                                            @endif
                                             <x-dropdown align="right" width="48">
                                                 <x-slot name="trigger">
                                                     <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
@@ -217,35 +221,52 @@
                                             </x-dropdown>
                                         </div>
                                     </div>
-                                    <div class="pl-8 flex flex-col gap-3">
-                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    <div class="p-4 flex flex-col gap-4">
+                                        @if($client->legal_name || $client->rfc)
+                                            <div class="text-small text-text-muted flex flex-wrap items-center gap-x-4 gap-y-2">
+                                                @if($client->legal_name)
+                                                    <span class="flex items-center gap-1.5 truncate font-medium">
+                                                        <x-lucide-building-2 class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                                        <span class="truncate">{{ $client->legal_name }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($client->rfc)
+                                                    <span class="flex items-center gap-1.5 font-mono uppercase">
+                                                        <x-lucide-file-text class="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                                        <span>{{ $client->rfc }}</span>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-border/40">
                                             <div>
-                                                <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">RFC</p>
-                                                <p class="text-xs text-text-secondary">{{ $client->rfc ?: '—' }}</p>
+                                                <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Email</p>
+                                                <p class="text-body text-text-secondary truncate">{{ $client->email ?: '—' }}</p>
                                             </div>
                                             <div>
-                                                <p class="text-2xs text-text-muted uppercase font-semibold mb-0.5">Estado</p>
-                                                @if($client->active)
-                                                    <x-badge variant="success">Activo</x-badge>
-                                                @else
-                                                    <x-badge variant="danger">Inactivo</x-badge>
-                                                @endif
+                                                <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Teléfono</p>
+                                                <p class="text-body text-text-secondary">{{ $client->phone ?: '—' }}</p>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </x-card>
                             @endforeach
                         @elseif($hasActiveFilters)
-                            <div class="p-12">
+                            <x-card class="p-8 sm:p-12 text-center">
                                 <x-empty-state icon="search" title="No se encontraron clientes" message="Intenta ajustar tus filtros." />
-                            </div>
+                            </x-card>
+                        @else
+                            <x-card class="p-8 sm:p-12 text-center">
+                                <x-empty-state icon="users" title="No hay clientes" message="Aún no has registrado ningún cliente en el catálogo." />
+                            </x-card>
                         @endif
                     </div>
 
                     {{-- Mobile Skeletons --}}
                     <div wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
                         @for($i = 0; $i < 4; $i++)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
@@ -265,7 +286,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </x-card>
                         @endfor
                     </div>
                 </div>
@@ -312,7 +333,7 @@
                 <div class="pt-2">
                     <x-toggle wire:model="active" label="Cliente Activo" description="Los clientes inactivos no aparecerán en el cotizador." />
                 </div>
-                <div class="flex justify-end gap-3 pt-4 border-t border-border">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveClient">
                         {{ $editingId ? 'Guardar Cambios' : 'Crear Cliente' }}

@@ -126,7 +126,7 @@
                             <col class="w-[12%]">        {{-- Monto --}}
                             <col class="w-28">           {{-- Acciones --}}
                         </colgroup>
-                        <thead class="bg-surface-main border-b border-border/40">
+                        <thead class="bg-surface-th border-b border-border/40">
                             <tr>
                                 <th class="actions pl-6 pr-2 text-left">
                                     <x-table-checkbox x-bind:checked="allSelected"
@@ -237,15 +237,6 @@
                 <div class="md:hidden flex flex-col gap-4 mt-2">
                     <div wire:loading.class="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($expenses->isNotEmpty())
-                            {{-- Barra de Selección en Móvil --}}
-                            <div class="flex items-center justify-between gap-3 p-3 px-4 rounded-xl border border-border/60 bg-surface-card shadow-sm">
-                                <label class="flex items-center gap-3 cursor-pointer text-small font-medium text-text-secondary select-none">
-                                    <x-table-checkbox x-on:change="toggleAll({{ json_encode($expenses->pluck('id')->toArray()) }})" />
-                                    <span>Seleccionar todo en la página</span>
-                                </label>
-                                <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">{{ $expenses->count() }} {{ $expenses->count() === 1 ? 'gasto' : 'gastos' }}</span>
-                            </div>
-
                             @foreach($expenses as $expense)
                                 <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
                                      x-bind:class="selectedRows.includes('{{ $expense->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
@@ -314,15 +305,15 @@
                             @endforeach
                         @else
                             @if($hasActiveFilters)
-                                <div class="p-12">
+                                <x-card class="p-8 sm:p-12 text-center">
                                     <x-empty-state icon="search" title="No se encontraron resultados"
                                         message="No hay gastos que coincidan con los filtros actuales." />
-                                </div>
+                                </x-card>
                             @else
-                                <div class="p-12">
+                                <x-card class="p-8 sm:p-12 text-center">
                                     <x-empty-state icon="receipt" title="Aún no hay gastos registrados"
                                         message="Registra el primer gasto para empezar a llevar el control financiero." />
-                                </div>
+                                </x-card>
                             @endif
                         @endif
                     </div>
@@ -330,7 +321,7 @@
                     {{-- Skeletons Móviles --}}
                     <div wire:loading.class.remove="hidden" wire:target="search, projectFilter, categoryFilter, periodFilter, userFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
-                            <div class="card p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
+                            <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <x-skeleton class="w-4 h-4 rounded-sm shrink-0" />
@@ -360,11 +351,12 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </x-card>
                         @endfor
                     </div>
                 </div>
             </div>
+        </div>
 
             {{-- Bulk Actions Bar --}}
             @if(auth()->user()->hasPermission('gastos.eliminar') || auth()->user()->hasPermission('*'))
@@ -384,8 +376,6 @@
                     </x-button>
                 </x-bulk-actions-bar>
             @endif
-
-        </div>
 
         {{-- Pagination Footer (Card Footer on Desktop) --}}
         @if($expenses->total() > 0)
@@ -447,7 +437,7 @@
                 <x-file-input wire:key="receipt-file" inputId="receipt-file-upload" wire:model="receiptFile" accept=".jpg,.jpeg,.png,.pdf" maxSize="20 MB" />
             </x-form-field>
 
-            <div class="flex justify-end gap-3 pt-4 border-t border-border">
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                 <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                 <x-button type="submit" variant="primary" target="createExpense">
                     Registrar Gasto

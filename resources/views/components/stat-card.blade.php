@@ -38,7 +38,7 @@
 <{{ $tag }} @if($href) href="{{ $href }}" wire:navigate @endif {{ $attributes->merge(['class' => $baseClasses]) }}>
     <div class="flex items-start justify-between">
         <div>
-            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 @if($href) group-hover:text-text-secondary transition-colors @endif">{{ $title }}</p>
+            <p class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider mb-2 @if($href) group-hover:text-text-secondary transition-colors @endif">{{ $title }}</p>
             <p class="{{ $valueSize }} font-bold text-text-primary tabular-nums">{{ $value }}</p>
         </div>
         @if($icon)
@@ -49,7 +49,7 @@
     </div>
     
     @if($trend !== null)
-        <div class="mt-4 flex items-center gap-1.5 text-xs">
+        <div class="mt-4 flex items-center gap-1.5 text-xs-fluid">
             @if($trend === 'N/A')
                 <span class="flex items-center font-medium text-text-muted">
                     <x-lucide-minus class="w-3.5 h-3.5 mr-1" />
@@ -73,7 +73,7 @@
     @endif
     
     @if($footer)
-        <div class="mt-4 flex items-center text-xs text-text-muted font-medium">
+        <div class="mt-4 flex items-center text-xs-fluid text-text-muted font-medium">
             {{ $footer }}
         </div>
     @endif

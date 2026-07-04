@@ -61,7 +61,7 @@
             
             <!-- Content -->
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-text-primary leading-tight" x-text="toast.message"></p>
+                <p class="text-small font-medium text-text-primary leading-tight" x-text="toast.message"></p>
             </div>
             
             <!-- Close Button -->

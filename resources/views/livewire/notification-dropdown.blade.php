@@ -9,7 +9,7 @@
         <div class="absolute -top-1 -right-1" wire:key="unread-badge">
             @if($unreadCount > 0)
                 <span
-                    class="min-w-[18px] h-[18px] px-1 bg-danger rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-sm leading-none">
+                    class="min-w-[18px] h-[18px] px-1 bg-danger rounded-full text-2xs font-bold text-white flex items-center justify-center shadow-sm leading-none">
                     {{ $unreadCount > 99 ? '99+' : $unreadCount }}
                 </span>
             @endif

@@ -122,17 +122,18 @@
             <x-card.header title="Requisiciones">
                 <x-slot:action>
                     @if($project->requisitions->count() > 0)
-                        <span class="text-xs-fluid font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
+                        <x-badge variant="secondary" size="md" icon="file-text" :normal-case="true">
                             {{ $project->requisitions->count() }} {{ $project->requisitions->count() === 1 ? 'requisición' : 'requisiciones' }}
-                        </span>
+                        </x-badge>
                     @endif
                 </x-slot:action>
             </x-card.header>
 
-            <div class="w-full overflow-x-auto">
+            {{-- Desktop Table --}}
+            <div class="hidden md:block w-full overflow-x-auto">
                 @if($project->requisitions->isNotEmpty())
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
+                        <thead class="bg-surface-th border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap">Número</th>
                                 <th class="px-4 py-3 whitespace-nowrap">Proveedor</th>
@@ -189,6 +190,62 @@
                     </div>
                 @endif
             </div>
+
+            {{-- Mobile Cards (Clean Row Pattern) --}}
+            <div class="md:hidden divide-y divide-border/60 border-t border-border/40">
+                @if($project->requisitions->isNotEmpty())
+                    @foreach($project->requisitions as $requisition)
+                        <div class="py-3 px-4 sm:py-3.5 sm:px-6 flex flex-col gap-2 hover:bg-surface-hover/50 transition-colors duration-150">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-body text-text-primary">
+                                            {{ $requisition->number ?? 'REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                        <x-status-badge
+                                            :status="$requisition->status"
+                                            size="sm"
+                                            :map="[
+                                                'borrador'  => 'secondary',
+                                                'pendiente' => 'warning',
+                                                'aprobada'  => 'success',
+                                                'rechazada' => 'danger',
+                                            ]"
+                                        />
+                                    </div>
+                                    <p class="text-small text-text-secondary font-medium truncate mt-0.5">
+                                        {{ $requisition->supplier_name }}
+                                    </p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <span class="font-bold text-body text-text-primary tabular-nums">
+                                        ${{ number_format($requisition->total, 2) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-1 border-t border-border/40 text-xs-fluid text-text-muted">
+                                <span class="flex items-center gap-1">
+                                    <x-lucide-user class="w-3.5 h-3.5 opacity-70" />
+                                    <span>{{ $requisition->creator?->name ?? '—' }}</span>
+                                </span>
+                                <div class="flex items-center gap-3">
+                                    <span>{{ $requisition->date?->format('d/m/Y') ?? '—' }}</span>
+                                    <x-button href="{{ route('requisiciones.show', $requisition->id) }}"
+                                        variant="icon" icon="eye" size="sm"
+                                        title="Ver detalle"
+                                        aria-label="Ver detalle de {{ $requisition->number ?? $requisition->id }}"
+                                        wire:navigate />
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="py-12 px-6 flex justify-center">
+                        <x-empty-state icon="file-text" title="Sin requisiciones registradas" />
+                    </div>
+                @endif
+            </div>
         </x-card>
 
         {{-- ── Expenses Table ──────────────────────────────────── --}}
@@ -196,17 +253,18 @@
             <x-card.header title="Gastos Directos">
                 <x-slot:action>
                     @if($project->expenses->count() > 0)
-                        <span class="text-xs-fluid font-medium text-text-muted bg-surface-main px-2 py-0.5 rounded-md">
+                        <x-badge variant="secondary" size="md" icon="receipt" :normal-case="true">
                             {{ $project->expenses->count() }} {{ $project->expenses->count() === 1 ? 'gasto' : 'gastos' }}
-                        </span>
+                        </x-badge>
                     @endif
                 </x-slot:action>
             </x-card.header>
 
-            <div class="w-full overflow-x-auto">
+            {{-- Desktop Table --}}
+            <div class="hidden md:block w-full overflow-x-auto">
                 @if($project->expenses->isNotEmpty())
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-main border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
+                        <thead class="bg-surface-th border-b border-border/40 text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             <tr>
                                 <th class="pl-6 pr-4 py-3 whitespace-nowrap">Concepto</th>
                                 <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
@@ -237,6 +295,43 @@
                             @endforeach
                         </tbody>
                     </table>
+                @else
+                    <div class="py-12 px-6 flex justify-center">
+                        <x-empty-state icon="receipt" title="Sin gastos directos registrados" />
+                    </div>
+                @endif
+            </div>
+
+            {{-- Mobile Cards (Clean Row Pattern) --}}
+            <div class="md:hidden divide-y divide-border/60 border-t border-border/40">
+                @if($project->expenses->isNotEmpty())
+                    @foreach($project->expenses as $expense)
+                        <div class="py-3 px-4 sm:py-3.5 sm:px-6 flex flex-col gap-2 hover:bg-surface-hover/50 transition-colors duration-150">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-bold text-body text-text-primary leading-snug break-words">
+                                        {{ $expense->concept }}
+                                    </p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <span class="font-bold text-body text-text-primary tabular-nums">
+                                        ${{ number_format($expense->amount, 2) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-1 border-t border-border/40 text-xs-fluid text-text-muted">
+                                <div class="flex items-center gap-2">
+                                    <x-dynamic-badge :value="$expense->category_name" size="xs" />
+                                    <span class="flex items-center gap-1">
+                                        <x-lucide-user class="w-3 h-3 opacity-70" />
+                                        <span>{{ $expense->user?->name ?? '—' }}</span>
+                                    </span>
+                                </div>
+                                <span class="shrink-0">{{ $expense->date?->format('d/m/Y') ?? '—' }}</span>
+                            </div>
+                        </div>
+                    @endforeach
                 @else
                     <div class="py-12 px-6 flex justify-center">
                         <x-empty-state icon="receipt" title="Sin gastos directos registrados" />

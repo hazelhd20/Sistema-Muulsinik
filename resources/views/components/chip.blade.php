@@ -6,9 +6,9 @@
 
 @php
     $sizeClasses = match($size) {
-        'lg' => 'px-3 py-1.5 text-sm',             // 14px
+        'lg' => 'px-3 py-1.5 text-small',          // 14px fluido
         'md' => '',                                // 12px (Hereda el estándar base de .chip)
-        'sm' => 'px-2 py-0.5 text-xs',             // 12px compacto
+        'sm' => 'px-2 py-0.5 text-xs-fluid',       // 12px compacto fluido
         'xs' => 'px-1.5 py-0.5 text-2xs',          // 10px ultra compacto
         default => '',
     };

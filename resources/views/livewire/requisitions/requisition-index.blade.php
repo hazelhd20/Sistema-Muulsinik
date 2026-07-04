@@ -176,7 +176,7 @@
                                     <col class="w-[8%]"> {{-- Estado --}}
                                     <col class="w-28"> {{-- Acciones --}}
                                 </colgroup>
-                                <thead class="bg-surface-main border-b border-border/40">
+                                <thead class="bg-surface-th border-b border-border/40">
                                     <tr>
                                         <th class="actions pl-6 pr-2 text-left">
                                             <x-table-checkbox x-bind:checked="allSelected"
@@ -262,15 +262,15 @@
                                         <x-requisitions.mobile-card :req="$req" />
                                     @endforeach
                                 @elseif($hasActiveFilters)
-                                    <div class="p-12">
+                                    <x-card class="p-8 sm:p-12 text-center">
                                         <x-empty-state icon="search" title="No se encontraron requisiciones"
                                             message="Intenta ajustar tus filtros de búsqueda." />
-                                    </div>
+                                    </x-card>
                                 @else
-                                    <div class="p-12">
+                                    <x-card class="p-8 sm:p-12 text-center">
                                         <x-empty-state icon="clipboard-list" title="No hay requisiciones registradas"
                                             message="Crea una requisición o sube una cotización para comenzar." />
-                                    </div>
+                                    </x-card>
                                 @endif
                             </div>
 

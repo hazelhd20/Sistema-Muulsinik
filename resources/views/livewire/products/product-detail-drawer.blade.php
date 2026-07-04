@@ -18,7 +18,7 @@
                 <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
                     <x-data-label label="Categoría">
                         @if($detailProduct->category)
-                            <x-dynamic-badge :value="$detailProduct->category->name" size="xs" />
+                            <x-dynamic-badge :value="$detailProduct->category->name" size="sm" />
                         @else
                             <span class="text-text-muted">—</span>
                         @endif
@@ -42,8 +42,8 @@
             </div>
 
             <x-slot:footer>
-                <div class="flex justify-end gap-3">
-                    <x-button wire:click="$dispatch('edit-product', { id: {{ $detailProduct->id }} }); showDetailDrawer = false" variant="primary" icon="pencil">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 w-full">
+                    <x-button wire:click="$dispatch('edit-product', { id: {{ $detailProduct->id }} }); showDetailDrawer = false" variant="primary" icon="pencil" class="w-full sm:w-auto justify-center">
                         Editar Producto
                     </x-button>
                 </div>
