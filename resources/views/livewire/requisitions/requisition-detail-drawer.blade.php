@@ -24,19 +24,22 @@
             @if($detailRequisition)
                 <div class="space-y-6">
                     {{-- Resumen principal --}}
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h3 class="text-h2 font-bold text-text-primary pr-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-h2 font-bold text-text-primary truncate pr-2">
                             {{ $detailRequisition->number ?? 'REQ-' . str_pad($detailRequisition->id, 5, '0', STR_PAD_LEFT) }}
                         </h3>
                         <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
-                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
-                            <span>Creada el {{ $detailRequisition->date?->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}</span>
+                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70 shrink-0" />
+                            <span class="truncate">Creada el {{ $detailRequisition->date?->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}</span>
                         </div>
                     </div>
-                    <x-status-badge
-                        :status="$detailRequisition->status"
-                        :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                    <div class="shrink-0 self-start">
+                        <x-status-badge
+                            size="sm"
+                            :status="$detailRequisition->status"
+                            :map="['borrador' => 'secondary', 'pendiente' => 'warning', 'aprobada' => 'success', 'rechazada' => 'danger']" />
+                    </div>
                 </div>
 
                 {{-- Detalles en grid --}}
@@ -94,7 +97,7 @@
                         <h4 class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                             Productos
                         </h4>
-                        <x-badge variant="secondary" size="md" icon="package" :normal-case="true">
+                        <x-badge variant="secondary" size="sm" icon="package" :normal-case="true">
                             {{ $detailRequisition->items->count() }} {{ $detailRequisition->items->count() === 1 ? 'artículo' : 'artículos' }}
                         </x-badge>
                     </div>
@@ -109,7 +112,7 @@
                                     </div>
                                     @if($item->product?->category?->name)
                                         <div class="shrink-0 pt-0.5">
-                                            <x-dynamic-badge :value="$item->product->category->name" size="xs" />
+                                            <x-dynamic-badge :value="$item->product->category->name" size="sm" />
                                         </div>
                                     @endif
                                 </div>

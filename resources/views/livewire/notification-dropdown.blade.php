@@ -1,12 +1,12 @@
 <div class="relative" x-data="{ open: false, id: $id('dropdown-menu') }" x-id="['dropdown-menu']" @close.stop="open = false" @dropdown-opened.window="if ($event.detail.id !== id) open = false">
     {{-- Botón de notificaciones (wire:ignore para prevenir parpadeo del icono de campana) --}}
     <button @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" x-ref="trigger" wire:ignore.self
-        class="relative p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
+        class="group relative inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
         title="Notificaciones">
-        <x-lucide-bell class="w-4 h-4" />
+        <x-lucide-bell class="w-5 h-5 transition-transform duration-200 group-hover:rotate-12" />
 
         {{-- Badge de notificaciones no leídas --}}
-        <div class="absolute -top-1 -right-1" wire:key="unread-badge">
+        <div class="absolute top-1 right-1" wire:key="unread-badge">
             @if($unreadCount > 0)
                 <span
                     class="min-w-[18px] h-[18px] px-1 bg-danger rounded-full text-2xs font-bold text-white flex items-center justify-center shadow-sm leading-none">

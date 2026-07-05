@@ -22,6 +22,55 @@
     {{-- Alpine Anchor Plugin (Dropdowns & Floating UI) --}}
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
 
+    {{-- Dark Mode Resilient Init & SPA Preservation --}}
+    <script>
+        (function() {
+            window.toggleTheme = function() {
+                document.documentElement.classList.add('theme-switching');
+                var isDark = document.documentElement.classList.contains('dark');
+                if (isDark) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+                setTimeout(function() {
+                    document.documentElement.classList.remove('theme-switching');
+                }, 50);
+                // Emitir evento personalizado para que componentes de canvas (Chart.js) puedan actualizarse
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { isDark: !isDark } }));
+                return !isDark;
+            };
+
+            function applyTheme() {
+                var theme = localStorage.getItem('theme');
+                var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+            applyTheme();
+            document.addEventListener('livewire:navigated', applyTheme);
+            new MutationObserver(function() {
+                var theme = localStorage.getItem('theme');
+                var shouldBeDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                var isDark = document.documentElement.classList.contains('dark');
+                if (shouldBeDark && !isDark) {
+                    document.documentElement.classList.add('theme-switching');
+                    document.documentElement.classList.add('dark');
+                    setTimeout(function() { document.documentElement.classList.remove('theme-switching'); }, 50);
+                } else if (!shouldBeDark && isDark) {
+                    document.documentElement.classList.add('theme-switching');
+                    document.documentElement.classList.remove('dark');
+                    setTimeout(function() { document.documentElement.classList.remove('theme-switching'); }, 50);
+                }
+            }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        })();
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -226,9 +275,21 @@
                         </div>
                     </div>
 
-                    {{-- Right: Global Search + Notifications --}}
-                    <div class="flex items-center gap-3">
+                    {{-- Right: Global Search + Notifications + Theme Toggle --}}
+                    <div class="flex items-center gap-2 sm:gap-3">
                         <livewire:global-search />
+
+                        {{-- Dark Mode Toggle --}}
+                        <button type="button"
+                            x-data="{ isDark: document.documentElement.classList.contains('dark') }"
+                            @click="isDark = window.toggleTheme()"
+                            class="group inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
+                            :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+                            :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
+                            <x-lucide-sun x-show="isDark" x-cloak class="w-5 h-5 text-amber-400 transition-transform duration-200 group-hover:rotate-45" />
+                            <x-lucide-moon x-show="!isDark" x-cloak class="w-5 h-5 text-text-muted transition-transform duration-200 group-hover:-rotate-12" />
+                        </button>
+
                         <livewire:notification-dropdown />
                     </div>
 

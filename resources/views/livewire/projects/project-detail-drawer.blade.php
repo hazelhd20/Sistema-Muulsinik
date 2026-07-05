@@ -4,15 +4,17 @@
         @if($detailProject)
             <div class="space-y-6">
                 {{-- Resumen principal --}}
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h3 class="text-h2 font-bold text-text-primary pr-4">{{ $detailProject->name }}</h3>
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-h2 font-bold text-text-primary truncate pr-2">{{ $detailProject->name }}</h3>
                         <div class="flex items-center gap-1.5 mt-1 text-small text-text-muted">
-                            <x-lucide-briefcase class="w-3.5 h-3.5 text-text-muted/70" />
-                            <span>{{ $detailProject->client?->name ?? 'Sin cliente registrado' }}</span>
+                            <x-lucide-briefcase class="w-3.5 h-3.5 text-text-muted/70 shrink-0" />
+                            <span class="truncate">{{ $detailProject->client?->name ?? 'Sin cliente registrado' }}</span>
                         </div>
                     </div>
-                    <x-status-badge class="shrink-0" :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                    <div class="shrink-0 self-start">
+                        <x-status-badge size="sm" :status="$detailProject->status" :map="['activo' => 'success', 'en_pausa' => 'warning', 'completado' => 'primary', 'cancelado' => 'danger']" />
+                    </div>
                 </div>
 
                 {{-- Presupuesto y Gastos --}}

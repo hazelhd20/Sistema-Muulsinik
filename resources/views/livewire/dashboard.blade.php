@@ -78,7 +78,7 @@
                         <x-empty-state icon="trending-up" title="Sin gastos registrados" message="Los datos de tus gastos se graficarán aquí." />
                     </div>
                 @else
-                    <div class="h-64" x-data="chartComponent()" x-init="initChart()">
+                    <div class="h-64" x-data="chartComponent" x-init="initChart()" @window:theme-changed="updateChartTheme()">
                         <canvas id="monthly-expenses-chart"></canvas>
                     </div>
                 @endif
@@ -112,7 +112,7 @@
 
                     <div class="metric-row">
                         <div class="flex items-center gap-2">
-                            <div class="w-5 h-5 rounded bg-purple-50 flex items-center justify-center">
+                            <div class="w-5 h-5 rounded bg-purple-50 dark:bg-purple-500/15 flex items-center justify-center">
                                 <x-lucide-briefcase class="w-3 h-3 text-purple-600" />
                             </div>
                             <span class="text-small text-text-secondary">Total proyectos</span>
@@ -142,7 +142,7 @@
 
                     <div class="metric-row">
                         <div class="flex items-center gap-2">
-                            <div class="w-5 h-5 rounded bg-cyan-50 flex items-center justify-center">
+                            <div class="w-5 h-5 rounded bg-cyan-50 dark:bg-cyan-500/15 flex items-center justify-center">
                                 <x-lucide-file-text class="w-3 h-3 text-cyan-600" />
                             </div>
                             <span class="text-small text-text-secondary">Presupuestos rápidos</span>
@@ -266,16 +266,53 @@
     @script
     <script>
         Alpine.data('chartComponent', () => ({
+            chartInstance: null,
+            _themeObserver: null,
+
             initChart() {
                 if (typeof Chart === 'undefined') {
                     console.warn('Chart.js no está cargado. Usa la directiva @@assets de Livewire.');
                     return;
                 }
                 this.renderChart();
+
+                // Mismo patrón que chartCanvas en app.js: MutationObserver sobre la clase del <html>
+                // Esto funciona porque lee variables base (--border, --text-secondary) de :root/.dark
+                // sin pasar por los aliases @theme de Tailwind que no se resuelven en getComputedStyle
+                this._themeObserver = new MutationObserver(() => {
+                    // Solo redibujar si el cambio fue relevante al tema (clase dark añadida/quitada)
+                    this.renderChart();
+                });
+                this._themeObserver.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            },
+            destroy() {
+                if (this._themeObserver) {
+                    this._themeObserver.disconnect();
+                    this._themeObserver = null;
+                }
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                    this.chartInstance = null;
+                }
+            },
+            updateChartTheme() {
+                this.renderChart();
             },
             renderChart() {
                 const ctx = document.getElementById('monthly-expenses-chart');
                 if (!ctx) return;
+
+                // Destruir instancia previa si existe en este canvas o memoria (vital para SPA Livewire)
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                }
     
                 const data = @json($monthlyExpenses);
 
@@ -293,17 +330,24 @@
                     return hex;
                 };
 
-                // Obtener tokens de diseño dinámicamente del DOM
-                const style = getComputedStyle(document.documentElement);
-                const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
-                const successHex = style.getPropertyValue('--color-success').trim() || '#10b981';
-                const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
-                const textMuted = style.getPropertyValue('--color-text-muted').trim() || '#475569';
-                const borderLight = style.getPropertyValue('--color-border-light').trim() || 'rgba(0,0,0,0.06)';
-                const fontToken = style.getPropertyValue('--font-sans').trim();
-                const fontFamily = fontToken ? fontToken.split(',')[0].replace(/['"]/g, '') : 'Plus Jakarta Sans';
+                // Mismo patrón que chartCanvas en app.js:
+                // Leer variables base del :root/.dark (sin aliases @theme de Tailwind que no se resuelven)
+                const style      = getComputedStyle(document.documentElement);
+                const textMuted  = style.getPropertyValue('--text-secondary').trim() || '#64748b';
+                const borderLine = style.getPropertyValue('--border-light').trim()   || '#f1f5f9';
+                const tooltipBg  = style.getPropertyValue('--surface-card').trim()   || '#ffffff';
+
+                // Aplicar defaults globales de Chart.js (igual que app.js líneas 93-94)
+                // Esto garantiza que las líneas del grid y los textos de ejes tomen el tema correcto
+                Chart.defaults.color       = textMuted;
+                Chart.defaults.borderColor = borderLine;
+
+                const primaryHex  = '#2563eb';
+                const successHex  = '#0d9e6e';
+                const fontToken   = style.getPropertyValue('--font-sans').trim();
+                const fontFamily  = fontToken ? fontToken.split(',')[0].replace(/['"]/g, '') : 'Plus Jakarta Sans';
     
-                new Chart(ctx, {
+                this.chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.map(d => d.month),
@@ -373,7 +417,7 @@
                                 }
                             },
                             tooltip: {
-                                backgroundColor: textPrimary,
+                                backgroundColor: tooltipBg,
                                 titleFont: { family: fontFamily, size: 13, weight: '600' },
                                 bodyFont: { family: fontFamily, size: 12 },
                                 footerFont: { family: fontFamily, size: 12, weight: '700' },
@@ -401,7 +445,7 @@
                                 ticks: { font: { family: fontFamily, size: 11, weight: '500' }, color: textMuted }
                             },
                             y: {
-                                grid: { color: borderLight, drawBorder: false },
+                                grid: { color: borderLine, drawBorder: false },
                                 border: { display: false, dash: [4, 4] },
                                 ticks: {
                                     font: { family: fontFamily, size: 11 },

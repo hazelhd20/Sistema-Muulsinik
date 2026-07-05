@@ -15,12 +15,16 @@
 ])
 
 @php
+    $customClass = $attributes->get('class', '');
+    $isFullWidth = str_contains($customClass, 'w-full');
+    $widthClass = $isFullWidth ? 'flex w-full ' : 'flex w-full sm:inline-flex sm:w-auto ';
+
     $base = 'items-center justify-center transition-all duration-150 cursor-pointer whitespace-nowrap disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none relative ';
     
-    $fullBtn = 'flex w-full sm:inline-flex sm:w-auto ' . $base . 'gap-1.5 px-4 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border tracking-wide ';
-    $ghostBtn = 'flex w-full sm:inline-flex sm:w-auto ' . $base . 'gap-1.5 px-3 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border border-transparent ';
+    $fullBtn = $widthClass . $base . 'gap-1.5 px-4 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border tracking-wide ';
+    $ghostBtn = $widthClass . $base . 'gap-1.5 px-3 min-h-[2.25rem] text-[length:var(--font-size-small)] rounded-md border border-transparent ';
     $linkBtn = 'inline-flex ' . $base . 'gap-1 min-h-[2.25rem] text-[length:var(--font-size-small)] border-none ';
-    $iconBtn = 'inline-flex ' . $base . 'rounded-[0.4375rem] min-w-[2.25rem] min-h-[2.25rem] border border-transparent ';
+    $iconBtn = 'group inline-flex ' . $base . 'rounded-lg w-9 h-9 p-2 border border-transparent active:scale-95 ';
 
     $baseClasses = match($variant) {
         // Solid
@@ -43,17 +47,18 @@
         'link-danger'   => $linkBtn . 'bg-transparent text-danger font-medium hover:text-danger-hover',
         'link-danger-muted' => $linkBtn . 'bg-transparent text-text-muted font-medium hover:text-danger',
         // Icon
-        'icon'          => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-surface-hover hover:text-text-primary',
-        'icon-primary'  => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-primary-50 hover:text-primary-600',
-        'icon-danger'   => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-danger-light hover:text-danger',
-        'icon-success'  => $iconBtn . 'p-[0.3125rem] text-text-muted bg-transparent hover:bg-success-light hover:text-success',
-        'icon-secondary'=> $iconBtn . 'w-[2.25rem] h-[2.25rem] bg-surface-card text-text-secondary border-border hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
+        'icon'          => $iconBtn . 'text-text-muted bg-transparent hover:bg-surface-hover hover:text-text-primary',
+        'icon-primary'  => $iconBtn . 'text-text-muted bg-transparent hover:bg-primary-50 hover:text-primary-600',
+        'icon-danger'   => $iconBtn . 'text-text-muted bg-transparent hover:bg-danger-light hover:text-danger',
+        'icon-success'  => $iconBtn . 'text-text-muted bg-transparent hover:bg-success-light hover:text-success',
+        'icon-warning'  => $iconBtn . 'text-text-muted bg-transparent hover:bg-warning-light hover:text-warning',
+        'icon-secondary'=> $iconBtn . 'bg-surface-card text-text-secondary border-border hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
         default         => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800',
     };
 
     $isIconButton = str_starts_with($variant, 'icon');
     $isLinkVariant = str_starts_with($variant, 'link');
-    $baseIconClass = $isIconButton ? 'w-4 h-4' : 'w-4 h-4 shrink-0';
+    $baseIconClass = $isIconButton ? 'w-5 h-5 transition-transform duration-200 group-hover:scale-110' : 'w-4 h-4 shrink-0';
     $computedIconClass = $baseIconClass . ($iconClass ? ' ' . $iconClass : '');
     $computedAriaLabel = $ariaLabel ?? $attributes->get('aria-label') ?? $attributes->get('title') ?? ($isIconButton && $slot->isEmpty() ? 'Icon button' : null);
 @endphp

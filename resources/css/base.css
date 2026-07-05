@@ -151,3 +151,13 @@ input[type="search"]::-webkit-search-results-decoration {
     font-weight: 400;
     line-height: 1.4;
 }
+
+/* ── Theme Switching Flicker Prevention ─────────────────── */
+/* Bloquear transiciones temporalmente al alternar tema para evitar destellos o ghosting */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none !important;
+    animation: none !important;
+}

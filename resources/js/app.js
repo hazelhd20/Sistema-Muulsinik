@@ -44,6 +44,7 @@ document.addEventListener("alpine:init", () => {
         chart: null,
         chartData: [],
         _observer: null,
+        _themeObserver: null,
 
         init() {
             this.chartData = JSON.parse(this.$el.getAttribute('data-chart') || '[]');
@@ -55,6 +56,12 @@ document.addEventListener("alpine:init", () => {
                 this.renderChart();
             });
             this._observer.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
+
+            // Redibujar automáticamente cuando el usuario cambie entre modo claro y oscuro
+            this._themeObserver = new MutationObserver(() => {
+                this.renderChart();
+            });
+            this._themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         },
 
         waitForCanvas(attempts = 0) {
@@ -78,12 +85,21 @@ document.addEventListener("alpine:init", () => {
                 return;
             }
 
+            // Adaptar colores de texto y líneas divisorias de Chart.js al tema actual (Claro/Oscuro)
+            const style = getComputedStyle(document.documentElement);
+            const textColor = style.getPropertyValue('--text-secondary').trim() || '#64748b';
+            const borderColor = style.getPropertyValue('--border').trim() || '#e2e8f0';
+
+            window.Chart.defaults.color = textColor;
+            window.Chart.defaults.borderColor = borderColor;
+
             const config = configCallback(this.chartData);
             this.chart = new window.Chart(canvas, config);
         },
 
         destroy() {
             if (this._observer) this._observer.disconnect();
+            if (this._themeObserver) this._themeObserver.disconnect();
             if (this.chart) this.chart.destroy();
         }
     }));

@@ -58,11 +58,11 @@
     <button
         type="button"
         @click="open = true"
-        class="relative p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-black/5 transition-colors"
+        class="group relative inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
         title="Buscar (Ctrl+K)"
         aria-label="Buscar"
     >
-        <x-lucide-search class="w-4 h-4" />
+        <x-lucide-search class="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
     </button>
 
     {{-- Command Palette Modal --}}
