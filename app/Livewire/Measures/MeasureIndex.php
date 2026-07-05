@@ -3,6 +3,7 @@
 namespace App\Livewire\Measures;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\DTOs\MeasureDTO;
 use App\Models\Measure;
@@ -19,10 +20,26 @@ use App\Livewire\Concerns\WithPerPagePagination;
 
 class MeasureIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting, WithPerPagePagination;
+    use EnforcesPermissions, WithFilters, WithPagination, WithSorting, WithPerPagePagination;
 
     #[Url(history: true)]
     public string $search = '';
+
+    #[Url(history: true)]
+    public string $usageFilter = '';
+
+    #[Url(history: true)]
+    public string $trashedFilter = '';
+
+    public array $usageOptions = [
+        'in_use' => 'En uso (Con productos o requisiciones)',
+        'empty' => 'Sin uso (Vacías / Huérfanas)',
+    ];
+
+    public array $trashedOptions = [
+        'trashed' => 'En Papelera / Eliminadas',
+        'all' => 'Todas (Activas y Eliminadas)',
+    ];
 
     public string $name = '';
 
@@ -103,13 +120,42 @@ class MeasureIndex extends Component
         $this->reset(['name', 'abbreviation', 'editingId', 'showCreateModal']);
     }
 
+    public function restore(int $id): void
+    {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
+            return;
+        }
+
+        $measure = Measure::onlyTrashed()->findOrFail($id);
+        $measure->restore();
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida restaurada exitosamente.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$id]);
+    }
+
+    public function forceDelete(int $id): void
+    {
+        if ($this->denyUnless('catalogos.eliminar', 'No tienes permiso para eliminar permanentemente catálogos.')) {
+            return;
+        }
+
+        $measure = Measure::withTrashed()->findOrFail($id);
+        $measure->forceDelete();
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Medida eliminada permanentemente.']);
+        $this->selectedRows = array_diff($this->selectedRows, [$id]);
+    }
+
     public function delete(int $id): void
     {
         if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar catálogos.')) {
             return;
         }
 
-        $measure = Measure::findOrFail($id);
+        $measure = Measure::withTrashed()->findOrFail($id);
+
+        if ($measure->trashed()) {
+            $this->forceDelete($id);
+            return;
+        }
 
         $isUsed = RequisitionItem::where('measure_id', $measure->id)->exists() ||
                   Product::where('measure_id', $measure->id)->exists();
@@ -146,6 +192,17 @@ class MeasureIndex extends Component
             return;
         }
 
+        if ($this->trashedFilter === 'trashed') {
+            if ($this->denyUnless('catalogos.eliminar', 'No tienes permiso para eliminar permanentemente catálogos.')) {
+                return;
+            }
+            Measure::onlyTrashed()->whereIn('id', $this->selectedRows)->forceDelete();
+            $this->dispatch('toast', ['icon' => 'success', 'message' => count($this->selectedRows) . ' medida(s) eliminada(s) permanentemente.']);
+            $this->selectedRows = [];
+            $this->allSelected = false;
+            return;
+        }
+
         // Obtener medidas en uso por productos o requisiciones
         $usedInProducts = Product::whereIn('measure_id', $this->selectedRows)->pluck('measure_id')->toArray();
         $usedInRequisitions = RequisitionItem::whereIn('measure_id', $this->selectedRows)->pluck('measure_id')->toArray();
@@ -172,9 +229,18 @@ class MeasureIndex extends Component
     #[Title('Catálogo de Medidas')]
     public function render()
     {
-        $measures = Measure::when($this->search, function ($q) {
-                $q->where('name', 'ilike', '%'.$this->search.'%')
-                  ->orWhere('abbreviation', 'ilike', '%'.$this->search.'%');
+        $measures = Measure::query()
+            ->when($this->trashedFilter === 'trashed', fn ($q) => $q->onlyTrashed())
+            ->when($this->trashedFilter === 'all', fn ($q) => $q->withTrashed())
+            ->when($this->search, function ($q) {
+                $q->where(fn ($sub) => $sub->where('name', 'ilike', '%'.$this->search.'%')
+                  ->orWhere('abbreviation', 'ilike', '%'.$this->search.'%'));
+            })
+            ->when($this->usageFilter === 'in_use', function ($q) {
+                $q->where(fn ($sub) => $sub->has('products')->orHas('requisitionItems'));
+            })
+            ->when($this->usageFilter === 'empty', function ($q) {
+                $q->doesntHave('products')->doesntHave('requisitionItems');
             })
             ->withCount('products')
             ->orderBy($this->sortField, $this->sortDirection)

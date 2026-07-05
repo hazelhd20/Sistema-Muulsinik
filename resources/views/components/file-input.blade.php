@@ -374,8 +374,21 @@
         <div x-show="showPreview" x-cloak
             class="fixed inset-0 z-[300] flex items-center justify-center p-4"
             @keydown.escape.window="closePreview()">
-            <div class="absolute inset-0 bg-black/60" @click="closePreview()"></div>
-            <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col bg-surface-card rounded-xl border border-border shadow-xl overflow-hidden animate-scale-in">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+                 x-transition:enter="transition-premium"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="closePreview()"></div>
+            <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col bg-surface-card rounded-xl border border-border shadow-xl overflow-hidden"
+                 x-transition:enter="transition-premium"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-1">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-border">
                     <p class="text-body font-medium text-text-primary truncate" x-text="fileName"></p>
                     <button type="button" @click="closePreview()"

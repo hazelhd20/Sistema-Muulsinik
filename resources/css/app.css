@@ -1082,7 +1082,7 @@
     }
 
     .btn-soft-success:hover:not(:disabled) {
-        background-color: var(--color-success-light);
+        background-color: var(--color-success-border);
         color: var(--color-success-hover);
     }
 
@@ -1099,7 +1099,7 @@
     }
 
     .btn-soft-danger:hover:not(:disabled) {
-        background-color: var(--color-danger-light);
+        background-color: var(--color-danger-border);
         color: var(--color-danger-hover);
     }
 
@@ -1241,4 +1241,57 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* ── Icon Button Hover States ─────────────────────────────── */
+/* Reglas explícitas para evitar que Tailwind ignore clases construidas */
+/* dinámicamente por PHP en button.blade.php (concatenación de strings) */
+.icon-btn-hover:hover {
+    background-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.icon-btn-hover-primary:hover {
+    background-color: var(--color-primary-200);
+    color: var(--color-primary-700);
+}
+
+.icon-btn-hover-danger:hover {
+    background-color: var(--color-danger-border);
+    color: var(--color-danger-hover);
+}
+
+.icon-btn-hover-success:hover {
+    background-color: var(--color-success-border);
+    color: var(--color-success-hover);
+}
+
+.icon-btn-hover-warning:hover {
+    background-color: var(--color-warning-border);
+    color: var(--color-warning-hover);
+}
+
+.dark .icon-btn-hover:hover {
+    background-color: var(--color-surface-hover);
+    color: var(--color-text-primary);
+}
+
+.dark .icon-btn-hover-primary:hover {
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-400);
+}
+
+.dark .icon-btn-hover-danger:hover {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger);
+}
+
+.dark .icon-btn-hover-success:hover {
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+}
+
+.dark .icon-btn-hover-warning:hover {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning);
 }

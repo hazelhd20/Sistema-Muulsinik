@@ -42,4 +42,9 @@ class Measure extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function requisitionItems(): HasMany
+    {
+        return $this->hasMany(RequisitionItem::class);
+    }
 }

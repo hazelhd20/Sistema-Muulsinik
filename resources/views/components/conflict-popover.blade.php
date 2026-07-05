@@ -192,7 +192,7 @@ $cfg = $shouldRender ? match($type) {
         <template x-teleport="body">
             <div x-show="open"
                  x-cloak
-                 x-anchor.bottom.end.offset.4="$refs.trigger"
+                 x-anchor.bottom-end.offset.4="$refs.trigger"
                  @click.outside="open = false"
                  @keydown.window.escape="open = false"
                  x-transition:enter="transition-premium"

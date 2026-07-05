@@ -283,7 +283,7 @@
                         <button type="button"
                             x-data="{ isDark: document.documentElement.classList.contains('dark') }"
                             @click="isDark = window.toggleTheme()"
-                            class="group inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
+                            class="group inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted icon-btn-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
                             :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
                             :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
                             <x-lucide-sun x-show="isDark" x-cloak class="w-5 h-5 text-amber-400 transition-transform duration-200 group-hover:rotate-45" />

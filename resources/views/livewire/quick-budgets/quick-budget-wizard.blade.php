@@ -206,7 +206,7 @@
                                 @endif
                                 <th class="px-4 py-3 text-right whitespace-nowrap {{ $advancedMode ? 'w-[15%]' : 'w-[20%]' }}">{{ $advancedMode ? 'Precio V. (P.U.)' : 'Precio Unitario' }}</th>
                                 <th class="px-4 py-3 text-right whitespace-nowrap {{ $advancedMode ? 'w-[20%]' : 'w-[15%]' }}">Total Línea</th>
-                                <th class="pr-6 pl-4 py-3 w-[5%]"></th>
+                                <th class="px-4 py-3 w-[5%]"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border/40">
@@ -291,7 +291,7 @@
                                     <td class="px-4 py-4 text-right font-medium text-text-primary tabular-nums text-small {{ $advancedMode ? 'align-top pt-6' : 'align-middle' }}">
                                         ${{ number_format($item['line_total'], 2) }}
                                     </td>
-                                    <td class="pr-6 pl-4 py-4 text-center {{ $advancedMode ? 'align-top pt-5' : 'align-middle' }}">
+                                    <td class="px-4 py-4 text-center {{ $advancedMode ? 'align-top pt-5' : 'align-middle' }}">
                                         <x-button type="button" wire:click="removeItem({{ $index }})" variant="icon-danger" icon="trash-2" class="opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </td>
                                 </tr>
@@ -308,7 +308,7 @@
                                 <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                     Concepto {{ $index + 1 }}
                                 </span>
-                                <button type="button" wire:click="removeItem({{ $index }})" class="text-danger opacity-70 hover:opacity-100 p-1 -mr-1 transition-opacity">
+                                <button type="button" wire:click="removeItem({{ $index }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-text-muted icon-btn-hover-danger transition-all duration-150 -mr-2" title="Eliminar concepto">
                                     <x-lucide-trash-2 class="w-4 h-4" />
                                 </button>
                             </div>

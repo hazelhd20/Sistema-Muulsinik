@@ -36,8 +36,8 @@
         // Soft
         'soft'          => $fullBtn . 'bg-secondary-light text-text-secondary font-medium border-border/60 hover:bg-secondary-border hover:text-text-primary hover:border-border active:bg-border',
         'soft-primary'  => $fullBtn . 'bg-primary-50 text-primary-700 font-medium border-transparent hover:bg-primary-100 hover:text-primary-800 active:bg-primary-100/80',
-        'soft-danger'   => $fullBtn . 'bg-danger-light text-danger font-medium border-transparent hover:bg-danger-light hover:text-danger-hover active:bg-danger-light/80',
-        'soft-success'  => $fullBtn . 'bg-success-light text-success font-medium border-transparent hover:bg-success-light hover:text-success-hover active:bg-success-light/80',
+        'soft-danger'   => $fullBtn . 'bg-danger-light text-danger font-medium border-transparent hover:bg-danger-border hover:text-danger-hover active:bg-danger-border/80',
+        'soft-success'  => $fullBtn . 'bg-success-light text-success font-medium border-transparent hover:bg-success-border hover:text-success-hover active:bg-success-border/80',
         // Ghost
         'ghost'         => $ghostBtn . 'bg-transparent text-text-secondary font-medium hover:bg-surface-hover hover:text-text-primary active:bg-surface-main',
         'ghost-danger'  => $ghostBtn . 'bg-transparent text-text-muted font-medium hover:bg-danger-light hover:text-danger active:bg-danger-light/70',
@@ -47,18 +47,18 @@
         'link-danger'   => $linkBtn . 'bg-transparent text-danger font-medium hover:text-danger-hover',
         'link-danger-muted' => $linkBtn . 'bg-transparent text-text-muted font-medium hover:text-danger',
         // Icon
-        'icon'          => $iconBtn . 'text-text-muted bg-transparent hover:bg-surface-hover hover:text-text-primary',
-        'icon-primary'  => $iconBtn . 'text-text-muted bg-transparent hover:bg-primary-50 hover:text-primary-600',
-        'icon-danger'   => $iconBtn . 'text-text-muted bg-transparent hover:bg-danger-light hover:text-danger',
-        'icon-success'  => $iconBtn . 'text-text-muted bg-transparent hover:bg-success-light hover:text-success',
-        'icon-warning'  => $iconBtn . 'text-text-muted bg-transparent hover:bg-warning-light hover:text-warning',
-        'icon-secondary'=> $iconBtn . 'bg-surface-card text-text-secondary border-border hover:bg-surface-hover hover:border-border-strong hover:text-text-primary',
+        'icon'          => $iconBtn . 'text-text-muted bg-transparent icon-btn-hover',
+        'icon-primary'  => $iconBtn . 'text-text-muted bg-transparent icon-btn-hover-primary',
+        'icon-danger'   => $iconBtn . 'text-text-muted bg-transparent icon-btn-hover-danger',
+        'icon-success'  => $iconBtn . 'text-text-muted bg-transparent icon-btn-hover-success',
+        'icon-warning'  => $iconBtn . 'text-text-muted bg-transparent icon-btn-hover-warning',
+        'icon-secondary'=> $iconBtn . 'bg-surface-card text-text-secondary border-border hover:border-border-strong icon-btn-hover',
         default         => $fullBtn . 'bg-primary-600 text-white font-semibold border-transparent hover:bg-primary-700 hover:ring-4 hover:ring-primary-600/10 active:bg-primary-800',
     };
 
     $isIconButton = str_starts_with($variant, 'icon');
     $isLinkVariant = str_starts_with($variant, 'link');
-    $baseIconClass = $isIconButton ? 'w-5 h-5 transition-transform duration-200 group-hover:scale-110' : 'w-4 h-4 shrink-0';
+    $baseIconClass = $isIconButton ? 'w-5 h-5 shrink-0' : 'w-4 h-4 shrink-0';
     $computedIconClass = $baseIconClass . ($iconClass ? ' ' . $iconClass : '');
     $computedAriaLabel = $ariaLabel ?? $attributes->get('aria-label') ?? $attributes->get('title') ?? ($isIconButton && $slot->isEmpty() ? 'Icon button' : null);
 @endphp

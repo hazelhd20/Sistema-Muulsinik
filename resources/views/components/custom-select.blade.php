@@ -68,7 +68,7 @@
             x-show="open"
             @click.outside="if (! $refs.trigger.contains($event.target)) close()"
             @click.stop
-            x-anchor.bottom.start.offset.4="$refs.trigger"
+            x-anchor.bottom-start.offset.4="$refs.trigger"
             x-transition:enter="transition-premium"
             x-transition:enter-start="opacity-0 scale-95"
             x-transition:enter-end="opacity-100 scale-100"

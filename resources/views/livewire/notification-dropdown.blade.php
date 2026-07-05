@@ -1,7 +1,7 @@
 <div class="relative" x-data="{ open: false, id: $id('dropdown-menu') }" x-id="['dropdown-menu']" @close.stop="open = false" @dropdown-opened.window="if ($event.detail.id !== id) open = false">
     {{-- Botón de notificaciones (wire:ignore para prevenir parpadeo del icono de campana) --}}
     <button @click="open = !open; if (open) $dispatch('dropdown-opened', { id })" x-ref="trigger" wire:ignore.self
-        class="group relative inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
+        class="group relative inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted icon-btn-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
         title="Notificaciones">
         <x-lucide-bell class="w-5 h-5 transition-transform duration-200 group-hover:rotate-12" />
 
@@ -9,7 +9,7 @@
         <div class="absolute top-1 right-1" wire:key="unread-badge">
             @if($unreadCount > 0)
                 <span
-                    class="min-w-[18px] h-[18px] px-1 bg-danger rounded-full text-2xs font-bold text-white flex items-center justify-center shadow-sm leading-none">
+                    class="min-w-[18px] h-[18px] px-1 bg-danger rounded-full text-2xs font-bold text-white flex items-center justify-center shadow-sm leading-none animate-scale-in">
                     {{ $unreadCount > 99 ? '99+' : $unreadCount }}
                 </span>
             @endif
@@ -17,18 +17,17 @@
     </button>
 
     {{-- Dropdown de notificaciones --}}
-
-        <div x-show="open" x-cloak
-            @click.outside="if (! $refs.trigger.contains($event.target)) open = false"
-            x-anchor.bottom.end.offset.4="$refs.trigger"
-            x-transition:enter="transition-premium"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition-premium"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-[100] w-80 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden"
-            style="display: none;">
+    <div x-show="open" x-cloak
+        @click.outside="if (! $refs.trigger.contains($event.target)) open = false"
+        x-anchor.bottom-end.offset.4="$refs.trigger"
+        x-transition:enter="transition-premium"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition-premium"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="absolute z-[100] w-80 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden"
+        style="display: none;">
         {{-- Header --}}
         <div class="dropdown-header">
             <h3 class="dropdown-header-title">Notificaciones</h3>

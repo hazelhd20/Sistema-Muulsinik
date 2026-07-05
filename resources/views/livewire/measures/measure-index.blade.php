@@ -1,4 +1,4 @@
-<div x-data="basicIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $measures->count() }}; init()" data-total-on-page="{{ $measures->count() }}">
+<div x-data="measureIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $measures->count() }}; init()" data-total-on-page="{{ $measures->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Medidas">
         <x-slot:actions>
@@ -13,7 +13,8 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
-            $hasActiveFilters = !empty($search);
+            $activeCount = ($usageFilter ? 1 : 0) + ($trashedFilter ? 1 : 0);
+            $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
 
         @if($measures->isNotEmpty() || $hasActiveFilters)
@@ -24,7 +25,41 @@
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar medida..." />
                     </div>
+
+                    {{-- Filters Popover --}}
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Estado de Uso">
+                            <x-custom-select x-model="filterUsage" :options="$usageOptions"
+                                placeholder="Cualquiera (Todas)" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado de Papelera">
+                            <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
+                                placeholder="Activas (Por defecto)" />
+                        </x-form-field>
+
+                        <x-slot name="footer">
+                            <x-button type="button" @click="clearFilters()" variant="link-muted">
+                                Limpiar filtros
+                            </x-button>
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
                 </div>
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 pb-3 md:px-6 md:pb-4 pt-1">
+                    @if($usageFilter)
+                        <x-filter-chip label="Uso" :value="$usageOptions[$usageFilter] ?? $usageFilter" wire:click="$set('usageFilter', '')" />
+                    @endif
+                    @if($trashedFilter)
+                        <x-filter-chip label="Papelera" :value="$trashedOptions[$trashedFilter] ?? $trashedFilter" wire:click="$set('trashedFilter', '')" />
+                    @endif
+                </div>
+                @endif
             </div> {{-- End Header Group --}}
         @endif
 
@@ -32,13 +67,13 @@
             <div class="w-full">
                 <x-card.table class="hidden md:block w-full">
                 @if($measures->isEmpty() && !$hasActiveFilters)
-                    <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="p-8">
+                    <div wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="ruler" title="No se encontraron medidas." />
                     </div>
                 @endif
                 <table class="w-full table-fixed min-w-[1024px] {{ $measures->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                     @if($measures->isEmpty())
-                        wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+                        wire:loading.class.remove="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage"
                     @endif
                 >
                     <colgroup>
@@ -64,7 +99,7 @@
                                 <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage">
+                        <tbody wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage">
                             @if($measures->isEmpty() && $hasActiveFilters)
                                 <tr>
                                     <td colspan="6" class="p-8">
@@ -80,7 +115,12 @@
                                             <x-table-checkbox x-model="selectedRows" value="{{ $measure->id }}" />
                                         </td>
                                         <td class="max-w-0">
-                                            <p class="text-body font-bold text-text-primary truncate" title="{{ $measure->name }}">{{ $measure->name }}</p>
+                                            <div class="flex items-center gap-2 truncate">
+                                                <p class="text-body font-bold text-text-primary truncate" title="{{ $measure->name }}">{{ $measure->name }}</p>
+                                                @if($measure->trashed())
+                                                    <x-badge variant="danger" size="sm" class="shrink-0">Eliminada</x-badge>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="text-body font-medium text-text-secondary">
                                             @if($measure->abbreviation)
@@ -107,15 +147,28 @@
                                                     </x-slot>
 
                                                     <x-slot name="content">
-                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">
-                                                                Editar
-                                                            </x-dropdown-link>
-                                                        @endif
-                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">
-                                                                Eliminar
-                                                            </x-dropdown-link>
+                                                        @if($measure->trashed())
+                                                            @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" wire:click="restore({{ $measure->id }})" icon="rotate-ccw">
+                                                                    Restaurar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Eliminación', description: '¿Eliminar permanentemente esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">
+                                                                    Eliminar Definitivamente
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                        @else
+                                                            @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">
+                                                                    Editar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">
+                                                                    Eliminar
+                                                                </x-dropdown-link>
+                                                            @endif
                                                         @endif
                                                     </x-slot>
                                                 </x-dropdown>
@@ -125,7 +178,7 @@
                                 @endforeach
                             @endif
                         </tbody>
-                        <tbody wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden">
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
                                     <td class="actions pl-6 pr-2 text-left">
@@ -157,7 +210,7 @@
         <div class="md:hidden flex flex-col gap-4 mt-2">
             {{-- Tarjetas Móviles (Mobile View) --}}
             <div class="flex flex-col">
-                <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                <div wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                     @if($measures->isNotEmpty())
                         @foreach($measures as $measure)
                             <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
@@ -172,6 +225,9 @@
                                         @if($measure->abbreviation)
                                             <span class="text-body font-medium text-text-secondary">({{ strtolower($measure->abbreviation) }})</span>
                                         @endif
+                                        @if($measure->trashed())
+                                            <x-badge variant="danger" size="sm" class="shrink-0">Eliminada</x-badge>
+                                        @endif
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
                                         <x-dropdown align="right" width="48">
@@ -179,11 +235,20 @@
                                                 <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
                                             </x-slot>
                                             <x-slot name="content">
-                                                @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                @endif
-                                                @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
-                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                @if($measure->trashed())
+                                                    @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" wire:click="restore({{ $measure->id }})" icon="rotate-ccw">Restaurar</x-dropdown-link>
+                                                    @endif
+                                                    @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Eliminación', description: '¿Eliminar permanentemente esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">Eliminar Definitivamente</x-dropdown-link>
+                                                    @endif
+                                                @else
+                                                    @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $measure->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                    @endif
+                                                    @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta medida? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $measure->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @endif
                                                 @endif
                                             </x-slot>
                                         </x-dropdown>
@@ -221,7 +286,7 @@
                 </div>
 
                 {{-- Skeletons Móviles --}}
-                <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                <div wire:loading.class.remove="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                     @for($i = 0; $i < 4; $i++)
                         <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                             <div class="flex items-center justify-between gap-2">

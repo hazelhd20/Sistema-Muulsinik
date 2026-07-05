@@ -24,7 +24,7 @@
                                  class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1.5 bg-surface-card shadow-sm">
                             @if(auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
                                 <button type="button" wire:click="deleteLogo"
-                                        class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-danger/10 transition-colors"
+                                        class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface-card border border-border shadow-sm flex items-center justify-center text-danger hover:bg-danger-light transition-colors"
                                         title="Eliminar logo">
                                     <x-lucide-trash-2 class="w-3.5 h-3.5" />
                                 </button>

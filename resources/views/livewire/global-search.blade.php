@@ -58,11 +58,11 @@
     <button
         type="button"
         @click="open = true"
-        class="group relative inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
+        class="group relative inline-flex items-center justify-center w-9 h-9 p-2 rounded-lg text-text-muted icon-btn-hover transition-all duration-200 ease-out active:scale-95 cursor-pointer"
         title="Buscar (Ctrl+K)"
         aria-label="Buscar"
     >
-        <x-lucide-search class="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+        <x-lucide-search class="w-5 h-5 shrink-0" />
     </button>
 
     {{-- Command Palette Modal --}}
@@ -78,10 +78,10 @@
             {{-- Backdrop --}}
             <div
                 x-show="open"
-                x-transition:enter="ease-out duration-300"
+                x-transition:enter="transition-premium"
                 x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-200"
+                x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 class="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
@@ -92,12 +92,12 @@
                 <div
                     x-show="open"
                     @click.away="open = false"
-                    x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 scale-95"
-                    x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95"
+                    x-transition:enter="transition-premium"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-95 translate-y-1"
                     class="mx-auto max-w-2xl transform divide-y divide-border overflow-hidden rounded-xl bg-surface-card shadow-2xl ring-1 ring-border transition-all flex flex-col"
                 >
                     {{-- Input Header --}}

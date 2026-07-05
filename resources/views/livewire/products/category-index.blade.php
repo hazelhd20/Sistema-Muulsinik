@@ -1,4 +1,4 @@
-<div x-data="basicIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $categories->count() }}; init()"
+<div x-data="categoryIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $categories->count() }}; init()"
     data-total-on-page="{{ $categories->count() }}">
     {{-- Header --}}
     <x-page-header subtitle="Catálogos" title="Categorías">
@@ -14,7 +14,8 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
-            $hasActiveFilters = !empty($search);
+            $activeCount = ($usageFilter ? 1 : 0) + ($trashedFilter ? 1 : 0);
+            $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
 
         @if($categories->isNotEmpty() || $hasActiveFilters)
@@ -26,7 +27,41 @@
                     <div class="flex-1 min-w-0">
                         <x-search-input wire:model.live.debounce.300ms="search" placeholder="Buscar categoría..." />
                     </div>
+
+                    {{-- Filters Popover --}}
+                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                        <x-form-field label="Estado de Uso">
+                            <x-custom-select x-model="filterUsage" :options="$usageOptions"
+                                placeholder="Cualquiera (Todas)" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado de Papelera">
+                            <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
+                                placeholder="Activas (Por defecto)" />
+                        </x-form-field>
+
+                        <x-slot name="footer">
+                            <x-button type="button" @click="clearFilters()" variant="link-muted">
+                                Limpiar filtros
+                            </x-button>
+                            <x-button type="button" @click="applyFilters(); open = false" variant="primary">
+                                Aplicar Filtros
+                            </x-button>
+                        </x-slot>
+                    </x-filters-popover>
                 </div>
+
+                {{-- Active Chips Row --}}
+                @if($activeCount > 0)
+                <div class="flex flex-wrap items-center gap-2 pb-3 md:px-6 md:pb-4 pt-1">
+                    @if($usageFilter)
+                        <x-filter-chip label="Uso" :value="$usageOptions[$usageFilter] ?? $usageFilter" wire:click="$set('usageFilter', '')" />
+                    @endif
+                    @if($trashedFilter)
+                        <x-filter-chip label="Papelera" :value="$trashedOptions[$trashedFilter] ?? $trashedFilter" wire:click="$set('trashedFilter', '')" />
+                    @endif
+                </div>
+                @endif
             </div> {{-- End Header Group --}}
         @endif
 
@@ -34,14 +69,14 @@
             <div class="w-full">
                 <x-card.table class="hidden md:block w-full">
                     @if($categories->isEmpty() && !$hasActiveFilters)
-                        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage" class="p-8">
+                        <div wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage" class="p-8">
                             <x-empty-state icon="layers" title="No se encontraron categorías." />
                         </div>
                     @endif
                     <table
                         class="w-full table-fixed min-w-[1024px] {{ $categories->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                         @if($categories->isEmpty()) wire:loading.class.remove="hidden"
-                        wire:target="search, previousPage, nextPage, gotoPage" @endif>
+                        wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage" @endif>
                         <colgroup>
                             <col class="w-14"> {{-- Checkbox --}}
                             <col class="w-[50%]"> {{-- Nombre --}}
@@ -64,7 +99,7 @@
                                 <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage">
+                        <tbody wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage">
                             @if($categories->isEmpty() && $hasActiveFilters)
                                 <tr>
                                     <td colspan="5" class="p-8">
@@ -81,10 +116,15 @@
                                             <x-table-checkbox x-model="selectedRows" value="{{ $category->id }}" />
                                         </td>
                                         <td class="max-w-0">
-                                            <p class="text-body font-bold text-text-primary truncate"
-                                                title="{{ $category->name }}">
-                                                {{ $category->name }}
-                                            </p>
+                                            <div class="flex items-center gap-2 truncate">
+                                                <p class="text-body font-bold text-text-primary truncate"
+                                                    title="{{ $category->name }}">
+                                                    {{ $category->name }}
+                                                </p>
+                                                @if($category->trashed())
+                                                    <x-badge variant="danger" size="sm" class="shrink-0">Eliminada</x-badge>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             @if($category->products_count > 0)
@@ -107,18 +147,34 @@
                                                     </x-slot>
 
                                                     <x-slot name="content">
-                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button"
-                                                                wire:click="openEditModal({{ $category->id }})" icon="pencil">
-                                                                Editar
-                                                            </x-dropdown-link>
-                                                        @endif
-                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" type="button"
-                                                                @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta categoría? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $category->id }}] })"
-                                                                danger="true" icon="trash-2">
-                                                                Eliminar
-                                                            </x-dropdown-link>
+                                                        @if($category->trashed())
+                                                            @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button"
+                                                                    wire:click="restore({{ $category->id }})" icon="rotate-ccw">
+                                                                    Restaurar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', { title: 'Confirmar Eliminación', description: '¿Eliminar permanentemente esta categoría? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $category->id }}] })"
+                                                                    danger="true" icon="trash-2">
+                                                                    Eliminar Definitivamente
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                        @else
+                                                            @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button"
+                                                                    wire:click="openEditModal({{ $category->id }})" icon="pencil">
+                                                                    Editar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta categoría? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $category->id }}] })"
+                                                                    danger="true" icon="trash-2">
+                                                                    Eliminar
+                                                                </x-dropdown-link>
+                                                            @endif
                                                         @endif
                                                     </x-slot>
                                                 </x-dropdown>
@@ -128,7 +184,7 @@
                                 @endforeach
                             @endif
                         </tbody>
-                        <tbody wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage"
                             class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
@@ -158,7 +214,7 @@
                 <div class="md:hidden flex flex-col gap-4 mt-2">
                     {{-- Tarjetas Móviles (Mobile View) --}}
                     <div class="flex flex-col">
-                        <div wire:loading.class="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+                        <div wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage"
                             class="flex flex-col gap-4">
                             @if($categories->isNotEmpty())
                                 @foreach($categories as $category)
@@ -173,6 +229,9 @@
                                                 <x-table-checkbox x-model="selectedRows" value="{{ $category->id }}" />
                                                 <span
                                                     class="font-bold text-text-primary text-h3 truncate">{{ $category->name }}</span>
+                                                @if($category->trashed())
+                                                    <x-badge variant="danger" size="sm" class="shrink-0">Eliminada</x-badge>
+                                                @endif
                                             </div>
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <x-dropdown align="right" width="48">
@@ -181,15 +240,28 @@
                                                             title="Opciones" />
                                                     </x-slot>
                                                     <x-slot name="content">
-                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button"
-                                                                wire:click="openEditModal({{ $category->id }})"
-                                                                icon="pencil">Editar</x-dropdown-link>
-                                                        @endif
-                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" type="button"
-                                                                @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta categoría? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $category->id }}] })"
-                                                                danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                        @if($category->trashed())
+                                                            @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button"
+                                                                    wire:click="restore({{ $category->id }})"
+                                                                    icon="rotate-ccw">Restaurar</x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', { title: 'Confirmar Eliminación', description: '¿Eliminar permanentemente esta categoría? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $category->id }}] })"
+                                                                    danger="true" icon="trash-2">Eliminar Definitivamente</x-dropdown-link>
+                                                            @endif
+                                                        @else
+                                                            @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button"
+                                                                    wire:click="openEditModal({{ $category->id }})"
+                                                                    icon="pencil">Editar</x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar esta categoría? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'delete', params: [{{ $category->id }}] })"
+                                                                    danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                            @endif
                                                         @endif
                                                     </x-slot>
                                                 </x-dropdown>
@@ -232,7 +304,7 @@
                         </div>
 
                         {{-- Skeletons Móviles --}}
-                        <div wire:loading.class.remove="hidden" wire:target="search, previousPage, nextPage, gotoPage"
+                        <div wire:loading.class.remove="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage"
                             class="hidden flex flex-col gap-4">
                             @for($i = 0; $i < 4; $i++)
                                 <x-card

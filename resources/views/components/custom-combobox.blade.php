@@ -158,7 +158,7 @@
             x-show="open"
             @click.outside="if (! $refs.input.contains($event.target)) closeDropdown()"
             @click.stop
-            x-anchor.bottom.start.offset.4="$refs.input"
+            x-anchor.bottom-start.offset.4="$refs.input"
             x-transition:enter="transition-premium"
             x-transition:enter-start="opacity-0 scale-95"
             x-transition:enter-end="opacity-100 scale-100"

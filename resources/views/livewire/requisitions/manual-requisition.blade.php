@@ -129,7 +129,7 @@
                                 <th class="px-4 py-3 text-right whitespace-nowrap w-[12%]">P.U. s/IVA</th>
                                 <th class="px-4 py-3 text-right whitespace-nowrap w-[10%]">Subtotal</th>
                                 <th class="px-4 py-3 text-right whitespace-nowrap w-[10%]">Total c/IVA</th>
-                                <th class="pr-6 pl-4 py-3 w-[3%]"></th>
+                                <th class="px-4 py-3 text-center whitespace-nowrap w-[3%]"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border/40">
@@ -175,8 +175,8 @@
                                         class="px-4 py-4 text-right font-semibold text-text-primary tabular-nums text-small align-middle">
                                         ${{ number_format($item['total'], 2, '.', ',') }}
                                     </td>
-                                    <td class="pr-6 pl-4 py-4 text-center">
-                                        <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="mt-1 opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
+                                    <td class="px-4 py-4 text-center align-middle">
+                                        <x-button wire:click="removeItem({{ $i }})" variant="icon-danger" icon="trash-2" class="opacity-40 hover:opacity-100 focus:opacity-100 transition-opacity" />
                                     </td>
                                 </tr>
                             @endforeach
@@ -193,7 +193,7 @@
                                 <span class="text-xs-fluid font-semibold text-text-muted uppercase tracking-wider">
                                     Artículo {{ $i + 1 }}
                                 </span>
-                                <button type="button" wire:click="removeItem({{ $i }})" class="text-danger opacity-70 hover:opacity-100 p-1 -mr-1 transition-opacity">
+                                <button type="button" wire:click="removeItem({{ $i }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-text-muted icon-btn-hover-danger transition-all duration-150 -mr-2" title="Eliminar artículo">
                                     <x-lucide-trash-2 class="w-4 h-4" />
                                 </button>
                             </div>

@@ -230,6 +230,20 @@ document.addEventListener('alpine:init', () => {
         })
     );
 
+    Alpine.data('measureIndex',
+        createIndexComponent({
+            filterUsage: 'usageFilter',
+            filterTrashed: 'trashedFilter'
+        })
+    );
+
+    Alpine.data('categoryIndex',
+        createIndexComponent({
+            filterUsage: 'usageFilter',
+            filterTrashed: 'trashedFilter'
+        })
+    );
+
     Alpine.data('basicIndex',
         createIndexComponent({})
     );
