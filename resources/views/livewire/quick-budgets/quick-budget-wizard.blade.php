@@ -54,7 +54,7 @@
         <x-card class="mb-6 overflow-hidden">
             <div class="px-6 py-4 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <h3 class="font-medium text-text-primary tracking-tight">Conceptos y Materiales</h3>
+                    <h3 class="font-medium text-text-primary tracking-tight">Conceptos y materiales</h3>
                     @if(count($items) > 0)
                         <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-main border border-border/60 text-xs-fluid font-medium text-text-muted">
                             <x-lucide-list class="w-3.5 h-3.5" />
@@ -64,11 +64,11 @@
                 </div>
                 <div class="flex items-center gap-5">
                     <div class="flex items-center gap-2">
-                        <x-toggle wire:model.live="advancedMode" label="Modo Avanzado" />
+                        <x-toggle wire:model.live="advancedMode" label="Modo avanzado" />
                     </div>
                     <div class="flex-shrink-0">
                         <x-button wire:click="addManualItem" variant="soft" icon="plus" class="text-xs-fluid w-full sm:w-auto justify-center">
-                            Concepto Manual
+                            Concepto manual
                         </x-button>
                     </div>
                 </div>
@@ -415,7 +415,7 @@
                     <x-totals-summary class="w-full sm:w-1/2 md:w-1/3 min-w-[280px]">
                         @if($advancedMode)
                         <div class="flex items-center justify-between gap-6">
-                            <span class="text-small text-text-muted">Costo Base</span>
+                            <span class="text-small text-text-muted">Costo base</span>
                             <span class="text-small font-medium text-text-muted tabular-nums">
                                 ${{ number_format($this->cost_subtotal, 2) }}
                             </span>

@@ -30,6 +30,12 @@ class SupplierIndex extends Component
     #[Url(history: true)]
     public string $categoryFilter = '';
 
+    #[Url(history: true)]
+    public string $trashedFilter = '';
+
+    #[Url(history: true)]
+    public string $statusFilter = '';
+
     public array $selectedRows = [];
 
     public bool $allSelected = false;
@@ -233,6 +239,39 @@ class SupplierIndex extends Component
         $this->selectedRows = array_diff($this->selectedRows, [$supplierId]);
     }
 
+    public function restore(int $supplierId): void
+    {
+        if ($this->denyUnless('proveedores.editar', 'No tienes permiso para restaurar proveedores.')) {
+            return;
+        }
+
+        $supplier = Supplier::onlyTrashed()->findOrFail($supplierId);
+        $supplier->restore();
+
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor restaurado exitosamente.']);
+    }
+
+    public function forceDelete(int $supplierId): void
+    {
+        if ($this->denyUnless('proveedores.eliminar', 'No tienes permiso para eliminar proveedores.')) {
+            return;
+        }
+
+        $supplier = Supplier::withTrashed()->findOrFail($supplierId);
+
+        $isUsed = RequisitionItem::where('supplier_id', $supplierId)->exists() ||
+            Quotation::where('supplier_id', $supplierId)->exists();
+
+        if ($isUsed) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar definitivamente: el proveedor está siendo utilizado en requisiciones o cotizaciones.']);
+            return;
+        }
+
+        $supplier->forceDelete();
+        $this->selectedRows = array_diff($this->selectedRows, [$supplierId]);
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Proveedor eliminado definitivamente.']);
+    }
+
     public function toggleActive(int $supplierId): void
     {
         if ($this->denyUnless('proveedores.editar', 'No tienes permiso para modificar proveedores.')) {
@@ -265,20 +304,44 @@ class SupplierIndex extends Component
             return;
         }
 
-        // Obtener proveedores en uso
-        $usedInRequisitions = RequisitionItem::whereIn('supplier_id', $this->selectedRows)->pluck('supplier_id')->toArray();
-        $usedInQuotations = Quotation::whereIn('supplier_id', $this->selectedRows)->pluck('supplier_id')->toArray();
+        if ($this->trashedFilter === 'trashed') {
+            $suppliersToDelete = Supplier::onlyTrashed()->whereIn('id', $this->selectedRows)->get();
+            $deletedCount = 0;
+            $inUseCount = 0;
 
-        $usedSuppliers = array_unique(array_merge($usedInRequisitions, $usedInQuotations));
-        $suppliersToDelete = array_diff($this->selectedRows, $usedSuppliers);
+            foreach ($suppliersToDelete as $supplier) {
+                $isUsed = RequisitionItem::where('supplier_id', $supplier->id)->exists() ||
+                    Quotation::where('supplier_id', $supplier->id)->exists();
+                if ($isUsed) {
+                    $inUseCount++;
+                    continue;
+                }
+                $supplier->forceDelete();
+                $deletedCount++;
+            }
 
-        if (count($usedSuppliers) > 0) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos proveedores no pudieron ser eliminados porque están en uso.']);
-        }
+            if ($inUseCount > 0) {
+                $this->dispatch('toast', ['icon' => 'warning', 'message' => "{$inUseCount} proveedor(es) no se pudieron eliminar porque están en uso."]);
+            }
+            if ($deletedCount > 0) {
+                $this->dispatch('toast', ['icon' => 'success', 'message' => "{$deletedCount} proveedor(es) eliminado(s) definitivamente."]);
+            }
+        } else {
+            // Obtener proveedores en uso
+            $usedInRequisitions = RequisitionItem::whereIn('supplier_id', $this->selectedRows)->pluck('supplier_id')->toArray();
+            $usedInQuotations = Quotation::whereIn('supplier_id', $this->selectedRows)->pluck('supplier_id')->toArray();
 
-        if (count($suppliersToDelete) > 0) {
-            app(SupplierRepository::class)->bulkDelete($suppliersToDelete);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => count($suppliersToDelete) . ' proveedor(es) eliminado(s) exitosamente.']);
+            $usedSuppliers = array_unique(array_merge($usedInRequisitions, $usedInQuotations));
+            $suppliersToDelete = array_diff($this->selectedRows, $usedSuppliers);
+
+            if (count($usedSuppliers) > 0) {
+                $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos proveedores no pudieron ser eliminados porque están en uso.']);
+            }
+
+            if (count($suppliersToDelete) > 0) {
+                app(SupplierRepository::class)->bulkDelete($suppliersToDelete);
+                $this->dispatch('toast', ['icon' => 'success', 'message' => count($suppliersToDelete) . ' proveedor(es) eliminado(s) exitosamente.']);
+            }
         }
 
         $this->selectedRows = [];
@@ -313,6 +376,8 @@ class SupplierIndex extends Component
     public function render()
     {
         $suppliers = Supplier::withCount('vendors')
+            ->when($this->trashedFilter === 'trashed', fn ($q) => $q->onlyTrashed())
+            ->when($this->trashedFilter === 'all', fn ($q) => $q->withTrashed())
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('trade_name', 'ilike', "%{$this->search}%")
@@ -321,6 +386,8 @@ class SupplierIndex extends Component
                 });
             })
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
+            ->when($this->statusFilter === 'active', fn ($q) => $q->where('active', true))
+            ->when($this->statusFilter === 'inactive', fn ($q) => $q->where('active', false))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
@@ -333,9 +400,9 @@ class SupplierIndex extends Component
             'Materiales de Construcción',
             'Ferretería y Tlapalería',
             'Maquinaria y Equipo',
-            'Subcontratos y Mano de Obra',
-            'Logística y Fletes',
-            'Servicios Profesionales'
+            'Subcontratos y mano de obra',
+            'Logística y fletes',
+            'Servicios profesionales'
         ];
         $categories = collect(array_merge($defaultCategories, $dbCategories))
             ->unique()
@@ -343,6 +410,16 @@ class SupplierIndex extends Component
             ->mapWithKeys(fn ($item) => [$item => $item])
             ->toArray();
 
-        return view('livewire.suppliers.supplier-index', compact('suppliers', 'categories', 'viewingSupplier'));
+        $trashedOptions = [
+            'trashed' => 'En papelera',
+            'all' => 'Todos (activos y eliminados)',
+        ];
+
+        $statusOptions = [
+            'active' => 'Activos',
+            'inactive' => 'Inactivos',
+        ];
+
+        return view('livewire.suppliers.supplier-index', compact('suppliers', 'categories', 'viewingSupplier', 'trashedOptions', 'statusOptions'));
     }
 }

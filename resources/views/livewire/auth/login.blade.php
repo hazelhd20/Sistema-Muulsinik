@@ -2,7 +2,7 @@
 
     {{-- Heading --}}
     <div>
-        <h2 class="text-h2 text-text-primary">Iniciar Sesión</h2>
+        <h2 class="text-h2 text-text-primary">Iniciar sesión</h2>
         <p class="text-body text-text-muted mt-1">Ingresa tus credenciales para continuar</p>
     </div>
 
@@ -47,7 +47,7 @@
 
         {{-- Submit --}}
         <x-button type="submit" variant="primary" target="authenticate" class="w-full h-9">
-            Iniciar Sesión
+            Iniciar sesión
         </x-button>
 
     </form>

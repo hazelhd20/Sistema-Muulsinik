@@ -37,7 +37,7 @@
                 }
                 setTimeout(function() {
                     document.documentElement.classList.remove('theme-switching');
-                }, 50);
+                }, 150);
                 // Emitir evento personalizado para que componentes de canvas (Chart.js) puedan actualizarse
                 window.dispatchEvent(new CustomEvent('theme-changed', { detail: { isDark: !isDark } }));
                 return !isDark;
@@ -61,11 +61,11 @@
                 if (shouldBeDark && !isDark) {
                     document.documentElement.classList.add('theme-switching');
                     document.documentElement.classList.add('dark');
-                    setTimeout(function() { document.documentElement.classList.remove('theme-switching'); }, 50);
+                    setTimeout(function() { document.documentElement.classList.remove('theme-switching'); }, 150);
                 } else if (!shouldBeDark && isDark) {
                     document.documentElement.classList.add('theme-switching');
                     document.documentElement.classList.remove('dark');
-                    setTimeout(function() { document.documentElement.classList.remove('theme-switching'); }, 50);
+                    setTimeout(function() { document.documentElement.classList.remove('theme-switching'); }, 150);
                 }
             }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         })();

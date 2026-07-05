@@ -14,6 +14,7 @@ use Livewire\Attributes\Url;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 use App\Livewire\Concerns\WithPerPagePagination;
 
@@ -31,13 +32,13 @@ class CategoryIndex extends Component
     public string $trashedFilter = '';
 
     public array $usageOptions = [
-        'in_use' => 'En uso (Con productos asignados)',
-        'empty' => 'Sin uso (Vacías / Huérfanas)',
+        'in_use' => 'En uso (con productos asignados)',
+        'empty' => 'Sin uso (vacías / huérfanas)',
     ];
 
     public array $trashedOptions = [
-        'trashed' => 'En Papelera / Eliminadas',
-        'all' => 'Todas (Activas y Eliminadas)',
+        'trashed' => 'En papelera / eliminadas',
+        'all' => 'Todas (activas y eliminadas)',
     ];
 
     public string $name = '';
@@ -53,7 +54,7 @@ class CategoryIndex extends Component
     protected function rules()
     {
         return [
-            'name' => 'required|string|max:255|unique:categories,name,' . $this->editingId,
+            'name' => ['required', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($this->editingId)],
         ];
     }
 

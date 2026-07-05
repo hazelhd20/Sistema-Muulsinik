@@ -3,6 +3,7 @@
 namespace App\Livewire\Products;
 
 use App\Livewire\Concerns\EnforcesPermissions;
+use App\Livewire\Concerns\WithFilters;
 use App\Livewire\Concerns\WithSorting;
 use App\DTOs\ProductDTO;
 use App\Models\Category;
@@ -18,12 +19,13 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 use App\Livewire\Concerns\WithPerPagePagination;
 
 class ProductIndex extends Component
 {
-    use EnforcesPermissions, WithPagination, WithSorting, WithPerPagePagination;
+    use EnforcesPermissions, WithFilters, WithPagination, WithSorting, WithPerPagePagination;
 
     #[Url(history: true)]
     public string $search = '';
@@ -33,6 +35,12 @@ class ProductIndex extends Component
 
     #[Url(history: true)]
     public string $measureFilter = '';
+
+    #[Url(history: true)]
+    public string $trashedFilter = '';
+
+    #[Url(history: true)]
+    public string $typeFilter = '';
 
     public array $selectedRows = [];
 
@@ -51,20 +59,6 @@ class ProductIndex extends Component
     public string $categoryId = '';
 
     public ?int $editingId = null;
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
-
-    public function updatedCategoryFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedRows = [];
-        $this->allSelected = false;
-    }
 
     public function mount(): void
     {
@@ -108,7 +102,7 @@ class ProductIndex extends Component
         }
 
         $this->validate([
-            'canonicalName' => 'required|min:2|max:255|unique:products,canonical_name,'.$this->editingId,
+            'canonicalName' => ['required', 'min:2', 'max:255', Rule::unique('products', 'canonical_name')->ignore($this->editingId)],
             'itemType' => 'required|in:material,labor,service',
             'measureId' => 'required|exists:measures,id',
             'description' => 'nullable|max:500',
@@ -167,6 +161,36 @@ class ProductIndex extends Component
         $this->selectedRows = array_diff($this->selectedRows, [$productId]);
     }
 
+    public function restore(int $productId): void
+    {
+        if ($this->denyUnless('productos.editar', 'No tienes permiso para restaurar productos.')) {
+            return;
+        }
+
+        $product = Product::onlyTrashed()->findOrFail($productId);
+        $product->restore();
+
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto restaurado exitosamente.']);
+    }
+
+    public function forceDelete(int $productId): void
+    {
+        if ($this->denyUnless('productos.eliminar', 'No tienes permiso para eliminar productos.')) {
+            return;
+        }
+
+        $product = Product::withTrashed()->findOrFail($productId);
+
+        if (RequisitionItem::where('product_id', $productId)->exists()) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar definitivamente: el producto está siendo utilizado en una requisición.']);
+            return;
+        }
+
+        $product->forceDelete();
+        $this->selectedRows = array_diff($this->selectedRows, [$productId]);
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Producto eliminado definitivamente.']);
+    }
+
     public function toggleAll($productIds): void
     {
         if ($this->allSelected) {
@@ -187,18 +211,40 @@ class ProductIndex extends Component
             return;
         }
 
-        // Obtener productos en uso
-        $usedProducts = RequisitionItem::whereIn('product_id', $this->selectedRows)->pluck('product_id')->toArray();
+        if ($this->trashedFilter === 'trashed') {
+            $productsToDelete = Product::onlyTrashed()->whereIn('id', $this->selectedRows)->get();
+            $deletedCount = 0;
+            $inUseCount = 0;
 
-        $productsToDelete = array_diff($this->selectedRows, $usedProducts);
+            foreach ($productsToDelete as $product) {
+                if (RequisitionItem::where('product_id', $product->id)->exists()) {
+                    $inUseCount++;
+                    continue;
+                }
+                $product->forceDelete();
+                $deletedCount++;
+            }
 
-        if (count($usedProducts) > 0) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos productos no pudieron ser eliminados porque están en uso.']);
-        }
+            if ($inUseCount > 0) {
+                $this->dispatch('toast', ['icon' => 'warning', 'message' => "{$inUseCount} producto(s) no se pudieron eliminar porque están en uso."]);
+            }
+            if ($deletedCount > 0) {
+                $this->dispatch('toast', ['icon' => 'success', 'message' => "{$deletedCount} producto(s) eliminado(s) definitivamente."]);
+            }
+        } else {
+            // Obtener productos en uso
+            $usedProducts = RequisitionItem::whereIn('product_id', $this->selectedRows)->pluck('product_id')->toArray();
 
-        if (count($productsToDelete) > 0) {
-            app(ProductRepository::class)->bulkDelete($productsToDelete);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => count($productsToDelete) . ' producto(s) eliminado(s) exitosamente.']);
+            $productsToDelete = array_diff($this->selectedRows, $usedProducts);
+
+            if (count($usedProducts) > 0) {
+                $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos productos no pudieron ser eliminados porque están en uso.']);
+            }
+
+            if (count($productsToDelete) > 0) {
+                app(ProductRepository::class)->bulkDelete($productsToDelete);
+                $this->dispatch('toast', ['icon' => 'success', 'message' => count($productsToDelete) . ' producto(s) eliminado(s) exitosamente.']);
+            }
         }
 
         $this->selectedRows = [];
@@ -220,10 +266,13 @@ class ProductIndex extends Component
     public function render()
     {
         $products = Product::query()
+            ->when($this->trashedFilter === 'trashed', fn ($q) => $q->onlyTrashed())
+            ->when($this->trashedFilter === 'all', fn ($q) => $q->withTrashed())
             ->with(['category', 'measure'])
             ->when($this->search, fn ($q) => $q->where('canonical_name', 'ilike', "%{$this->search}%"))
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
             ->when($this->measureFilter, fn ($q) => $q->where('measure_id', $this->measureFilter))
+            ->when($this->typeFilter, fn ($q) => $q->where('item_type', $this->typeFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
@@ -241,7 +290,18 @@ class ProductIndex extends Component
 
         $itemTypes = [
             'material' => 'Material',
-            'labor' => 'Mano de Obra',
+            'labor' => 'Mano de obra',
+            'service' => 'Servicio',
+        ];
+
+        $trashedOptions = [
+            'trashed' => 'En papelera',
+            'all' => 'Todos (activos y eliminados)',
+        ];
+
+        $typeOptions = [
+            'material' => 'Material',
+            'labor' => 'Mano de obra',
             'service' => 'Servicio',
         ];
 
@@ -250,7 +310,10 @@ class ProductIndex extends Component
             'suppliers',
             'measures',
             'categories',
-            'itemTypes'
+            'itemTypes',
+            'trashedOptions',
+            'typeOptions'
         ));
     }
 }
+

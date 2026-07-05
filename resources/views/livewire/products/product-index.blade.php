@@ -13,7 +13,7 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
-            $activeCount = ($categoryFilter ? 1 : 0) + ($measureFilter ? 1 : 0);
+            $activeCount = ($categoryFilter ? 1 : 0) + ($measureFilter ? 1 : 0) + ($trashedFilter ? 1 : 0) + ($typeFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
 
@@ -28,7 +28,7 @@
                     </div>
 
                     {{-- Filters Popover --}}
-                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                    <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
                         <x-form-field label="Categoría">
                             <x-custom-select x-model="filterCategory" :options="$categories"
                                 placeholder="Todas las categorías" />
@@ -39,12 +39,22 @@
                                 placeholder="Todas las unidades" />
                         </x-form-field>
 
+                        <x-form-field label="Tipo de concepto">
+                            <x-custom-select x-model="filterType" :options="$typeOptions"
+                                placeholder="Cualquiera (todos)" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado / papelera">
+                            <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
+                                placeholder="Activos (por defecto)" />
+                        </x-form-field>
+
                         <x-slot name="footer">
                             <x-button type="button" @click="clearFilters()" variant="link-muted">
                                 Limpiar filtros
                             </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                                Aplicar Filtros
+                                Aplicar filtros
                             </x-button>
                         </x-slot>
                     </x-filters-popover>
@@ -59,6 +69,12 @@
                     @if($measureFilter)
                         <x-filter-chip label="Unidad" :value="$measures[$measureFilter] ?? $measureFilter" wire:click="$set('measureFilter', '')" />
                     @endif
+                    @if($typeFilter)
+                        <x-filter-chip label="Tipo" :value="$typeOptions[$typeFilter] ?? $typeFilter" wire:click="$set('typeFilter', '')" />
+                    @endif
+                    @if($trashedFilter)
+                        <x-filter-chip label="Estado" :value="$trashedOptions[$trashedFilter] ?? $trashedFilter" wire:click="$set('trashedFilter', '')" />
+                    @endif
                 </div>
                 @endif
             </div> {{-- End Header Group --}}
@@ -68,13 +84,13 @@
             <div class="w-full">
                 <x-card.table class="hidden md:block w-full">
                 @if($products->isEmpty() && !$hasActiveFilters)
-                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="p-8">
+                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="box" title="No se encontraron productos" message="No hay registros que coincidan con tu búsqueda." />
                     </div>
                 @endif
                 <table class="w-full table-fixed min-w-[1100px] {{ $products->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                     @if($products->isEmpty())
-                        wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage"
+                        wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage"
                     @endif
                 >
                     <colgroup>
@@ -101,7 +117,7 @@
                                 <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage">
+                        <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage">
                             @if($products->isEmpty() && $hasActiveFilters)
                                 <tr>
                                     <td colspan="7" class="p-8">
@@ -111,13 +127,18 @@
                             @else
                                 @foreach($products as $product)
                                     <tr wire:key="product-row-{{ $product->id }}"
-                                        class="group hover:bg-surface-hover transition-colors duration-150"
+                                        class="group hover:bg-surface-hover transition-colors duration-150 {{ $product->trashed() ? 'opacity-70 bg-danger-50/10' : '' }}"
                                         :class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
                                         </td>
                                         <td class="max-w-0">
-                                            <p class="text-body font-bold text-text-primary truncate" title="{{ $product->canonical_name }}">{{ $product->canonical_name }}</p>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-body font-bold text-text-primary truncate" title="{{ $product->canonical_name }}">{{ $product->canonical_name }}</p>
+                                                @if($product->trashed())
+                                                    <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                                @endif
+                                            </div>
                                             @if($product->description)
                                                 <p class="text-xs-fluid text-text-muted truncate" title="{{ $product->description }}">{{ $product->description }}</p>
                                             @endif
@@ -132,7 +153,7 @@
                                         <td class="text-body font-medium text-text-secondary">
                                             @php
                                                 $typeLabel = match($product->item_type) {
-                                                    'labor' => 'Mano de Obra',
+                                                    'labor' => 'Mano de obra',
                                                     'service' => 'Servicio',
                                                     default => 'Material',
                                                 };
@@ -160,15 +181,28 @@
                                                         <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">
                                                             Ver detalles
                                                         </x-dropdown-link>
-                                                        @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
-                                                                Editar
-                                                            </x-dropdown-link>
-                                                        @endif
-                                                        @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
-                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">
-                                                                Eliminar
-                                                            </x-dropdown-link>
+                                                        @if($product->trashed())
+                                                            @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" wire:click="restore({{ $product->id }})" icon="rotate-ccw">
+                                                                    Restaurar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $product->id }}] })" danger="true" icon="trash-2">
+                                                                    Eliminar Definitivamente
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                        @else
+                                                            @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">
+                                                                    Editar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">
+                                                                    Eliminar
+                                                                </x-dropdown-link>
+                                                            @endif
                                                         @endif
                                                     </x-slot>
                                                 </x-dropdown>
@@ -178,7 +212,7 @@
                                 @endforeach
                             @endif
                         </tbody>
-                        <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden">
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
                                     <td class="actions pl-6 pr-2 text-left">
@@ -213,10 +247,10 @@
 
                 <div class="md:hidden flex flex-col gap-4 mt-2">
                     {{-- Tarjetas Móviles (Mobile View) --}}
-                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    <div wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($products->isNotEmpty())
                             @foreach($products as $product)
-                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden {{ $product->trashed() ? 'opacity-75 bg-danger-50/10' : '' }}"
                                      x-bind:class="selectedRows.includes('{{ $product->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                      wire:key="product-mobile-card-{{ $product->id }}">
                                      
@@ -225,6 +259,9 @@
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $product->id }}" />
                                             <span class="font-bold text-text-primary text-h3 truncate">{{ $product->canonical_name }}</span>
+                                            @if($product->trashed())
+                                                <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                            @endif
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             <x-dropdown align="right" width="48">
@@ -233,11 +270,20 @@
                                                 </x-slot>
                                                 <x-slot name="content">
                                                     <x-dropdown-link as="button" @click="$dispatch('open-product-detail', { id: {{ $product->id }} })" icon="eye">Ver detalles</x-dropdown-link>
-                                                    @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
-                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                    @endif
-                                                    @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @if($product->trashed())
+                                                        @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="restore({{ $product->id }})" icon="rotate-ccw">Restaurar</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar Definitivamente</x-dropdown-link>
+                                                        @endif
+                                                    @else
+                                                        @if(auth()->user()->hasPermission('productos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $product->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este producto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteProduct', params: [{{ $product->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                        @endif
                                                     @endif
                                                 </x-slot>
                                             </x-dropdown>
@@ -270,7 +316,7 @@
                                                 <p class="text-xs-fluid text-text-muted uppercase font-semibold tracking-wider mb-1">Tipo</p>
                                                 @php
                                                     $typeLabel = match($product->item_type) {
-                                                        'labor' => 'Mano de Obra',
+                                                        'labor' => 'Mano de obra',
                                                         'service' => 'Servicio',
                                                         default => 'Material',
                                                     };
@@ -308,7 +354,7 @@
                     </div>
 
                     {{-- Skeletons Móviles --}}
-                    <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                    <div wire:loading.class.remove="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
                             <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex items-center justify-between gap-2">
@@ -345,21 +391,38 @@
         {{-- Bulk Actions Bar --}}
         @if(auth()->user()->hasPermission('productos.eliminar') || auth()->user()->hasPermission('*'))
         <x-bulk-actions-bar>
-            <x-button
-                @click="$dispatch('confirm-action', {
-                    title: 'Eliminar Productos',
-                    description: 'Se eliminarán permanentemente los productos seleccionados que no estén en requisiciones.',
-                    confirmLabel: 'Eliminar',
-                    variant: 'danger',
-                    action: 'bulkDelete',
-                    params: []
-                })"
-                variant="danger"
-                icon="trash-2">
-                Eliminar
-            </x-button>
+            @if($trashedFilter === 'trashed')
+                <x-button
+                    @click="$dispatch('confirm-action', {
+                        title: 'Eliminar Definitivamente',
+                        description: 'Se eliminarán permanentemente los productos seleccionados de la base de datos.',
+                        confirmLabel: 'Destruir Registros',
+                        variant: 'danger',
+                        action: 'bulkDelete',
+                        params: []
+                    })"
+                    variant="danger"
+                    icon="trash-2">
+                    Eliminar Definitivamente
+                </x-button>
+            @else
+                <x-button
+                    @click="$dispatch('confirm-action', {
+                        title: 'Eliminar Productos',
+                        description: 'Se eliminarán los productos seleccionados que no estén en requisiciones.',
+                        confirmLabel: 'Eliminar',
+                        variant: 'danger',
+                        action: 'bulkDelete',
+                        params: []
+                    })"
+                    variant="danger"
+                    icon="trash-2">
+                    Eliminar
+                </x-button>
+            @endif
         </x-bulk-actions-bar>
         @endif
+
         {{-- Pagination Footer --}}
         @if($products->total() > 0)
             <x-card.footer>
@@ -371,14 +434,14 @@
     {{-- Delete / Action Modals --}}
 {{-- Create Product Modal --}}
     @if($showCreateModal)
-        <x-modal show="showCreateModal" :title="$editingId ? 'Editar Producto' : 'Nuevo Producto'" maxWidth="md">
+        <x-modal show="showCreateModal" :title="$editingId ? 'Editar producto' : 'Nuevo producto'" maxWidth="md">
             <form wire:submit="saveProduct" class="p-5 space-y-4">
                 <x-form-field label="Nombre canónico" required hint="Nombre estándar del producto en el catálogo interno"
                     error="{{ $errors->first('canonicalName') }}">
                     <input wire:model="canonicalName" type="text" class="input" placeholder="Ej. Cemento Portland CPC 30R">
                 </x-form-field>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-form-field label="Tipo de Concepto" required error="{{ $errors->first('itemType') }}">
+                    <x-form-field label="Tipo de concepto" required error="{{ $errors->first('itemType') }}">
                         <x-custom-select wire:model="itemType" :options="$itemTypes" placeholder="Seleccionar..." />
                     </x-form-field>
                     <x-form-field label="Categoría" required error="{{ $errors->first('categoryId') }}">
@@ -397,7 +460,7 @@
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveProduct">
-                        {{ $editingId ? 'Guardar Cambios' : 'Crear Producto' }}
+                        {{ $editingId ? 'Guardar cambios' : 'Crear producto' }}
                     </x-button>
                 </div>
             </form>

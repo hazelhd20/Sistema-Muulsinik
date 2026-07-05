@@ -5,7 +5,15 @@
         open: false,
         search: '',
         value: '',
-        options: {{ json_encode($options) }},
+        options: (function() {
+            const opts = {{ json_encode($options) }} || {};
+            if (typeof opts === 'object' && !Array.isArray(opts) && '' in opts) {
+                const clean = { ...opts };
+                delete clean[''];
+                return clean;
+            }
+            return opts;
+        })(),
         get selectedLabel() {
             if (this.value === '' || this.value === null) return '{{ $placeholder }}';
             return this.options[this.value] || '{{ $placeholder }}';
@@ -102,10 +110,13 @@
                     x-show="search === ''"
                     role="option"
                     :aria-selected="(!value || value == '') ? 'true' : 'false'"
-                    class="cursor-pointer transition-colors {{ $size === 'sm' ? 'px-3 py-1.5 text-xs-fluid' : 'px-4 py-2.5 text-small' }}"
+                    class="cursor-pointer transition-colors flex items-center justify-between {{ $size === 'sm' ? 'px-3 py-1.5 text-xs-fluid' : 'px-4 py-2.5 text-small' }}"
                     :class="(!value || value == '') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-text-primary hover:bg-surface-hover'"
                 >
-                    {{ $placeholder }}
+                    <span class="truncate pr-4">{{ $placeholder }}</span>
+                    <svg x-show="!value || value == ''" class="w-4 h-4 shrink-0 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                 </div>
             @endif
 

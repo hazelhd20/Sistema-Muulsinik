@@ -197,26 +197,32 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('userIndex',
         createIndexComponent({
             filterRole: 'roleFilter',
-            filterStatus: 'statusFilter'
+            filterStatus: 'statusFilter',
+            filterTrashed: 'trashedFilter'
         })
     );
 
     Alpine.data('productIndex',
         createIndexComponent({
             filterCategory: 'categoryFilter',
-            filterMeasure: 'measureFilter'
+            filterMeasure: 'measureFilter',
+            filterType: 'typeFilter',
+            filterTrashed: 'trashedFilter'
         })
     );
 
     Alpine.data('supplierIndex',
         createIndexComponent({
-            filterCategory: 'categoryFilter'
+            filterCategory: 'categoryFilter',
+            filterStatus: 'statusFilter',
+            filterTrashed: 'trashedFilter'
         })
     );
 
     Alpine.data('clientIndex',
         createIndexComponent({
-            filterActive: 'activeFilter'
+            filterActive: 'activeFilter',
+            filterTrashed: 'trashedFilter'
         })
     );
 

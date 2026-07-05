@@ -30,14 +30,14 @@
 
                     {{-- Filters Popover --}}
                     <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
-                        <x-form-field label="Estado de Uso">
+                        <x-form-field label="Estado de uso">
                             <x-custom-select x-model="filterUsage" :options="$usageOptions"
-                                placeholder="Cualquiera (Todas)" />
+                                placeholder="Cualquiera (todas)" />
                         </x-form-field>
 
-                        <x-form-field label="Estado de Papelera">
+                        <x-form-field label="Estado de papelera">
                             <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
-                                placeholder="Activas (Por defecto)" />
+                                placeholder="Activas (por defecto)" />
                         </x-form-field>
 
                         <x-slot name="footer">
@@ -45,7 +45,7 @@
                                 Limpiar filtros
                             </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                                Aplicar Filtros
+                                Aplicar filtros
                             </x-button>
                         </x-slot>
                     </x-filters-popover>
@@ -360,7 +360,7 @@
     {{-- Delete / Action Modals --}}
     {{-- Create / Edit Modal --}}
     @if ($showCreateModal)
-        <x-modal show="showCreateModal" :title="$editingId ? 'Editar Categoría' : 'Nueva Categoría'" maxWidth="md">
+        <x-modal show="showCreateModal" :title="$editingId ? 'Editar categoría' : 'Nueva categoría'" maxWidth="md">
             <form wire:submit="save" class="p-5 space-y-4">
                 <x-form-field label="Nombre" required error="{{ $errors->first('name') }}">
                     <input type="text" wire:model="name" class="input" placeholder="Ej. Eléctrico, Plomería">
@@ -368,7 +368,7 @@
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="save">
-                        {{ $editingId ? 'Guardar Cambios' : 'Crear Categoría' }}
+                        {{ $editingId ? 'Guardar cambios' : 'Crear categoría' }}
                     </x-button>
                 </div>
             </form>

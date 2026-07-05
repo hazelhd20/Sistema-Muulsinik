@@ -13,7 +13,7 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
-            $activeCount = ($activeFilter !== '' ? 1 : 0);
+            $activeCount = ($activeFilter !== '' ? 1 : 0) + ($trashedFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
 
@@ -26,10 +26,15 @@
                     </div>
 
                     {{-- Filters Popover --}}
-                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                    <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
                         <x-form-field label="Estado">
-                            <x-custom-select x-model="filterActive" :options="['1' => 'Activos', '0' => 'Inactivos']"
-                                placeholder="Todos" />
+                            <x-custom-select x-model="filterActive" :options="$statusOptions"
+                                placeholder="Cualquiera (todos)" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado / papelera">
+                            <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
+                                placeholder="Activos (por defecto)" />
                         </x-form-field>
 
                         <x-slot name="footer">
@@ -37,7 +42,7 @@
                                 Limpiar filtros
                             </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                                Aplicar Filtros
+                                Aplicar filtros
                             </x-button>
                         </x-slot>
                     </x-filters-popover>
@@ -47,7 +52,10 @@
                 @if($activeCount > 0)
                 <div class="flex flex-wrap items-center gap-2 pb-3 md:px-6 md:pb-4 pt-1">
                     @if($activeFilter !== '')
-                        <x-filter-chip label="Estado" :value="$activeFilter === '1' ? 'Activos' : 'Inactivos'" wire:click="$set('activeFilter', '')" />
+                        <x-filter-chip label="Estado" :value="$statusOptions[$activeFilter] ?? ($activeFilter === '1' ? 'Activos' : 'Inactivos')" wire:click="$set('activeFilter', '')" />
+                    @endif
+                    @if($trashedFilter)
+                        <x-filter-chip label="Papelera" :value="$trashedOptions[$trashedFilter] ?? $trashedFilter" wire:click="$set('trashedFilter', '')" />
                     @endif
                 </div>
                 @endif
@@ -58,12 +66,12 @@
             <div class="w-full">
                 <x-card.table class="hidden md:block w-full">
                 @if($clients->isEmpty() && !$hasActiveFilters)
-                    <div wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="p-8">
+                    <div wire:loading.class="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="users" title="No hay clientes" message="Aún no has registrado ningún cliente en el catálogo." />
                     </div>
                 @endif
                 <table class="w-full table-fixed min-w-[1000px] {{ $clients->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
-                    @if($clients->isEmpty()) wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" @endif>
+                    @if($clients->isEmpty()) wire:loading.class.remove="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage" @endif>
                     <colgroup>
                         <col class="w-14">
                         <col class="w-[30%]">
@@ -85,7 +93,7 @@
                             <th class="actions pr-6 text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage">
+                    <tbody wire:loading.class="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage">
                         @if($clients->isEmpty() && $hasActiveFilters)
                             <tr>
                                 <td colspan="6" class="p-8">
@@ -94,12 +102,17 @@
                             </tr>
                         @else
                             @foreach($clients as $client)
-                                <tr wire:key="client-row-{{ $client->id }}" class="group hover:bg-surface-hover transition-colors duration-150" :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50' : ''">
+                                <tr wire:key="client-row-{{ $client->id }}" class="group hover:bg-surface-hover transition-colors duration-150 {{ $client->trashed() ? 'opacity-70 bg-danger-50/10' : '' }}" :class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50' : ''">
                                     <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                         <x-table-checkbox x-model="selectedRows" value="{{ $client->id }}" />
                                     </td>
                                     <td class="max-w-0">
-                                        <p class="text-body font-bold text-text-primary truncate" title="{{ $client->name }}">{{ $client->name }}</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-body font-bold text-text-primary truncate" title="{{ $client->name }}">{{ $client->name }}</p>
+                                            @if($client->trashed())
+                                                <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                            @endif
+                                        </div>
                                         @if($client->legal_name)
                                             <p class="text-xs-fluid text-text-muted truncate" title="{{ $client->legal_name }}">{{ $client->legal_name }}</p>
                                         @endif
@@ -134,18 +147,31 @@
                                                     <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
                                                 </x-slot>
                                                 <x-slot name="content">
-                                                    @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">
-                                                            Editar
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $client->id }})" icon="power">
-                                                            {{ $client->active ? 'Desactivar' : 'Activar' }}
-                                                        </x-dropdown-link>
-                                                    @endif
-                                                    @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
+                                                    @if($client->trashed())
+                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="restore({{ $client->id }})" icon="rotate-ccw">
+                                                                Restaurar
+                                                            </x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este cliente? Esta acción destruirá el registro.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $client->id }}] })" danger="true" icon="trash-2">
+                                                                Eliminar Definitivamente
+                                                            </x-dropdown-link>
+                                                        @endif
+                                                    @else
+                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">
+                                                                Editar
+                                                            </x-dropdown-link>
+                                                            <x-dropdown-link as="button" wire:click="toggleActive({{ $client->id }})" icon="power">
+                                                                {{ $client->active ? 'Desactivar' : 'Activar' }}
+                                                            </x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">
+                                                                Eliminar
+                                                            </x-dropdown-link>
+                                                        @endif
                                                     @endif
                                                 </x-slot>
                                             </x-dropdown>
@@ -155,7 +181,7 @@
                             @endforeach
                         @endif
                     </tbody>
-                    <tbody wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="hidden">
+                    <tbody wire:loading.class.remove="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden">
                         @for($i = 0; $i < 5; $i++)
                             <tr class="opacity-{{ 100 - ($i * 15) }}">
                                 <td class="actions pl-6 pr-2 text-left">
@@ -188,16 +214,19 @@
 
                 {{-- Mobile view --}}
                 <div class="md:hidden flex flex-col gap-4 mt-2">
-                    <div wire:loading.class="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    <div wire:loading.class="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($clients->isNotEmpty())
                             @foreach($clients as $client)
-                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden {{ $client->trashed() ? 'opacity-75 bg-danger-50/10' : '' }}"
                                      x-bind:class="selectedRows.includes('{{ $client->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                      wire:key="client-mobile-card-{{ $client->id }}">
                                     <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $client->id }}" />
                                             <span class="font-bold text-text-primary text-h3 truncate">{{ $client->name }}</span>
+                                            @if($client->trashed())
+                                                <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                            @endif
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             @if($client->active)
@@ -210,12 +239,21 @@
                                                     <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
                                                 </x-slot>
                                                 <x-slot name="content">
-                                                    @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $client->id }})" icon="power">{{ $client->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
-                                                    @endif
-                                                    @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente?', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @if($client->trashed())
+                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="restore({{ $client->id }})" icon="rotate-ccw">Restaurar</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este cliente? Esta acción destruirá el registro.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $client->id }}] })" danger="true" icon="trash-2">Eliminar Definitivamente</x-dropdown-link>
+                                                        @endif
+                                                    @else
+                                                        @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $client->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                            <x-dropdown-link as="button" wire:click="toggleActive({{ $client->id }})" icon="power">{{ $client->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este cliente?', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteClient', params: [{{ $client->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                        @endif
                                                     @endif
                                                 </x-slot>
                                             </x-dropdown>
@@ -264,7 +302,7 @@
                     </div>
 
                     {{-- Mobile Skeletons --}}
-                    <div wire:loading.class.remove="hidden" wire:target="search, activeFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
+                    <div wire:loading.class.remove="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4 mt-2">
                         @for($i = 0; $i < 4; $i++)
                             <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex items-center justify-between gap-2">
@@ -295,9 +333,15 @@
 
         @if(auth()->user()->hasPermission('catalogos.eliminar') || auth()->user()->hasPermission('*'))
         <x-bulk-actions-bar>
-            <x-button @click="$dispatch('confirm-action', { title: 'Eliminar Clientes', description: 'Se eliminarán los clientes seleccionados.', confirmLabel: 'Eliminar', variant: 'danger', action: 'bulkDelete', params: [] })" variant="danger" icon="trash-2">
-                Eliminar
-            </x-button>
+            @if($trashedFilter === 'trashed')
+                <x-button @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: 'Se eliminarán permanentemente los clientes seleccionados de la base de datos.', confirmLabel: 'Destruir Registros', variant: 'danger', action: 'bulkDelete', params: [] })" variant="danger" icon="trash-2">
+                    Eliminar Definitivamente
+                </x-button>
+            @else
+                <x-button @click="$dispatch('confirm-action', { title: 'Eliminar Clientes', description: 'Se eliminarán los clientes seleccionados que no estén en uso.', confirmLabel: 'Eliminar', variant: 'danger', action: 'bulkDelete', params: [] })" variant="danger" icon="trash-2">
+                    Eliminar
+                </x-button>
+            @endif
         </x-bulk-actions-bar>
         @endif
 
@@ -309,21 +353,21 @@
     </div>
 
     @if($showCreateModal)
-        <x-modal show="showCreateModal" :title="$editingId ? 'Editar Cliente' : 'Nuevo Cliente'" maxWidth="md">
+        <x-modal show="showCreateModal" :title="$editingId ? 'Editar cliente' : 'Nuevo cliente'" maxWidth="md">
             <form wire:submit="saveClient" class="p-5 space-y-4">
-                <x-form-field label="Nombre Comercial / Razón Social" required error="{{ $errors->first('name') }}">
+                <x-form-field label="Nombre comercial / razón social" required error="{{ $errors->first('name') }}">
                     <input wire:model="name" type="text" class="input" placeholder="Ej. Constructora del Sur S.A.">
                 </x-form-field>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-form-field label="Nombre Legal (Opcional)" error="{{ $errors->first('legal_name') }}">
+                    <x-form-field label="Nombre legal (opcional)" error="{{ $errors->first('legal_name') }}">
                         <input wire:model="legal_name" type="text" class="input" placeholder="Razón social fiscal">
                     </x-form-field>
-                    <x-form-field label="RFC (Opcional)" error="{{ $errors->first('rfc') }}">
+                    <x-form-field label="RFC (opcional)" error="{{ $errors->first('rfc') }}">
                         <input wire:model="rfc" type="text" class="input uppercase" placeholder="XAXX010101000">
                     </x-form-field>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-form-field label="Correo Electrónico" error="{{ $errors->first('email') }}">
+                    <x-form-field label="Correo electrónico" error="{{ $errors->first('email') }}">
                         <input wire:model="email" type="email" class="input" placeholder="contacto@empresa.com">
                     </x-form-field>
                     <x-form-field label="Teléfono" error="{{ $errors->first('phone') }}">
@@ -331,12 +375,12 @@
                     </x-form-field>
                 </div>
                 <div class="pt-2">
-                    <x-toggle wire:model="active" label="Cliente Activo" description="Los clientes inactivos no aparecerán en el cotizador." />
+                    <x-toggle wire:model="active" label="Cliente activo" description="Los clientes inactivos no aparecerán en el cotizador." />
                 </div>
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveClient">
-                        {{ $editingId ? 'Guardar Cambios' : 'Crear Cliente' }}
+                        {{ $editingId ? 'Guardar cambios' : 'Crear cliente' }}
                     </x-button>
                 </div>
             </form>

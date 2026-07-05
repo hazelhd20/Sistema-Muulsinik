@@ -13,7 +13,7 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
-            $activeCount = ($roleFilter ? 1 : 0) + ($statusFilter ? 1 : 0);
+            $activeCount = ($roleFilter ? 1 : 0) + ($statusFilter ? 1 : 0) + ($trashedFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
 
@@ -28,13 +28,18 @@
                     </div>
 
                     {{-- Filters Popover --}}
-                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                    <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
                         <x-form-field label="Rol">
                             <x-custom-select x-model="filterRole" :options="$roles->pluck('name', 'id')->toArray()" placeholder="Todos los roles" />
                         </x-form-field>
 
                         <x-form-field label="Estado">
-                            <x-custom-select x-model="filterStatus" :options="['active' => 'Activo', 'inactive' => 'Inactivo']" placeholder="Todos los estados" />
+                            <x-custom-select x-model="filterStatus" :options="$statusOptions" placeholder="Todos los estados" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado / papelera">
+                            <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
+                                placeholder="Activos (por defecto)" />
                         </x-form-field>
 
                         <x-slot name="footer">
@@ -42,7 +47,7 @@
                                 Limpiar filtros
                             </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                                Aplicar Filtros
+                                Aplicar filtros
                             </x-button>
                         </x-slot>
                     </x-filters-popover>
@@ -55,10 +60,10 @@
                         <x-filter-chip label="Rol" :value="$roles->firstWhere('id', $roleFilter)?->name ?? 'Desconocido'" wire:click="$set('roleFilter', '')" />
                     @endif
                     @if($statusFilter)
-                        @php
-                            $statusNames = ['active' => 'Activo', 'inactive' => 'Inactivo'];
-                        @endphp
-                        <x-filter-chip label="Estado" :value="$statusNames[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
+                        <x-filter-chip label="Estado" :value="$statusOptions[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
+                    @endif
+                    @if($trashedFilter)
+                        <x-filter-chip label="Papelera" :value="$trashedOptions[$trashedFilter] ?? $trashedFilter" wire:click="$set('trashedFilter', '')" />
                     @endif
                 </div>
                 @endif
@@ -69,13 +74,13 @@
             <div class="w-full">
                 <x-card.table class="hidden md:block w-full">
                 @if($users->isEmpty() && !$hasActiveFilters)
-                    <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="p-8">
+                    <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" class="p-8">
                         <x-empty-state icon="users" title="No se encontraron usuarios" message="No hay registros que coincidan con tu búsqueda." />
                     </div>
                 @endif
                 <table class="w-full table-fixed min-w-[1100px] {{ $users->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                     @if($users->isEmpty())
-                        wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage"
+                        wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage"
                     @endif
                 >
                     <colgroup>
@@ -102,7 +107,7 @@
                                 <th class="actions pr-6 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage">
+                        <tbody wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage">
                             @if($users->isEmpty() && $hasActiveFilters)
                                 <tr>
                                     <td colspan="6" class="p-8">
@@ -112,13 +117,18 @@
                             @else
                                 @foreach($users as $user)
                                             <tr wire:key="user-row-{{ $user->id }}"
-                                                class="group hover:bg-surface-hover transition-colors duration-150"
+                                                class="group hover:bg-surface-hover transition-colors duration-150 {{ $user->trashed() ? 'opacity-70 bg-danger-50/10' : '' }}"
                                                 :class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50' : ''">
                                                 <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                                     <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                                 </td>
                                                 <td class="max-w-0">
-                                                    <p class="text-body font-bold text-text-primary truncate" title="{{ $user->name }}">{{ $user->name }}</p>
+                                                    <div class="flex items-center gap-2">
+                                                        <p class="text-body font-bold text-text-primary truncate" title="{{ $user->name }}">{{ $user->name }}</p>
+                                                        @if($user->trashed())
+                                                            <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                                        @endif
+                                                    </div>
                                                     <p class="text-xs-fluid text-text-muted truncate" title="{{ $user->email }}">{{ $user->email }}</p>
                                                 </td>
                                                 <td>
@@ -142,22 +152,35 @@
                                                             </x-slot>
 
                                                             <x-slot name="content">
-                                                                @if(auth()->user()->hasPermission('usuarios.editar'))
-                                                                    <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">
-                                                                        Editar
-                                                                    </x-dropdown-link>
-                                                                @endif
-                                                                
-                                                                @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
-                                                                    <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">
-                                                                        {{ $user->active ? 'Desactivar' : 'Activar' }}
-                                                                    </x-dropdown-link>
-                                                                @endif
+                                                                @if($user->trashed())
+                                                                    @if(auth()->user()->hasPermission('usuarios.editar'))
+                                                                        <x-dropdown-link as="button" wire:click="restore({{ $user->id }})" icon="rotate-ccw">
+                                                                            Restaurar
+                                                                        </x-dropdown-link>
+                                                                    @endif
+                                                                    @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este usuario? Esta acción destruirá el registro.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $user->id }}] })" danger="true" icon="trash-2">
+                                                                            Eliminar Definitivamente
+                                                                        </x-dropdown-link>
+                                                                    @endif
+                                                                @else
+                                                                    @if(auth()->user()->hasPermission('usuarios.editar'))
+                                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">
+                                                                            Editar
+                                                                        </x-dropdown-link>
+                                                                    @endif
+                                                                    
+                                                                    @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
+                                                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">
+                                                                            {{ $user->active ? 'Desactivar' : 'Activar' }}
+                                                                        </x-dropdown-link>
+                                                                    @endif
 
-                                                                @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                                    <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este usuario? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteUser', params: [{{ $user->id }}] })" danger="true" icon="trash-2">
-                                                                        Eliminar
-                                                                    </x-dropdown-link>
+                                                                    @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este usuario? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteUser', params: [{{ $user->id }}] })" danger="true" icon="trash-2">
+                                                                            Eliminar
+                                                                        </x-dropdown-link>
+                                                                    @endif
                                                                 @endif
                                                             </x-slot>
                                                         </x-dropdown>
@@ -167,7 +190,7 @@
                                 @endforeach
                             @endif
                         </tbody>
-                        <tbody wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden">
+                        <tbody wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 5; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
                                     <td class="actions pl-6 pr-2 text-left">
@@ -199,10 +222,10 @@
 
                 <div class="md:hidden flex flex-col gap-4 mt-2">
                     {{-- Tarjetas Móviles (Mobile View) --}}
-                    <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
+                    <div wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" class="flex flex-col gap-4">
                         @if($users->isNotEmpty())
                             @foreach($users as $user)
-                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden {{ $user->trashed() ? 'opacity-75 bg-danger-50/10' : '' }}"
                                      x-bind:class="selectedRows.includes('{{ $user->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                      wire:key="user-mobile-card-{{ $user->id }}">
                                      
@@ -218,6 +241,9 @@
                                                 </div>
                                             @endif
                                             <span class="font-bold text-text-primary text-h3 truncate">{{ $user->name }}</span>
+                                            @if($user->trashed())
+                                                <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                            @endif
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             <x-status-badge :status="$user->active ? 'activo' : 'inactivo'" :map="['activo' => 'success', 'inactivo' => 'danger']" />
@@ -227,14 +253,23 @@
                                                     <x-button variant="icon" icon="more-vertical" aria-label="Opciones" title="Opciones" />
                                                 </x-slot>
                                                 <x-slot name="content">
-                                                    @if(auth()->user()->hasPermission('usuarios.editar'))
-                                                        <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">Editar</x-dropdown-link>
-                                                    @endif
-                                                    @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
-                                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">{{ $user->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
-                                                    @endif
-                                                    @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
-                                                        <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este usuario? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteUser', params: [{{ $user->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @if($user->trashed())
+                                                        @if(auth()->user()->hasPermission('usuarios.editar'))
+                                                            <x-dropdown-link as="button" wire:click="restore({{ $user->id }})" icon="rotate-ccw">Restaurar</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este usuario? Esta acción destruirá el registro.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $user->id }}] })" danger="true" icon="trash-2">Eliminar Definitivamente</x-dropdown-link>
+                                                        @endif
+                                                    @else
+                                                        @if(auth()->user()->hasPermission('usuarios.editar'))
+                                                            <x-dropdown-link as="button" wire:click="openEditModal({{ $user->id }})" icon="pencil">Editar</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('usuarios.editar') && auth()->id() !== $user->id)
+                                                            <x-dropdown-link as="button" wire:click="toggleActive({{ $user->id }})" icon="power">{{ $user->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('usuarios.eliminar') && auth()->id() !== $user->id)
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este usuario? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteUser', params: [{{ $user->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                        @endif
                                                     @endif
                                                 </x-slot>
                                             </x-dropdown>
@@ -281,7 +316,7 @@
                     </div>
 
                     {{-- Skeletons Móviles --}}
-                    <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
+                    <div wire:loading.class.remove="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
                             <x-card class="p-4 flex flex-col gap-3 relative transition-colors shadow-sm opacity-{{ 100 - ($i * 15) }}">
                                 <div class="flex items-center justify-between gap-2">
@@ -317,19 +352,35 @@
         {{-- Bulk Actions Bar --}}
         @if(auth()->user()->hasPermission('usuarios.eliminar') || auth()->user()->hasPermission('*'))
             <x-bulk-actions-bar>
-                <x-button
-                    @click="$dispatch('confirm-action', {
-                        title: 'Eliminar Usuarios',
-                        description: 'Se eliminarán permanentemente los usuarios seleccionados (excepto el tuyo propio).',
-                        confirmLabel: 'Eliminar',
-                        variant: 'danger',
-                        action: 'bulkDelete',
-                        params: []
-                    })"
-                    variant="danger"
-                    icon="trash-2">
-                    Eliminar
-                </x-button>
+                @if($trashedFilter === 'trashed')
+                    <x-button
+                        @click="$dispatch('confirm-action', {
+                            title: 'Eliminar Definitivamente',
+                            description: 'Se eliminarán permanentemente los usuarios seleccionados de la base de datos (excepto el tuyo propio).',
+                            confirmLabel: 'Destruir Registros',
+                            variant: 'danger',
+                            action: 'bulkDelete',
+                            params: []
+                        })"
+                        variant="danger"
+                        icon="trash-2">
+                        Eliminar Definitivamente
+                    </x-button>
+                @else
+                    <x-button
+                        @click="$dispatch('confirm-action', {
+                            title: 'Eliminar Usuarios',
+                            description: 'Se eliminarán los usuarios seleccionados (excepto el tuyo propio).',
+                            confirmLabel: 'Eliminar',
+                            variant: 'danger',
+                            action: 'bulkDelete',
+                            params: []
+                        })"
+                        variant="danger"
+                        icon="trash-2">
+                        Eliminar
+                    </x-button>
+                @endif
             </x-bulk-actions-bar>
         @endif
         {{-- Pagination Footer --}}
@@ -343,7 +394,7 @@
     {{-- Delete / Action Modals --}}
 {{-- Modal Unificado Crear/Editar Usuario --}}
     @if($showModal)
-        <x-modal show="showModal" :title="$editingId ? 'Editar Usuario' : 'Nuevo Usuario'">
+        <x-modal show="showModal" :title="$editingId ? 'Editar usuario' : 'Nuevo usuario'">
             <form wire:submit="saveUser" class="p-5 space-y-4" autocomplete="off">
                 <x-form-field label="Nombre completo" required error="{{ $errors->first('name') }}">
                     <input wire:model="name" type="text" class="input" placeholder="Ej. Juan Pérez" autocomplete="off">
@@ -354,7 +405,7 @@
                 </x-form-field>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <x-form-field :label="$editingId ? 'Nueva Contraseña' : 'Contraseña'" :required="!$editingId"
+                    <x-form-field :label="$editingId ? 'Nueva contraseña' : 'Contraseña'" :required="!$editingId"
                         error="{{ $errors->first('password') }}">
                         <input wire:model="password" type="password" class="input"
                             placeholder="{{ $editingId ? 'Dejar en blanco para mantener actual' : 'Mínimo 6 caracteres' }}"
@@ -367,12 +418,12 @@
                 </div>
 
                 <div class="pt-2">
-                    <x-toggle wire:model="active" label="Usuario Activo" description="{{ auth()->id() === $editingId ? 'No puedes desactivar tu propia cuenta.' : 'Los usuarios inactivos no tienen acceso al sistema.' }}" :disabled="auth()->id() === $editingId" />
+                    <x-toggle wire:model="active" label="Usuario activo" description="{{ auth()->id() === $editingId ? 'No puedes desactivar tu propia cuenta.' : 'Los usuarios inactivos no tienen acceso al sistema.' }}" :disabled="auth()->id() === $editingId" />
                 </div>
 
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showModal', false)" variant="soft">Cancelar</x-button>
-                    <x-button type="submit" variant="primary" target="saveUser">{{ $editingId ? 'Guardar Cambios' : 'Crear Usuario' }}</x-button>
+                    <x-button type="submit" variant="primary" target="saveUser">{{ $editingId ? 'Guardar cambios' : 'Crear usuario' }}</x-button>
                 </div>
             </form>
         </x-modal>

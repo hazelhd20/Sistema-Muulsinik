@@ -12,7 +12,7 @@
     {{-- Unified Datagrid Card Container --}}
     <div class="mt-0 flex flex-col bg-transparent md:bg-surface-card md:border md:border-border md:rounded-xl">
         @php
-            $activeCount = $categoryFilter ? 1 : 0;
+            $activeCount = ($categoryFilter ? 1 : 0) + ($statusFilter ? 1 : 0) + ($trashedFilter ? 1 : 0);
             $hasActiveFilters = !empty($search) || $activeCount > 0;
         @endphp
 
@@ -28,10 +28,20 @@
                     </div>
 
                     {{-- Filters Popover --}}
-                    <x-filters-popover :activeCount="$activeCount" :columns="1" @filters-opened="initFilters()">
+                    <x-filters-popover :activeCount="$activeCount" :columns="2" @filters-opened="initFilters()">
                         <x-form-field label="Categoría">
                             <x-custom-select x-model="filterCategory" :options="$categories"
                                 placeholder="Todas las categorías" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado">
+                            <x-custom-select x-model="filterStatus" :options="$statusOptions"
+                                placeholder="Cualquiera (todos)" />
+                        </x-form-field>
+
+                        <x-form-field label="Estado / papelera">
+                            <x-custom-select x-model="filterTrashed" :options="$trashedOptions"
+                                placeholder="Activos (por defecto)" />
                         </x-form-field>
 
                         <x-slot name="footer">
@@ -39,7 +49,7 @@
                                 Limpiar filtros
                             </x-button>
                             <x-button type="button" @click="applyFilters(); open = false" variant="primary">
-                                Aplicar Filtros
+                                Aplicar filtros
                             </x-button>
                         </x-slot>
                     </x-filters-popover>
@@ -51,6 +61,12 @@
                         @if($categoryFilter)
                             <x-filter-chip label="Categoría" :value="$categoryFilter" wire:click="$set('categoryFilter', '')" />
                         @endif
+                        @if($statusFilter)
+                            <x-filter-chip label="Estado" :value="$statusOptions[$statusFilter] ?? $statusFilter" wire:click="$set('statusFilter', '')" />
+                        @endif
+                        @if($trashedFilter)
+                            <x-filter-chip label="Papelera" :value="$trashedOptions[$trashedFilter] ?? $trashedFilter" wire:click="$set('trashedFilter', '')" />
+                        @endif
                     </div>
                 @endif
             </div> {{-- End Header Group --}}
@@ -61,7 +77,7 @@
                 <x-card.table class="hidden md:block w-full">
                     @if($suppliers->isEmpty() && !$hasActiveFilters)
                         <div wire:loading.class="hidden"
-                            wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="p-8">
+                            wire:target="search, categoryFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" class="p-8">
                             <x-empty-state icon="building-2" title="No se encontraron proveedores"
                                 message="No hay registros que coincidan con tu búsqueda." />
                         </div>
@@ -69,7 +85,7 @@
                     <table
                         class="w-full table-fixed min-w-[1100px] {{ $suppliers->isEmpty() && !$hasActiveFilters ? 'hidden' : '' }}"
                         @if($suppliers->isEmpty()) wire:loading.class.remove="hidden"
-                        wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" @endif>
+                        wire:target="search, categoryFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" @endif>
                         <colgroup>
                             <col class="w-14"> {{-- Checkbox --}}
                             <col class="w-[26%]"> {{-- Proveedor --}}
@@ -102,7 +118,7 @@
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden"
-                            wire:target="search, categoryFilter, previousPage, nextPage, gotoPage">
+                            wire:target="search, categoryFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage">
                             @if($suppliers->isEmpty() && $hasActiveFilters)
                                 <tr>
                                     <td colspan="8" class="p-8">
@@ -113,14 +129,19 @@
                             @else
                                 @foreach($suppliers as $supplier)
                                     <tr wire:key="supplier-row-{{ $supplier->id }}"
-                                        class="group hover:bg-surface-hover transition-colors duration-150"
+                                        class="group hover:bg-surface-hover transition-colors duration-150 {{ $supplier->trashed() ? 'opacity-70 bg-danger-50/10' : '' }}"
                                         :class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50' : ''">
                                         <td class="actions pl-6 pr-2 text-left" @click.stop="$event.stopPropagation()">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
                                         </td>
                                         <td class="max-w-0">
-                                            <p class="text-body font-bold text-text-primary truncate"
-                                                title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</p>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-body font-bold text-text-primary truncate"
+                                                    title="{{ $supplier->trade_name }}">{{ $supplier->trade_name }}</p>
+                                                @if($supplier->trashed())
+                                                    <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             @if($supplier->rfc)
@@ -169,24 +190,39 @@
                                                     </x-slot>
 
                                                     <x-slot name="content">
-                                                        <x-dropdown-link as="button"
-                                                            wire:click="viewVendors({{ $supplier->id }})" icon="users">
-                                                            Ver vendedores
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button"
-                                                            wire:click="openEditSupplierModal({{ $supplier->id }})"
-                                                            icon="pencil">
-                                                            Editar
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button"
-                                                            wire:click="toggleActive({{ $supplier->id }})" icon="power">
-                                                            {{ $supplier->active ? 'Desactivar' : 'Activar' }}
-                                                        </x-dropdown-link>
-                                                        <x-dropdown-link as="button" type="button"
-                                                            @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })"
-                                                            danger="true" icon="trash-2">
-                                                            Eliminar
-                                                        </x-dropdown-link>
+                                                        @if($supplier->trashed())
+                                                            @if(auth()->user()->hasPermission('proveedores.editar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" wire:click="restore({{ $supplier->id }})" icon="rotate-ccw">
+                                                                    Restaurar
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                            @if(auth()->user()->hasPermission('proveedores.eliminar') || auth()->user()->hasPermission('*'))
+                                                                <x-dropdown-link as="button" type="button"
+                                                                    @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este proveedor? Esta acción destruirá el registro.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $supplier->id }}] })"
+                                                                    danger="true" icon="trash-2">
+                                                                    Eliminar Definitivamente
+                                                                </x-dropdown-link>
+                                                            @endif
+                                                        @else
+                                                            <x-dropdown-link as="button"
+                                                                wire:click="viewVendors({{ $supplier->id }})" icon="users">
+                                                                Ver vendedores
+                                                            </x-dropdown-link>
+                                                            <x-dropdown-link as="button"
+                                                                wire:click="openEditSupplierModal({{ $supplier->id }})"
+                                                                icon="pencil">
+                                                                Editar
+                                                            </x-dropdown-link>
+                                                            <x-dropdown-link as="button"
+                                                                wire:click="toggleActive({{ $supplier->id }})" icon="power">
+                                                                {{ $supplier->active ? 'Desactivar' : 'Activar' }}
+                                                            </x-dropdown-link>
+                                                            <x-dropdown-link as="button" type="button"
+                                                                @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })"
+                                                                danger="true" icon="trash-2">
+                                                                Eliminar
+                                                            </x-dropdown-link>
+                                                        @endif
                                                     </x-slot>
                                                 </x-dropdown>
                                             </div>
@@ -196,7 +232,7 @@
                             @endif
                         </tbody>
                         <tbody wire:loading.class.remove="hidden"
-                            wire:target="search, categoryFilter, previousPage, nextPage, gotoPage" class="hidden">
+                            wire:target="search, categoryFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage" class="hidden">
                             @for($i = 0; $i < 6; $i++)
                                 <tr class="opacity-{{ 100 - ($i * 15) }}">
                                     <td class="actions pl-6 pr-2 text-left">
@@ -234,11 +270,11 @@
                 <div class="md:hidden flex flex-col gap-4 mt-2">
                     {{-- Tarjetas Móviles (Mobile View) --}}
                     <div wire:loading.class="hidden"
-                        wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
+                        wire:target="search, categoryFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage"
                         class="flex flex-col gap-4">
                         @if($suppliers->isNotEmpty())
                             @foreach($suppliers as $supplier)
-                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden"
+                                <x-card class="p-0 flex flex-col relative transition-colors overflow-hidden {{ $supplier->trashed() ? 'opacity-75 bg-danger-50/10' : '' }}"
                                     x-bind:class="selectedRows.includes('{{ $supplier->id }}') ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : ''"
                                     wire:key="supplier-mobile-card-{{ $supplier->id }}">
 
@@ -249,6 +285,9 @@
                                             <x-table-checkbox x-model="selectedRows" value="{{ $supplier->id }}" />
                                             <span
                                                 class="font-bold text-text-primary text-h3 truncate">{{ $supplier->trade_name }}</span>
+                                            @if($supplier->trashed())
+                                                <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                            @endif
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             @if($supplier->active)
@@ -263,16 +302,25 @@
                                                         title="Opciones" />
                                                 </x-slot>
                                                 <x-slot name="content">
-                                                    <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})"
-                                                        icon="users">Ver vendedores</x-dropdown-link>
-                                                    <x-dropdown-link as="button"
-                                                        wire:click="openEditSupplierModal({{ $supplier->id }})"
-                                                        icon="pencil">Editar</x-dropdown-link>
-                                                    <x-dropdown-link as="button" wire:click="toggleActive({{ $supplier->id }})"
-                                                        icon="power">{{ $supplier->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
-                                                    <x-dropdown-link as="button" type="button"
-                                                        @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })"
-                                                        danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @if($supplier->trashed())
+                                                        @if(auth()->user()->hasPermission('proveedores.editar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" wire:click="restore({{ $supplier->id }})" icon="rotate-ccw">Restaurar</x-dropdown-link>
+                                                        @endif
+                                                        @if(auth()->user()->hasPermission('proveedores.eliminar') || auth()->user()->hasPermission('*'))
+                                                            <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Eliminar Definitivamente', description: '¿Eliminar permanentemente este proveedor? Esta acción destruirá el registro.', confirmLabel: 'Eliminar Definitivamente', variant: 'danger', action: 'forceDelete', params: [{{ $supplier->id }}] })" danger="true" icon="trash-2">Eliminar Definitivamente</x-dropdown-link>
+                                                        @endif
+                                                    @else
+                                                        <x-dropdown-link as="button" wire:click="viewVendors({{ $supplier->id }})"
+                                                            icon="users">Ver vendedores</x-dropdown-link>
+                                                        <x-dropdown-link as="button"
+                                                            wire:click="openEditSupplierModal({{ $supplier->id }})"
+                                                            icon="pencil">Editar</x-dropdown-link>
+                                                        <x-dropdown-link as="button" wire:click="toggleActive({{ $supplier->id }})"
+                                                            icon="power">{{ $supplier->active ? 'Desactivar' : 'Activar' }}</x-dropdown-link>
+                                                        <x-dropdown-link as="button" type="button"
+                                                            @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este proveedor y sus vendedores? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteSupplier', params: [{{ $supplier->id }}] })"
+                                                            danger="true" icon="trash-2">Eliminar</x-dropdown-link>
+                                                    @endif
                                                 </x-slot>
                                             </x-dropdown>
                                         </div>
@@ -333,7 +381,7 @@
 
                     {{-- Skeletons Móviles --}}
                     <div wire:loading.class.remove="hidden"
-                        wire:target="search, categoryFilter, previousPage, nextPage, gotoPage"
+                        wire:target="search, categoryFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage"
                         class="hidden flex flex-col gap-4">
                         @for($i = 0; $i < 4; $i++)
                             <x-card
@@ -369,16 +417,29 @@
         {{-- Bulk Actions Bar --}}
         @if(auth()->user()->hasPermission('proveedores.eliminar') || auth()->user()->hasPermission('*'))
             <x-bulk-actions-bar>
-                <x-button @click="$dispatch('confirm-action', {
-                            title: 'Eliminar Proveedores',
-                            description: 'Se eliminarán permanentemente los proveedores seleccionados que no estén en uso.',
-                            confirmLabel: 'Eliminar',
-                            variant: 'danger',
-                            action: 'bulkDelete',
-                            params: []
-                        })" variant="danger" icon="trash-2">
-                    Eliminar
-                </x-button>
+                @if($trashedFilter === 'trashed')
+                    <x-button @click="$dispatch('confirm-action', {
+                                title: 'Eliminar Definitivamente',
+                                description: 'Se eliminarán permanentemente los proveedores seleccionados de la base de datos.',
+                                confirmLabel: 'Destruir Registros',
+                                variant: 'danger',
+                                action: 'bulkDelete',
+                                params: []
+                            })" variant="danger" icon="trash-2">
+                        Eliminar Definitivamente
+                    </x-button>
+                @else
+                    <x-button @click="$dispatch('confirm-action', {
+                                title: 'Eliminar Proveedores',
+                                description: 'Se eliminarán los proveedores seleccionados que no estén en uso.',
+                                confirmLabel: 'Eliminar',
+                                variant: 'danger',
+                                action: 'bulkDelete',
+                                params: []
+                            })" variant="danger" icon="trash-2">
+                        Eliminar
+                    </x-button>
+                @endif
             </x-bulk-actions-bar>
         @endif
         {{-- Pagination Footer --}}
@@ -392,7 +453,7 @@
     {{-- Delete / Action Modals --}}
     {{-- Create/Edit Supplier Modal --}}
     @if($showCreateModal)
-        <x-modal show="showCreateModal" :title="$editingSupplierId ? 'Editar Proveedor' : 'Nuevo Proveedor'">
+        <x-modal show="showCreateModal" :title="$editingSupplierId ? 'Editar proveedor' : 'Nuevo proveedor'">
             <form wire:submit="saveSupplier" class="p-5 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
@@ -420,7 +481,7 @@
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary" target="saveSupplier">
-                        {{ $editingSupplierId ? 'Guardar Cambios' : 'Registrar Proveedor' }}
+                        {{ $editingSupplierId ? 'Guardar cambios' : 'Registrar proveedor' }}
                     </x-button>
                 </div>
             </form>
@@ -488,13 +549,13 @@
                         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
                             <x-button wire:click="$set('showAddVendor', false)" variant="soft">Cancelar</x-button>
                             <x-button type="submit" variant="primary" target="saveVendor">
-                                {{ $editingVendorId ? 'Guardar Cambios' : 'Agregar Vendedor' }}
+                                {{ $editingVendorId ? 'Guardar cambios' : 'Agregar vendedor' }}
                             </x-button>
                         </div>
                     </form>
                 @else
                     <x-button wire:click="$set('showAddVendor', true)" variant="primary" icon="user-plus" class="w-full">
-                        Agregar Vendedor
+                        Agregar vendedor
                     </x-button>
                 @endif
             </x-slot>

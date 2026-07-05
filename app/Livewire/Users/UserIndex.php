@@ -30,6 +30,9 @@ class UserIndex extends Component
     #[Url(history: true)]
     public string $statusFilter = '';
 
+    #[Url(history: true)]
+    public string $trashedFilter = '';
+
     public array $selectedRows = [];
 
     public bool $allSelected = false;
@@ -166,6 +169,36 @@ class UserIndex extends Component
         $this->selectedRows = array_diff($this->selectedRows, [$id]);
     }
 
+    public function restore(int $id): void
+    {
+        if ($this->denyUnless('usuarios.editar', 'No tienes permiso para restaurar usuarios.')) {
+            return;
+        }
+
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->restore();
+
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Usuario restaurado exitosamente.']);
+    }
+
+    public function forceDelete(int $id): void
+    {
+        if ($this->denyUnless('usuarios.eliminar', 'No tienes permiso para eliminar usuarios.')) {
+            return;
+        }
+
+        if (auth()->id() === $id) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No puedes eliminar tu propio usuario.']);
+            return;
+        }
+
+        $user = User::withTrashed()->findOrFail($id);
+        $user->forceDelete();
+
+        $this->selectedRows = array_diff($this->selectedRows, [$id]);
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Usuario eliminado definitivamente.']);
+    }
+
     public function toggleAll($userIds): void
     {
         if ($this->allSelected) {
@@ -193,10 +226,16 @@ class UserIndex extends Component
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No puedes eliminar tu propio usuario.']);
         }
 
-        app(UserRepository::class)->bulkDelete($userIdsToDelete);
-
-        if (count($userIdsToDelete) > 0) {
-            $this->dispatch('toast', ['icon' => 'success', 'message' => count($userIdsToDelete) . ' usuario(s) eliminado(s) exitosamente.']);
+        if ($this->trashedFilter === 'trashed') {
+            User::onlyTrashed()->whereIn('id', $userIdsToDelete)->forceDelete();
+            if (count($userIdsToDelete) > 0) {
+                $this->dispatch('toast', ['icon' => 'success', 'message' => count($userIdsToDelete) . ' usuario(s) eliminado(s) definitivamente.']);
+            }
+        } else {
+            app(UserRepository::class)->bulkDelete($userIdsToDelete);
+            if (count($userIdsToDelete) > 0) {
+                $this->dispatch('toast', ['icon' => 'success', 'message' => count($userIdsToDelete) . ' usuario(s) eliminado(s) exitosamente.']);
+            }
         }
 
         $this->selectedRows = [];
@@ -237,6 +276,8 @@ class UserIndex extends Component
     public function render()
     {
         $users = User::with('role')
+            ->when($this->trashedFilter === 'trashed', fn ($q) => $q->onlyTrashed())
+            ->when($this->trashedFilter === 'all', fn ($q) => $q->withTrashed())
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('name', 'ilike', "%{$this->search}%")
@@ -256,6 +297,16 @@ class UserIndex extends Component
 
         $roles = Role::all();
 
-        return view('livewire.users.user-index', compact('users', 'roles'));
+        $statusOptions = [
+            'active' => 'Activos',
+            'inactive' => 'Inactivos',
+        ];
+
+        $trashedOptions = [
+            'trashed' => 'En papelera',
+            'all' => 'Todos (activos y eliminados)',
+        ];
+
+        return view('livewire.users.user-index', compact('users', 'roles', 'statusOptions', 'trashedOptions'));
     }
 }

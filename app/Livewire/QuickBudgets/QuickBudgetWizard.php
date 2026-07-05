@@ -298,7 +298,7 @@ class QuickBudgetWizard extends Component
     {
         $itemTypes = [
             'material' => 'Material',
-            'labor' => 'Mano de Obra',
+            'labor' => 'Mano de obra',
             'service' => 'Servicio',
         ];
 

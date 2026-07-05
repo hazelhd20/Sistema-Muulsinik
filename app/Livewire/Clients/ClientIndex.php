@@ -15,6 +15,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 use App\Livewire\Concerns\WithPerPagePagination;
 
@@ -27,6 +28,9 @@ class ClientIndex extends Component
 
     #[Url(history: true)]
     public string $activeFilter = '';
+
+    #[Url(history: true)]
+    public string $trashedFilter = '';
 
     public array $selectedRows = [];
 
@@ -101,7 +105,7 @@ class ClientIndex extends Component
         }
 
         $this->validate([
-            'name' => 'required|min:2|max:255|unique:clients,name,'.$this->editingId,
+            'name' => ['required', 'min:2', 'max:255', Rule::unique('clients', 'name')->ignore($this->editingId)],
             'legal_name' => 'nullable|string|max:255',
             'rfc' => 'nullable|string|max:15',
             'email' => 'nullable|email|max:255',
@@ -156,6 +160,39 @@ class ClientIndex extends Component
         $this->selectedRows = array_diff($this->selectedRows, [$clientId]);
     }
 
+    public function restore(int $clientId): void
+    {
+        if ($this->denyUnless('catalogos.editar', 'No tienes permiso para restaurar clientes.')) {
+            return;
+        }
+
+        $client = Client::onlyTrashed()->findOrFail($clientId);
+        $client->restore();
+
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Cliente restaurado exitosamente.']);
+    }
+
+    public function forceDelete(int $clientId): void
+    {
+        if ($this->denyUnless('catalogos.eliminar', 'No tienes permiso para eliminar clientes.')) {
+            return;
+        }
+
+        $client = Client::withTrashed()->findOrFail($clientId);
+
+        $hasProjects = Project::where('client_id', $clientId)->exists();
+        $hasBudgets = QuickBudget::where('client_id', $clientId)->exists();
+
+        if ($hasProjects || $hasBudgets) {
+            $this->dispatch('toast', ['icon' => 'error', 'message' => 'No se puede eliminar definitivamente: el cliente tiene proyectos o cotizaciones asignadas.']);
+            return;
+        }
+
+        $client->forceDelete();
+        $this->selectedRows = array_diff($this->selectedRows, [$clientId]);
+        $this->dispatch('toast', ['icon' => 'success', 'message' => 'Cliente eliminado definitivamente.']);
+    }
+
     public function toggleActive(int $clientId): void
     {
         if ($this->denyUnless('catalogos.editar', 'No tienes permiso para modificar clientes.')) {
@@ -188,19 +225,43 @@ class ClientIndex extends Component
             return;
         }
 
-        $usedInProjects = Project::whereIn('client_id', $this->selectedRows)->pluck('client_id')->toArray();
-        $usedInBudgets = QuickBudget::whereIn('client_id', $this->selectedRows)->pluck('client_id')->toArray();
-        $usedClients = array_unique(array_merge($usedInProjects, $usedInBudgets));
+        if ($this->trashedFilter === 'trashed') {
+            $clientsToDelete = Client::onlyTrashed()->whereIn('id', $this->selectedRows)->get();
+            $deletedCount = 0;
+            $inUseCount = 0;
 
-        $clientsToDelete = array_diff($this->selectedRows, $usedClients);
+            foreach ($clientsToDelete as $client) {
+                $hasProjects = Project::where('client_id', $client->id)->exists();
+                $hasBudgets = QuickBudget::where('client_id', $client->id)->exists();
+                if ($hasProjects || $hasBudgets) {
+                    $inUseCount++;
+                    continue;
+                }
+                $client->forceDelete();
+                $deletedCount++;
+            }
 
-        if (count($usedClients) > 0) {
-            $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos clientes no pudieron ser eliminados porque tienen proyectos o cotizaciones.']);
-        }
+            if ($inUseCount > 0) {
+                $this->dispatch('toast', ['icon' => 'warning', 'message' => "{$inUseCount} cliente(s) no se pudieron eliminar porque están en uso."]);
+            }
+            if ($deletedCount > 0) {
+                $this->dispatch('toast', ['icon' => 'success', 'message' => "{$deletedCount} cliente(s) eliminado(s) definitivamente."]);
+            }
+        } else {
+            $usedInProjects = Project::whereIn('client_id', $this->selectedRows)->pluck('client_id')->toArray();
+            $usedInBudgets = QuickBudget::whereIn('client_id', $this->selectedRows)->pluck('client_id')->toArray();
+            $usedClients = array_unique(array_merge($usedInProjects, $usedInBudgets));
 
-        if (count($clientsToDelete) > 0) {
-            app(ClientRepository::class)->bulkDelete($clientsToDelete);
-            $this->dispatch('toast', ['icon' => 'success', 'message' => count($clientsToDelete) . ' cliente(s) eliminado(s) exitosamente.']);
+            $clientsToDelete = array_diff($this->selectedRows, $usedClients);
+
+            if (count($usedClients) > 0) {
+                $this->dispatch('toast', ['icon' => 'warning', 'message' => 'Algunos clientes no pudieron ser eliminados porque tienen proyectos o cotizaciones.']);
+            }
+
+            if (count($clientsToDelete) > 0) {
+                app(ClientRepository::class)->bulkDelete($clientsToDelete);
+                $this->dispatch('toast', ['icon' => 'success', 'message' => count($clientsToDelete) . ' cliente(s) eliminado(s) exitosamente.']);
+            }
         }
 
         $this->selectedRows = [];
@@ -224,6 +285,8 @@ class ClientIndex extends Component
     public function render()
     {
         $clients = Client::query()
+            ->when($this->trashedFilter === 'trashed', fn ($q) => $q->onlyTrashed())
+            ->when($this->trashedFilter === 'all', fn ($q) => $q->withTrashed())
             ->when($this->search, function ($q) {
                 $q->where(function($query) {
                     $query->where('name', 'ilike', "%{$this->search}%")
@@ -238,6 +301,16 @@ class ClientIndex extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.clients.client-index', compact('clients'));
+        $statusOptions = [
+            '1' => 'Activos',
+            '0' => 'Inactivos',
+        ];
+
+        $trashedOptions = [
+            'trashed' => 'En papelera',
+            'all' => 'Todos (activos y eliminados)',
+        ];
+
+        return view('livewire.clients.client-index', compact('clients', 'statusOptions', 'trashedOptions'));
     }
 }

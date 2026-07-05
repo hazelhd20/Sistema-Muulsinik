@@ -159,5 +159,4 @@ input[type="search"]::-webkit-search-results-decoration {
 .theme-switching *::before,
 .theme-switching *::after {
     transition: none !important;
-    animation: none !important;
 }

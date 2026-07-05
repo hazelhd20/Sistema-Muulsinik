@@ -439,7 +439,7 @@
     </div>
 
     {{-- Project Modal --}}
-    <x-modal show="showModal" :title="$editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'">
+    <x-modal show="showModal" :title="$editingId ? 'Editar proyecto' : 'Nuevo proyecto'">
             <form wire:submit="saveProject" class="p-5 space-y-4">
                 <x-form-field label="Nombre del proyecto" required error="{{ $errors->first('name') }}">
                     <input wire:model="name" type="text" class="input" placeholder="Ej. Residencial Los Álamos">
@@ -477,7 +477,7 @@
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                     <x-button wire:click="$set('showModal', false)" variant="soft">Cancelar</x-button>
                     <x-button type="submit" variant="primary"
-                        target="saveProject">{{ $editingId ? 'Guardar Cambios' : 'Crear Proyecto' }}</x-button>
+                        target="saveProject">{{ $editingId ? 'Guardar cambios' : 'Crear proyecto' }}</x-button>
                 </div>
             </form>
         </x-modal>

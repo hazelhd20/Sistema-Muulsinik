@@ -16,11 +16,11 @@ enum ExpenseCategory: string
     {
         return match ($this) {
             self::MATERIALES => 'Materiales',
-            self::MANO_DE_OBRA => 'Mano de Obra',
-            self::EQUIPO => 'Equipo y Maquinaria',
+            self::MANO_DE_OBRA => 'Mano de obra',
+            self::EQUIPO => 'Equipo y maquinaria',
             self::TRANSPORTE => 'Transporte',
-            self::SERVICIOS => 'Servicios Profesionales',
-            self::ADMINISTRATIVOS => 'Gastos Administrativos',
+            self::SERVICIOS => 'Servicios profesionales',
+            self::ADMINISTRATIVOS => 'Gastos administrativos',
             self::OTROS => 'Otros',
         };
     }

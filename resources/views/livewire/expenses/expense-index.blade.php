@@ -386,7 +386,7 @@
     </div>
 
     {{-- Create Modal --}}
-    <x-modal show="showCreateModal" title="Registrar Gasto">
+    <x-modal show="showCreateModal" title="Registrar gasto">
         <form wire:submit="createExpense" class="p-5 space-y-4">
             <x-form-field label="Concepto" required error="{{ $errors->first('concept') }}">
                 <input wire:model="concept" type="text" class="input" placeholder="Ej. Compra de cemento">
@@ -402,32 +402,28 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col relative">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="label">Proyecto *</label>
-                        <div class="flex items-center gap-1.5">
+                <x-form-field label="Proyecto" required :error="$errors->first('projectId')">
+                    <div x-data="{ distributed: @entangle('isDistributed') }" class="space-y-2">
+                        <div x-show="!distributed">
+                            <x-custom-select wire:model="projectId" :options="$projects"
+                                placeholder="Seleccionar..." />
+                        </div>
+                        <div x-show="distributed"
+                            class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
+                            style="display: none;">
+                            <x-lucide-split class="w-4 h-4 mr-2 shrink-0 text-primary-600" />
+                            <span class="font-medium text-text-secondary truncate">Gasto distribuido</span>
+                        </div>
+                        <div class="flex items-center gap-2 pt-0.5">
                             <input type="checkbox" wire:model.live="isDistributed" id="isDistributed"
-                                class="rounded border-border accent-primary-600 focus:ring-primary-500 w-3 h-3">
+                                class="rounded-[4px] border-border text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 focus-visible:border-primary-500 transition-all duration-200 w-4 h-4 cursor-pointer accent-primary-600">
                             <label for="isDistributed"
-                                class="text-xs-fluid uppercase font-semibold tracking-wider text-text-secondary cursor-pointer hover:text-text-primary transition-colors">Prorratear
-                                (Activos)</label>
+                                class="text-small text-text-secondary cursor-pointer select-none hover:text-text-primary transition-colors font-medium">
+                                Prorratear (activos)
+                            </label>
                         </div>
                     </div>
-
-                    <x-form-field :error="$errors->first('projectId')">
-                        <div x-data="{ distributed: @entangle('isDistributed') }" class="relative">
-                            <div x-show="!distributed">
-                                <x-custom-select wire:model="projectId" :options="$projects"
-                                    placeholder="Seleccionar..." />
-                            </div>
-                            <div x-show="distributed"
-                                class="input flex items-center bg-surface-hover text-text-muted cursor-not-allowed h-[38px]"
-                                style="display: none;">
-                                <x-lucide-split class="w-4 h-4 mr-2" /> Gasto distribuido
-                            </div>
-                        </div>
-                    </x-form-field>
-                </div>
+                </x-form-field>
                 <x-form-field label="Categoría" required error="{{ $errors->first('category') }}">
                     <x-custom-select wire:model="category" :options="$categories" placeholder="Seleccionar..." />
                 </x-form-field>
@@ -440,7 +436,7 @@
             <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
                 <x-button wire:click="$set('showCreateModal', false)" variant="soft">Cancelar</x-button>
                 <x-button type="submit" variant="primary" target="createExpense">
-                    Registrar Gasto
+                    Registrar gasto
                 </x-button>
             </div>
         </form>
