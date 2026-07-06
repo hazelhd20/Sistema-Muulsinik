@@ -23,7 +23,7 @@ class RequisitionRepository
         string $sortDirection = 'desc',
         int $perPage = 10
     ): LengthAwarePaginator {
-        $query = Requisition::with(['project', 'vendor', 'creator', 'quotations.supplier', 'items.product', 'items.measure', 'items.supplier'])
+        $query = Requisition::with(['project', 'vendor.supplier', 'creator', 'quotations.supplier', 'items.product', 'items.measure', 'items.supplier'])
             ->withCount('items')
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($sub) use ($search) {
