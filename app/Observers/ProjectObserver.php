@@ -13,6 +13,7 @@ class ProjectObserver
     public function saved(Project $project): void
     {
         Cache::forget('dashboard_global_stats');
+        Cache::forget('dashboard_global_stats_v3');
         Cache::forget('projects.activos.array');
     }
 
@@ -22,6 +23,7 @@ class ProjectObserver
     public function deleted(Project $project): void
     {
         Cache::forget('dashboard_global_stats');
+        Cache::forget('dashboard_global_stats_v3');
         Cache::forget('projects.activos.array');
     }
 }

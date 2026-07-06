@@ -8,6 +8,9 @@
     "require": {
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.1",
+        "ext-gd": "*",
+        "ext-pdo_pgsql": "*",
+        "ext-zip": "*",
         "google-gemini-php/laravel": "^2.0",
         "laravel/framework": "^13.0",
         "laravel/reverb": "*",

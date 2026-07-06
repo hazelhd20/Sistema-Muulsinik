@@ -41,8 +41,12 @@ class Dashboard extends Component
             $totalExpenses = (float) Expense::sum('amount') + $requisitionsTotalAllTime;
 
             $requisitionsTotalThisMonth = (float) Requisition::where('status', 'aprobada')
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
+                ->where(function ($q) {
+                    $q->whereMonth('date', now()->month)->whereYear('date', now()->year)
+                      ->orWhere(function ($q2) {
+                          $q2->whereNull('date')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                      });
+                })
                 ->sum('cached_total');
             $monthExpenses = (float) Expense::whereMonth('date', now()->month)
                 ->whereYear('date', now()->year)
@@ -57,17 +61,22 @@ class Dashboard extends Component
 
             $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
             $dateTruncExpense = $driver === 'sqlite' ? "strftime('%Y-%m', date)" : "DATE_TRUNC('month', date)";
-            $dateTruncReq = $driver === 'sqlite' ? "strftime('%Y-%m', created_at)" : "DATE_TRUNC('month', created_at)";
+            $dateTruncReq = $driver === 'sqlite' ? "strftime('%Y-%m', COALESCE(date, created_at))" : "DATE_TRUNC('month', COALESCE(date, created_at))";
 
-            $directExpenses = Expense::selectRaw("$dateTruncExpense as month_date, SUM(amount) as total")
+            $directExpenses = Expense::selectRaw("$dateTruncExpense as month_date, SUM(amount) as total_amount")
                 ->whereBetween('date', [$startDate, $endDate])
                 ->groupBy(DB::raw($dateTruncExpense))
                 ->get()
                 ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
 
-            $requisitionExpenses = Requisition::selectRaw("$dateTruncReq as month_date, SUM(cached_total) as total")
+            $requisitionExpenses = Requisition::selectRaw("$dateTruncReq as month_date, SUM(cached_total) as total_amount")
                 ->where('status', 'aprobada')
-                ->whereBetween('created_at', [$startDate, $endDate])
+                ->where(function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate])
+                      ->orWhere(function ($q2) use ($startDate, $endDate) {
+                          $q2->whereNull('date')->whereBetween('created_at', [$startDate, $endDate]);
+                      });
+                })
                 ->groupBy(DB::raw($dateTruncReq))
                 ->get()
                 ->keyBy(fn($item) => \Carbon\Carbon::parse($item->month_date)->format('Y-m'));
@@ -77,8 +86,8 @@ class Dashboard extends Component
                 $date = now()->startOfMonth()->subMonths($i);
                 $key = $date->format('Y-m');
 
-                $direct = (float) ($directExpenses[$key]->total ?? 0);
-                $requisitions = (float) ($requisitionExpenses[$key]->total ?? 0);
+                $direct = (float) ($directExpenses[$key]->total_amount ?? 0);
+                $requisitions = (float) ($requisitionExpenses[$key]->total_amount ?? 0);
 
                 $chartData[] = [
                     'month' => ucfirst($date->translatedFormat('M')),

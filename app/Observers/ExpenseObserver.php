@@ -11,6 +11,7 @@ class ExpenseObserver
     {
         \Illuminate\Support\Facades\Cache::forget('dashboard_financial_stats');
         \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart_v3');
         
         if ($expense->project) {
             app(ProjectCacheService::class)->recalculateTotalExpenses($expense->project);
@@ -28,6 +29,7 @@ class ExpenseObserver
     {
         \Illuminate\Support\Facades\Cache::forget('dashboard_financial_stats');
         \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_monthly_chart_v3');
 
         if ($expense->project) {
             app(ProjectCacheService::class)->recalculateTotalExpenses($expense->project);

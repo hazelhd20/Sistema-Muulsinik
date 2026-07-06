@@ -66,10 +66,10 @@
         <x-card class="lg:col-span-2">
             <x-card.header title="Gastos Mensuales" subtitle="Últimos 6 meses">
                 <x-slot:action>
-                    <span class="inline-flex items-center gap-1 text-xs-fluid font-semibold text-text-secondary bg-surface-main border border-border px-2.5 py-1 rounded-md tabular-nums">
+                    <x-chip size="sm" class="tabular-nums font-semibold">
                         ${{ number_format($totalExpenses, 0, '.', ',') }}
                         <span class="font-normal text-text-muted">acumulado</span>
-                    </span>
+                    </x-chip>
                 </x-slot:action>
             </x-card.header>
             <x-card.body class="pt-0">
@@ -265,56 +265,67 @@
     
     @script
     <script>
-        Alpine.data('chartComponent', () => ({
-            chartInstance: null,
-            _themeObserver: null,
+        Alpine.data('chartComponent', () => {
+            let chartInstance = null;
+            let themeObserver = null;
 
-            initChart() {
-                if (typeof Chart === 'undefined') {
-                    console.warn('Chart.js no está cargado. Usa la directiva @@assets de Livewire.');
-                    return;
-                }
-                this.renderChart();
+            return {
+                initChart() {
+                    if (typeof Chart === 'undefined') {
+                        console.warn('Chart.js no está cargado. Usa la directiva @@assets de Livewire.');
+                        return;
+                    }
+                    this.waitForCanvas();
 
-                // Mismo patrón que chartCanvas en app.js: MutationObserver sobre la clase del <html>
-                // Esto funciona porque lee variables base (--border, --text-secondary) de :root/.dark
-                // sin pasar por los aliases @theme de Tailwind que no se resuelven en getComputedStyle
-                this._themeObserver = new MutationObserver(() => {
-                    // Solo redibujar si el cambio fue relevante al tema (clase dark añadida/quitada)
+                    themeObserver = new MutationObserver(() => {
+                        this.renderChart();
+                    });
+                    themeObserver.observe(document.documentElement, {
+                        attributes: true,
+                        attributeFilter: ['class']
+                    });
+                },
+                waitForCanvas(attempts = 0) {
+                    const ctx = document.getElementById('monthly-expenses-chart');
+                    if (ctx && (ctx.clientWidth > 0 || attempts >= 15)) {
+                        this.renderChart();
+                    } else if (attempts < 20) {
+                        setTimeout(() => this.waitForCanvas(attempts + 1), 25);
+                    }
+                },
+                destroy() {
+                    if (themeObserver) {
+                        themeObserver.disconnect();
+                        themeObserver = null;
+                    }
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                        chartInstance = null;
+                    }
+                    const ctx = document.getElementById('monthly-expenses-chart');
+                    if (ctx) {
+                        const existing = Chart?.getChart(ctx);
+                        if (existing) existing.destroy();
+                    }
+                },
+                updateChartTheme() {
                     this.renderChart();
-                });
-                this._themeObserver.observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
-            },
-            destroy() {
-                if (this._themeObserver) {
-                    this._themeObserver.disconnect();
-                    this._themeObserver = null;
-                }
-                if (this.chartInstance) {
-                    this.chartInstance.destroy();
-                    this.chartInstance = null;
-                }
-            },
-            updateChartTheme() {
-                this.renderChart();
-            },
-            renderChart() {
-                const ctx = document.getElementById('monthly-expenses-chart');
-                if (!ctx) return;
+                },
+                renderChart() {
+                    const ctx = document.getElementById('monthly-expenses-chart');
+                    if (!ctx) return;
 
-                // Destruir instancia previa si existe en este canvas o memoria (vital para SPA Livewire)
-                const existingChart = Chart.getChart(ctx);
-                if (existingChart) {
-                    existingChart.destroy();
-                }
-                if (this.chartInstance) {
-                    this.chartInstance.destroy();
-                }
-    
-                const data = @json($monthlyExpenses);
+                    // Destruir instancia previa si existe en este canvas o memoria (vital para SPA Livewire)
+                    const existingChart = Chart.getChart(ctx);
+                    if (existingChart) {
+                        existingChart.destroy();
+                    }
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                        chartInstance = null;
+                    }
+        
+                    const data = @json($monthlyExpenses);
 
                 // Helper para convertir hex a rgba compatible con Canvas
                 const hexToRgba = (hex, opacity) => {
@@ -332,22 +343,32 @@
 
                 // Mismo patrón que chartCanvas en app.js:
                 // Leer variables base del :root/.dark (sin aliases @theme de Tailwind que no se resuelven)
-                const style      = getComputedStyle(document.documentElement);
-                const textMuted  = style.getPropertyValue('--text-secondary').trim() || '#64748b';
-                const borderLine = style.getPropertyValue('--border-light').trim()   || '#f1f5f9';
-                const tooltipBg  = style.getPropertyValue('--surface-card').trim()   || '#ffffff';
+                const style       = getComputedStyle(document.documentElement);
+                const textPrimary = style.getPropertyValue('--text-primary').trim()   || '#0f1117';
+                const textMuted   = style.getPropertyValue('--text-secondary').trim() || '#64748b';
+                const borderLine  = style.getPropertyValue('--border-light').trim()   || '#f1f5f9';
+                const borderColor = style.getPropertyValue('--border').trim()         || '#e2e8f0';
+                const tooltipBg   = style.getPropertyValue('--surface-card').trim()   || '#ffffff';
 
-                // Aplicar defaults globales de Chart.js (igual que app.js líneas 93-94)
-                // Esto garantiza que las líneas del grid y los textos de ejes tomen el tema correcto
+                // Aplicar defaults globales de Chart.js
                 Chart.defaults.color       = textMuted;
                 Chart.defaults.borderColor = borderLine;
+
+                if (Chart.defaults.plugins?.tooltip) {
+                    Chart.defaults.plugins.tooltip.backgroundColor = tooltipBg;
+                    Chart.defaults.plugins.tooltip.titleColor      = textPrimary;
+                    Chart.defaults.plugins.tooltip.bodyColor       = textPrimary;
+                    Chart.defaults.plugins.tooltip.footerColor     = textMuted;
+                    Chart.defaults.plugins.tooltip.borderColor     = borderColor;
+                    Chart.defaults.plugins.tooltip.borderWidth     = 1;
+                }
 
                 const primaryHex  = '#2563eb';
                 const successHex  = '#0d9e6e';
                 const fontToken   = style.getPropertyValue('--font-sans').trim();
                 const fontFamily  = fontToken ? fontToken.split(',')[0].replace(/['"]/g, '') : 'Plus Jakarta Sans';
     
-                this.chartInstance = new Chart(ctx, {
+                chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.map(d => d.month),
@@ -418,6 +439,11 @@
                             },
                             tooltip: {
                                 backgroundColor: tooltipBg,
+                                titleColor: textPrimary,
+                                bodyColor: textPrimary,
+                                footerColor: textMuted,
+                                borderColor: borderColor,
+                                borderWidth: 1,
                                 titleFont: { family: fontFamily, size: 13, weight: '600' },
                                 bodyFont: { family: fontFamily, size: 12 },
                                 footerFont: { family: fontFamily, size: 12, weight: '700' },
@@ -461,7 +487,8 @@
                     }
                 });
             }
-        }));
+        };
+    });
     </script>
     @endscript
 </div>

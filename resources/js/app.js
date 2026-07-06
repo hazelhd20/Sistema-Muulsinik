@@ -40,69 +40,108 @@ document.addEventListener('alpine:init', () => {
 });
 
 document.addEventListener("alpine:init", () => {
-    Alpine.data("chartCanvas", (configCallback) => ({
-        chart: null,
-        chartData: [],
-        _observer: null,
-        _themeObserver: null,
+    Alpine.data("chartCanvas", (configCallback) => {
+        let chartInstance = null;
+        let themeObserver = null;
+        let attrObserver = null;
 
-        init() {
-            this.chartData = JSON.parse(this.$el.getAttribute('data-chart') || '[]');
-            this.waitForCanvas();
-            this._observer = new MutationObserver(() => {
-                const raw = this.$el.getAttribute('data-chart');
-                if (!raw) return;
-                this.chartData = JSON.parse(raw);
-                this.renderChart();
-            });
-            this._observer.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
+        return {
+            chartData: [],
 
-            // Redibujar automáticamente cuando el usuario cambie entre modo claro y oscuro
-            this._themeObserver = new MutationObserver(() => {
-                this.renderChart();
-            });
-            this._themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        },
+            init() {
+                this.chartData = JSON.parse(this.$el.getAttribute('data-chart') || '[]');
+                this.waitForCanvas();
+                attrObserver = new MutationObserver(() => {
+                    const raw = this.$el.getAttribute('data-chart');
+                    if (!raw) return;
+                    this.chartData = JSON.parse(raw);
+                    this.renderChart();
+                });
+                attrObserver.observe(this.$el, { attributes: true, attributeFilter: ['data-chart'] });
 
-        waitForCanvas(attempts = 0) {
-            const canvas = this.$el.querySelector('canvas');
-            if (canvas) {
-                this.renderChart();
-            } else if (attempts < 10) {
-                setTimeout(() => this.waitForCanvas(attempts + 1), 20);
+                // Redibujar automáticamente cuando el usuario cambie entre modo claro y oscuro
+                themeObserver = new MutationObserver(() => {
+                    this.renderChart();
+                });
+                themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+            },
+
+            waitForCanvas(attempts = 0) {
+                const canvas = this.$el.querySelector('canvas');
+                // Verificar que el canvas exista y que el navegador ya haya calculado sus dimensiones visibles
+                // para evitar que Chart.js se inicialice con dimensiones 0x0 durante transiciones SPA de Livewire
+                if (canvas && (canvas.clientWidth > 0 || attempts >= 15)) {
+                    this.renderChart();
+                } else if (attempts < 20) {
+                    setTimeout(() => this.waitForCanvas(attempts + 1), 25);
+                }
+            },
+
+            renderChart() {
+                const canvas = this.$el.querySelector('canvas');
+                if (!canvas) return;
+
+                if (chartInstance) {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                }
+                const existingChart = window.Chart?.getChart(canvas);
+                if (existingChart) existingChart.destroy();
+
+                if (typeof window.Chart === 'undefined') {
+                    console.warn('Chart.js no está cargado. Usa la directiva @assets de Livewire.');
+                    return;
+                }
+
+                // Adaptar colores de texto, líneas divisorias y tooltips de Chart.js al tema actual (Claro/Oscuro)
+                const style = getComputedStyle(document.documentElement);
+                const textColor = style.getPropertyValue('--text-secondary').trim() || '#64748b';
+                const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                const borderColor = style.getPropertyValue('--border').trim() || '#e2e8f0';
+                const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
+
+                window.Chart.defaults.color = textColor;
+                window.Chart.defaults.borderColor = borderColor;
+
+                // Configurar tooltips globalmente para que cambien dinámicamente con el tema
+                if (window.Chart.defaults.plugins?.tooltip) {
+                    window.Chart.defaults.plugins.tooltip.backgroundColor = cardBg;
+                    window.Chart.defaults.plugins.tooltip.titleColor = textPrimary;
+                    window.Chart.defaults.plugins.tooltip.bodyColor = textPrimary;
+                    window.Chart.defaults.plugins.tooltip.footerColor = textColor;
+                    window.Chart.defaults.plugins.tooltip.borderColor = borderColor;
+                    window.Chart.defaults.plugins.tooltip.borderWidth = 1;
+                    window.Chart.defaults.plugins.tooltip.padding = 10;
+                    window.Chart.defaults.plugins.tooltip.cornerRadius = 8;
+                    window.Chart.defaults.plugins.tooltip.boxPadding = 4;
+                    window.Chart.defaults.plugins.tooltip.usePointStyle = true;
+                }
+
+                const config = configCallback(this.chartData);
+                chartInstance = new window.Chart(canvas, config);
+            },
+
+            destroy() {
+                if (attrObserver) {
+                    attrObserver.disconnect();
+                    attrObserver = null;
+                }
+                if (themeObserver) {
+                    themeObserver.disconnect();
+                    themeObserver = null;
+                }
+                if (chartInstance) {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                }
+                const canvas = this.$el?.querySelector('canvas');
+                if (canvas) {
+                    const existingChart = window.Chart?.getChart(canvas);
+                    if (existingChart) existingChart.destroy();
+                }
             }
-        },
-
-        renderChart() {
-            const canvas = this.$el.querySelector('canvas');
-            if (!canvas) return;
-
-            const existingChart = window.Chart?.getChart(canvas);
-            if (existingChart) existingChart.destroy();
-
-            if (typeof window.Chart === 'undefined') {
-                console.warn('Chart.js no está cargado. Usa la directiva @assets de Livewire.');
-                return;
-            }
-
-            // Adaptar colores de texto y líneas divisorias de Chart.js al tema actual (Claro/Oscuro)
-            const style = getComputedStyle(document.documentElement);
-            const textColor = style.getPropertyValue('--text-secondary').trim() || '#64748b';
-            const borderColor = style.getPropertyValue('--border').trim() || '#e2e8f0';
-
-            window.Chart.defaults.color = textColor;
-            window.Chart.defaults.borderColor = borderColor;
-
-            const config = configCallback(this.chartData);
-            this.chart = new window.Chart(canvas, config);
-        },
-
-        destroy() {
-            if (this._observer) this._observer.disconnect();
-            if (this._themeObserver) this._themeObserver.disconnect();
-            if (this.chart) this.chart.destroy();
-        }
-    }));
+        };
+    });
 });
 
 // ─── Fábrica genérica para TODOS los índices ───────────────────

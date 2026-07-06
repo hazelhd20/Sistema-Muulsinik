@@ -13,6 +13,7 @@ class SupplierObserver
     public function saved(Supplier $supplier): void
     {
         Cache::forget('dashboard_global_stats');
+        Cache::forget('dashboard_global_stats_v3');
         Cache::forget('catalog_suppliers');
         Cache::forget('suppliers.all.array');
     }
@@ -23,6 +24,7 @@ class SupplierObserver
     public function deleted(Supplier $supplier): void
     {
         Cache::forget('dashboard_global_stats');
+        Cache::forget('dashboard_global_stats_v3');
         Cache::forget('catalog_suppliers');
         Cache::forget('suppliers.all.array');
     }

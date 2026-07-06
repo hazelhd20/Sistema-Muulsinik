@@ -1,0 +1,25 @@
+# nixpacks.toml
+# Configuración arquitectónica de construcción y despliegue para Sistema Muulsinik ERP en Railway / Nixpacks
+# Diseñado bajo el principio de Inmutabilidad por Defecto y Separación Estricta de Responsabilidades.
+
+[variables]
+# Permite que Composer se ejecute como root/superuser en el contenedor de build de Railway sin desactivar plugins
+COMPOSER_ALLOW_SUPERUSER = "1"
+NIXPACKS_PHP_VERSION = "8.3"
+
+[phases.install]
+# Instalación limpia sin dependencias de desarrollo ni prompts interactivos
+cmds = [
+    "npm install",
+    "composer install --optimize-autoloader --no-dev --no-interaction"
+]
+
+[phases.build]
+# Compilación de activos estáticos con Vite para producción
+cmds = [
+    "npm run build"
+]
+
+[start]
+# Optimización de caché de Laravel, ejecución de migraciones en modo seguro e inicio del servidor web
+cmd = "php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"

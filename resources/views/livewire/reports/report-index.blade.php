@@ -329,9 +329,9 @@
                             data-chart="{{ json_encode($monthlyData) }}" x-data="chartCanvas((data) => {
                                      const style = getComputedStyle(document.documentElement);
                                      const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
-                                     const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
-                                     const textMuted = style.getPropertyValue('--color-text-muted').trim() || '#475569';
-                                     const borderLight = style.getPropertyValue('--color-border-light').trim() || 'rgba(0,0,0,0.04)';
+                                     const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                                     const textMuted = style.getPropertyValue('--text-muted').trim() || '#475569';
+                                     const borderLight = style.getPropertyValue('--border-light').trim() || 'rgba(0,0,0,0.04)';
 
                                      const hexToRgba = (hex, opacity) => {
                                          hex = hex.trim();
@@ -382,7 +382,6 @@
                                              plugins: {
                                                  legend: { display: false },
                                                  tooltip: {
-                                                     backgroundColor: textPrimary,
                                                      padding: 12,
                                                      cornerRadius: 10,
                                                      boxPadding: 6,
@@ -431,8 +430,8 @@
                                 data-chart="{{ json_encode($expenseByCategory) }}" x-data="chartCanvas((data) => {
                                          const labels = {{ json_encode($categoryLabels) }};
                                          const style = getComputedStyle(document.documentElement);
-                                         const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
-                                         const cardBg = style.getPropertyValue('--color-surface-card').trim() || '#ffffff';
+                                         const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                                         const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
                                          const colors = [
                                              style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
                                              style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
@@ -461,7 +460,6 @@
                                                  plugins: {
                                                      legend: { display: false },
                                                      tooltip: {
-                                                         backgroundColor: textPrimary,
                                                          padding: 10,
                                                          cornerRadius: 8,
                                                          usePointStyle: true,
@@ -784,8 +782,8 @@
                             <div class="h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($productsByCategory) }}" x-data="chartCanvas((data) => {
                                          const style = getComputedStyle(document.documentElement);
-                                         const textPrimary = style.getPropertyValue('--color-text-primary').trim() || '#0f1117';
-                                         const cardBg = style.getPropertyValue('--color-surface-card').trim() || '#ffffff';
+                                         const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                                         const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
                                          const colors = [
                                              style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
                                              style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
@@ -817,7 +815,6 @@
                                                  plugins: {
                                                      legend: { display: false },
                                                      tooltip: {
-                                                         backgroundColor: textPrimary,
                                                          padding: 10,
                                                          cornerRadius: 8,
                                                          usePointStyle: true,

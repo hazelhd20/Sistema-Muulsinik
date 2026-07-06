@@ -236,20 +236,30 @@
     .dark .badge-cat-pink    { background-color: rgba(236,  72, 153, 0.15); color: #f9a8d4; border-color: rgba(236,  72, 153, 0.3); }
     .dark .badge-cat-slate   { background-color: rgba(100, 116, 139, 0.15); color: #94a3b8; border-color: rgba(100, 116, 139, 0.3); font-weight: 600; }
 
-    /* ── Chip / Surface Pill (High contrast on tonal/grey backgrounds) ── */
+    /* ── Chip / Standard Pill (Grey without borders in light mode, tinted in dark mode) ── */
     .chip {
         display: inline-flex;
         align-items: center;
         gap: 0.375rem;
         padding: 0.25rem 0.625rem;
-        font-size: 0.75rem;
+        font-size: var(--font-size-xs);
         font-weight: 600;
         border-radius: var(--radius-md);
-        background-color: var(--color-surface-card);
-        color: var(--color-text-primary);
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        background-color: var(--color-secondary-light);
+        color: var(--color-secondary-active);
+        border: 1px solid transparent;
         white-space: nowrap;
         user-select: none;
+        transition:
+            background-color 120ms,
+            color 120ms,
+            border-color 120ms;
+    }
+
+    .dark .chip {
+        background-color: rgba(100, 116, 139, 0.15);
+        color: #cbd5e1;
+        border-color: rgba(100, 116, 139, 0.3);
     }
 
     /* Contador numérico compacto (filtros activos, tabs) */
