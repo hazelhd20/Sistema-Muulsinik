@@ -11,7 +11,7 @@ NIXPACKS_PHP_VERSION = "8.3"
 # Instalación limpia sin dependencias de desarrollo ni prompts interactivos
 cmds = [
     "npm install",
-    "composer install --optimize-autoloader --no-dev --no-interaction"
+    "composer update --optimize-autoloader --no-dev --no-interaction"
 ]
 
 [phases.build]
