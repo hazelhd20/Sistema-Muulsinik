@@ -53,18 +53,19 @@ class SettingsCompany extends Component
             'newLogo' => 'nullable|image|max:1024',
         ]);
 
+        $disk = config('filesystems.default');
         if ($this->remove_logo && ! $this->newLogo) {
-            if ($this->company_logo && Storage::disk('public')->exists($this->company_logo)) {
-                Storage::disk('public')->delete($this->company_logo);
+            if ($this->company_logo && Storage::disk($disk)->exists($this->company_logo)) {
+                Storage::disk($disk)->delete($this->company_logo);
             }
             Setting::set('company_logo', null, 'string');
             $this->company_logo = null;
             $this->remove_logo = false;
         } elseif ($this->newLogo) {
-            if ($this->company_logo && Storage::disk('public')->exists($this->company_logo)) {
-                Storage::disk('public')->delete($this->company_logo);
+            if ($this->company_logo && Storage::disk($disk)->exists($this->company_logo)) {
+                Storage::disk($disk)->delete($this->company_logo);
             }
-            $path = $this->newLogo->store('company', 'public');
+            $path = $this->newLogo->store('company', $disk);
             $this->company_logo = $path;
             Setting::set('company_logo', $path, 'string');
             $this->newLogo = null;

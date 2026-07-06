@@ -29,7 +29,7 @@ class ExpenseRepository
                 if (!FileHelpers::validateMagicBytes($dto->receipt_file->getRealPath())) {
                     throw new Exception('El archivo del comprobante no tiene un formato válido (Magic Bytes mismatch). Posible archivo corrupto o malicioso.');
                 }
-                $receiptPath = $dto->receipt_file->store('receipts', 'public');
+                $receiptPath = $dto->receipt_file->store('receipts', config('filesystems.default'));
             }
 
             $expenseData = $dto->toArray();

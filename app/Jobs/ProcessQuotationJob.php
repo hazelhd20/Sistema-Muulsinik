@@ -41,17 +41,24 @@ class ProcessQuotationJob implements ShouldQueue
         $quotation->update(['status' => 'processing']);
 
         try {
-            $filePath = Storage::disk('local')->path($quotation->file_path);
+            $disk = Storage::disk(config('filesystems.default'));
             $extension = pathinfo($quotation->original_filename, PATHINFO_EXTENSION);
-            $mimeType = $quotation->file_type ?? mime_content_type($filePath);
+            
+            // Descargar temporalmente el archivo desde S3/Tigris/local para que los parsers (IA/Excel) puedan leerlo físicamente
+            $tempPath = sys_get_temp_dir() . '/' . uniqid('quote_') . '.' . $extension;
+            file_put_contents($tempPath, $disk->get($quotation->file_path));
+
+            $mimeType = $quotation->file_type ?? mime_content_type($tempPath);
 
             // Resolver parser (la Factory no importa aquí si es async o no,
             // ya estamos dentro del Job)
-            $resolution = $factory->resolve($filePath, $mimeType, $extension);
+            $resolution = $factory->resolve($tempPath, $mimeType, $extension);
             $parser = $resolution['parser'];
 
             // Ejecutar extracción
-            $result = $parser->parse($filePath);
+            $result = $parser->parse($tempPath);
+
+            @unlink($tempPath); // Limpiar memoria temporal
 
             // Guardar resultados en el registro
             $quotation->update([

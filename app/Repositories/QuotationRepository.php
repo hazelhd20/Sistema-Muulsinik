@@ -20,7 +20,7 @@ class QuotationRepository
             throw new Exception("El archivo '{$dto->file->getClientOriginalName()}' no tiene un formato válido o está corrupto (Magic Bytes mismatch).");
         }
 
-        $path = $dto->file->store('quotations', 'local');
+        $path = $dto->file->store('quotations', config('filesystems.default'));
         $originalName = $dto->file->getClientOriginalName();
         $mimeType = $dto->file->getMimeType();
 
