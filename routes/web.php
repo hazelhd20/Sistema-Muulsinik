@@ -104,17 +104,23 @@ Route::middleware('auth')->group(function () {
     // Previsualización de archivos
     Route::get('/preview-file', function (Request $request) {
         $path = $request->query('path');
-        $disk = $request->query('disk', 'local');
+        $disk = $request->query('disk', config('filesystems.default'));
 
-        if (! in_array($disk, ['local', 'public']) || ! $path || str_contains($path, '..') || ! Storage::disk($disk)->exists($path)) {
+        if (! in_array($disk, ['local', 'public', 's3']) || ! $path || str_contains($path, '..') || ! Storage::disk($disk)->exists($path)) {
             abort(404);
         }
 
         $mime = Storage::disk($disk)->mimeType($path);
 
-        return response()->file(Storage::disk($disk)->path($path), [
+        if (in_array($disk, ['local', 'public'])) {
+            return response()->file(Storage::disk($disk)->path($path), [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="'.basename($path).'"',
+            ]);
+        }
+
+        return Storage::disk($disk)->response($path, basename($path), [
             'Content-Type' => $mime,
-            'Content-Disposition' => 'inline; filename="'.basename($path).'"',
-        ]);
+        ], 'inline');
     })->name('file.preview');
 });

@@ -3,6 +3,20 @@
     -webkit-tap-highlight-color: transparent !important;
 }
 
+/* Evitar que los estilos :hover se queden pegados ("Sticky Hover") en pantallas táctiles */
+@media (hover: none) {
+    a:hover,
+    button:hover,
+    [role="button"]:hover,
+    .nav-link:hover,
+    .icon-btn-hover:hover,
+    .btn:hover,
+    [class*="hover:"]:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
 /* Evita que hacer clic rápido en botones, tarjetas o encabezados seleccione el texto */
 button, a, .md\:card, .table-container, x-modal, .flatpickr-calendar, .flatpickr-month, .flatpickr-day {
     -webkit-user-select: none;

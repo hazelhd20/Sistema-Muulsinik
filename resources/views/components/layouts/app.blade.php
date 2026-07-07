@@ -98,8 +98,11 @@
         {{-- ══════════════════════════════════════
         SIDEBAR — Industrial Premium Minimal
         ══════════════════════════════════════ --}}
-        <aside class="fixed inset-y-0 left-0 z-50 w-[15rem] bg-surface-sidebar flex flex-col
-                   transition-transform duration-200 ease-out
+        <aside x-data="{ touchStartX: 0 }"
+            @touchstart.passive="touchStartX = $event.touches[0].clientX"
+            @touchend.passive="if (touchStartX - $event.changedTouches[0].clientX > 50) mobileSidebarOpen = false"
+            class="fixed inset-y-0 left-0 z-50 w-[15rem] bg-surface-sidebar flex flex-col
+                   transition-transform duration-200 ease-out -translate-x-full
                    lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shrink-0"
             :class="mobileSidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full lg:translate-x-0'">
 
@@ -344,9 +347,16 @@
                     }
                 });
             });
-        });
-
-
+        // Eliminar "sticky hover" y foco pegado en botones/enlaces al tocar en móviles
+        document.addEventListener('touchend', function(e) {
+            if (e.target instanceof HTMLElement && e.target.closest('button, a, [role="button"], .nav-link')) {
+                setTimeout(() => {
+                    if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body && !document.activeElement.matches('input, textarea, select')) {
+                        document.activeElement.blur();
+                    }
+                }, 150);
+            }
+        }, { passive: true });
     </script>
 </body>
 
