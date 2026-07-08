@@ -365,6 +365,8 @@
                     }
                 });
             });
+        });
+
         // Eliminar "sticky hover" y foco pegado en botones/enlaces al tocar en móviles
         document.addEventListener('touchend', function(e) {
             if (e.target instanceof HTMLElement && e.target.closest('button, a, [role="button"], .nav-link')) {

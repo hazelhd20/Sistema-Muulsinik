@@ -32,7 +32,7 @@
         </div>
 
         <div x-show="tab === 'todas'" x-cloak wire:key="tab-todas-table"
-            x-data="requisitionIndex(@entangle('selectedRows'), {{ $requisitions->mapWithKeys(fn($r) => [$r->id => $r->status])->toJson() }})"
+            x-data="requisitionIndex(@entangle('selectedRows'), {{ json_encode($requisitions->mapWithKeys(fn($r) => [$r->id => $r->status]), JSON_HEX_QUOT | JSON_HEX_APOS) }})"
             x-init="totalOnPageStatic = {{ $requisitions->count() }}; init()"
             data-total-on-page="{{ $requisitions->count() }}">
             {{-- Unified Datagrid Card Container --}}
@@ -180,7 +180,7 @@
                                     <tr>
                                         <th class="actions pl-6 pr-2 text-left">
                                             <x-table-checkbox x-bind:checked="allSelected"
-                                                @change="toggleAll({{ json_encode($requisitions->pluck('id')->toArray()) }})" />
+                                                @change="toggleAll({{ json_encode($requisitions->pluck('id')->values()->toArray()) }})" />
                                         </th>
                                         <x-sortable-header field="number" label="Folio" :sortField="$sortField"
                                             :sortDirection="$sortDirection" />

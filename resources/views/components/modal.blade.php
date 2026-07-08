@@ -24,7 +24,7 @@
      x-cloak
      class="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto p-4 sm:p-6 lg:p-8"
      role="dialog" aria-modal="true"
-     x-trap.noscroll="show"
+     x-trap="show"
      {{ $attributes }}
      @keydown.escape.window="show = false; $wire.set('{{ $show }}', false)"
      x-init="$nextTick(() => {

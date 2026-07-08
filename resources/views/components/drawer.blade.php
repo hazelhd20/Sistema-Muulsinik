@@ -36,7 +36,7 @@
      x-cloak
      class="fixed inset-0 z-[60] overflow-hidden"
      role="dialog" aria-modal="true"
-     x-trap.noscroll="show"
+     x-trap="show"
      @keydown.escape.window="$wire.set('{{ $show }}', false)"
      x-init="$watch('show', value => {
          if (value) {
@@ -60,7 +60,7 @@
          aria-hidden="true"></div>
 
     {{-- Panel --}}
-    <div class="fixed inset-y-0 right-0 flex max-w-full pl-10">
+    <div class="absolute inset-y-0 right-0 flex max-w-full pl-10 overflow-hidden">
         <div x-show="show"
              x-transition:enter="transition-premium"
              x-transition:enter-start="translate-x-full"

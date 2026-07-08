@@ -67,8 +67,8 @@ input[readonly]::-moz-selection {
 
 /* ── Base ───────────────────────────────────────────────── */
 html {
-    scrollbar-gutter: stable;
-    overflow-y: scroll;
+    scrollbar-gutter: stable !important;
+    overflow-y: scroll !important;
 }
 
 *,
@@ -184,7 +184,7 @@ input[type="search"]::-webkit-search-results-decoration {
 /* 1. Prevenir desbordamiento horizontal (wobble) en móviles por barras de scroll o vw */
 html, body {
     max-width: 100%;
-    overflow-x: clip;
+    overflow-x: clip !important;
 }
 
 /* 2. Soporte para Unidades de Viewport Dinámicas (dvh) en navegadores móviles modernos.
