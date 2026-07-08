@@ -44,9 +44,16 @@
          x-cloak
          aria-hidden="true"></div>
 
-    {{-- Panel (Estructura y animación exacta del Sidebar) ───── --}}
-    <div class="fixed inset-y-0 right-0 z-[61] flex flex-col w-full {{ $maxWidthClass }} bg-surface-card shadow-2xl border-l border-border sm:rounded-l-2xl overflow-hidden transition-transform duration-200 ease-out translate-x-full pointer-events-none"
-         :class="show ? 'translate-x-0 !pointer-events-auto' : 'translate-x-full pointer-events-none'"
+    {{-- Panel (Estructura fixed estable con transiciones nativas de Alpine) ───── --}}
+    <div x-show="show"
+         x-transition:enter="transition-transform duration-200 ease-out"
+         x-transition:enter-start="translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition-transform duration-200 ease-in"
+         x-transition:leave-start="translate-x-0"
+         x-transition:leave-end="translate-x-full"
+         x-cloak
+         class="fixed inset-y-0 right-0 z-[61] flex flex-col w-full {{ $maxWidthClass }} bg-surface-card shadow-2xl border-l border-border sm:rounded-l-2xl overflow-hidden"
          role="dialog" aria-modal="true"
          @touchstart.passive="touchStartX = $event.touches[0].clientX; touchStartY = $event.touches[0].clientY"
          @touchend.passive="
