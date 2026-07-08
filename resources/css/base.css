@@ -225,3 +225,13 @@ aside nav, [role="dialog"], .overflow-y-auto, .overflow-x-auto, .table-container
 button, a, [role="button"], .md\:card, .table-container, [role="dialog"], .flatpickr-calendar, img, svg {
     -webkit-touch-callout: none !important;
 }
+
+/* 7. Estandarización de Logo en Modo Claro y Modo Oscuro (.app-logo) */
+.app-logo {
+    filter: none !important;
+    transition: filter 200ms ease-in-out;
+}
+.dark .app-logo {
+    filter: brightness(0) invert(1) !important;
+}
+
