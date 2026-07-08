@@ -59,7 +59,7 @@ switch ($width) {
                 x-transition:enter="transition-premium"
                 x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
-                x-transition:leave="transition-premium"
+                x-transition:leave="transition ease-in duration-100"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
                 class="absolute z-[100] {{ $widthClasses }} rounded-xl shadow-xl"
