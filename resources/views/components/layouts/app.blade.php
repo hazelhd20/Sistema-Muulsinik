@@ -126,7 +126,7 @@
 
             {{-- Brand ──────────────────────────────── --}}
             <div class="flex items-center justify-center h-14 shrink-0 px-5">
-                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain dark:brightness-0 dark:invert transition-all duration-200"
+                <img src="{{ asset('images/logo_muulsinik.svg') }}" alt="Muulsinik ERP" class="object-contain [filter:none] dark:[filter:brightness(0)_invert(1)] transition-[filter] duration-200"
                     style="height: var(--logo-size);">
             </div>
 
