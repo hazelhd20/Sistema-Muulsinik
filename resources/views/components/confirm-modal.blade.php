@@ -26,7 +26,7 @@
     x-on:livewire:navigating.window="forceClose()"
     x-show="show"
     x-cloak
-    x-trap.noscroll.inert="show"
+    x-trap.inert="show"
     @keydown.escape.window="forceClose()"
     class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6"
     role="dialog"
