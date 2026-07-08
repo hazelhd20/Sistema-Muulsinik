@@ -33,7 +33,8 @@
      })">
 
     {{-- Backdrop --}}
-    <div class="modal-overlay fixed inset-0 bg-black/40 backdrop-blur-[2px]"
+    <div x-show="show"
+         class="modal-overlay fixed inset-0 bg-black/40 backdrop-blur-[2px]"
          x-transition:enter="transition-premium"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -44,7 +45,8 @@
          aria-hidden="true"></div>
 
     {{-- Panel --}}
-    <div class="modal-panel relative bg-surface-card rounded-xl shadow-2xl border border-border
+    <div x-show="show"
+         class="modal-panel relative bg-surface-card rounded-xl shadow-2xl border border-border
                 w-full {{ $maxWidthClass }} my-auto"
          x-transition:enter="transition-premium"
          x-transition:enter-start="opacity-0 scale-95 translate-y-1"

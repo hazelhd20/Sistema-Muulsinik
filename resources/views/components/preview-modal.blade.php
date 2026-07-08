@@ -13,7 +13,8 @@
     x-show="showPreviewModal" x-cloak
     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
     @keydown.escape.window="showPreviewModal = false">
-    <div class="modal-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+    <div x-show="showPreviewModal"
+         class="modal-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px]"
          x-transition:enter="transition-premium"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -21,7 +22,8 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @click="showPreviewModal = false"></div>
-    <div class="modal-panel w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden bg-surface-card shadow-2xl rounded-xl border border-border relative"
+    <div x-show="showPreviewModal"
+         class="modal-panel w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden bg-surface-card shadow-2xl rounded-xl border border-border relative"
          x-transition:enter="transition-premium"
          x-transition:enter-start="opacity-0 scale-95 translate-y-1"
          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
