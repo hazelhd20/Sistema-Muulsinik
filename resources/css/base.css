@@ -183,7 +183,7 @@ input[type="search"]::-webkit-search-results-decoration {
 /* 1. Prevenir desbordamiento horizontal (wobble) en móviles por barras de scroll o vw */
 html, body {
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 /* 2. Soporte para Unidades de Viewport Dinámicas (dvh) en navegadores móviles modernos.
