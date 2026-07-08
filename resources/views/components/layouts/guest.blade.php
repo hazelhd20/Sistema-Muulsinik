@@ -89,7 +89,7 @@
         <div class="flex flex-col items-center mb-7">
             <img src="{{ asset('images/logo_muulsinik.svg') }}"
                  alt="Muulsinik ERP"
-                 class="object-contain mb-1"
+                 class="object-contain mb-1 dark:brightness-0 dark:invert transition-all duration-200"
                  style="height: clamp(2.5rem, 4vw + 1rem, 3.5rem);">
             <p class="text-xs-fluid text-text-muted font-medium tracking-wider uppercase mt-2">
                 Sistema de Gestión Operativa
