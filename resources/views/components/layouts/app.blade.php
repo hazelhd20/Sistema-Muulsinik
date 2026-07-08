@@ -234,8 +234,8 @@
 
                 {{-- User profile row --}}
                 <div class="flex items-center gap-2.5 px-2.5 py-2 mb-1">
-                    <div class="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center shrink-0">
-                        <span class="text-xs-fluid font-bold text-white leading-none">
+                    <div class="w-7 h-7 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center shrink-0 select-none shadow-sm">
+                        <span class="text-xs-fluid font-bold leading-none inline-flex items-center justify-center">
                             {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                         </span>
                     </div>
