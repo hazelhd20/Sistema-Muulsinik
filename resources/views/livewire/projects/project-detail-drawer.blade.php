@@ -41,24 +41,24 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
-                    <x-data-label label="Fecha de Inicio">
-                        <div class="flex items-center gap-1.5">
-                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70" />
-                            <span>{{ $detailProject->start_date?->format('d/m/Y') ?? 'No definida' }}</span>
+                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl min-w-0 max-w-full">
+                    <x-data-label label="Ubicación">
+                        <div class="flex items-center gap-1.5 text-text-secondary">
+                            <x-lucide-map-pin class="w-3.5 h-3.5 text-text-muted/70 shrink-0" />
+                            <span class="truncate">{{ $detailProject->location ?: 'No especificada' }}</span>
                         </div>
                     </x-data-label>
-                    <x-data-label label="Fecha Estimada de Término">
-                        <div class="flex items-center gap-1.5">
-                            <x-lucide-calendar-clock class="w-3.5 h-3.5 text-text-muted/70" />
-                            <span>{{ $detailProject->end_date?->format('d/m/Y') ?? 'No definida' }}</span>
+                    <x-data-label label="Periodo Estimado">
+                        <div class="flex items-center gap-1.5 text-text-secondary">
+                            <x-lucide-calendar class="w-3.5 h-3.5 text-text-muted/70 shrink-0" />
+                            <span class="truncate">{{ $detailProject->start_date ? $detailProject->start_date->format('d/m/y') : '—' }} - {{ $detailProject->end_date ? $detailProject->end_date->format('d/m/y') : '—' }}</span>
                         </div>
                     </x-data-label>
-                    <div class="col-span-2">
-                        <x-data-label label="Descripción">
-                            <div class="flex items-start gap-1.5">
+                    <div class="col-span-2 min-w-0">
+                        <x-data-label label="Descripción o Alcance">
+                            <div class="flex items-start gap-1.5 min-w-0">
                                 <x-lucide-align-left class="w-3.5 h-3.5 text-text-muted/70 mt-0.5 shrink-0" />
-                                <span>{{ $detailProject->description ?: 'Sin descripción' }}</span>
+                                <span class="break-words min-w-0 flex-1">{{ $detailProject->description ?: 'Sin descripción' }}</span>
                             </div>
                         </x-data-label>
                     </div>

@@ -88,7 +88,7 @@
             ></div>
 
             {{-- Modal Panel --}}
-            <div class="fixed inset-0 z-10 w-screen overflow-y-auto p-4 sm:p-6 md:p-20">
+            <div class="fixed inset-0 z-10 w-full overflow-y-auto p-4 sm:p-6 md:p-20">
                 <div
                     x-show="open"
                     @click.away="open = false"

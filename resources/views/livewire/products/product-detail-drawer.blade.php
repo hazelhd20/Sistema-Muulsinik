@@ -15,7 +15,7 @@
                 </div>
 
                 {{-- Detalles en grid --}}
-                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl">
+                <div class="grid grid-cols-2 gap-4 bg-surface-main/50 p-4 rounded-xl min-w-0 max-w-full">
                     <x-data-label label="Categoría">
                         @if($detailProduct->category)
                             <x-dynamic-badge :value="$detailProduct->category->name" size="sm" />
@@ -30,11 +30,11 @@
                             <span class="text-text-muted">—</span>
                         @endif
                     </x-data-label>
-                    <div class="col-span-2">
+                    <div class="col-span-2 min-w-0">
                         <x-data-label label="Descripción Técnica">
-                            <div class="flex items-start gap-1.5">
+                            <div class="flex items-start gap-1.5 min-w-0">
                                 <x-lucide-align-left class="w-3.5 h-3.5 text-text-muted/70 mt-0.5 shrink-0" />
-                                <span>{{ $detailProduct->description ?: 'Sin descripción' }}</span>
+                                <span class="break-words min-w-0 flex-1">{{ $detailProduct->description ?: 'Sin descripción' }}</span>
                             </div>
                         </x-data-label>
                     </div>

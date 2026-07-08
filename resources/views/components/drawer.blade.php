@@ -21,7 +21,17 @@
 @endphp
 
 {{-- Overlay --}}
-<div x-data="{ show: @entangle($show) }"
+<div x-data="{ show: @entangle($show), touchStartX: 0, touchStartY: 0 }"
+     @touchstart.passive="touchStartX = $event.touches[0].clientX; touchStartY = $event.touches[0].clientY"
+     @touchend.passive="
+         if (show) {
+             let deltaX = $event.changedTouches[0].clientX - touchStartX;
+             let deltaY = Math.abs($event.changedTouches[0].clientY - touchStartY);
+             if (deltaX > 50 && deltaX > deltaY * 1.5) {
+                 $wire.set('{{ $show }}', false);
+             }
+         }
+     "
      x-show="show"
      x-cloak
      class="fixed inset-0 z-[60] overflow-hidden"
@@ -58,7 +68,7 @@
              x-transition:leave="transform transition ease-in duration-200"
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="translate-x-full"
-             class="w-screen {{ $maxWidthClass }}">
+             class="w-full max-w-full {{ $maxWidthClass }} overflow-x-hidden">
             
             <div class="flex h-full flex-col bg-surface-card shadow-2xl border-l border-border
                         sm:rounded-l-2xl overflow-hidden">

@@ -3,9 +3,17 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Sistema de Gestión para Constructora Muulsinik — ERP v1">
+
+    {{-- PWA & Native App Meta Tags (iOS / Android) --}}
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Muulsinik ERP">
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
 
     <title>{{ $title ?? 'Dashboard' }} — {{ config('app.name') }}</title>
 
@@ -75,7 +83,20 @@
     @livewireStyles
 </head>
 
-<body class="antialiased min-h-screen" x-data="{ mobileSidebarOpen: false }" x-on:livewire:navigating.window="mobileSidebarOpen = false" x-on:livewire:navigate.window="mobileSidebarOpen = false">
+<body class="antialiased min-h-screen" x-data="{ mobileSidebarOpen: false, touchStartX: 0, touchStartY: 0 }"
+    @touchstart.passive="touchStartX = $event.touches[0].clientX; touchStartY = $event.touches[0].clientY"
+    @touchend.passive="
+        let deltaX = $event.changedTouches[0].clientX - touchStartX;
+        let deltaY = Math.abs($event.changedTouches[0].clientY - touchStartY);
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > deltaY * 1.5) {
+            if (mobileSidebarOpen && deltaX < -50) {
+                mobileSidebarOpen = false;
+            } else if (!mobileSidebarOpen && touchStartX < 40 && deltaX > 50) {
+                mobileSidebarOpen = true;
+            }
+        }
+    "
+    x-on:livewire:navigating.window="mobileSidebarOpen = false" x-on:livewire:navigate.window="mobileSidebarOpen = false">
     <script>
         // Capturar Ctrl+K antes de que Chrome lo intercepte
         document.addEventListener('keydown', function (e) {
@@ -98,10 +119,7 @@
         {{-- ══════════════════════════════════════
         SIDEBAR — Industrial Premium Minimal
         ══════════════════════════════════════ --}}
-        <aside x-data="{ touchStartX: 0 }"
-            @touchstart.passive="touchStartX = $event.touches[0].clientX"
-            @touchend.passive="if (touchStartX - $event.changedTouches[0].clientX > 50) mobileSidebarOpen = false"
-            class="fixed inset-y-0 left-0 z-50 w-[15rem] bg-surface-sidebar flex flex-col
+        <aside class="fixed inset-y-0 left-0 z-50 w-[15rem] bg-surface-sidebar flex flex-col
                    transition-transform duration-200 ease-out -translate-x-full
                    lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shrink-0"
             :class="mobileSidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full lg:translate-x-0'">

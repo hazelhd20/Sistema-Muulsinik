@@ -4,12 +4,16 @@
 }
 
 /* Evitar que los estilos :hover se queden pegados ("Sticky Hover") en pantallas táctiles */
-@media (hover: none) {
+@media (hover: none), (pointer: coarse) {
     a:hover,
     button:hover,
     [role="button"]:hover,
     .nav-link:hover,
     .icon-btn-hover:hover,
+    .icon-btn-hover-primary:hover,
+    .icon-btn-hover-danger:hover,
+    .icon-btn-hover-success:hover,
+    .icon-btn-hover-warning:hover,
     .btn:hover,
     [class*="hover:"]:hover {
         transform: none !important;
@@ -173,4 +177,50 @@ input[type="search"]::-webkit-search-results-decoration {
 .theme-switching *::before,
 .theme-switching *::after {
     transition: none !important;
+}
+
+/* ── Viewport & Safe Area Optimizations (Mobile & Touch) ─────────────────── */
+/* 1. Prevenir desbordamiento horizontal (wobble) en móviles por barras de scroll o vw */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* 2. Soporte para Unidades de Viewport Dinámicas (dvh) en navegadores móviles modernos.
+   Evita que las barras de dirección de iOS Safari / Android Chrome oculten la parte inferior de los paneles o menús. */
+@supports (height: 100dvh) {
+    .min-h-screen {
+        min-height: 100dvh !important;
+    }
+    .h-screen {
+        height: 100dvh !important;
+    }
+}
+
+/* 3. Respetar áreas seguras (Notch y Home Indicator en iPhone X-16 y Androids sin botones) */
+@supports (padding: max(0px)) {
+    aside, [role="dialog"], .flatpickr-calendar {
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+    body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* ── Native App Ergonomics & Touch Behavior (PWA & iOS/Android) ─────────────────── */
+/* 4. Prevenir recarga accidental por "Pull-to-Refresh" o rebote de goma en móviles */
+body {
+    overscroll-behavior-y: none;
+}
+
+/* 5. Aislar el rebote de scroll y activar inercia suave en iOS para tablas, modales y cajones */
+aside nav, [role="dialog"], .overflow-y-auto, .overflow-x-auto, .table-container {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 6. Bloquear menú contextual nativo y lupa de iOS/Android al mantener presionado botones o tarjetas */
+button, a, [role="button"], .md\:card, .table-container, [role="dialog"], .flatpickr-calendar, img, svg {
+    -webkit-touch-callout: none !important;
 }
