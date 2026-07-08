@@ -123,13 +123,24 @@
                                                     <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                                 </td>
                                                 <td class="max-w-0">
-                                                    <div class="flex items-center gap-2">
-                                                        <p class="text-body font-bold text-text-primary truncate" title="{{ $user->name }}">{{ $user->name }}</p>
-                                                        @if($user->trashed())
-                                                            <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                                    <div class="flex items-center gap-3">
+                                                        @if($user->avatar)
+                                                            <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
+                                                        @else
+                                                            <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center font-bold shadow-sm shrink-0 text-xs-fluid">
+                                                                {{ substr($user->name, 0, 1) }}
+                                                            </div>
                                                         @endif
+                                                        <div class="min-w-0 flex-1">
+                                                            <div class="flex items-center gap-2">
+                                                                <p class="text-body font-bold text-text-primary truncate" title="{{ $user->name }}">{{ $user->name }}</p>
+                                                                @if($user->trashed())
+                                                                    <x-badge variant="danger" size="sm">Eliminado</x-badge>
+                                                                @endif
+                                                            </div>
+                                                            <p class="text-xs-fluid text-text-muted truncate" title="{{ $user->email }}">{{ $user->email }}</p>
+                                                        </div>
                                                     </div>
-                                                    <p class="text-xs-fluid text-text-muted truncate" title="{{ $user->email }}">{{ $user->email }}</p>
                                                 </td>
                                                 <td>
                                                     @if($user->role)
@@ -234,9 +245,9 @@
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
                                             @if($user->avatar)
-                                                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover border border-border shadow-sm shrink-0">
+                                                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
                                             @else
-                                                <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 border border-primary-200 flex items-center justify-center font-bold shadow-sm shrink-0 text-xs-fluid">
+                                                <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center font-bold shadow-sm shrink-0 text-xs-fluid">
                                                     {{ substr($user->name, 0, 1) }}
                                                 </div>
                                             @endif
