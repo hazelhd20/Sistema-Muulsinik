@@ -127,7 +127,7 @@
                                                         @if($user->avatar)
                                                             <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
                                                         @else
-                                                            <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/60 text-primary-800 dark:text-primary-100 flex items-center justify-center font-bold shrink-0 text-xs-fluid leading-none select-none">
+                                                            <div class="w-8 h-8 rounded-full bg-primary-100/80 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 flex items-center justify-center font-bold shrink-0 text-xs-fluid leading-none select-none">
                                                                 {{ strtoupper(substr($user->name, 0, 1)) }}
                                                             </div>
                                                         @endif
@@ -247,7 +247,7 @@
                                             @if($user->avatar)
                                                 <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
                                             @else
-                                                <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/60 text-primary-800 dark:text-primary-100 flex items-center justify-center font-bold shrink-0 text-xs-fluid leading-none select-none">
+                                                <div class="w-8 h-8 rounded-full bg-primary-100/80 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 flex items-center justify-center font-bold shrink-0 text-xs-fluid leading-none select-none">
                                                     {{ strtoupper(substr($user->name, 0, 1)) }}
                                                 </div>
                                             @endif
