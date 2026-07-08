@@ -418,9 +418,9 @@
                 <div class="grid grid-cols-2 gap-4">
                     <x-form-field :label="$editingId ? 'Nueva contraseña' : 'Contraseña'" :required="!$editingId"
                         error="{{ $errors->first('password') }}">
-                        <input wire:model="password" type="password" class="input"
+                        <x-password-input wire:model="password"
                             placeholder="{{ $editingId ? 'Dejar en blanco para mantener actual' : 'Mínimo 6 caracteres' }}"
-                            autocomplete="new-password">
+                            autocomplete="new-password" />
                     </x-form-field>
                     <x-form-field label="Rol asignado" required error="{{ $errors->first('role_id') }}">
                         <x-custom-select wire:model="role_id" :options="$roles->pluck('name', 'id')->toArray()"

@@ -235,3 +235,16 @@ button, a, [role="button"], .md\:card, .table-container, [role="dialog"], .flatp
     filter: brightness(0) invert(1) !important;
 }
 
+/* 8. Suprimir botón nativo de ojo/revelar contraseña en Microsoft Edge e IE para evitar duplicidad visual */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="text"]::-ms-reveal,
+input[type="text"]::-ms-clear {
+    display: none !important;
+}
+input::-ms-reveal,
+input::-ms-clear {
+    display: none !important;
+}
+
+

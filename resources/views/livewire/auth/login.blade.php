@@ -28,14 +28,12 @@
 
         {{-- Password --}}
         <x-form-field label="Contraseña" :error="$errors->first('password')">
-            <input
+            <x-password-input
                 wire:model="password"
-                type="password"
                 id="login-password"
-                class="input"
                 placeholder="••••••••"
                 autocomplete="current-password"
-            >
+            />
         </x-form-field>
 
         {{-- Remember --}}
