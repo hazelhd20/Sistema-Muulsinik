@@ -10,7 +10,14 @@
         previewType = $event.detail.type;
         showPreviewModal = true;
     "
-    x-show="showPreviewModal" x-cloak
+    x-show="showPreviewModal"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    x-cloak
     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
     @keydown.escape.window="showPreviewModal = false">
     <div x-show="showPreviewModal"
