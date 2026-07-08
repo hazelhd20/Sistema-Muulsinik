@@ -127,8 +127,8 @@
                                                         @if($user->avatar)
                                                             <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
                                                         @else
-                                                            <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center font-bold shadow-sm shrink-0 text-xs-fluid">
-                                                                {{ substr($user->name, 0, 1) }}
+                                                            <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/60 text-primary-800 dark:text-primary-100 flex items-center justify-center font-bold shrink-0 text-xs-fluid leading-none select-none">
+                                                                {{ strtoupper(substr($user->name, 0, 1)) }}
                                                             </div>
                                                         @endif
                                                         <div class="min-w-0 flex-1">
@@ -247,8 +247,8 @@
                                             @if($user->avatar)
                                                 <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
                                             @else
-                                                <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center font-bold shadow-sm shrink-0 text-xs-fluid">
-                                                    {{ substr($user->name, 0, 1) }}
+                                                <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/60 text-primary-800 dark:text-primary-100 flex items-center justify-center font-bold shrink-0 text-xs-fluid leading-none select-none">
+                                                    {{ strtoupper(substr($user->name, 0, 1)) }}
                                                 </div>
                                             @endif
                                             <span class="font-bold text-text-primary text-h3 truncate">{{ $user->name }}</span>
