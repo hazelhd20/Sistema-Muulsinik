@@ -68,6 +68,7 @@ input[readonly]::-moz-selection {
 /* ── Base ───────────────────────────────────────────────── */
 html {
     scrollbar-gutter: stable;
+    overflow-y: scroll;
 }
 
 *,
