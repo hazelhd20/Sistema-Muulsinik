@@ -409,7 +409,7 @@
             <form wire:submit="saveUser" class="p-5 space-y-4" autocomplete="off">
                 {{-- Fotografía / Avatar del Usuario --}}
                 <div class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-surface-alt border border-border">
-                    <div class="relative group shrink-0">
+                    <div class="relative w-20 h-20 rounded-full shrink-0 select-none flex items-center justify-center overflow-hidden">
                         @if ($photo)
                             <img src="{{ $photo->temporaryUrl() }}" alt="Previsualización"
                                 class="w-20 h-20 rounded-full object-cover shadow-md border-2 border-primary-500">
@@ -424,10 +424,10 @@
                             </div>
                         @endif
 
-                        {{-- Indicador de carga al subir foto --}}
-                        <div wire:loading wire:target="photo"
-                            class="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
-                            <x-lucide-loader-2 class="w-6 h-6 text-white animate-spin" />
+                        {{-- Indicador de carga superposto exactamente en el centro del círculo (80x80px) --}}
+                        <div wire:loading.flex wire:target="photo"
+                            class="absolute inset-0 z-20 w-full h-full rounded-full bg-black/65 backdrop-blur-[1px] items-center justify-center transition-all duration-200">
+                            <x-lucide-loader-2 class="w-6 h-6 text-white animate-spin shrink-0" />
                         </div>
                     </div>
 
@@ -438,10 +438,12 @@
                         </div>
                         <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
                             <input type="file" wire:model="photo" id="avatar-photo-input" accept="image/jpeg,image/png,image/webp" class="hidden">
-                            <label for="avatar-photo-input"
+                            <label for="avatar-photo-input" wire:loading.class="pointer-events-none opacity-60" wire:target="photo"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs">
-                                <x-lucide-camera class="w-3.5 h-3.5 text-text-muted shrink-0" />
-                                <span>{{ $photo || ($currentAvatarUrl && !$removePhoto) ? 'Cambiar foto' : 'Subir foto' }}</span>
+                                <x-lucide-camera wire:loading.remove wire:target="photo" class="w-3.5 h-3.5 text-text-muted shrink-0" />
+                                <x-lucide-loader-2 wire:loading wire:target="photo" class="w-3.5 h-3.5 text-primary-600 animate-spin shrink-0" />
+                                <span wire:loading.remove wire:target="photo">{{ $photo || ($currentAvatarUrl && !$removePhoto) ? 'Cambiar foto' : 'Subir foto' }}</span>
+                                <span wire:loading wire:target="photo">Subiendo...</span>
                             </label>
 
                             @if ($photo || ($currentAvatarUrl && !$removePhoto))
