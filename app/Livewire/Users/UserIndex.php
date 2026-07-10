@@ -134,7 +134,9 @@ class UserIndex extends Component
             avatar: $avatarPath,
         );
 
-        app(UserRepository::class)->save($dto);
+        $user = app(UserRepository::class)->save($dto);
+
+        $this->dispatch('profile-avatar-updated', userId: $user->id, avatarUrl: $user->avatar_url, initial: strtoupper(substr($user->name, 0, 1)));
 
         $this->showModal = false;
         $this->resetForm();
@@ -173,7 +175,9 @@ class UserIndex extends Component
             avatar: $avatarPath,
         );
 
-        app(UserRepository::class)->save($dto);
+        $user = app(UserRepository::class)->save($dto);
+
+        $this->dispatch('profile-avatar-updated', userId: $user->id, avatarUrl: $user->avatar_url, initial: strtoupper(substr($user->name, 0, 1)));
 
         $this->showModal = false;
         $this->resetForm();
