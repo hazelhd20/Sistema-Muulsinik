@@ -240,7 +240,7 @@
                      }"
                      @profile-avatar-updated.window="if ($event.detail.userId == {{ auth()->id() ?? '0' }}) { avatarUrl = $event.detail.avatarUrl; initial = $event.detail.initial; }">
                     <template x-if="avatarUrl">
-                        <img :src="avatarUrl" alt="{{ auth()->user()->name }}" class="w-7 h-7 rounded-full object-cover shrink-0 select-none shadow-sm border border-border">
+                        <img :src="avatarUrl" alt="{{ auth()->user()->name }}" class="w-7 h-7 rounded-full object-cover shrink-0 select-none shadow-sm">
                     </template>
                     <template x-if="!avatarUrl">
                         <div class="w-7 h-7 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center shrink-0 select-none shadow-sm">
