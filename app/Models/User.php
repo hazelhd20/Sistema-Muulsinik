@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role_id',
         'active',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -74,5 +75,19 @@ class User extends Authenticatable
                     ->orWhereJsonContains('permissions', '*');
             })
             ->get();
+    }
+
+    /**
+     * Retorna la URL completa de la fotografía del avatar o null si no tiene.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+        return asset('storage/' . $this->avatar);
     }
 }

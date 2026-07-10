@@ -11,6 +11,7 @@ class UserDTO
         public readonly bool $active = true,
         public readonly ?string $password = null,
         public readonly ?int $id = null,
+        public readonly ?string $avatar = null,
     ) {
     }
 
@@ -23,6 +24,7 @@ class UserDTO
             active: (bool)($data['active'] ?? true),
             password: $data['password'] ?? null,
             id: $data['id'] ?? null,
+            avatar: $data['avatar'] ?? null,
         );
     }
 
@@ -35,6 +37,7 @@ class UserDTO
             'active' => $this->active,
             'password' => $this->password,
             'id' => $this->id,
+            'avatar' => $this->avatar,
         ];
     }
 }

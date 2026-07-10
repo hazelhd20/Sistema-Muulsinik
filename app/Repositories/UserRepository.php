@@ -29,15 +29,25 @@ class UserRepository
                     $updateData['password'] = Hash::make($dto->password);
                 }
 
+                if ($dto->avatar !== null) {
+                    $updateData['avatar'] = $dto->avatar === '' ? null : $dto->avatar;
+                }
+
                 $user->update($updateData);
             } else {
-                $user = User::create([
+                $createData = [
                     'name' => $dto->name,
                     'email' => $dto->email,
                     'role_id' => $dto->role_id,
                     'active' => $dto->active,
                     'password' => Hash::make($dto->password),
-                ]);
+                ];
+
+                if ($dto->avatar !== null && $dto->avatar !== '') {
+                    $createData['avatar'] = $dto->avatar;
+                }
+
+                $user = User::create($createData);
             }
 
             return $user;

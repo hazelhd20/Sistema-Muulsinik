@@ -15,11 +15,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class UserIndex extends Component
 {
-    use EnforcesPermissions, WithFilters, WithPagination, WithSorting;
+    use EnforcesPermissions, WithFilters, WithPagination, WithSorting, WithFileUploads;
 
     #[Url(history: true)]
     public string $search = '';
@@ -51,6 +52,12 @@ class UserIndex extends Component
 
     public bool $active = true;
 
+    public ?string $currentAvatarUrl = null;
+
+    public $photo = null;
+
+    public bool $removePhoto = false;
+
 
 
     public function mount()
@@ -81,6 +88,9 @@ class UserIndex extends Component
         $this->role_id = (string) $user->role_id;
         $this->active = $user->active;
         $this->password = '';
+        $this->currentAvatarUrl = $user->avatar_url;
+        $this->photo = null;
+        $this->removePhoto = false;
         $this->showModal = true;
     }
 
@@ -105,7 +115,15 @@ class UserIndex extends Component
             'password' => 'required|min:6',
             'role_id' => 'required|exists:roles,id',
             'active' => 'boolean',
+            'photo' => 'nullable|image|max:2048',
         ]);
+
+        $avatarPath = null;
+        if ($this->removePhoto) {
+            $avatarPath = '';
+        } elseif ($this->photo) {
+            $avatarPath = $this->photo->store('avatars', 'public');
+        }
 
         $dto = new UserDTO(
             name: $this->name,
@@ -113,6 +131,7 @@ class UserIndex extends Component
             role_id: (int)$this->role_id,
             active: $this->active,
             password: $this->password,
+            avatar: $avatarPath,
         );
 
         app(UserRepository::class)->save($dto);
@@ -134,7 +153,15 @@ class UserIndex extends Component
             'password' => 'nullable|min:6',
             'role_id' => 'required|exists:roles,id',
             'active' => 'boolean',
+            'photo' => 'nullable|image|max:2048',
         ]);
+
+        $avatarPath = null;
+        if ($this->removePhoto) {
+            $avatarPath = '';
+        } elseif ($this->photo) {
+            $avatarPath = $this->photo->store('avatars', 'public');
+        }
 
         $dto = new UserDTO(
             name: $this->name,
@@ -143,6 +170,7 @@ class UserIndex extends Component
             active: $this->active,
             password: $this->password ?: null,
             id: $this->editingId,
+            avatar: $avatarPath,
         );
 
         app(UserRepository::class)->save($dto);
@@ -268,6 +296,9 @@ class UserIndex extends Component
         $this->role_id = '';
         $this->active = true;
         $this->editingId = null;
+        $this->currentAvatarUrl = null;
+        $this->photo = null;
+        $this->removePhoto = false;
         $this->resetValidation();
     }
 

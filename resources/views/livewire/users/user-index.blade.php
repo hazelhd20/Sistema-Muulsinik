@@ -124,8 +124,8 @@
                                                 </td>
                                                 <td class="max-w-0">
                                                     <div class="flex items-center gap-3">
-                                                        @if($user->avatar)
-                                                            <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
+                                                        @if($user->avatar_url)
+                                                            <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-border shrink-0">
                                                         @else
                                                             <div class="w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center shrink-0 select-none shadow-sm">
                                                                 <span class="text-xs-fluid font-bold leading-none inline-flex items-center justify-center">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
@@ -244,8 +244,8 @@
                                     <div class="flex items-center justify-between gap-2 p-4 pb-3 border-b border-border/40 bg-surface-card">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-table-checkbox x-model="selectedRows" value="{{ $user->id }}" />
-                                            @if($user->avatar)
-                                                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm shrink-0">
+                                            @if($user->avatar_url)
+                                                <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-border shrink-0">
                                             @else
                                                 <div class="w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center shrink-0 select-none shadow-sm">
                                                     <span class="text-xs-fluid font-bold leading-none inline-flex items-center justify-center">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
@@ -407,6 +407,57 @@
     @if($showModal)
         <x-modal show="showModal" :title="$editingId ? 'Editar usuario' : 'Nuevo usuario'">
             <form wire:submit="saveUser" class="p-5 space-y-4" autocomplete="off">
+                {{-- Fotografía / Avatar del Usuario --}}
+                <div class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-surface-alt border border-border">
+                    <div class="relative group shrink-0">
+                        @if ($photo)
+                            <img src="{{ $photo->temporaryUrl() }}" alt="Previsualización"
+                                class="w-20 h-20 rounded-full object-cover shadow-md border-2 border-primary-500">
+                        @elseif ($currentAvatarUrl && !$removePhoto)
+                            <img src="{{ $currentAvatarUrl }}" alt="Avatar actual"
+                                class="w-20 h-20 rounded-full object-cover shadow-md border border-border">
+                        @else
+                            <div class="w-20 h-20 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center font-bold shadow-md select-none">
+                                <span class="text-2xl leading-none inline-flex items-center justify-center">
+                                    {{ strtoupper(substr($name ?: 'U', 0, 1)) }}
+                                </span>
+                            </div>
+                        @endif
+
+                        {{-- Indicador de carga al subir foto --}}
+                        <div wire:loading wire:target="photo"
+                            class="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                            <x-lucide-loader-2 class="w-6 h-6 text-white animate-spin" />
+                        </div>
+                    </div>
+
+                    <div class="flex-1 text-center sm:text-left space-y-1.5">
+                        <div>
+                            <p class="text-small font-semibold text-text-primary">Fotografía de perfil</p>
+                            <p class="text-xs text-text-muted">Formatos admitidos: JPG, PNG, WebP. Máximo 2MB.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                            <input type="file" wire:model="photo" id="avatar-photo-input" accept="image/jpeg,image/png,image/webp" class="hidden">
+                            <label for="avatar-photo-input"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs">
+                                <x-lucide-camera class="w-3.5 h-3.5 text-text-muted shrink-0" />
+                                <span>{{ $photo || ($currentAvatarUrl && !$removePhoto) ? 'Cambiar foto' : 'Subir foto' }}</span>
+                            </label>
+
+                            @if ($photo || ($currentAvatarUrl && !$removePhoto))
+                                <button type="button" wire:click="$set('removePhoto', true); $set('photo', null);"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium text-danger hover:bg-danger/10 transition-colors cursor-pointer">
+                                    <x-lucide-trash-2 class="w-3.5 h-3.5 shrink-0" />
+                                    <span>Eliminar</span>
+                                </button>
+                            @endif
+                        </div>
+                        @error('photo')
+                            <p class="text-xs text-danger font-medium mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 <x-form-field label="Nombre completo" required error="{{ $errors->first('name') }}">
                     <input wire:model="name" type="text" class="input" placeholder="Ej. Juan Pérez" autocomplete="off">
                 </x-form-field>
