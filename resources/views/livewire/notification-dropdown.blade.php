@@ -94,16 +94,17 @@
                                     {{ $notification['created_at'] }}
                                 </span>
                                 <div class="flex items-center gap-2">
-                                    @if(!str_contains($notification['action_url'], '/storage/exports/'))
+                                    @if(($notification['type'] ?? '') === 'export_completed')
+                                        {{-- Exportaciones: abrir en pestaña nueva para no romper el historial de navegación --}}
                                         <x-button href="{{ $notification['action_url'] }}" 
-                                            wire:navigate
+                                            target="_blank"
                                             wire:click="markAsRead('{{ $notification['id'] }}')"
                                             variant="link" class="!text-xs-fluid !min-h-0">
                                             {{ $notification['action_text'] }}
                                         </x-button>
                                     @else
                                         <x-button href="{{ $notification['action_url'] }}" 
-                                            download
+                                            wire:navigate
                                             wire:click="markAsRead('{{ $notification['id'] }}')"
                                             variant="link" class="!text-xs-fluid !min-h-0">
                                             {{ $notification['action_text'] }}

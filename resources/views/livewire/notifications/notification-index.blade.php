@@ -98,19 +98,20 @@
 
                                     {{-- Actions --}}
                                     <div class="flex items-center gap-3 mt-3">
-                                        @if(!str_contains($data['action_url'] ?? '', '/storage/exports/'))
+                                        @if(($data['type'] ?? '') === 'export_completed')
+                                            {{-- Exportaciones: pestaña nueva para no romper historial de navegación --}}
                                             <x-button
                                                 href="{{ $data['action_url'] ?? '#' }}"
-                                                wire:navigate
+                                                target="_blank"
                                                 wire:click="markAsRead('{{ $notification->id }}')"
                                                 variant="link" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                             >
-                                                {{ $data['action_text'] ?? 'Ver detalle' }}
+                                                {{ $data['action_text'] ?? 'Descargar' }}
                                             </x-button>
                                         @else
                                             <x-button
                                                 href="{{ $data['action_url'] ?? '#' }}"
-                                                download
+                                                wire:navigate
                                                 wire:click="markAsRead('{{ $notification->id }}')"
                                                 variant="link" class="!text-xs-fluid !min-h-0 !py-1 !px-0"
                                             >

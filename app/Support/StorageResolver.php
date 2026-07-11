@@ -145,7 +145,52 @@ class StorageResolver
     }
 
     /**
-     * Retorna una respuesta HTTP de streaming inline o descarga para previsualización en navegador.
+     * Resuelve la URL de descarga óptima para el archivo dado su disco:
+     *
+     * - S3/Tigris: genera una URL pre-firmada temporal (el navegador descarga directamente
+     *   desde el bucket sin pasar por PHP). Esta es la única estrategia correcta para
+     *   archivos pesados en producción con almacenamiento en la nube.
+     *
+     * - Local/Public: redirige a la URL pública estática (storage_link) o usa
+     *   Storage::url() que resuelve correctamente en ambos discos.
+     *
+     * @param string|null $path
+     * @param string|null $preferredDisk
+     * @param int $expirationMinutes Minutos de validez de la URL pre-firmada (solo S3)
+     * @return string|null URL de descarga lista para redirigir o embeber en <a href>
+     */
+    public static function resolveDownloadUrl(?string $path, ?string $preferredDisk = null, int $expirationMinutes = 15): ?string
+    {
+        $resolved = self::resolve($path, $preferredDisk);
+
+        if (! $resolved) {
+            return null;
+        }
+
+        try {
+            $actualPath = $resolved['path'] ?? $path;
+            $disk = $resolved['disk'];
+            $fs = $resolved['filesystem'];
+
+            // S3 / Tigris / cualquier driver compatible con pre-signed URLs
+            if (! in_array($disk, ['local', 'public'])) {
+                return $fs->temporaryUrl(
+                    $actualPath,
+                    now()->addMinutes($expirationMinutes),
+                    ['ResponseContentDisposition' => 'attachment; filename="' . basename($actualPath) . '"']
+                );
+            }
+
+            // Local / Public: la URL pública del disco ya resuelve correctamente
+            return $fs->url($actualPath);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Retorna una respuesta HTTP de streaming para previsualización inline (imágenes, PDFs).
+     * NO usar para descargas de archivos pesados; usar resolveDownloadUrl() en su lugar.
      *
      * @param string|null $path
      * @param string|null $preferredDisk
@@ -165,16 +210,20 @@ class StorageResolver
             $fs = $resolved['filesystem'];
             $mime = $fs->mimeType($actualPath) ?: 'application/octet-stream';
 
-            if (in_array($disk, ['local', 'public'])) {
-                return response()->file($fs->path($actualPath), [
-                    'Content-Type' => $mime,
-                    'Content-Disposition' => $disposition . '; filename="'.basename($actualPath).'"',
-                ]);
+            // Para S3, en vez de hacer stream PHP, redirigir directamente al bucket
+            if (! in_array($disk, ['local', 'public'])) {
+                try {
+                    $temporaryUrl = $fs->temporaryUrl($actualPath, now()->addMinutes(15));
+                    return redirect($temporaryUrl);
+                } catch (\Throwable $e) {
+                    // Fallback: stream manual si temporaryUrl no está disponible
+                }
             }
 
-            return $fs->response($actualPath, basename($actualPath), [
+            return response()->file($fs->path($actualPath), [
                 'Content-Type' => $mime,
-            ], $disposition);
+                'Content-Disposition' => $disposition . '; filename="' . basename($actualPath) . '"',
+            ]);
         } catch (\Throwable $e) {
             return null;
         }

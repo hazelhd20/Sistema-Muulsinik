@@ -96,8 +96,10 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
                 // Continuar si la sincronización remota falla, ya existe localmente
             }
 
-            // Notificar al usuario usando StorageResolver vía route('file.preview') sin especificar disco fijo para autodetectar
-            $downloadUrl = route('file.preview', ['path' => 'exports/' . $zipFileName, 'download' => 1]);
+            // Notificar al usuario: URL óptima (pre-signed S3 si está en la nube, o URL pública local)
+            // Usamos resolveDownloadUrl para evitar que el archivo pase por el proceso PHP (evita caracteres raros y atasco)
+            $downloadUrl = \App\Support\StorageResolver::resolveDownloadUrl('exports/' . $zipFileName)
+                ?? route('file.preview', ['path' => 'exports/' . $zipFileName, 'download' => 1]);
             $user->notify(new ExportCompleted($zipFileName, $downloadUrl, 'Tus requisiciones en formato PDF están listas para descargar.'));
         }
     }
