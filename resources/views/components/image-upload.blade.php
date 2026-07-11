@@ -116,13 +116,13 @@
 
             <label for="{{ $inputId }}"
                 wire:loading.class="pointer-events-none opacity-50 select-none" wire:target="{{ $modelName }}"
-                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-w-[7rem] rounded-md border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs">
-                <span wire:loading.remove wire:target="{{ $modelName }}" class="inline-flex items-center justify-center gap-1.5">
+                class="relative inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-w-[7rem] min-h-[2rem] rounded-md border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs overflow-hidden">
+                <span wire:loading.class="opacity-0" wire:target="{{ $modelName }}" class="inline-flex items-center justify-center gap-1.5 transition-opacity">
                     <x-lucide-upload class="w-3.5 h-3.5 text-text-muted shrink-0" />
                     <template x-if="localPreview || (!isRemoving && @js((bool)$currentUrl))"><span>Cambiar imagen</span></template>
                     <template x-if="!localPreview && (isRemoving || !@js((bool)$currentUrl))"><span>Subir imagen</span></template>
                 </span>
-                <span wire:loading wire:target="{{ $modelName }}" class="inline-flex items-center justify-center text-center font-medium">Subiendo...</span>
+                <span wire:loading.flex wire:target="{{ $modelName }}" class="absolute inset-0 items-center justify-center text-center font-medium pointer-events-none">Subiendo...</span>
             </label>
 
             <template x-if="localPreview || (!isRemoving && @js((bool)$currentUrl))">
