@@ -101,11 +101,12 @@ Route::middleware('auth')->group(function () {
     // Notificaciones
     Route::get('/notificaciones', NotificationIndex::class)->name('notifications.index');
 
-    // Previsualización de archivos
+    // Previsualización y descarga de archivos vía StorageResolver
     Route::get('/preview-file', function (Request $request) {
         $path = $request->query('path');
         $disk = $request->query('disk');
+        $disposition = $request->query('download') ? 'attachment' : 'inline';
 
-        return \App\Support\StorageResolver::streamResponse($path, $disk) ?? abort(404);
+        return \App\Support\StorageResolver::streamResponse($path, $disk, $disposition) ?? abort(404);
     })->name('file.preview');
 });

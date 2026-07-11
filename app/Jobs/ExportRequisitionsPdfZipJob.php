@@ -85,8 +85,8 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
 
             $zip->close();
 
-            // Notificar al usuario (usamos URL relativa para evitar problemas con el puerto en artisan serve)
-            $downloadUrl = '/storage/exports/' . $zipFileName;
+            // Notificar al usuario usando StorageResolver vía route('file.preview') para evitar errores 404 en Railway
+            $downloadUrl = route('file.preview', ['path' => 'exports/' . $zipFileName, 'disk' => 'public', 'download' => 1]);
             $user->notify(new ExportCompleted($zipFileName, $downloadUrl, 'Tus requisiciones en formato PDF están listas para descargar.'));
         }
     }

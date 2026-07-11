@@ -136,9 +136,9 @@ class StorageResolver
      *
      * @param string|null $path
      * @param string|null $preferredDisk
-     * @return Response|null
+     * @param string $disposition 'inline' o 'attachment'
      */
-    public static function streamResponse(?string $path, ?string $preferredDisk = null): ?Response
+    public static function streamResponse(?string $path, ?string $preferredDisk = null, string $disposition = 'inline'): ?Response
     {
         $resolved = self::resolve($path, $preferredDisk);
 
@@ -154,13 +154,13 @@ class StorageResolver
             if (in_array($disk, ['local', 'public'])) {
                 return response()->file($fs->path($path), [
                     'Content-Type' => $mime,
-                    'Content-Disposition' => 'inline; filename="'.basename($path).'"',
+                    'Content-Disposition' => $disposition . '; filename="'.basename($path).'"',
                 ]);
             }
 
             return $fs->response($path, basename($path), [
                 'Content-Type' => $mime,
-            ], 'inline');
+            ], $disposition);
         } catch (\Throwable $e) {
             return null;
         }
