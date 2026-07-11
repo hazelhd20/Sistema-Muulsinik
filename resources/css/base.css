@@ -255,6 +255,7 @@ input::-ms-clear {
         -webkit-mask-image: radial-gradient(circle, white 100%, transparent 100%);
         mask-image: radial-gradient(circle, white 100%, transparent 100%);
         transform: translateZ(0);
+        isolation: isolate;
     }
 
     .gpu-clip-rounded {
@@ -262,6 +263,7 @@ input::-ms-clear {
         -webkit-mask-image: radial-gradient(white 100%, transparent 100%);
         mask-image: radial-gradient(white 100%, transparent 100%);
         transform: translateZ(0);
+        isolation: isolate;
     }
 }
 
