@@ -115,10 +115,9 @@
                 class="hidden">
 
             <label for="{{ $inputId }}"
-                wire:loading.class="pointer-events-none opacity-60" wire:target="{{ $modelName }}"
+                wire:loading.class="pointer-events-none opacity-50 select-none" wire:target="{{ $modelName }}"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs">
-                <x-lucide-upload wire:loading.remove wire:target="{{ $modelName }}" class="w-3.5 h-3.5 text-text-muted shrink-0" />
-                <x-lucide-loader-2 wire:loading wire:target="{{ $modelName }}" class="w-3.5 h-3.5 text-primary-600 animate-spin shrink-0" />
+                <x-lucide-upload class="w-3.5 h-3.5 text-text-muted shrink-0" />
                 <span wire:loading.remove wire:target="{{ $modelName }}">
                     <template x-if="localPreview || (!isRemoving && @js((bool)$currentUrl))"><span>Cambiar imagen</span></template>
                     <template x-if="!localPreview && (isRemoving || !@js((bool)$currentUrl))"><span>Subir imagen</span></template>
