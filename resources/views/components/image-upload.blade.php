@@ -79,7 +79,7 @@
             @else
                 <div class="flex flex-col items-center justify-center text-text-muted gap-1 text-center">
                     <x-lucide-image class="w-7 h-7 text-text-muted/60 stroke-[1.5]" />
-                    <span class="text-[10px] font-medium leading-tight">Sin imagen</span>
+                    <span class="text-xs-fluid font-medium leading-tight">Sin imagen</span>
                 </div>
             @endif
         </template>
@@ -88,7 +88,7 @@
         <template x-if="!localPreview && isRemoving">
             <div class="flex flex-col items-center justify-center text-text-muted gap-1 text-center">
                 <x-lucide-image class="w-7 h-7 text-text-muted/60 stroke-[1.5]" />
-                <span class="text-[10px] font-medium leading-tight">Sin imagen</span>
+                <span class="text-xs-fluid font-medium leading-tight">Sin imagen</span>
             </div>
         </template>
 
@@ -116,7 +116,7 @@
 
             <label for="{{ $inputId }}"
                 wire:loading.class="pointer-events-none opacity-60" wire:target="{{ $modelName }}"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs">
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-text-primary hover:bg-surface-hover text-xs font-medium cursor-pointer transition-colors shadow-2xs">
                 <x-lucide-upload wire:loading.remove wire:target="{{ $modelName }}" class="w-3.5 h-3.5 text-text-muted shrink-0" />
                 <x-lucide-loader-2 wire:loading wire:target="{{ $modelName }}" class="w-3.5 h-3.5 text-primary-600 animate-spin shrink-0" />
                 <span wire:loading.remove wire:target="{{ $modelName }}">
@@ -128,7 +128,7 @@
 
             <template x-if="localPreview || (!isRemoving && @js((bool)$currentUrl))">
                 <button type="button" @click="clearImage()"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium text-danger hover:bg-danger/10 transition-colors cursor-pointer">
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-danger hover:bg-danger/10 transition-colors cursor-pointer">
                     <x-lucide-trash-2 class="w-3.5 h-3.5 shrink-0" />
                     <span>Eliminar</span>
                 </button>
