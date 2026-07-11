@@ -345,12 +345,8 @@
                             {{-- Menú de Exportación (Inline CSS positioning) --}}
                             <div class="relative inline-flex" x-data="{ open: false }" @click.outside="open = false">
                                 <x-button variant="secondary" icon="file-down" @click="open = !open"
-                                    wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed"
-                                    wire:loading.attr="disabled">
-                                    <span wire:loading.remove
-                                        wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportar</span>
-                                    <span wire:loading
-                                        wire:target="exportPdfZip, exportCsvSummary, exportCsvDetailed">Exportando...</span>
+                                    target="exportPdfZip, exportCsvSummary, exportCsvDetailed">
+                                    Exportar
                                 </x-button>
 
                                 <div x-show="open" x-transition:enter="transition-premium"
@@ -404,17 +400,15 @@
                                 </div>
                                 <div x-show="!canApproveSelection" x-cloak>
                                     <x-button size="sm" wire:click="exportPdfZip" variant="secondary" icon="file-archive"
-                                        wire:loading.attr="disabled" wire:target="exportPdfZip">
-                                        <span wire:loading.remove wire:target="exportPdfZip">Exportar ZIP</span>
-                                        <span wire:loading wire:target="exportPdfZip">ZIP...</span>
+                                        target="exportPdfZip">
+                                        Exportar ZIP
                                     </x-button>
                                 </div>
                             @else
                                 <div>
                                     <x-button size="sm" wire:click="exportPdfZip" variant="secondary" icon="file-archive"
-                                        wire:loading.attr="disabled" wire:target="exportPdfZip">
-                                        <span wire:loading.remove wire:target="exportPdfZip">Exportar ZIP</span>
-                                        <span wire:loading wire:target="exportPdfZip">ZIP...</span>
+                                        target="exportPdfZip">
+                                        Exportar ZIP
                                     </x-button>
                                 </div>
                             @endif
