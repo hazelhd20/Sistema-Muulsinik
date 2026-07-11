@@ -3,6 +3,7 @@
 namespace App\Livewire\Settings;
 
 use App\Models\Setting;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -44,36 +45,37 @@ class SettingsCompany extends Component
         }
 
         $this->validate([
-            'company_name' => 'required|string|max:150',
-            'company_rfc' => 'nullable|string|max:13',
-            'company_address' => 'nullable|string|max:255',
-            'company_phone' => 'nullable|string|max:20',
-            'company_email' => 'nullable|email|max:100',
-            'newLogo' => 'nullable|image|max:1024',
+            'company_name' => 'required|string|max:255',
+            'company_rfc' => 'nullable|string|max:20',
+            'company_address' => 'nullable|string|max:500',
+            'company_phone' => 'nullable|string|max:50',
+            'company_email' => 'nullable|email|max:255',
+            'newLogo' => 'nullable|image|max:2048', // max 2MB
         ]);
 
-        $disk = config('filesystems.default');
-        if ($this->remove_logo && ! $this->newLogo) {
+        if ($this->remove_logo && $this->company_logo) {
             \App\Support\StorageResolver::delete($this->company_logo);
-            Setting::set('company_logo', null, 'string');
+            Setting::set('company_logo', null);
             $this->company_logo = null;
-            $this->remove_logo = false;
-        } elseif ($this->newLogo) {
-            \App\Support\StorageResolver::delete($this->company_logo);
-            $path = $this->newLogo->store('company', $disk);
-            $this->company_logo = $path;
-            Setting::set('company_logo', $path, 'string');
-            $this->newLogo = null;
             $this->remove_logo = false;
         }
 
-        Setting::set('company_name', $this->company_name, 'string');
-        Setting::set('company_rfc', $this->company_rfc, 'string');
-        Setting::set('company_address', $this->company_address, 'string');
-        Setting::set('company_phone', $this->company_phone, 'string');
-        Setting::set('company_email', $this->company_email, 'string');
+        if ($this->newLogo) {
+            if ($this->company_logo) {
+                \App\Support\StorageResolver::delete($this->company_logo);
+            }
+            // Guardamos directamente con path relativo ("company") para compatibilidad multi-disco S3/local
+            $path = $this->newLogo->store('company', 'public');
+            Setting::set('company_logo', $path);
+            $this->company_logo = $path;
+            $this->newLogo = null;
+        }
 
-        Setting::clearCache();
+        Setting::set('company_name', $this->company_name);
+        Setting::set('company_rfc', $this->company_rfc);
+        Setting::set('company_address', $this->company_address);
+        Setting::set('company_phone', $this->company_phone);
+        Setting::set('company_email', $this->company_email);
 
         $this->dispatch('toast', ['icon' => 'success', 'message' => 'Datos de empresa guardados correctamente.']);
     }
@@ -91,9 +93,9 @@ class SettingsCompany extends Component
 
     /**
      * Resuelve la URL del logo sin round-trip PHP: S3 pre-signed URL o URL pública local.
-     * Livewire expone esto como $company_logo_url en la vista automáticamente.
      */
-    public function getCompanyLogoUrlProperty(): ?string
+    #[Computed]
+    public function companyLogoUrl(): ?string
     {
         if (! $this->company_logo) {
             return null;

@@ -163,26 +163,44 @@ class StorageResolver
      */
     public static function resolveUrl(?string $path, ?string $preferredDisk = null, int $expirationMinutes = 60): ?string
     {
-        $resolved = self::resolve($path, $preferredDisk);
-
-        if (! $resolved) {
+        if (! $path || str_contains($path, '..')) {
             return null;
         }
 
-        try {
-            $actualPath = $resolved['path'] ?? $path;
-            $disk = $resolved['disk'];
-            $fs = $resolved['filesystem'];
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, 'data:')) {
+            return $path;
+        }
 
-            // S3 / Tigris: pre-signed URL inline (sin attachment, sin PHP como intermediario)
-            if (! in_array($disk, ['local', 'public'])) {
-                return $fs->temporaryUrl($actualPath, now()->addMinutes($expirationMinutes));
+        // Intento directo ultrarrápido sin verificación de red (sin self::resolve que ejecuta exists/HeadObject en S3)
+        try {
+            $diskName = $preferredDisk ?: config('filesystems.default');
+            $fs = Storage::disk($diskName);
+
+            if (! in_array($diskName, ['local', 'public'])) {
+                return $fs->temporaryUrl($path, now()->addMinutes($expirationMinutes));
             }
 
-            // Local / Public: URL estática directa
-            return $fs->url($actualPath);
+            return $fs->url($path);
         } catch (\Throwable $e) {
-            return null;
+            // Si el intento directo falla (ej. disco no soportado en local), hacemos resolución con candidatos
+            $resolved = self::resolve($path, $preferredDisk);
+            if (! $resolved) {
+                return null;
+            }
+
+            try {
+                $actualPath = $resolved['path'] ?? $path;
+                $disk = $resolved['disk'];
+                $fs = $resolved['filesystem'];
+
+                if (! in_array($disk, ['local', 'public'])) {
+                    return $fs->temporaryUrl($actualPath, now()->addMinutes($expirationMinutes));
+                }
+
+                return $fs->url($actualPath);
+            } catch (\Throwable $e2) {
+                return null;
+            }
         }
     }
     /**
