@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\RequisitionExportController;
 use App\Http\Controllers\RequisitionPdfController;
+use App\Http\Controllers\ReportExportController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Expenses\ExpenseIndex;
@@ -62,6 +64,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/requisiciones/subir-cotizacion', QuotationWizard::class)->name('requisiciones.upload');
     Route::get('/requisiciones/{id}', RequisitionShow::class)->name('requisiciones.show');
     Route::get('/requisiciones/{id}/pdf', [RequisitionPdfController::class, 'download'])->name('requisiciones.pdf');
+
+    // Exportaciones de Requisiciones (rutas HTTP puras — fuera del ciclo Livewire para StreamedResponse limpio)
+    Route::get('/exportar/requisiciones/csv', [RequisitionExportController::class, 'csv'])->name('requisiciones.export.csv');
+
+    // Exportaciones de Reportes
+    Route::get('/exportar/reportes/csv', [ReportExportController::class, 'csv'])->name('reportes.export.csv');
+    Route::get('/exportar/reportes/excel', [ReportExportController::class, 'excel'])->name('reportes.export.excel');
 
     // Proveedores (RF-PROV)
     Route::get('/proveedores', SupplierIndex::class)->name('proveedores.index');

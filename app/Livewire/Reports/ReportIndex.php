@@ -57,22 +57,32 @@ class ReportIndex extends Component
     }
 
 
-    public function exportCsv(\App\Actions\Reports\ExportReportAction $exportAction)
+    public function exportCsv()
     {
         if ($this->denyUnless('reportes.ver')) {
             return null;
         }
 
-        return $exportAction->executeCsv($this->activeTab, $this->getDateFrom(), $this->projectFilter ?: null);
+        // Redirige al Controller HTTP dedicado con los filtros actuales del componente.
+        // Navigate: false garantiza que el navegador descargue el CSV sin que Livewire intercepte la respuesta.
+        $this->redirect(route('reportes.export.csv', [
+            'tab'            => $this->activeTab,
+            'period'         => $this->period,
+            'project_filter' => $this->projectFilter ?: null,
+        ]), navigate: false);
     }
 
-    public function exportExcel(\App\Actions\Reports\ExportReportAction $exportAction)
+    public function exportExcel()
     {
         if ($this->denyUnless('reportes.ver')) {
             return null;
         }
 
-        return $exportAction->executeExcel($this->activeTab, $this->getDateFrom(), $this->projectFilter ?: null);
+        $this->redirect(route('reportes.export.excel', [
+            'tab'            => $this->activeTab,
+            'period'         => $this->period,
+            'project_filter' => $this->projectFilter ?: null,
+        ]), navigate: false);
     }
 
     /** Datos para la pestaña de Resumen General */

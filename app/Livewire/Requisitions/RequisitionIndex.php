@@ -18,8 +18,9 @@ use App\Services\RequisitionWorkflowService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use App\Actions\Requisitions\ExportRequisitionsCsvAction;
 use App\Enums\RequisitionStatus;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -298,30 +299,40 @@ class RequisitionIndex extends Component
         $this->selectedRows = [];
     }
 
-    /** Exportación masiva de requisiciones seleccionadas a formato CSV (Resumen). */
-    public function exportCsvSummary(ExportRequisitionsCsvAction $action)
+    /**
+     * Exportación CSV Resumen: almacena IDs en sesión con token de un solo uso y redirige
+     * al Controller HTTP dedicado para evitar que Livewire corrompa la respuesta binaria.
+     */
+    public function exportCsvSummary()
     {
         if (empty($this->selectedRows)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
             return;
         }
 
-        $response = $action->execute($this->selectedRows, 'summary');
+        $token = Str::random(32);
+        Session::put("export_csv_{$token}", ['ids' => $this->selectedRows, 'type' => 'summary']);
         $this->selectedRows = [];
-        return $response;
+
+        $this->redirect(route('requisiciones.export.csv', ['token' => $token]), navigate: false);
     }
 
-    /** Exportación masiva de requisiciones seleccionadas a formato CSV (Detallado con Ítems). */
-    public function exportCsvDetailed(ExportRequisitionsCsvAction $action)
+    /**
+     * Exportación CSV Detallado: almacena IDs en sesión con token de un solo uso y redirige
+     * al Controller HTTP dedicado para evitar que Livewire corrompa la respuesta binaria.
+     */
+    public function exportCsvDetailed()
     {
         if (empty($this->selectedRows)) {
             $this->dispatch('toast', ['icon' => 'warning', 'message' => 'No hay requisiciones seleccionadas para exportar.']);
             return;
         }
 
-        $response = $action->execute($this->selectedRows, 'detailed');
+        $token = Str::random(32);
+        Session::put("export_csv_{$token}", ['ids' => $this->selectedRows, 'type' => 'detailed']);
         $this->selectedRows = [];
-        return $response;
+
+        $this->redirect(route('requisiciones.export.csv', ['token' => $token]), navigate: false);
     }
 
     /** Exportación masiva de requisiciones seleccionadas a PDFs en un archivo ZIP (Asíncrono). */
