@@ -62,8 +62,8 @@
      "
      class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-surface-alt border border-border">
 
-    {{-- Caja del Logotipo / Imagen con GPU Masking para evitar subpíxel fringe --}}
-    <div class="relative {{ $containerClasses }} rounded-lg shrink-0 select-none flex items-center justify-center overflow-hidden [mask-image:radial-gradient(circle,white_100%,transparent_100%)] [-webkit-mask-image:radial-gradient(circle,white_100%,transparent_100%)] [transform:translateZ(0)] border border-dashed border-border bg-surface p-2 shadow-sm">
+    {{-- Caja del Logotipo / Imagen con GPU Masking centralizado en base.css para evitar subpíxel fringe --}}
+    <div class="relative {{ $containerClasses }} rounded-lg gpu-clip-rounded shrink-0 select-none flex items-center justify-center border border-dashed border-border bg-surface p-2 shadow-sm">
         
         {{-- 1. Previsualización Local instantánea en memoria RAM (Zero-Flicker) --}}
         <template x-if="localPreview">

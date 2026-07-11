@@ -247,4 +247,22 @@ input::-ms-clear {
     display: none !important;
 }
 
+/* 9. Aceleración GPU y enmascaramiento por hardware para recortes perfectos sin escalón subpíxel en modo oscuro */
+@layer utilities {
+    .gpu-clip-circle {
+        border-radius: 9999px;
+        overflow: hidden;
+        -webkit-mask-image: radial-gradient(circle, white 100%, transparent 100%);
+        mask-image: radial-gradient(circle, white 100%, transparent 100%);
+        transform: translateZ(0);
+    }
+
+    .gpu-clip-rounded {
+        overflow: hidden;
+        -webkit-mask-image: radial-gradient(white 100%, transparent 100%);
+        mask-image: radial-gradient(white 100%, transparent 100%);
+        transform: translateZ(0);
+    }
+}
+
 
