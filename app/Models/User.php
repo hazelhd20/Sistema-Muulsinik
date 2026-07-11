@@ -78,16 +78,25 @@ class User extends Authenticatable
     }
 
     /**
-     * Retorna la URL completa de la fotografía del avatar o null si no tiene.
+     * Retorna la URL óptima de la fotografía del avatar sin pasar por PHP:
+     * - S3/Tigris: URL pre-firmada temporal válida por 120 minutos (para cubrir una sesión laboral completa).
+     * - Local/Public: URL estática directa vía Storage::url().
+     * - URL externa (http/https): se retorna tal cual.
+     * - Sin avatar: null.
      */
     public function getAvatarUrlAttribute(): ?string
     {
-        if (!$this->avatar) {
+        if (! $this->avatar) {
             return null;
         }
+
+        // URL externa completa (ej. OAuth avatar) — no requiere resolución
         if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
             return $this->avatar;
         }
-        return route('file.preview', ['path' => $this->avatar]);
+
+        // Resolver sin round-trip PHP: S3 pre-signed URL o URL pública local
+        return \App\Support\StorageResolver::resolveUrl($this->avatar)
+            ?? route('file.preview', ['path' => $this->avatar]); // fallback defensivo
     }
 }

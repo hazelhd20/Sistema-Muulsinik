@@ -145,6 +145,47 @@ class StorageResolver
     }
 
     /**
+     * Resuelve la URL óptima para mostrar un archivo inline en el navegador (avatares, logos, imágenes).
+     *
+     * - S3/Tigris: genera una URL pre-firmada temporal SIN forzar descarga. El navegador
+     *   carga la imagen directamente desde el bucket sin pasar por PHP. Cero round-trips extra.
+     *
+     * - Local/Public: usa Storage::url() que apunta directamente al servidor estático.
+     *   En local con storage:link resuelve a /storage/...; en producción con Nginx/Apache es directo.
+     *
+     * Diferencia con resolveDownloadUrl(): NO añade Content-Disposition: attachment.
+     * Usar resolveUrl() para <img src>, resolveDownloadUrl() para <a href download>.
+     *
+     * @param string|null $path
+     * @param string|null $preferredDisk
+     * @param int $expirationMinutes Minutos de validez de la URL pre-firmada (solo S3)
+     * @return string|null URL lista para embeber en <img src> o <a href> inline
+     */
+    public static function resolveUrl(?string $path, ?string $preferredDisk = null, int $expirationMinutes = 60): ?string
+    {
+        $resolved = self::resolve($path, $preferredDisk);
+
+        if (! $resolved) {
+            return null;
+        }
+
+        try {
+            $actualPath = $resolved['path'] ?? $path;
+            $disk = $resolved['disk'];
+            $fs = $resolved['filesystem'];
+
+            // S3 / Tigris: pre-signed URL inline (sin attachment, sin PHP como intermediario)
+            if (! in_array($disk, ['local', 'public'])) {
+                return $fs->temporaryUrl($actualPath, now()->addMinutes($expirationMinutes));
+            }
+
+            // Local / Public: URL estática directa
+            return $fs->url($actualPath);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+    /**
      * Resuelve la URL de descarga óptima para el archivo dado su disco:
      *
      * - S3/Tigris: genera una URL pre-firmada temporal (el navegador descarga directamente

@@ -3,7 +3,6 @@
 namespace App\Livewire\Settings;
 
 use App\Models\Setting;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -88,6 +87,20 @@ class SettingsCompany extends Component
 
         $this->remove_logo = true;
         $this->newLogo = null;
+    }
+
+    /**
+     * Resuelve la URL del logo sin round-trip PHP: S3 pre-signed URL o URL pública local.
+     * Livewire expone esto como $company_logo_url en la vista automáticamente.
+     */
+    public function getCompanyLogoUrlProperty(): ?string
+    {
+        if (! $this->company_logo) {
+            return null;
+        }
+
+        return \App\Support\StorageResolver::resolveUrl($this->company_logo)
+            ?? route('file.preview', ['path' => $this->company_logo]);
     }
 
     public function render()

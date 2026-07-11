@@ -267,7 +267,7 @@
                     @if($quotation)
                         <div class="flex-shrink-0">
                             <x-button type="button"
-                                @click="$dispatch('open-preview', { url: '{{ route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
+                                @click="$dispatch('open-preview', { url: '{{ \App\Support\StorageResolver::resolveUrl($quotation->file_path) ?? route('file.preview', ['path' => $quotation->file_path]) }}', type: '{{ str_ends_with(strtolower($quotation->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg' }}' })"
                                 variant="soft" icon="file-search" class="text-xs-fluid w-full sm:w-auto justify-center">
                                 Ver documento
                             </x-button>

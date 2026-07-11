@@ -24,7 +24,7 @@
                     @if($req->quotations->isNotEmpty())
                         @php
                             $firstQuot = $req->quotations->first();
-                            $fileUrl = route('file.preview', ['path' => $firstQuot->file_path]);
+                            $fileUrl = \App\Support\StorageResolver::resolveUrl($firstQuot->file_path) ?? route('file.preview', ['path' => $firstQuot->file_path]);
                             $mime = str_ends_with(strtolower($firstQuot->file_path), '.pdf') ? 'application/pdf' : 'image/jpeg';
                         @endphp
                         <x-dropdown-link as="button" type="button"
