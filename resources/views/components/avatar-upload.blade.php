@@ -57,8 +57,8 @@
      "
      class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-surface-alt border border-border">
 
-    {{-- Círculo del Avatar (80x80px sin bordes) --}}
-    <div class="relative w-20 h-20 rounded-full shrink-0 select-none flex items-center justify-center overflow-hidden shadow-md">
+    {{-- Círculo del Avatar (80x80px sin bordes con GPU Masking para cero subpíxel fringe en modo oscuro) --}}
+    <div class="relative w-20 h-20 rounded-full shrink-0 select-none flex items-center justify-center overflow-hidden [mask-image:radial-gradient(circle,white_100%,transparent_100%)] [-webkit-mask-image:radial-gradient(circle,white_100%,transparent_100%)] [transform:translateZ(0)] shadow-md">
         
         {{-- 1. Previsualización Local instantánea en memoria RAM (Zero-Flicker) --}}
         <template x-if="localPreview">
@@ -91,7 +91,7 @@
 
         {{-- Indicador de carga central súper suave sin bordes ni halos en modo oscuro --}}
         <div wire:loading.flex wire:target="{{ $modelName }}"
-            class="absolute -inset-1 z-20 bg-black/75 items-center justify-center transition-all duration-200">
+            class="absolute inset-0 z-20 w-full h-full bg-black/75 items-center justify-center transition-all duration-200">
             <x-lucide-loader-2 class="w-6 h-6 text-white animate-spin shrink-0" />
         </div>
     </div>
