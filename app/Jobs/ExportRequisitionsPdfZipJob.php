@@ -85,8 +85,19 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
 
             $zip->close();
 
-            // Notificar al usuario usando StorageResolver vía route('file.preview') para evitar errores 404 en Railway
-            $downloadUrl = route('file.preview', ['path' => 'exports/' . $zipFileName, 'disk' => 'public', 'download' => 1]);
+            // Guardar o replicar en el disco predeterminado del sistema (ej. S3 en producción si está configurado) y en el disco público
+            try {
+                $content = file_get_contents($zipFilePath);
+                if (config('filesystems.default') !== 'public' && config('filesystems.default') !== 'local') {
+                    Storage::disk(config('filesystems.default'))->put('exports/' . $zipFileName, $content);
+                }
+                Storage::disk('public')->put('exports/' . $zipFileName, $content);
+            } catch (\Throwable $e) {
+                // Continuar si la sincronización remota falla, ya existe localmente
+            }
+
+            // Notificar al usuario usando StorageResolver vía route('file.preview') sin especificar disco fijo para autodetectar
+            $downloadUrl = route('file.preview', ['path' => 'exports/' . $zipFileName, 'download' => 1]);
             $user->notify(new ExportCompleted($zipFileName, $downloadUrl, 'Tus requisiciones en formato PDF están listas para descargar.'));
         }
     }

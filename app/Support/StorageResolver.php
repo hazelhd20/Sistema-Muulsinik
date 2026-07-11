@@ -28,6 +28,15 @@ class StorageResolver
             return null;
         }
 
+        $cleanPath = ltrim(str_replace(['storage/app/public/', 'storage/app/private/', 'storage/', 'public/', 'app/private/'], '', $path), '/');
+        $candidates = array_unique(array_filter([
+            $path,
+            $cleanPath,
+            'exports/' . basename($path),
+            'public/exports/' . basename($path),
+            basename($path)
+        ]));
+
         $disks = array_filter([
             $preferredDisk,
             config('filesystems.default'),
@@ -41,8 +50,10 @@ class StorageResolver
         foreach ($disks as $diskName) {
             try {
                 $fs = Storage::disk($diskName);
-                if ($fs->exists($path)) {
-                    return ['disk' => $diskName, 'filesystem' => $fs];
+                foreach ($candidates as $candidate) {
+                    if ($fs->exists($candidate)) {
+                        return ['disk' => $diskName, 'filesystem' => $fs, 'path' => $candidate];
+                    }
                 }
             } catch (\Throwable $e) {
                 continue;
@@ -99,7 +110,8 @@ class StorageResolver
         }
 
         try {
-            return $resolved['filesystem']->get($path);
+            $actualPath = $resolved['path'] ?? $path;
+            return $resolved['filesystem']->get($actualPath);
         } catch (\Throwable $e) {
             return null;
         }
@@ -121,9 +133,10 @@ class StorageResolver
         }
 
         try {
+            $actualPath = $resolved['path'] ?? $path;
             $fs = $resolved['filesystem'];
-            $mime = $fs->mimeType($path) ?: 'application/octet-stream';
-            $content = $fs->get($path);
+            $mime = $fs->mimeType($actualPath) ?: 'application/octet-stream';
+            $content = $fs->get($actualPath);
 
             return 'data:'.$mime.';base64,'.base64_encode($content);
         } catch (\Throwable $e) {
@@ -147,18 +160,19 @@ class StorageResolver
         }
 
         try {
+            $actualPath = $resolved['path'] ?? $path;
             $disk = $resolved['disk'];
             $fs = $resolved['filesystem'];
-            $mime = $fs->mimeType($path) ?: 'application/octet-stream';
+            $mime = $fs->mimeType($actualPath) ?: 'application/octet-stream';
 
             if (in_array($disk, ['local', 'public'])) {
-                return response()->file($fs->path($path), [
+                return response()->file($fs->path($actualPath), [
                     'Content-Type' => $mime,
-                    'Content-Disposition' => $disposition . '; filename="'.basename($path).'"',
+                    'Content-Disposition' => $disposition . '; filename="'.basename($actualPath).'"',
                 ]);
             }
 
-            return $fs->response($path, basename($path), [
+            return $fs->response($actualPath, basename($actualPath), [
                 'Content-Type' => $mime,
             ], $disposition);
         } catch (\Throwable $e) {
