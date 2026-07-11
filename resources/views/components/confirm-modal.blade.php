@@ -106,17 +106,17 @@
                         @click="execute()"
                         :disabled="loading"
                         :class="confirmBtnClass"
-                        class="relative min-w-[90px]">
+                        class="relative inline-flex items-center justify-center min-w-[90px]">
 
                     {{-- Texto (se oculta durante loading) --}}
                     <span :class="loading ? 'opacity-0' : 'opacity-100'"
-                          class="inline-flex items-center gap-1.5 transition-opacity"
+                          class="inline-flex items-center justify-center gap-1.5 transition-opacity"
                           x-text="confirmLabel"></span>
 
                     {{-- Spinner durante loading --}}
                     <span x-show="loading"
-                          class="absolute inset-0 flex items-center justify-center">
-                        <span class="spinner spinner-sm"></span>
+                          class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span class="spinner spinner-sm block"></span>
                     </span>
 
                 </button>

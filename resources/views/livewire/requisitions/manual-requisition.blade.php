@@ -71,8 +71,8 @@
                         <input wire:model.live.debounce.300ms="searchQuery" @focus="open = true" @input="open = true" type="text"
                             class="input w-full pl-10 border-border focus:border-primary-500 bg-surface-card"
                             placeholder="Buscar producto del catálogo para agregar...">
-                        <div wire:loading wire:target="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2">
-                            <span class="spinner spinner-sm"></span>
+                        <div wire:loading.flex wire:target="searchQuery" class="absolute right-3 top-0 bottom-0 items-center justify-center pointer-events-none">
+                            <span class="spinner spinner-sm block"></span>
                         </div>
                     </div>
 

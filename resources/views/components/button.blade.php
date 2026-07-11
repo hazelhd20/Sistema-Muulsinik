@@ -99,8 +99,8 @@
 
         @if($target)
             </span>
-            <span wire:loading wire:target="{{ $target }}" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                <span class="spinner spinner-sm"></span>
+            <span wire:loading.flex wire:target="{{ $target }}" class="absolute inset-0 items-center justify-center pointer-events-none">
+                <span class="spinner spinner-sm block"></span>
             </span>
         @endif
     </button>
