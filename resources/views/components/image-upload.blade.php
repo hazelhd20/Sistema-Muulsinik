@@ -92,9 +92,9 @@
             </div>
         </template>
 
-        {{-- Indicador de carga central súper suave (wire:loading.flex) --}}
+        {{-- Indicador de carga central súper suave sin bordes ni halos en modo oscuro --}}
         <div wire:loading.flex wire:target="{{ $modelName }}"
-            class="absolute inset-0 z-20 w-full h-full bg-black/65 backdrop-blur-[1px] items-center justify-center transition-all duration-200">
+            class="absolute -inset-1 z-20 bg-black/75 items-center justify-center transition-all duration-200">
             <x-lucide-loader-2 class="w-6 h-6 text-white animate-spin shrink-0" />
         </div>
     </div>
