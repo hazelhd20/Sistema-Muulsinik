@@ -41,12 +41,16 @@ class ProcessQuotationJob implements ShouldQueue
         $quotation->update(['status' => 'processing']);
 
         try {
-            $disk = Storage::disk(config('filesystems.default'));
             $extension = pathinfo($quotation->original_filename, PATHINFO_EXTENSION);
             
-            // Descargar temporalmente el archivo desde S3/Tigris/local para que los parsers (IA/Excel) puedan leerlo físicamente
+            // Descargar temporalmente el archivo desde cualquier disco (S3/Tigris/local) usando StorageResolver
+            $content = \App\Support\StorageResolver::getContent($quotation->file_path);
+            if (! $content) {
+                throw new \Exception("No se encontró el archivo '{$quotation->file_path}' en ningún disco disponible.");
+            }
+            
             $tempPath = sys_get_temp_dir() . '/' . uniqid('quote_') . '.' . $extension;
-            file_put_contents($tempPath, $disk->get($quotation->file_path));
+            file_put_contents($tempPath, $content);
 
             $mimeType = $quotation->file_type ?? mime_content_type($tempPath);
 

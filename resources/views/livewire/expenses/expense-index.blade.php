@@ -182,7 +182,7 @@
 
                                                 <x-slot name="content">
                                                     @if($expense->receipt_file)
-                                                        <x-dropdown-link href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" icon="file-text">
+                                                        <x-dropdown-link href="{{ route('file.preview', ['path' => $expense->receipt_file]) }}" target="_blank" icon="file-text">
                                                             Ver comprobante
                                                         </x-dropdown-link>
                                                     @endif
@@ -256,7 +256,7 @@
                                                 </x-slot>
                                                 <x-slot name="content">
                                                     @if($expense->receipt_file)
-                                                        <x-dropdown-link href="{{ asset('storage/' . $expense->receipt_file) }}" target="_blank" icon="file-text">Ver comprobante</x-dropdown-link>
+                                                        <x-dropdown-link href="{{ route('file.preview', ['path' => $expense->receipt_file]) }}" target="_blank" icon="file-text">Ver comprobante</x-dropdown-link>
                                                     @endif
                                                     @if(auth()->user()?->hasPermission('gastos.eliminar') || auth()->user()?->hasPermission('*'))
                                                         <x-dropdown-link as="button" type="button" @click="$dispatch('confirm-action', { title: 'Confirmar Acción', description: '¿Eliminar este gasto? Esta acción no puede deshacerse.', confirmLabel: 'Eliminar', variant: 'danger', action: 'deleteExpense', params: [{{ $expense->id }}] })" danger="true" icon="trash-2">Eliminar</x-dropdown-link>

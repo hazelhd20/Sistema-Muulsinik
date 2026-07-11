@@ -29,14 +29,9 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
         if (!$user) return;
 
         // Recuperar configuraciones globales una sola vez para no consultar la BD en cada ciclo
-        $companyLogo = Setting::get('company_logo');
-        $logoData = null;
+        $logoData = \App\Support\StorageResolver::getAsDataUri(Setting::get('company_logo'));
 
-        if ($companyLogo && Storage::disk('public')->exists($companyLogo)) {
-            $logoPath = Storage::disk('public')->path($companyLogo);
-            $mimeType = mime_content_type($logoPath);
-            $logoData = 'data:'.$mimeType.';base64,'.base64_encode(file_get_contents($logoPath));
-        } else {
+        if (!$logoData) {
             $logoPath = public_path('images/logo_muulsinik.svg');
             if (file_exists($logoPath)) {
                 $logoData = 'data:image/svg+xml;base64,'.base64_encode(file_get_contents($logoPath));

@@ -30,6 +30,9 @@ class UserRepository
                 }
 
                 if ($dto->avatar !== null) {
+                    if ($user->avatar && ($dto->avatar === '' || $dto->avatar !== $user->avatar)) {
+                        \App\Support\StorageResolver::delete($user->avatar);
+                    }
                     $updateData['avatar'] = $dto->avatar === '' ? null : $dto->avatar;
                 }
 

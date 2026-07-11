@@ -88,6 +88,6 @@ class User extends Authenticatable
         if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
             return $this->avatar;
         }
-        return asset('storage/' . $this->avatar);
+        return route('file.preview', ['path' => $this->avatar]);
     }
 }

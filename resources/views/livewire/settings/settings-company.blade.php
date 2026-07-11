@@ -20,7 +20,7 @@
                 <div class="flex items-center gap-6">
                     @if($company_logo && !$newLogo && !$remove_logo)
                         <div class="relative shrink-0" wire:loading.class="hidden" wire:target="newLogo">
-                            <img src="{{ asset('storage/' . $company_logo) }}" alt="Logo actual de la empresa"
+                            <img src="{{ route('file.preview', ['path' => $company_logo]) }}" alt="Logo actual de la empresa"
                                  class="h-16 w-auto max-w-[10rem] object-contain border border-border rounded-lg p-1.5 bg-surface-card shadow-sm">
                             @if(auth()->user()?->hasPermission('configuracion.editar') || auth()->user()?->hasPermission('*'))
                                 <button type="button" wire:click="deleteLogo"

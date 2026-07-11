@@ -122,7 +122,7 @@ class UserIndex extends Component
         if ($this->removePhoto) {
             $avatarPath = '';
         } elseif ($this->photo) {
-            $avatarPath = $this->photo->store('avatars', 'public');
+            $avatarPath = $this->photo->store('avatars', config('filesystems.default'));
         }
 
         $dto = new UserDTO(
@@ -162,7 +162,7 @@ class UserIndex extends Component
         if ($this->removePhoto) {
             $avatarPath = '';
         } elseif ($this->photo) {
-            $avatarPath = $this->photo->store('avatars', 'public');
+            $avatarPath = $this->photo->store('avatars', config('filesystems.default'));
         }
 
         $dto = new UserDTO(

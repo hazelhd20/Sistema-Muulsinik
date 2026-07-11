@@ -12,7 +12,8 @@
                 placeholder="" />
             <x-dropdown align="right" width="56">
                 <x-slot:trigger>
-                    <x-button variant="secondary" icon="download" iconRight="chevron-down" target="exportExcel, exportCsv">
+                    <x-button variant="secondary" icon="download" iconRight="chevron-down"
+                        target="exportExcel, exportCsv">
                         Exportar
                     </x-button>
                 </x-slot:trigger>
@@ -296,7 +297,8 @@
             {{-- KPI Cards --}}
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
                 <x-stat-card title="Gasto total del período" value="${{ number_format($totalExpenses, 0, '.', ',') }}"
-                    icon="dollar-sign" color="warning" :trend="$expensesTrend" :inverseTrend="true" trendLabel="vs periodo anterior" />
+                    icon="dollar-sign" color="warning" :trend="$expensesTrend" :inverseTrend="true"
+                    trendLabel="vs periodo anterior" />
 
                 <x-stat-card title="Transacciones" value="{{ $expenseCount }}" icon="receipt" color="primary"
                     :trend="$transactionsTrend" trendLabel="vs periodo anterior" />
@@ -304,8 +306,9 @@
                 <x-stat-card title="Requisiciones aprobadas" value="{{ $requisitionsApproved }}" icon="check-circle"
                     color="success" :trend="$requisitionsTrend" trendLabel="vs periodo anterior" />
 
-                <x-stat-card title="Ticket promedio por compra" value="${{ number_format($avgExpense, 0, '.', ',') }}" icon="credit-card"
-                    color="info" :trend="$avgExpenseTrend" :inverseTrend="true" trendLabel="vs periodo anterior" />
+                <x-stat-card title="Ticket promedio por compra" value="${{ number_format($avgExpense, 0, '.', ',') }}"
+                    icon="credit-card" color="info" :trend="$avgExpenseTrend" :inverseTrend="true"
+                    trendLabel="vs periodo anterior" />
             </div>
 
             {{-- Charts row --}}
@@ -327,87 +330,87 @@
                     @else
                         <div wire:key="overview-monthly-content" class="h-64 flex-1"
                             data-chart="{{ json_encode($monthlyData) }}" x-data="chartCanvas((data) => {
-                                     const style = getComputedStyle(document.documentElement);
-                                     const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
-                                     const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
-                                     const textMuted = style.getPropertyValue('--text-muted').trim() || '#475569';
-                                     const borderLight = style.getPropertyValue('--border-light').trim() || 'rgba(0,0,0,0.04)';
+                                             const style = getComputedStyle(document.documentElement);
+                                             const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
+                                             const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                                             const textMuted = style.getPropertyValue('--text-muted').trim() || '#475569';
+                                             const borderLight = style.getPropertyValue('--border-light').trim() || 'rgba(0,0,0,0.04)';
 
-                                     const hexToRgba = (hex, opacity) => {
-                                         hex = hex.trim();
-                                         if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
-                                             let c = hex.substring(1).split('');
-                                             if(c.length === 3){
-                                                 c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-                                             }
-                                             c = '0x' + c.join('');
-                                             return `rgba(${(c>>16)&255}, ${(c>>8)&255}, ${c&255}, ${opacity})`;
-                                         }
-                                         return hex;
-                                     };
-
-                                     return {
-                                         type: 'line',
-                                         data: {
-                                             labels: data.map(d => d.short),
-                                             datasets: [{
-                                                 label: 'Gastos',
-                                                 data: data.map(d => d.total),
-                                                 borderColor: primaryHex,
-                                                 backgroundColor: (context) => {
-                                                     const chart = context.chart;
-                                                     const {ctx, chartArea} = chart;
-                                                     if (!chartArea) return hexToRgba(primaryHex, 0.08);
-                                                     const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                                                     gradient.addColorStop(0, hexToRgba(primaryHex, 0.22));
-                                                     gradient.addColorStop(1, hexToRgba(primaryHex, 0.0));
-                                                     return gradient;
-                                                 },
-                                                 fill: true,
-                                                 tension: 0.35,
-                                                 borderWidth: 3,
-                                                 pointBackgroundColor: '#ffffff',
-                                                 pointBorderColor: primaryHex,
-                                                 pointBorderWidth: 2,
-                                                 pointRadius: 4,
-                                                 pointHoverRadius: 7,
-                                                 pointHoverBackgroundColor: primaryHex,
-                                                 pointHoverBorderColor: '#ffffff',
-                                                 pointHoverBorderWidth: 2,
-                                             }]
-                                         },
-                                         options: {
-                                             responsive: true,
-                                             maintainAspectRatio: false,
-                                             plugins: {
-                                                 legend: { display: false },
-                                                 tooltip: {
-                                                     padding: 12,
-                                                     cornerRadius: 10,
-                                                     boxPadding: 6,
-                                                     usePointStyle: true,
-                                                     titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '600' },
-                                                     bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
-                                                     callbacks: { label: ctx => ` Gastos: $${Number(ctx.parsed.y).toLocaleString()}` }
+                                             const hexToRgba = (hex, opacity) => {
+                                                 hex = hex.trim();
+                                                 if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+                                                     let c = hex.substring(1).split('');
+                                                     if(c.length === 3){
+                                                         c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                                                     }
+                                                     c = '0x' + c.join('');
+                                                     return `rgba(${(c>>16)&255}, ${(c>>8)&255}, ${c&255}, ${opacity})`;
                                                  }
-                                             },
-                                             scales: {
-                                                 x: {
-                                                     grid: { display: false },
-                                                     ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: textMuted }
+                                                 return hex;
+                                             };
+
+                                             return {
+                                                 type: 'line',
+                                                 data: {
+                                                     labels: data.map(d => d.short),
+                                                     datasets: [{
+                                                         label: 'Gastos',
+                                                         data: data.map(d => d.total),
+                                                         borderColor: primaryHex,
+                                                         backgroundColor: (context) => {
+                                                             const chart = context.chart;
+                                                             const {ctx, chartArea} = chart;
+                                                             if (!chartArea) return hexToRgba(primaryHex, 0.08);
+                                                             const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                                                             gradient.addColorStop(0, hexToRgba(primaryHex, 0.22));
+                                                             gradient.addColorStop(1, hexToRgba(primaryHex, 0.0));
+                                                             return gradient;
+                                                         },
+                                                         fill: true,
+                                                         tension: 0.35,
+                                                         borderWidth: 3,
+                                                         pointBackgroundColor: '#ffffff',
+                                                         pointBorderColor: primaryHex,
+                                                         pointBorderWidth: 2,
+                                                         pointRadius: 4,
+                                                         pointHoverRadius: 7,
+                                                         pointHoverBackgroundColor: primaryHex,
+                                                         pointHoverBorderColor: '#ffffff',
+                                                         pointHoverBorderWidth: 2,
+                                                     }]
                                                  },
-                                                 y: {
-                                                     grid: { color: borderLight },
-                                                     ticks: {
-                                                         font: { family: 'Plus Jakarta Sans', size: 11 },
-                                                         color: textMuted,
-                                                         callback: v => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`
+                                                 options: {
+                                                     responsive: true,
+                                                     maintainAspectRatio: false,
+                                                     plugins: {
+                                                         legend: { display: false },
+                                                         tooltip: {
+                                                             padding: 12,
+                                                             cornerRadius: 10,
+                                                             boxPadding: 6,
+                                                             usePointStyle: true,
+                                                             titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '600' },
+                                                             bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+                                                             callbacks: { label: ctx => ` Gastos: $${Number(ctx.parsed.y).toLocaleString()}` }
+                                                         }
+                                                     },
+                                                     scales: {
+                                                         x: {
+                                                             grid: { display: false },
+                                                             ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: textMuted }
+                                                         },
+                                                         y: {
+                                                             grid: { color: borderLight },
+                                                             ticks: {
+                                                                 font: { family: 'Plus Jakarta Sans', size: 11 },
+                                                                 color: textMuted,
+                                                                 callback: v => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`
+                                                             }
+                                                         }
                                                      }
                                                  }
-                                             }
-                                         }
-                                     };
-                                 })">
+                                             };
+                                         })">
                             <div wire:ignore class="h-full w-full">
                                 <canvas></canvas>
                             </div>
@@ -428,55 +431,55 @@
                         <div wire:key="overview-category-content" class="flex flex-col flex-1">
                             <div class="h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($expenseByCategory) }}" x-data="chartCanvas((data) => {
-                                         const labels = {{ json_encode($categoryLabels) }};
-                                         const style = getComputedStyle(document.documentElement);
-                                         const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
-                                         const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
-                                         const colors = [
-                                             style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
-                                             style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
-                                             style.getPropertyValue('--color-chart-3').trim() || '#0d9e6e',
-                                             style.getPropertyValue('--color-chart-4').trim() || '#d97706',
-                                             style.getPropertyValue('--color-chart-5').trim() || '#dc2626',
-                                             style.getPropertyValue('--color-chart-6').trim() || '#7c3aed',
-                                             style.getPropertyValue('--color-chart-7').trim() || '#db2777'
-                                         ];
-                                         return {
-                                             type: 'doughnut',
-                                             data: {
-                                                 labels: data.map(d => labels[d.category] || d.category),
-                                                 datasets: [{
-                                                     data: data.map(d => d.total),
-                                                     backgroundColor: colors.slice(0, data.length),
-                                                     borderWidth: 2,
-                                                     borderColor: cardBg,
-                                                     hoverOffset: 6,
-                                                 }]
-                                             },
-                                             options: {
-                                                 responsive: true,
-                                                 maintainAspectRatio: false,
-                                                 cutout: '72%',
-                                                 plugins: {
-                                                     legend: { display: false },
-                                                     tooltip: {
-                                                         padding: 10,
-                                                         cornerRadius: 8,
-                                                         usePointStyle: true,
-                                                         titleFont: { family: 'Plus Jakarta Sans', weight: '600' },
-                                                         bodyFont: { family: 'Plus Jakarta Sans' },
-                                                         callbacks: {
-                                                             label: (ctx) => {
-                                                                 const total = ctx.dataset.data.reduce((acc, val) => acc + Number(val), 0);
-                                                                 const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) + '%' : '0%';
-                                                                 return ` ${ctx.label}: $${Number(ctx.parsed).toLocaleString()} (${pct})`;
+                                                 const labels = {{ json_encode($categoryLabels) }};
+                                                 const style = getComputedStyle(document.documentElement);
+                                                 const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                                                 const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
+                                                 const colors = [
+                                                     style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
+                                                     style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
+                                                     style.getPropertyValue('--color-chart-3').trim() || '#0d9e6e',
+                                                     style.getPropertyValue('--color-chart-4').trim() || '#d97706',
+                                                     style.getPropertyValue('--color-chart-5').trim() || '#dc2626',
+                                                     style.getPropertyValue('--color-chart-6').trim() || '#7c3aed',
+                                                     style.getPropertyValue('--color-chart-7').trim() || '#db2777'
+                                                 ];
+                                                 return {
+                                                     type: 'doughnut',
+                                                     data: {
+                                                         labels: data.map(d => labels[d.category] || d.category),
+                                                         datasets: [{
+                                                             data: data.map(d => d.total),
+                                                             backgroundColor: colors.slice(0, data.length),
+                                                             borderWidth: 2,
+                                                             borderColor: cardBg,
+                                                             hoverOffset: 6,
+                                                         }]
+                                                     },
+                                                     options: {
+                                                         responsive: true,
+                                                         maintainAspectRatio: false,
+                                                         cutout: '72%',
+                                                         plugins: {
+                                                             legend: { display: false },
+                                                             tooltip: {
+                                                                 padding: 10,
+                                                                 cornerRadius: 8,
+                                                                 usePointStyle: true,
+                                                                 titleFont: { family: 'Plus Jakarta Sans', weight: '600' },
+                                                                 bodyFont: { family: 'Plus Jakarta Sans' },
+                                                                 callbacks: {
+                                                                     label: (ctx) => {
+                                                                         const total = ctx.dataset.data.reduce((acc, val) => acc + Number(val), 0);
+                                                                         const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) + '%' : '0%';
+                                                                         return ` ${ctx.label}: $${Number(ctx.parsed).toLocaleString()} (${pct})`;
+                                                                     }
+                                                                 }
                                                              }
                                                          }
                                                      }
-                                                 }
-                                             }
-                                         };
-                                     })">
+                                                 };
+                                             })">
                                 <div wire:ignore class="h-full w-full">
                                     <canvas></canvas>
                                 </div>
@@ -741,8 +744,7 @@
                                             <td>
                                                 <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
                                                 @if($product->measure_abbr)
-                                                    <x-badge variant="secondary"
-                                                        class="text-2xs">{{ $product->measure_abbr }}</x-badge>
+                                                    <x-badge variant="secondary" class="text-2xs">{{ $product->measure_abbr }}</x-badge>
                                                 @endif
                                             </td>
                                             <td>
@@ -781,57 +783,57 @@
                         <div wire:key="products-chart-content" class="flex flex-col flex-1">
                             <div class="h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($productsByCategory) }}" x-data="chartCanvas((data) => {
-                                         const style = getComputedStyle(document.documentElement);
-                                         const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
-                                         const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
-                                         const colors = [
-                                             style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
-                                             style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
-                                             style.getPropertyValue('--color-chart-3').trim() || '#0d9e6e',
-                                             style.getPropertyValue('--color-chart-4').trim() || '#d97706',
-                                             style.getPropertyValue('--color-chart-5').trim() || '#dc2626',
-                                             style.getPropertyValue('--color-chart-6').trim() || '#7c3aed',
-                                             style.getPropertyValue('--color-chart-7').trim() || '#db2777',
-                                             style.getPropertyValue('--color-chart-8').trim() || '#0891b2',
-                                             style.getPropertyValue('--color-chart-9').trim() || '#ea580c',
-                                             style.getPropertyValue('--color-chart-10').trim() || '#64748b'
-                                         ];
-                                         return {
-                                             type: 'doughnut',
-                                             data: {
-                                                 labels: data.map(d => d.category_name || 'Sin categoría'),
-                                                 datasets: [{
-                                                     data: data.map(d => d.total_amount),
-                                                     backgroundColor: colors.slice(0, data.length),
-                                                     borderWidth: 2,
-                                                     borderColor: cardBg,
-                                                     hoverOffset: 6,
-                                                 }]
-                                             },
-                                             options: {
-                                                 responsive: true,
-                                                 maintainAspectRatio: false,
-                                                 cutout: '72%',
-                                                 plugins: {
-                                                     legend: { display: false },
-                                                     tooltip: {
-                                                         padding: 10,
-                                                         cornerRadius: 8,
-                                                         usePointStyle: true,
-                                                         titleFont: { family: 'Plus Jakarta Sans', weight: '600' },
-                                                         bodyFont: { family: 'Plus Jakarta Sans' },
-                                                         callbacks: {
-                                                             label: (ctx) => {
-                                                                 const total = ctx.dataset.data.reduce((acc, val) => acc + Number(val), 0);
-                                                                 const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) + '%' : '0%';
-                                                                 return ` ${ctx.label}: $${Number(ctx.parsed).toLocaleString()} (${pct})`;
+                                                 const style = getComputedStyle(document.documentElement);
+                                                 const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';
+                                                 const cardBg = style.getPropertyValue('--surface-card').trim() || '#ffffff';
+                                                 const colors = [
+                                                     style.getPropertyValue('--color-chart-1').trim() || '#2563eb',
+                                                     style.getPropertyValue('--color-chart-2').trim() || '#0284c7',
+                                                     style.getPropertyValue('--color-chart-3').trim() || '#0d9e6e',
+                                                     style.getPropertyValue('--color-chart-4').trim() || '#d97706',
+                                                     style.getPropertyValue('--color-chart-5').trim() || '#dc2626',
+                                                     style.getPropertyValue('--color-chart-6').trim() || '#7c3aed',
+                                                     style.getPropertyValue('--color-chart-7').trim() || '#db2777',
+                                                     style.getPropertyValue('--color-chart-8').trim() || '#0891b2',
+                                                     style.getPropertyValue('--color-chart-9').trim() || '#ea580c',
+                                                     style.getPropertyValue('--color-chart-10').trim() || '#64748b'
+                                                 ];
+                                                 return {
+                                                     type: 'doughnut',
+                                                     data: {
+                                                         labels: data.map(d => d.category_name || 'Sin categoría'),
+                                                         datasets: [{
+                                                             data: data.map(d => d.total_amount),
+                                                             backgroundColor: colors.slice(0, data.length),
+                                                             borderWidth: 2,
+                                                             borderColor: cardBg,
+                                                             hoverOffset: 6,
+                                                         }]
+                                                     },
+                                                     options: {
+                                                         responsive: true,
+                                                         maintainAspectRatio: false,
+                                                         cutout: '72%',
+                                                         plugins: {
+                                                             legend: { display: false },
+                                                             tooltip: {
+                                                                 padding: 10,
+                                                                 cornerRadius: 8,
+                                                                 usePointStyle: true,
+                                                                 titleFont: { family: 'Plus Jakarta Sans', weight: '600' },
+                                                                 bodyFont: { family: 'Plus Jakarta Sans' },
+                                                                 callbacks: {
+                                                                     label: (ctx) => {
+                                                                         const total = ctx.dataset.data.reduce((acc, val) => acc + Number(val), 0);
+                                                                         const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) + '%' : '0%';
+                                                                         return ` ${ctx.label}: $${Number(ctx.parsed).toLocaleString()} (${pct})`;
+                                                                     }
+                                                                 }
                                                              }
                                                          }
                                                      }
-                                                 }
-                                             }
-                                         };
-                                     })">
+                                                 };
+                                             })">
                                 <div wire:ignore class="h-full w-full">
                                     <canvas></canvas>
                                 </div>

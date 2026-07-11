@@ -14,15 +14,10 @@ class RequisitionPdfService
      */
     public function generatePdf(Requisition $requisition)
     {
-        // Logo: usar configuración o fallback al logo por defecto
-        $companyLogo = Setting::get('company_logo');
-        $logoData = null;
+        // Logo: usar configuración o fallback al logo por defecto vía StorageResolver
+        $logoData = \App\Support\StorageResolver::getAsDataUri(Setting::get('company_logo'));
 
-        if ($companyLogo && Storage::disk('public')->exists($companyLogo)) {
-            $logoPath = Storage::disk('public')->path($companyLogo);
-            $mimeType = mime_content_type($logoPath);
-            $logoData = 'data:'.$mimeType.';base64,'.base64_encode(file_get_contents($logoPath));
-        } else {
+        if (!$logoData) {
             // Fallback al logo SVG por defecto
             $logoPath = public_path('images/logo_muulsinik.svg');
             $logoData = file_exists($logoPath)
