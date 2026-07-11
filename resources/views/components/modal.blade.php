@@ -20,6 +20,7 @@
 
 {{-- Overlay --}}
 <div x-data="{ show: @entangle($show) }"
+     wire:ignore.self
      x-show="show"
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0"
@@ -40,6 +41,7 @@
 
     {{-- Backdrop --}}
     <div x-show="show"
+         wire:ignore.self
          class="modal-overlay fixed inset-0 bg-black/40 backdrop-blur-[2px]"
          x-transition:enter="transition-premium"
          x-transition:enter-start="opacity-0"
@@ -52,6 +54,7 @@
 
     {{-- Panel --}}
     <div x-show="show"
+         wire:ignore.self
          class="modal-panel relative bg-surface-card rounded-xl shadow-2xl border border-border
                 w-full {{ $maxWidthClass }} my-auto"
          x-transition:enter="transition-premium"

@@ -11,16 +11,23 @@
 
 <div x-data="{
         localPreview: null,
+        currentFileKey: null,
         isRemoving: false,
         handleFileSelect(event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
+                const newKey = file.name + '_' + file.size + '_' + file.lastModified;
+                if (this.currentFileKey === newKey && this.localPreview) {
+                    return;
+                }
+                this.currentFileKey = newKey;
                 this.localPreview = URL.createObjectURL(file);
                 this.isRemoving = false;
             }
         },
         clearPhoto() {
             this.localPreview = null;
+            this.currentFileKey = null;
             this.isRemoving = true;
             $wire.set('{{ $removeModel }}', true);
             $wire.set('{{ $modelName }}', null);
@@ -28,25 +35,29 @@
             if (input) input.value = '';
         }
      }"
+     wire:ignore.self
      x-init="
         $watch('$wire.{{ $modelName }}', value => {
             if (!value && !localPreview) {
                 localPreview = null;
+                currentFileKey = null;
             }
         });
         $watch('$wire.{{ $removeModel }}', value => {
             if (!value) {
                 isRemoving = false;
                 localPreview = null;
+                currentFileKey = null;
             } else {
                 isRemoving = true;
                 localPreview = null;
+                currentFileKey = null;
             }
         });
      "
      class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-surface-alt border border-border">
 
-    {{-- Círculo del Avatar (80x80px) --}}
+    {{-- Círculo del Avatar (80x80px sin bordes) --}}
     <div class="relative w-20 h-20 rounded-full shrink-0 select-none flex items-center justify-center overflow-hidden shadow-md">
         
         {{-- 1. Previsualización Local instantánea en memoria RAM (Zero-Flicker) --}}
@@ -96,6 +107,7 @@
                 {{ $attributes->wire('model') }}
                 id="{{ $inputId }}"
                 accept="image/jpeg,image/png,image/webp"
+                @click="$event.target.value = null"
                 @change="handleFileSelect($event)"
                 class="hidden">
 

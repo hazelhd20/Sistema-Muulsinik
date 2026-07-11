@@ -16,16 +16,23 @@
 
 <div x-data="{
         localPreview: null,
+        currentFileKey: null,
         isRemoving: false,
         handleFileSelect(event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
+                const newKey = file.name + '_' + file.size + '_' + file.lastModified;
+                if (this.currentFileKey === newKey && this.localPreview) {
+                    return;
+                }
+                this.currentFileKey = newKey;
                 this.localPreview = URL.createObjectURL(file);
                 this.isRemoving = false;
             }
         },
         clearImage() {
             this.localPreview = null;
+            this.currentFileKey = null;
             this.isRemoving = true;
             $wire.set('{{ $removeModel }}', true);
             $wire.set('{{ $modelName }}', null);
@@ -33,19 +40,23 @@
             if (input) input.value = '';
         }
      }"
+     wire:ignore.self
      x-init="
         $watch('$wire.{{ $modelName }}', value => {
             if (!value && !localPreview) {
                 localPreview = null;
+                currentFileKey = null;
             }
         });
         $watch('$wire.{{ $removeModel }}', value => {
             if (!value) {
                 isRemoving = false;
                 localPreview = null;
+                currentFileKey = null;
             } else {
                 isRemoving = true;
                 localPreview = null;
+                currentFileKey = null;
             }
         });
      "
@@ -99,6 +110,7 @@
                 {{ $attributes->wire('model') }}
                 id="{{ $inputId }}"
                 accept="{{ $attributes->get('accept', 'image/jpeg,image/png,image/svg+xml,image/webp') }}"
+                @click="$event.target.value = null"
                 @change="handleFileSelect($event)"
                 class="hidden">
 
