@@ -106,7 +106,15 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
                         $uploadedDisk = 's3';
                     }
                 } catch (\Throwable $eS3) {
-                    // Continuar al fallback local si S3 falla
+                    \Log::warning("ExportRequisitionsPdfZipJob: Falló putStream a S3/Tigris ({$eS3->getMessage()}). Intentando put() fallback...", ['exception' => $eS3]);
+                    try {
+                        $content = @file_get_contents($zipFilePath);
+                        if ($content !== false && Storage::disk('s3')->put('exports/' . $zipFileName, $content)) {
+                            $uploadedDisk = 's3';
+                        }
+                    } catch (\Throwable $eS3Fallback) {
+                        \Log::error("ExportRequisitionsPdfZipJob: Falló también put() a S3/Tigris ({$eS3Fallback->getMessage()}). Usando disco local public como último recurso.");
+                    }
                 }
             }
 

@@ -49,12 +49,12 @@ return [
 
         's3' => [
             'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION', 'auto'),
-            'bucket' => env('AWS_BUCKET', env('AWS_S3_BUCKET_NAME')),
+            'key' => env('AWS_ACCESS_KEY_ID', env('TIGRIS_CLIENT_ID')),
+            'secret' => env('AWS_SECRET_ACCESS_KEY', env('TIGRIS_CLIENT_SECRET')),
+            'region' => env('AWS_DEFAULT_REGION', env('TIGRIS_REGION', 'auto')),
+            'bucket' => env('AWS_BUCKET', env('AWS_S3_BUCKET_NAME', env('TIGRIS_BUCKET', env('BUCKET_NAME')))),
             'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT', env('AWS_ENDPOINT_URL')),
+            'endpoint' => env('AWS_ENDPOINT', env('AWS_ENDPOINT_URL', env('AWS_ENDPOINT_URL_S3', env('TIGRIS_ENDPOINT_URL', !empty(env('AWS_ACCESS_KEY_ID')) && empty(env('AWS_URL')) ? 'https://fly.storage.tigris.dev' : null)))),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => false,
             'report' => false,

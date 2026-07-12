@@ -333,14 +333,14 @@ class StorageResolver
                         }
                         return response()->stream(function () use ($s3Stream) {
                             fpassthru($s3Stream);
+                            if (is_resource($s3Stream)) fclose($s3Stream);
                         }, 200, [
                             'Content-Type'        => $mime,
                             'Content-Disposition' => $disposition . '; filename="' . basename($actualPath) . '"',
                         ]);
                     } catch (\Throwable $eStream) {
-                        return null;
-                    } finally {
                         if (is_resource($s3Stream)) fclose($s3Stream);
+                        return null;
                     }
                 }
             }
