@@ -319,7 +319,7 @@ class StorageResolver
             $fs = $resolved['filesystem'];
             $mime = $fs->mimeType($actualPath) ?: 'application/octet-stream';
 
-            // Para S3, en vez de hacer stream PHP, redirigir directamente al bucket S3/Tigris
+            // Para S3/Tigris: redirigir directamente con una URL pre-firmada temporal
             if (! in_array($disk, ['local', 'public'])) {
                 try {
                     $options = [];
@@ -328,13 +328,28 @@ class StorageResolver
                     }
                     $temporaryUrl = $fs->temporaryUrl($actualPath, now()->addMinutes(15), $options);
                     return redirect($temporaryUrl);
-                } catch (\Throwable $e) {
-                    // Fallback: stream manual si temporaryUrl no está disponible
+                } catch (\Throwable $eTemp) {
+                    // Fallback: stream manual desde S3 si temporaryUrl no está disponible en este driver
+                    try {
+                        $stream = $fs->readStream($actualPath);
+                        if ($stream) {
+                            return response()->stream(function () use ($stream) {
+                                fpassthru($stream);
+                                if (is_resource($stream)) fclose($stream);
+                            }, 200, [
+                                'Content-Type'        => $mime,
+                                'Content-Disposition' => $disposition . '; filename="' . basename($actualPath) . '"',
+                            ]);
+                        }
+                    } catch (\Throwable $eStream) {
+                        return null;
+                    }
                 }
             }
 
+            // Local / Public: servir el archivo directamente
             return response()->file($fs->path($actualPath), [
-                'Content-Type' => $mime,
+                'Content-Type'        => $mime,
                 'Content-Disposition' => $disposition . '; filename="' . basename($actualPath) . '"',
             ]);
         } catch (\Throwable $e) {
