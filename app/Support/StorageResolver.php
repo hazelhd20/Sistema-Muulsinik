@@ -89,7 +89,8 @@ class StorageResolver
         }
 
         try {
-            return $resolved['filesystem']->delete($path);
+            $actualPath = $resolved['path'] ?? $path;
+            return $resolved['filesystem']->delete($actualPath);
         } catch (\Throwable $e) {
             return false;
         }
