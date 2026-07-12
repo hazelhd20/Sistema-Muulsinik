@@ -85,28 +85,47 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
 
             $zip->close();
 
-            // Guardar o replicar en el disco predeterminado del sistema (ej. S3 en producción) y en el disco público mediante Streams
+            // Guardar en la nube de S3/Tigris (si las credenciales existen en el contenedor) y en el disco por defecto/público.
+            // Esto asegura que si Railway ejecuta las colas en un contenedor separado al del servidor web (disco local efímero),
+            // el archivo ZIP siempre esté sincronizado y accesible desde el bucket de S3/Tigris sin dar error 404.
             try {
-                if (config('filesystems.default') !== 'public' && config('filesystems.default') !== 'local') {
-                    $stream = @fopen($zipFilePath, 'r');
-                    if ($stream) {
-                        Storage::disk(config('filesystems.default'))->putStream('exports/' . $zipFileName, $stream);
-                        if (is_resource($stream)) fclose($stream);
+                // 1. Subir a S3/Tigris por stream si está configurado en las variables de entorno o config
+                if (!empty(config('filesystems.disks.s3.bucket')) || !empty(env('AWS_ACCESS_KEY_ID')) || !empty(env('AWS_BUCKET'))) {
+                    try {
+                        $streamS3 = @fopen($zipFilePath, 'r');
+                        if ($streamS3) {
+                            Storage::disk('s3')->putStream('exports/' . $zipFileName, $streamS3);
+                            if (is_resource($streamS3)) fclose($streamS3);
+                        }
+                    } catch (\Throwable $eS3) {
+                        // Si falla S3 o no es el disco primario, intentar los siguientes
                     }
                 }
+
+                // 2. Subir al disco predeterminado del sistema (si no es S3 ni public)
+                if (config('filesystems.default') !== 's3' && config('filesystems.default') !== 'public' && config('filesystems.default') !== 'local') {
+                    $streamDef = @fopen($zipFilePath, 'r');
+                    if ($streamDef) {
+                        Storage::disk(config('filesystems.default'))->putStream('exports/' . $zipFileName, $streamDef);
+                        if (is_resource($streamDef)) fclose($streamDef);
+                    }
+                }
+
+                // 3. Subir al disco public local del worker actual
                 $streamPub = @fopen($zipFilePath, 'r');
                 if ($streamPub) {
                     Storage::disk('public')->putStream('exports/' . $zipFileName, $streamPub);
                     if (is_resource($streamPub)) fclose($streamPub);
                 }
             } catch (\Throwable $e) {
-                // Continuar si la sincronización remota falla, ya existe localmente
+                // Continuar si la sincronización remota falla
             }
 
-            // Notificar al usuario: URL óptima (pre-signed S3 si está en la nube, o URL pública local)
-            // Usamos resolveDownloadUrl para evitar que el archivo pase por el proceso PHP (evita caracteres raros y atasco)
-            $downloadUrl = \App\Support\StorageResolver::resolveDownloadUrl('exports/' . $zipFileName)
-                ?? route('file.preview', ['path' => 'exports/' . $zipFileName, 'download' => 1]);
+            // Notificar al usuario usando SIEMPRE la ruta dinámica de previsualización/descarga (file.preview).
+            // Esto evita guardar una URL pre-firmada estática en la base de datos (que expira a los 15 minutos)
+            // y garantiza que en el segundo exacto en que el usuario haga clic, el controlador resuelva
+            // dinámicamente el archivo en el bucket S3/Tigris o disco local y lo descargue sin error 404.
+            $downloadUrl = route('file.preview', ['path' => 'exports/' . $zipFileName, 'download' => 1]);
             $user->notify(new ExportCompleted($zipFileName, $downloadUrl, 'Tus requisiciones en formato PDF están listas para descargar.'));
         }
     }

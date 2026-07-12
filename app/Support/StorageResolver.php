@@ -319,10 +319,14 @@ class StorageResolver
             $fs = $resolved['filesystem'];
             $mime = $fs->mimeType($actualPath) ?: 'application/octet-stream';
 
-            // Para S3, en vez de hacer stream PHP, redirigir directamente al bucket
+            // Para S3, en vez de hacer stream PHP, redirigir directamente al bucket S3/Tigris
             if (! in_array($disk, ['local', 'public'])) {
                 try {
-                    $temporaryUrl = $fs->temporaryUrl($actualPath, now()->addMinutes(15));
+                    $options = [];
+                    if ($disposition === 'attachment') {
+                        $options['ResponseContentDisposition'] = 'attachment; filename="' . basename($actualPath) . '"';
+                    }
+                    $temporaryUrl = $fs->temporaryUrl($actualPath, now()->addMinutes(15), $options);
                     return redirect($temporaryUrl);
                 } catch (\Throwable $e) {
                     // Fallback: stream manual si temporaryUrl no está disponible
