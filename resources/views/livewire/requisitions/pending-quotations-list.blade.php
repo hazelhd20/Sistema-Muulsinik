@@ -92,7 +92,6 @@
                                 @php
                                     $errLower = strtolower($pq->error_message ?? '');
                                     $isRateLimit = str_contains($errLower, 'saturado') || str_contains($errLower, 'demanda') || str_contains($errLower, 'cuota') || str_contains($errLower, 'reintenta');
-                                    $badgeIcon = $isRateLimit ? 'clock' : 'alert-circle';
                                     $badgeText = $isRateLimit ? 'Saturado' : 'Manual';
 
                                     $rawName = (string) ($pq->original_filename ?? 'documento');
@@ -102,7 +101,7 @@
                                 @endphp
                                 <div class="flex items-center gap-2 mb-1">
                                     <p class="text-body font-semibold text-text-primary">No procesado</p>
-                                    <x-badge variant="danger" size="sm" :icon="$badgeIcon" title="{{ $pq->error_message }}">
+                                    <x-badge variant="danger" size="sm" title="{{ $pq->error_message }}">
                                         {{ $badgeText }}
                                     </x-badge>
                                 </div>
