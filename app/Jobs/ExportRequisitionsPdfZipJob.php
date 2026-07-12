@@ -62,6 +62,9 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
             mkdir(dirname($zipFilePath), 0755, true);
         }
 
+        // Declarar antes del try para que sea accesible en el bloque finally
+        $uploadedDisk = null;
+
         try {
         $zip = new ZipArchive();
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
@@ -90,12 +93,9 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
                 return;
             }
 
-            // Subir el ZIP al disco correcto y recordar en cuál tuvo éxito para construir
-            // la URL de descarga con el disco explícito. Esto evita que file.preview tenga
-            // que adivinar el disco haciendo múltiples peticiones a S3 que pueden timeout en Railway.
-            $uploadedDisk = null;
-
-            // 1. Intentar S3/Tigris primero (entornos cloud como Railway)
+            // 1. Intentar S3/Tigris primero (entornos cloud como Railway).
+            // Cuando Railway ejecuta el worker y el servidor web en contenedores separados,
+            // S3 es el único almacenamiento compartido entre ellos.
             $s3Bucket = config('filesystems.disks.s3.bucket') ?: env('AWS_BUCKET') ?: env('AWS_S3_BUCKET_NAME');
             if (!empty($s3Bucket)) {
                 try {
@@ -110,33 +110,25 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
                 }
             }
 
-            // 2. Fallback: disco público local del worker actual
+            // 2. Fallback: disco público local del worker actual (solo entornos locales sin S3).
+            // NOTA: $zipFilePath apunta a storage_path('app/public/exports/...'), que ES el disco
+            // 'public'. No se necesita putStream porque el archivo ya está en esa ruta.
+            // Solo registrar el disco para que la URL de notificación sea correcta.
             if ($uploadedDisk === null) {
-                try {
-                    $streamPub = @fopen($zipFilePath, 'r');
-                    if ($streamPub) {
-                        Storage::disk('public')->putStream('exports/' . $zipFileName, $streamPub);
-                        if (is_resource($streamPub)) fclose($streamPub);
-                        $uploadedDisk = 'public';
-                    }
-                } catch (\Throwable $ePub) {
-                    // Sin disco disponible — notificar igualmente con best-effort
-                }
+                $uploadedDisk = 'public';
             }
 
             // Notificar al usuario con la ruta dinámica de descarga (file.preview) pasando el disco
             // explícito donde se subió el ZIP, evitando que streamResponse() haga múltiples
             // peticiones exists() a S3 que pueden resultar en timeout o 404 en Railway.
-            $downloadParams = ['path' => 'exports/' . $zipFileName, 'download' => 1];
-            if ($uploadedDisk !== null) {
-                $downloadParams['disk'] = $uploadedDisk;
-            }
+            $downloadParams = ['path' => 'exports/' . $zipFileName, 'download' => 1, 'disk' => $uploadedDisk];
             $downloadUrl = route('file.preview', $downloadParams);
             $user->notify(new ExportCompleted($zipFileName, $downloadUrl, 'Tus requisiciones en formato PDF están listas para descargar.'));
         }
         } finally {
-            // Eliminar el ZIP temporal del disco efímero del worker para no acumular archivos en Railway
-            if (file_exists($zipFilePath)) {
+            // Solo eliminar el archivo ZIP local si fue subido exitosamente a S3/Tigris.
+            // Si el disco es 'public', el $zipFilePath ES el archivo servible — NO borrarlo.
+            if ($uploadedDisk === 's3' && file_exists($zipFilePath)) {
                 @unlink($zipFilePath);
             }
         }
