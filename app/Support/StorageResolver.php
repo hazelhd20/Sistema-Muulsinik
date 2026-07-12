@@ -118,6 +118,54 @@ class StorageResolver
     }
 
     /**
+     * Descarga y copia un archivo en forma de stream desde cualquier disco hacia un archivo local
+     * (por ejemplo, en /tmp) con un consumo de RAM casi cero (< 256 KB), ideal para optimizar memoria
+     * en workers de colas en Railway al manejar PDFs o imágenes pesadas.
+     *
+     * @param string|null $path
+     * @param string $destinationPath
+     * @return bool
+     */
+    public static function copyToFile(?string $path, string $destinationPath): bool
+    {
+        $resolved = self::resolve($path);
+
+        if (! $resolved) {
+            return false;
+        }
+
+        try {
+            $actualPath = $resolved['path'] ?? $path;
+            $stream = $resolved['filesystem']->readStream($actualPath);
+
+            if (! $stream) {
+                return false;
+            }
+
+            $destStream = @fopen($destinationPath, 'w+');
+            if (! $destStream) {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+                return false;
+            }
+
+            stream_copy_to_stream($stream, $destStream);
+
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+            if (is_resource($destStream)) {
+                fclose($destStream);
+            }
+
+            return file_exists($destinationPath);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
      * Retorna el contenido del archivo en formato Data URI (Base64), ideal para incrustar
      * imágenes o logotipos en documentos PDF generados con DomPDF o vistas HTML.
      *

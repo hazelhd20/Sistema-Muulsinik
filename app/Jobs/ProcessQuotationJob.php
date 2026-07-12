@@ -43,14 +43,12 @@ class ProcessQuotationJob implements ShouldQueue
         try {
             $extension = pathinfo($quotation->original_filename, PATHINFO_EXTENSION);
             
-            // Descargar temporalmente el archivo desde cualquier disco (S3/Tigris/local) usando StorageResolver
-            $content = \App\Support\StorageResolver::getContent($quotation->file_path);
-            if (! $content) {
-                throw new \Exception("No se encontró el archivo '{$quotation->file_path}' en ningún disco disponible.");
-            }
-            
             $tempPath = sys_get_temp_dir() . '/' . uniqid('quote_') . '.' . $extension;
-            file_put_contents($tempPath, $content);
+
+            // Descargar temporalmente el archivo en modo stream desde cualquier disco (S3/Tigris/local) hacia /tmp
+            if (! \App\Support\StorageResolver::copyToFile($quotation->file_path, $tempPath)) {
+                throw new \Exception("No se pudo descargar el archivo '{$quotation->file_path}' desde ningún disco disponible.");
+            }
 
             $mimeType = $quotation->file_type ?? mime_content_type($tempPath);
 
