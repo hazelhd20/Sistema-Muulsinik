@@ -85,13 +85,20 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
 
             $zip->close();
 
-            // Guardar o replicar en el disco predeterminado del sistema (ej. S3 en producción si está configurado) y en el disco público
+            // Guardar o replicar en el disco predeterminado del sistema (ej. S3 en producción) y en el disco público mediante Streams
             try {
-                $content = file_get_contents($zipFilePath);
                 if (config('filesystems.default') !== 'public' && config('filesystems.default') !== 'local') {
-                    Storage::disk(config('filesystems.default'))->put('exports/' . $zipFileName, $content);
+                    $stream = @fopen($zipFilePath, 'r');
+                    if ($stream) {
+                        Storage::disk(config('filesystems.default'))->putStream('exports/' . $zipFileName, $stream);
+                        if (is_resource($stream)) fclose($stream);
+                    }
                 }
-                Storage::disk('public')->put('exports/' . $zipFileName, $content);
+                $streamPub = @fopen($zipFilePath, 'r');
+                if ($streamPub) {
+                    Storage::disk('public')->putStream('exports/' . $zipFileName, $streamPub);
+                    if (is_resource($streamPub)) fclose($streamPub);
+                }
             } catch (\Throwable $e) {
                 // Continuar si la sincronización remota falla, ya existe localmente
             }
