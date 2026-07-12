@@ -288,8 +288,10 @@ class StorageResolver
                 );
             }
 
-            // Local / Public: la URL pública del disco ya resuelve correctamente
-            return $fs->url($actualPath);
+            // Local / Public: generar URL de descarga segura vía la ruta de streaming del sistema (file.preview)
+            // Esto garantiza que el archivo se descargue (Content-Disposition: attachment) sin error 404,
+            // incluso en entornos locales donde el symlink storage:link no exista o no esté sirviendo archivos.
+            return route('file.preview', ['path' => $actualPath, 'disk' => $disk, 'download' => 1]);
         } catch (\Throwable $e) {
             return null;
         }

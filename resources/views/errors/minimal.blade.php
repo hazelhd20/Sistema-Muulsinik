@@ -83,16 +83,15 @@
         </div>
 
         {{-- Tarjeta de Error Principal --}}
-        <div class="bg-surface-card/95 backdrop-blur-md border border-border/80 rounded-2xl p-7 sm:p-8 shadow-xl relative overflow-hidden transition-all duration-300">
+        <div class="bg-surface-card border border-border rounded-2xl p-7 sm:p-8 shadow-sm relative overflow-hidden transition-all duration-300">
             
             {{-- Línea de resplandor superior del card según el tipo de error --}}
             <div class="absolute top-0 left-0 right-0 h-1 @yield('accent-color', 'bg-primary-600 dark:bg-primary-500')"></div>
 
-            {{-- Código de Error & Badge --}}
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-5 @yield('badge-color', 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20')">
-                <span>Código</span>
-                <span class="w-1 h-1 rounded-full @yield('dot-color', 'bg-primary-500')"></span>
-                <span>@yield('code')</span>
+            {{-- Código de Error & Badge compactado --}}
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-5 @yield('badge-color', 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20')">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0 @yield('dot-color', 'bg-primary-500')"></span>
+                <span>Código @yield('code')</span>
             </div>
 
             {{-- Título --}}
