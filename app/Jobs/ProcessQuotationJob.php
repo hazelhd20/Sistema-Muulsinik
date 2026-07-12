@@ -62,8 +62,6 @@ class ProcessQuotationJob implements ShouldQueue
             // Ejecutar extracción
             $result = $parser->parse($tempPath);
 
-            @unlink($tempPath); // Limpiar memoria temporal
-
             // Guardar resultados en el registro
             $quotation->update([
                 'status' => 'completed',
@@ -93,6 +91,10 @@ class ProcessQuotationJob implements ShouldQueue
             Log::error("Error al procesar cotización #{$this->quotationId}: {$e->getMessage()}");
 
             throw $e;
+        } finally {
+            if (isset($tempPath) && file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
         }
     }
 }
