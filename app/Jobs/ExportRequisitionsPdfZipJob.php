@@ -54,7 +54,6 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
 
         $reqPrefix = Setting::get('req_prefix', 'REQ-');
 
-        // Configurar ZIP
         $zipFileName = 'Requisiciones_Export_' . now()->format('Ymd_His') . '.zip';
         $zipFilePath = storage_path('app/public/exports/' . $zipFileName);
 
@@ -63,6 +62,7 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
             mkdir(dirname($zipFilePath), 0755, true);
         }
 
+        try {
         $zip = new ZipArchive();
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             
@@ -84,6 +84,11 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
             }
 
             $zip->close();
+
+            // Verificar que el ZIP no esté vacío antes de subirlo
+            if (! file_exists($zipFilePath) || filesize($zipFilePath) === 0) {
+                return;
+            }
 
             // Subir el ZIP al disco correcto y recordar en cuál tuvo éxito para construir
             // la URL de descarga con el disco explícito. Esto evita que file.preview tenga
@@ -128,6 +133,12 @@ class ExportRequisitionsPdfZipJob implements ShouldQueue
             }
             $downloadUrl = route('file.preview', $downloadParams);
             $user->notify(new ExportCompleted($zipFileName, $downloadUrl, 'Tus requisiciones en formato PDF están listas para descargar.'));
+        }
+        } finally {
+            // Eliminar el ZIP temporal del disco efímero del worker para no acumular archivos en Railway
+            if (file_exists($zipFilePath)) {
+                @unlink($zipFilePath);
+            }
         }
     }
 }

@@ -134,34 +134,29 @@ class StorageResolver
             return false;
         }
 
+        $srcStream = null;
+        $destStream = null;
         try {
             $actualPath = $resolved['path'] ?? $path;
-            $stream = $resolved['filesystem']->readStream($actualPath);
+            $srcStream = $resolved['filesystem']->readStream($actualPath);
 
-            if (! $stream) {
+            if (! $srcStream) {
                 return false;
             }
 
-            $destStream = @fopen($destinationPath, 'w+');
+            $destStream = @fopen($destinationPath, 'w+b');
             if (! $destStream) {
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
                 return false;
             }
 
-            stream_copy_to_stream($stream, $destStream);
+            stream_copy_to_stream($srcStream, $destStream);
 
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-            if (is_resource($destStream)) {
-                fclose($destStream);
-            }
-
-            return file_exists($destinationPath);
+            return file_exists($destinationPath) && filesize($destinationPath) > 0;
         } catch (\Throwable $e) {
             return false;
+        } finally {
+            if (is_resource($srcStream)) fclose($srcStream);
+            if (is_resource($destStream)) fclose($destStream);
         }
     }
 
@@ -330,19 +325,22 @@ class StorageResolver
                     return redirect($temporaryUrl);
                 } catch (\Throwable $eTemp) {
                     // Fallback: stream manual desde S3 si temporaryUrl no está disponible en este driver
+                    $s3Stream = null;
                     try {
-                        $stream = $fs->readStream($actualPath);
-                        if ($stream) {
-                            return response()->stream(function () use ($stream) {
-                                fpassthru($stream);
-                                if (is_resource($stream)) fclose($stream);
-                            }, 200, [
-                                'Content-Type'        => $mime,
-                                'Content-Disposition' => $disposition . '; filename="' . basename($actualPath) . '"',
-                            ]);
+                        $s3Stream = $fs->readStream($actualPath);
+                        if (! $s3Stream) {
+                            return null;
                         }
+                        return response()->stream(function () use ($s3Stream) {
+                            fpassthru($s3Stream);
+                        }, 200, [
+                            'Content-Type'        => $mime,
+                            'Content-Disposition' => $disposition . '; filename="' . basename($actualPath) . '"',
+                        ]);
                     } catch (\Throwable $eStream) {
                         return null;
+                    } finally {
+                        if (is_resource($s3Stream)) fclose($s3Stream);
                     }
                 }
             }
