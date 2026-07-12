@@ -19,8 +19,8 @@
                                     $fileExt = isset($info['extension']) ? '.' . $info['extension'] : '';
                                 @endphp
                                 <div class="flex items-center gap-2 mb-0.5">
-                                    <p class="text-body font-semibold text-text-primary">Procesando cotización</p>
-                                    <x-badge variant="primary" size="sm">Analizando</x-badge>
+                                    <p class="text-body font-semibold text-text-primary">Procesando...</p>
+                                    <x-badge variant="primary" size="sm">En curso</x-badge>
                                 </div>
                                 <div class="flex items-center gap-2 text-small text-text-muted mt-1 min-w-0 max-w-lg">
                                     <span class="inline-flex items-center min-w-0 font-medium text-text-secondary" title="{{ $rawName }}">
@@ -53,7 +53,7 @@
                                         $total = $pq->raw_parsed_data['tax_info']['grand_total'] ?? null;
                                     }
 
-                                    $title = $supplierName ? "Borrador: {$supplierName}" : "Borrador de Requisición listo";
+                                    $title = $supplierName ? str($supplierName)->limit(28) : "Borrador listo";
 
                                     $rawName = (string) ($pq->original_filename ?? 'documento');
                                     $info = pathinfo($rawName);
@@ -66,6 +66,8 @@
                                         <x-badge variant="secondary" size="sm" class="tabular-nums font-bold">
                                             ${{ number_format((float)$total, 2) }}
                                         </x-badge>
+                                    @else
+                                        <x-badge variant="success" size="sm">Listo</x-badge>
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-2 text-small text-text-muted mt-1 min-w-0 max-w-lg">
@@ -91,7 +93,7 @@
                                     $errLower = strtolower($pq->error_message ?? '');
                                     $isRateLimit = str_contains($errLower, 'saturado') || str_contains($errLower, 'demanda') || str_contains($errLower, 'cuota') || str_contains($errLower, 'reintenta');
                                     $badgeIcon = $isRateLimit ? 'clock' : 'alert-circle';
-                                    $badgeText = $isRateLimit ? 'IA Saturada • Reintentar' : 'Revisión manual requerida';
+                                    $badgeText = $isRateLimit ? 'Saturado' : 'Manual';
 
                                     $rawName = (string) ($pq->original_filename ?? 'documento');
                                     $info = pathinfo($rawName);
@@ -99,14 +101,14 @@
                                     $fileExt = isset($info['extension']) ? '.' . $info['extension'] : '';
                                 @endphp
                                 <div class="flex items-center gap-2 mb-1">
-                                    <p class="text-body font-semibold text-text-primary">Error de extracción</p>
+                                    <p class="text-body font-semibold text-text-primary">No procesado</p>
                                     <x-badge variant="danger" size="sm" :icon="$badgeIcon" title="{{ $pq->error_message }}">
                                         {{ $badgeText }}
                                     </x-badge>
                                 </div>
                                 @if($pq->error_message)
                                     <p class="text-small text-text-secondary font-medium mt-0.5 truncate max-w-[260px] sm:max-w-sm" title="{{ $pq->error_message }}">
-                                        {{ $pq->error_message }}
+                                        {{ Str::limit($pq->error_message, 45) }}
                                     </p>
                                 @endif
                                 <div class="flex items-center gap-2 text-small text-text-muted mt-1 min-w-0 max-w-lg">

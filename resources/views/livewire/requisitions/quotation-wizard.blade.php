@@ -100,7 +100,7 @@
                         </p>
                     </div>
 
-                    <x-status-chip icon="sparkles" color="primary" class="self-center">Procesamiento en segundo plano</x-status-chip>
+                    <x-status-chip icon="sparkles" color="primary" class="self-center">En segundo plano</x-status-chip>
 
                     <div class="mt-8 flex justify-center">
                         <x-button
