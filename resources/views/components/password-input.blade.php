@@ -7,7 +7,10 @@
 <div x-data="{ show: false }" class="relative w-full">
     <input
         :type="show ? 'text' : 'password'"
-        @if($id) id="{{ $id }}" @endif
+        @if($id || $attributes->whereStartsWith('wire:model')->first() || $attributes->whereStartsWith('x-model')->first())
+            id="{{ $id ?? $attributes->whereStartsWith('wire:model')->first() ?? $attributes->whereStartsWith('x-model')->first() }}"
+        @endif
+        aria-label="{{ $attributes->get('aria-label') ?? 'Contraseña' }}"
         placeholder="{{ $placeholder }}"
         autocomplete="{{ $autocomplete }}"
         {{ $attributes->merge(['class' => 'input pr-10']) }}

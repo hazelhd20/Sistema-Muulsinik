@@ -1,7 +1,7 @@
 <div x-data="quickBudgetIndex(@entangle('selectedRows'))" x-init="totalOnPageStatic = {{ $budgets->count() }}; init()" data-total-on-page="{{ $budgets->count() }}">
     <x-page-header subtitle="Trabajos menores" title="Cotizador Rápido">
         <x-slot:actions>
-            <x-button href="{{ route('cotizador.wizard') }}" variant="primary" icon="calculator" wire:navigate>
+            <x-button href="{{ route('cotizador.wizard') }}" variant="primary" icon="calculator" class="w-full sm:w-auto justify-center" wire:navigate>
                 Nueva Cotización
             </x-button>
         </x-slot:actions>

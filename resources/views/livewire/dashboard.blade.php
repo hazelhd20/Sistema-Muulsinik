@@ -11,12 +11,12 @@
         </x-slot:heading>
         <x-slot:actions>
             @if(auth()->user()?->hasPermission('requisiciones.ver') || auth()->user()?->hasPermission('*'))
-                <x-button href="{{ url('/requisiciones') }}" variant="secondary" icon="clipboard-list">
+                <x-button href="{{ url('/requisiciones') }}" variant="secondary" icon="clipboard-list" class="flex-1 sm:flex-initial justify-center">
                     Requisiciones
                 </x-button>
             @endif
             @if(auth()->user()?->hasPermission('gastos.crear') || auth()->user()?->hasPermission('*'))
-                <x-button href="{{ url('/gastos') }}" variant="primary" icon="plus">
+                <x-button href="{{ url('/gastos') }}" variant="primary" icon="plus" class="flex-1 sm:flex-initial justify-center">
                     Nuevo gasto
                 </x-button>
             @endif

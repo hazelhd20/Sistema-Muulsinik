@@ -92,7 +92,7 @@
                 <x-lucide-filter class="w-4 h-4 text-text-muted" />
                 Filtros
             </h3>
-            <button type="button" @click="open = false" class="btn-close -mr-1">
+            <button type="button" @click="open = false" aria-label="Cerrar panel de filtros" class="btn-close -mr-1">
                 <x-lucide-x class="w-4 h-4" />
             </button>
         </div>

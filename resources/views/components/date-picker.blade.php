@@ -19,6 +19,10 @@
     @endif
 
     <input 
+        @if($attributes->get('id') || $attributes->whereStartsWith('wire:model')->first() || $attributes->whereStartsWith('x-model')->first())
+            id="{{ $attributes->get('id') ?? $attributes->whereStartsWith('wire:model')->first() ?? $attributes->whereStartsWith('x-model')->first() }}"
+        @endif
+        aria-label="{{ $attributes->get('aria-label') ?? $placeholder }}"
         x-ref="input"
         type="text" 
         readonly

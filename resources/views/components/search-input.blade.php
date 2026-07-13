@@ -47,7 +47,7 @@
         autocorrect="off"
         autocapitalize="none"
         spellcheck="false"
-        {{ $attributes->merge(['type' => 'search', 'class' => 'input pl-10 pr-10 w-full']) }}
+        {{ $attributes->merge(['type' => 'search', 'class' => 'input pl-10 pr-10 w-full', 'aria-label' => $placeholder]) }}
         placeholder="{{ $placeholder }}"
     >
 
@@ -62,6 +62,8 @@
         x-transition:leave-end="opacity-0 scale-90"
         @click="clear()"
         type="button"
+        aria-label="Limpiar búsqueda"
+        title="Limpiar búsqueda"
         class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
         style="display:none;"
     >

@@ -371,8 +371,14 @@
     }
 
     .dark .count-badge {
-        background-color: rgba(59, 130, 246, 0.2);
-        color: #60a5fa;
+        background-color: rgba(59, 130, 246, 0.35);
+        color: #ffffff;
+    }
+
+    .tab-btn.active .count-badge,
+    .dark .tab-btn.active .count-badge {
+        background-color: #ffffff;
+        color: #1d4ed8;
     }
 
     /* ── Sidebar nav link ── */

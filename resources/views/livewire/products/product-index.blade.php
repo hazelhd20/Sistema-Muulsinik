@@ -3,7 +3,7 @@
     <x-page-header subtitle="Catálogos" title="Productos">
         <x-slot:actions>
             @if(auth()->user()->hasPermission('productos.crear') || auth()->user()->hasPermission('*'))
-                <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+                <x-button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto justify-center">
                     Nuevo Producto
                 </x-button>
             @endif

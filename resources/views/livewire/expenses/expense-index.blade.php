@@ -2,7 +2,7 @@
     {{-- Header --}}
     <x-page-header subtitle="Control financiero" title="Gastos" icon="wallet">
         <x-slot:actions>
-            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto justify-center">
                 Registrar Gasto
             </x-button>
         </x-slot:actions>

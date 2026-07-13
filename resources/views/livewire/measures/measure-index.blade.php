@@ -3,7 +3,7 @@
     <x-page-header subtitle="Catálogos" title="Medidas">
         <x-slot:actions>
             @if(auth()->user()->hasPermission('catalogos.editar') || auth()->user()->hasPermission('*'))
-                <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+                <x-button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto justify-center">
                     Nueva Medida
                 </x-button>
             @endif

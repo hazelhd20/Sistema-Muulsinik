@@ -3,7 +3,7 @@
     <x-page-header subtitle="Administración" title="Usuarios">
         <x-slot:actions>
             @if(auth()->user()->hasPermission('usuarios.crear'))
-                <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+                <x-button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto justify-center">
                     Nuevo Usuario
                 </x-button>
             @endif

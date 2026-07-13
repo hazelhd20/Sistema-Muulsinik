@@ -52,6 +52,10 @@
 >
     <!-- Trigger -->
     <button
+        @if($attributes->get('id') || $attributes->whereStartsWith('wire:model')->first() || $attributes->whereStartsWith('x-model')->first())
+            id="{{ $attributes->get('id') ?? $attributes->whereStartsWith('wire:model')->first() ?? $attributes->whereStartsWith('x-model')->first() }}"
+        @endif
+        aria-label="{{ $attributes->get('aria-label') ?? $placeholder }}"
         x-ref="trigger"
         type="button"
         @click="toggle()"
@@ -95,6 +99,7 @@
                     x-ref="searchInput"
                     type="text" 
                     x-model="search" 
+                    aria-label="Buscar opciones"
                     placeholder="Buscar..." 
                     class="w-full pl-9 pr-3 py-1.5 text-xs-fluid border border-border rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-50"
                     @keydown.escape="close()"

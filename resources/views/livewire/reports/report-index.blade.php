@@ -6,10 +6,6 @@
     {{-- Header --}}
     <x-page-header subtitle="Analítica" title="Reportes">
         <x-slot:actions>
-            <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
-                placeholder="Todos los proyectos" class="w-auto min-w-[180px]" />
-            <x-custom-select wire:model.live="period" :options="['week' => 'Última semana', 'month' => 'Último mes', 'quarter' => 'Último trimestre', 'year' => 'Último año', 'all' => 'Todo']" class="w-auto min-w-[140px]"
-                placeholder="" />
             <x-dropdown align="right" width="56">
                 <x-slot:trigger>
                     <x-button variant="secondary" icon="download" iconRight="chevron-down"
@@ -30,7 +26,7 @@
     </x-page-header>
 
     {{-- Tabs --}}
-    <div class="tab-nav">
+    <div class="tab-nav mb-3 sm:mb-4">
         <button @click="tab = 'overview'; $wire.set('activeTab', 'overview')"
             :class="tab === 'overview' ? 'active' : ''" class="tab-btn">
             Resumen
@@ -49,8 +45,22 @@
         </button>
     </div>
 
+    {{-- Barra de Filtros Compacta --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 sm:mb-6 bg-surface-card border border-border rounded-xl p-3 sm:px-4 sm:py-3">
+        <div class="flex items-center gap-2 text-small font-medium text-text-secondary">
+            <x-lucide-filter class="w-4 h-4 text-text-muted shrink-0" />
+            <span>Filtros de reporte:</span>
+        </div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <x-custom-select wire:model.live="projectFilter" :options="$projects->pluck('name', 'id')->toArray()"
+                placeholder="Todos los proyectos" class="w-full sm:w-auto sm:min-w-[200px]" />
+            <x-custom-select wire:model.live="period" :options="['week' => 'Última semana', 'month' => 'Último mes', 'quarter' => 'Último trimestre', 'year' => 'Último año', 'all' => 'Todo']" class="w-full sm:w-auto sm:min-w-[150px]"
+                placeholder="" />
+        </div>
+    </div>
+
     {{-- Skeleton de Carga --}}
-    <div wire:loading wire:target="activeTab" class="w-full">
+    <div wire:loading wire:target="activeTab, projectFilter, period" class="w-full">
 
         {{-- Skeleton Overview --}}
         <div x-show="tab === 'overview'" class="space-y-4">
@@ -105,7 +115,7 @@
                     <div class="px-6 pt-6 pb-4">
                         <x-skeleton class="h-4 w-40 rounded" />
                     </div>
-                    <x-card.table class="flex-1 w-full">
+                    <x-card.table class="hidden sm:block flex-1 w-full">
                         <table class="w-full table-fixed min-w-[500px]">
                             <colgroup>
                                 <col class="w-14">
@@ -136,6 +146,23 @@
                             </tbody>
                         </table>
                     </x-card.table>
+                    <div class="block sm:hidden divide-y divide-border/60 border-t border-border/40">
+                        @for($i = 0; $i < 4; $i++)
+                            <div class="p-4 flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <x-skeleton class="w-7 h-7 rounded-lg shrink-0" />
+                                    <div class="space-y-1.5 min-w-0">
+                                        <x-skeleton class="h-4 w-32 rounded" />
+                                        <x-skeleton class="h-3 w-20 rounded" />
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5 shrink-0 text-right">
+                                    <x-skeleton class="h-4 w-16 ml-auto rounded" />
+                                    <x-skeleton class="h-3 w-12 ml-auto rounded" />
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
                 </x-card>
             </div>
         </div>
@@ -145,7 +172,7 @@
             <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
-            <x-card.table class="flex-1 w-full">
+            <x-card.table class="hidden md:block flex-1 w-full">
                 <table class="w-full table-fixed min-w-[800px]">
                     <colgroup>
                         <col class="w-16">
@@ -179,6 +206,35 @@
                     </tbody>
                 </table>
             </x-card.table>
+            <div class="block md:hidden divide-y divide-border/60 border-t border-border/40">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <x-skeleton class="w-7 h-7 rounded-lg shrink-0" />
+                                <div class="space-y-1.5 min-w-0">
+                                    <x-skeleton class="h-4 w-36 rounded" />
+                                    <x-skeleton class="h-5 w-20 rounded-full" />
+                                </div>
+                            </div>
+                            <div class="space-y-1.5 shrink-0 text-right">
+                                <x-skeleton class="h-4 w-20 ml-auto rounded" />
+                                <x-skeleton class="h-3 w-12 ml-auto rounded" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 rounded-lg p-2.5">
+                            <div>
+                                <x-skeleton class="h-2.5 w-16 mb-1 rounded mx-auto" />
+                                <x-skeleton class="h-4 w-8 rounded mx-auto" />
+                            </div>
+                            <div>
+                                <x-skeleton class="h-2.5 w-16 mb-1 rounded mx-auto" />
+                                <x-skeleton class="h-4 w-8 rounded mx-auto" />
+                            </div>
+                        </div>
+                    </div>
+                @endfor
+            </div>
         </x-card>
 
         {{-- Skeleton Vendors --}}
@@ -186,7 +242,7 @@
             <div class="px-6 pt-6 pb-4 flex items-center justify-between">
                 <x-skeleton class="h-4 w-48 rounded" />
             </div>
-            <x-card.table class="flex-1 w-full">
+            <x-card.table class="hidden md:block flex-1 w-full">
                 <table class="w-full table-fixed min-w-[800px]">
                     <colgroup>
                         <col class="w-16">
@@ -217,6 +273,23 @@
                     </tbody>
                 </table>
             </x-card.table>
+            <div class="block md:hidden divide-y divide-border/60 border-t border-border/40">
+                @for($i = 0; $i < 4; $i++)
+                    <div class="p-4 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <x-skeleton class="w-7 h-7 rounded-lg shrink-0" />
+                            <div class="space-y-1.5 min-w-0">
+                                <x-skeleton class="h-4 w-36 rounded" />
+                                <x-skeleton class="h-3 w-28 rounded" />
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 shrink-0 text-right">
+                            <x-skeleton class="h-4 w-20 ml-auto rounded" />
+                            <x-skeleton class="h-3 w-12 ml-auto rounded" />
+                        </div>
+                    </div>
+                @endfor
+            </div>
         </x-card>
 
         {{-- Skeleton Products --}}
@@ -226,7 +299,7 @@
                 <div class="px-6 pt-6 pb-4">
                     <x-skeleton class="h-4 w-48 rounded" />
                 </div>
-                <x-card.table class="flex-1 w-full">
+                <x-card.table class="hidden md:block flex-1 w-full">
                     <table class="w-full table-fixed min-w-[700px]">
                         <colgroup>
                             <col class="w-16">
@@ -266,6 +339,39 @@
                         </tbody>
                     </table>
                 </x-card.table>
+                <div class="block md:hidden divide-y divide-border/60 border-t border-border/40">
+                    @for($i = 0; $i < 4; $i++)
+                        <div class="p-4 space-y-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <x-skeleton class="w-7 h-7 rounded-lg shrink-0" />
+                                    <div class="space-y-1.5 min-w-0">
+                                        <x-skeleton class="h-4 w-40 rounded" />
+                                        <x-skeleton class="h-5 w-20 rounded-full" />
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5 shrink-0 text-right">
+                                    <x-skeleton class="h-4 w-20 ml-auto rounded" />
+                                    <x-skeleton class="h-3 w-12 ml-auto rounded" />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-border/50 rounded-lg p-2.5">
+                                <div>
+                                    <x-skeleton class="h-2.5 w-10 mb-1 rounded mx-auto" />
+                                    <x-skeleton class="h-4 w-8 rounded mx-auto" />
+                                </div>
+                                <div>
+                                    <x-skeleton class="h-2.5 w-12 mb-1 rounded mx-auto" />
+                                    <x-skeleton class="h-4 w-10 rounded mx-auto" />
+                                </div>
+                                <div>
+                                    <x-skeleton class="h-2.5 w-14 mb-1 rounded mx-auto" />
+                                    <x-skeleton class="h-4 w-12 rounded mx-auto" />
+                                </div>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
             </x-card>
             <x-card class="p-6 flex flex-col h-full">
                 <x-skeleton class="h-4 w-48 mb-4 rounded" />
@@ -288,7 +394,7 @@
     </div>
 
     {{-- Contenido de Tabs --}}
-    <div wire:loading.remove wire:target="activeTab">
+    <div wire:loading.remove wire:target="activeTab, projectFilter, period">
         {{-- ═══════════════════════════════════════════════════ --}}
         {{-- TAB: RESUMEN GENERAL --}}
         {{-- ═══════════════════════════════════════════════════ --}}
@@ -328,7 +434,7 @@
                                 message="No se han registrado gastos en los últimos 12 meses." class="py-0" />
                         </div>
                     @else
-                        <div wire:key="overview-monthly-content" class="h-64 flex-1"
+                        <div wire:key="overview-monthly-content" class="h-52 sm:h-64 flex-1"
                             data-chart="{{ json_encode($monthlyData) }}" x-data="chartCanvas((data) => {
                                              const style = getComputedStyle(document.documentElement);
                                              const primaryHex = style.getPropertyValue('--color-primary-600').trim() || '#2563eb';
@@ -429,7 +535,7 @@
                         </div>
                     @else
                         <div wire:key="overview-category-content" class="flex flex-col flex-1">
-                            <div class="h-52 flex items-center justify-center"
+                            <div class="h-44 sm:h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($expenseByCategory) }}" x-data="chartCanvas((data) => {
                                                  const labels = {{ json_encode($categoryLabels) }};
                                                  const style = getComputedStyle(document.documentElement);
@@ -507,7 +613,7 @@
                 </x-card>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {{-- Presupuesto vs Gasto --}}
                 <x-card class="p-6 flex flex-col h-full">
                     <h2 class="text-body font-semibold text-text-primary mb-4">Presupuesto vs Gasto Real</h2>
@@ -560,38 +666,62 @@
                                 message="No hay registros para el período seleccionado." class="py-0" />
                         </div>
                     @else
-                        <x-card.table wire:key="overview-projects-content" class="flex-1 w-full">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Proyecto</th>
-                                        <th class="text-right">Presupuesto</th>
-                                        <th class="text-right">Gastado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($topProjects as $i => $proj)
+                        <div wire:key="overview-projects-content" class="flex-1 flex flex-col justify-between">
+                            {{-- Vista tabla escritorio --}}
+                            <x-card.table class="hidden sm:block flex-1 w-full">
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <span
-                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
-                                                    {{ $i + 1 }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <p class="font-medium">{{ $proj->name }}</p>
-                                                <p class="text-xs-fluid text-text-muted">{{ $proj->client?->name ?? '—' }}</p>
-                                            </td>
-                                            <td class="text-right text-small text-text-secondary">
-                                                ${{ number_format($proj->budget, 0, '.', ',') }}</td>
-                                            <td class="text-right text-small font-semibold text-text-primary">
-                                                ${{ number_format($proj->total_spent, 0, '.', ',') }}</td>
+                                            <th>#</th>
+                                            <th>Proyecto</th>
+                                            <th class="text-right">Presupuesto</th>
+                                            <th class="text-right">Gastado</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </x-card.table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($topProjects as $i => $proj)
+                                            <tr>
+                                                <td>
+                                                    <span
+                                                        class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                                        {{ $i + 1 }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <p class="font-medium text-text-primary">{{ $proj->name }}</p>
+                                                    <p class="text-xs-fluid text-text-muted">{{ $proj->client?->name ?? '—' }}</p>
+                                                </td>
+                                                <td class="text-right text-small text-text-secondary tabular-nums">
+                                                    ${{ number_format($proj->budget, 0, '.', ',') }}</td>
+                                                <td class="text-right text-small font-semibold text-text-primary tabular-nums">
+                                                    ${{ number_format($proj->total_spent, 0, '.', ',') }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </x-card.table>
+
+                            {{-- Vista tarjeta móvil --}}
+                            <div class="block sm:hidden divide-y divide-border/60 border-t border-border/40">
+                                @foreach($topProjects as $i => $proj)
+                                    <div class="p-4 flex items-center justify-between gap-3 hover:bg-surface-hover/50 transition-colors duration-150">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <span class="w-7 h-7 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center shrink-0">
+                                                {{ $i + 1 }}
+                                            </span>
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-small text-text-primary truncate">{{ $proj->name }}</p>
+                                                <p class="text-xs text-text-muted truncate">{{ $proj->client?->name ?? 'Sin cliente' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right shrink-0">
+                                            <p class="font-bold text-small text-text-primary tabular-nums">${{ number_format($proj->total_spent, 0, '.', ',') }}</p>
+                                            <p class="text-2xs text-text-muted tabular-nums">de ${{ number_format($proj->budget, 0, '.', ',') }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     @endif
                 </x-card>
             </div>
@@ -611,44 +741,86 @@
                             message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
-                    <x-card.table wire:key="suppliers-table-content" class="flex-1 w-full">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Proveedor</th>
-                                    <th>Categoría</th>
-                                    <th class="text-center">Requisiciones</th>
-                                    <th class="text-center">Productos</th>
-                                    <th class="text-right">Monto Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($topSuppliers as $i => $supplier)
+                    <div wire:key="suppliers-table-content" class="flex-1 w-full">
+                        {{-- Vista tabla escritorio --}}
+                        <x-card.table class="hidden md:block flex-1 w-full">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <span
-                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                        <th>#</th>
+                                        <th>Proveedor</th>
+                                        <th>Categoría</th>
+                                        <th class="text-center">Requisiciones</th>
+                                        <th class="text-center">Productos</th>
+                                        <th class="text-right">Monto Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($topSuppliers as $i => $supplier)
+                                        <tr>
+                                            <td>
+                                                <span
+                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                                    {{ $i + 1 }}
+                                                </span>
+                                            </td>
+                                            <td class="font-medium text-text-primary">{{ $supplier->trade_name }}</td>
+                                            <td>
+                                                @if($supplier->category)
+                                                    <x-dynamic-badge :value="$supplier->category" />
+                                                @else
+                                                    <span class="text-text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center text-small tabular-nums">{{ $supplier->total_requisitions }}</td>
+                                            <td class="text-center text-small tabular-nums">{{ $supplier->total_items }}</td>
+                                            <td class="text-right font-semibold text-text-primary tabular-nums">
+                                                ${{ number_format($supplier->total_amount, 2, '.', ',') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </x-card.table>
+
+                        {{-- Vista tarjeta móvil --}}
+                        <div class="block md:hidden divide-y divide-border/60 border-t border-border/40">
+                            @foreach($topSuppliers as $i => $supplier)
+                                <div class="p-4 space-y-3 hover:bg-surface-hover/50 transition-colors duration-150">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <span class="w-7 h-7 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center shrink-0">
                                                 {{ $i + 1 }}
                                             </span>
-                                        </td>
-                                        <td class="font-medium text-text-primary">{{ $supplier->trade_name }}</td>
-                                        <td>
-                                            @if($supplier->category)
-                                                <x-dynamic-badge :value="$supplier->category" />
-                                            @else
-                                                <span class="text-text-muted">—</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center text-small tabular-nums">{{ $supplier->total_requisitions }}</td>
-                                        <td class="text-center text-small tabular-nums">{{ $supplier->total_items }}</td>
-                                        <td class="text-right font-semibold text-text-primary tabular-nums">
-                                            ${{ number_format($supplier->total_amount, 2, '.', ',') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </x-card.table>
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-small text-text-primary truncate">{{ $supplier->trade_name }}</p>
+                                                <div class="mt-1 flex items-center gap-2">
+                                                    @if($supplier->category)
+                                                        <x-dynamic-badge :value="$supplier->category" />
+                                                    @else
+                                                        <span class="text-xs text-text-muted">Sin categoría</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right shrink-0">
+                                            <p class="font-bold text-body text-text-primary tabular-nums">${{ number_format($supplier->total_amount, 2, '.', ',') }}</p>
+                                            <p class="text-2xs text-text-muted">Monto total</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 bg-surface-main/30 rounded-lg p-2.5 text-xs">
+                                        <div>
+                                            <span class="text-text-muted block">Requisiciones:</span>
+                                            <span class="font-semibold text-text-primary tabular-nums">{{ $supplier->total_requisitions }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-text-muted block">Productos:</span>
+                                            <span class="font-semibold text-text-primary tabular-nums">{{ $supplier->total_items }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
             </x-card>
         @endif
@@ -667,36 +839,60 @@
                             message="No hay registros para el período seleccionado." class="py-0" />
                     </div>
                 @else
-                    <x-card.table wire:key="vendors-table-content" class="flex-1 w-full">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Vendedor</th>
-                                    <th>Proveedor</th>
-                                    <th class="text-center">Requisiciones</th>
-                                    <th class="text-right">Monto Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($topVendors as $i => $vendor)
+                    <div wire:key="vendors-table-content" class="flex-1 w-full">
+                        {{-- Vista tabla escritorio --}}
+                        <x-card.table class="hidden md:block flex-1 w-full">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <span
-                                                class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
-                                                {{ $i + 1 }}
-                                            </span>
-                                        </td>
-                                        <td class="font-medium text-text-primary">{{ $vendor->vendor_name }}</td>
-                                        <td class="text-small text-text-secondary">{{ $vendor->supplier_name }}</td>
-                                        <td class="text-center text-small tabular-nums">{{ $vendor->total_requisitions }}</td>
-                                        <td class="text-right font-semibold text-text-primary tabular-nums">
-                                            ${{ number_format($vendor->total_amount, 2, '.', ',') }}</td>
+                                        <th>#</th>
+                                        <th>Vendedor</th>
+                                        <th>Proveedor</th>
+                                        <th class="text-center">Requisiciones</th>
+                                        <th class="text-right">Monto Total</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </x-card.table>
+                                </thead>
+                                <tbody>
+                                    @foreach($topVendors as $i => $vendor)
+                                        <tr>
+                                            <td>
+                                                <span
+                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                                    {{ $i + 1 }}
+                                                </span>
+                                            </td>
+                                            <td class="font-medium text-text-primary">{{ $vendor->vendor_name }}</td>
+                                            <td class="text-small text-text-secondary">{{ $vendor->supplier_name }}</td>
+                                            <td class="text-center text-small tabular-nums">{{ $vendor->total_requisitions }}</td>
+                                            <td class="text-right font-semibold text-text-primary tabular-nums">
+                                                ${{ number_format($vendor->total_amount, 2, '.', ',') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </x-card.table>
+
+                        {{-- Vista tarjeta móvil --}}
+                        <div class="block md:hidden divide-y divide-border/60 border-t border-border/40">
+                            @foreach($topVendors as $i => $vendor)
+                                <div class="p-4 flex items-center justify-between gap-3 hover:bg-surface-hover/50 transition-colors duration-150">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="w-7 h-7 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center shrink-0">
+                                            {{ $i + 1 }}
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-small text-text-primary truncate">{{ $vendor->vendor_name }}</p>
+                                            <p class="text-xs text-text-muted truncate">{{ $vendor->supplier_name }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <p class="font-bold text-body text-text-primary tabular-nums">${{ number_format($vendor->total_amount, 2, '.', ',') }}</p>
+                                        <p class="text-2xs text-text-muted tabular-nums">{{ $vendor->total_requisitions }} req(s)</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
             </x-card>
         @endif
@@ -719,54 +915,101 @@
                                 message="No hay registros para el período seleccionado." class="py-0" />
                         </div>
                     @else
-                        <x-card.table wire:key="products-table-content" class="flex-1 w-full">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Producto</th>
-                                        <th>Categoría</th>
-                                        <th class="text-center">Veces</th>
-                                        <th class="text-center">Cant. Total</th>
-                                        <th class="text-right">Precio Prom.</th>
-                                        <th class="text-right">Monto Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($topProducts as $i => $product)
+                        <div wire:key="products-table-content" class="flex-1 w-full">
+                            {{-- Vista tabla escritorio --}}
+                            <x-card.table class="hidden md:block flex-1 w-full">
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <span
-                                                    class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                            <th>#</th>
+                                            <th>Producto</th>
+                                            <th>Categoría</th>
+                                            <th class="text-center">Veces</th>
+                                            <th class="text-center">Cant. Total</th>
+                                            <th class="text-right">Precio Prom.</th>
+                                            <th class="text-right">Monto Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($topProducts as $i => $product)
+                                            <tr>
+                                                <td>
+                                                    <span
+                                                        class="w-6 h-6 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs-fluid font-bold flex items-center justify-center">
+                                                        {{ $i + 1 }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
+                                                    @if($product->measure_abbr)
+                                                        <x-badge variant="secondary" class="text-2xs">{{ $product->measure_abbr }}</x-badge>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($product->category_name)
+                                                        <x-dynamic-badge :value="$product->category_name" />
+                                                    @else
+                                                        <span class="text-text-muted">—</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center text-small tabular-nums">{{ $product->times_purchased }}</td>
+                                                <td class="text-center text-small tabular-nums">
+                                                    {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}
+                                                </td>
+                                                <td class="text-right text-small text-text-secondary tabular-nums">
+                                                    ${{ number_format($product->avg_price, 2, '.', ',') }}</td>
+                                                <td class="text-right font-semibold text-text-primary tabular-nums">
+                                                    ${{ number_format($product->total_amount, 2, '.', ',') }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </x-card.table>
+
+                            {{-- Vista tarjeta móvil --}}
+                            <div class="block md:hidden divide-y divide-border/60 border-t border-border/40">
+                                @foreach($topProducts as $i => $product)
+                                    <div class="p-4 space-y-3 hover:bg-surface-hover/50 transition-colors duration-150">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <span class="w-7 h-7 rounded-lg bg-surface-hover text-text-secondary border border-border text-xs font-bold flex items-center justify-center shrink-0">
                                                     {{ $i + 1 }}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <p class="font-medium text-text-primary">{{ $product->canonical_name }}</p>
-                                                @if($product->measure_abbr)
-                                                    <x-badge variant="secondary" class="text-2xs">{{ $product->measure_abbr }}</x-badge>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($product->category_name)
-                                                    <x-dynamic-badge :value="$product->category_name" />
-                                                @else
-                                                    <span class="text-text-muted">—</span>
-                                                @endif
-                                            </td>
-                                            <td class="text-center text-small tabular-nums">{{ $product->times_purchased }}</td>
-                                            <td class="text-center text-small tabular-nums">
-                                                {{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}
-                                            </td>
-                                            <td class="text-right text-small text-text-secondary tabular-nums">
-                                                ${{ number_format($product->avg_price, 2, '.', ',') }}</td>
-                                            <td class="text-right font-semibold text-text-primary tabular-nums">
-                                                ${{ number_format($product->total_amount, 2, '.', ',') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </x-card.table>
+                                                <div class="min-w-0">
+                                                    <p class="font-semibold text-small text-text-primary truncate">{{ $product->canonical_name }}</p>
+                                                    <div class="mt-1 flex items-center gap-2 flex-wrap">
+                                                        @if($product->measure_abbr)
+                                                            <x-badge variant="secondary" class="text-2xs">{{ $product->measure_abbr }}</x-badge>
+                                                        @endif
+                                                        @if($product->category_name)
+                                                            <x-dynamic-badge :value="$product->category_name" />
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right shrink-0">
+                                                <p class="font-bold text-body text-text-primary tabular-nums">${{ number_format($product->total_amount, 2, '.', ',') }}</p>
+                                                <p class="text-2xs text-text-muted">Monto total</p>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-border/50 bg-surface-main/30 rounded-lg p-2.5 text-xs text-center">
+                                            <div>
+                                                <span class="text-text-muted block text-2xs">Veces:</span>
+                                                <span class="font-semibold text-text-primary tabular-nums">{{ $product->times_purchased }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-text-muted block text-2xs">Cantidad:</span>
+                                                <span class="font-semibold text-text-primary tabular-nums">{{ rtrim(rtrim(number_format($product->total_quantity, 2, '.', ','), '0'), '.') }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-text-muted block text-2xs">Precio Prom.:</span>
+                                                <span class="font-semibold text-text-primary tabular-nums">${{ number_format($product->avg_price, 2, '.', ',') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     @endif
                 </x-card>
 
@@ -781,7 +1024,7 @@
                         </div>
                     @else
                         <div wire:key="products-chart-content" class="flex flex-col flex-1">
-                            <div class="h-52 flex items-center justify-center"
+                            <div class="h-44 sm:h-52 flex items-center justify-center"
                                 data-chart="{{ json_encode($productsByCategory) }}" x-data="chartCanvas((data) => {
                                                  const style = getComputedStyle(document.documentElement);
                                                  const textPrimary = style.getPropertyValue('--text-primary').trim() || '#0f1117';

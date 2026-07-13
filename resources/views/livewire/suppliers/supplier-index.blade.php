@@ -3,7 +3,7 @@
     {{-- Header --}}
     <x-page-header subtitle="Red de suministro" title="Proveedores" icon="truck">
         <x-slot:actions>
-            <x-button wire:click="openCreateModal" variant="primary" icon="plus">
+            <x-button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto justify-center">
                 Nuevo Proveedor
             </x-button>
         </x-slot:actions>
