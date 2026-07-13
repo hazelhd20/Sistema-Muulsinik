@@ -104,7 +104,7 @@
                                 <x-sortable-header field="active" label="Estado" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th class="actions pr-6 text-right">Acciones</th>
+                                <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, roleFilter, statusFilter, trashedFilter, previousPage, nextPage, gotoPage">

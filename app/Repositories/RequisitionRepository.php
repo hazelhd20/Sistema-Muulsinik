@@ -68,6 +68,8 @@ class RequisitionRepository
                 } elseif ($sortField === 'status') {
                     // Orden jerárquico lógico en lugar de alfabético
                     $q->orderByRaw("CASE status WHEN 'borrador' THEN 1 WHEN 'pendiente' THEN 2 WHEN 'aprobada' THEN 3 WHEN 'rechazada' THEN 4 ELSE 5 END $dir");
+                } elseif (in_array($sortField, ['project_id', 'project'])) {
+                    $q->orderBy(\App\Models\Project::select('name')->whereColumn('projects.id', 'requisitions.project_id'), $dir);
                 } elseif (in_array($sortField, ['date', 'start_date', 'created_at'])) {
                     // Postgres por defecto pone los NULLS arriba en orden DESC. Esto los manda al final.
                     $q->orderByRaw("\"$sortField\" $dir NULLS LAST");

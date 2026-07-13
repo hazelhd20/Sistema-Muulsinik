@@ -92,11 +92,10 @@
                                 </th>
                                 <x-sortable-header field="name" label="Nombre" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">
-                                    Productos</th>
+                                <x-table-header>Productos</x-table-header>
                                 <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="actions pr-6 text-right">Acciones</th>
+                                <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, usageFilter, trashedFilter, previousPage, nextPage, gotoPage">

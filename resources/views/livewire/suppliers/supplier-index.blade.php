@@ -108,13 +108,10 @@
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="category" label="Categoría" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">
-                                    Vendedores</th>
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Estado
-                                </th>
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Notas
-                                </th>
-                                <th class="actions pr-6 text-right">Acciones</th>
+                                <x-table-header>Vendedores</x-table-header>
+                                <x-table-header>Estado</x-table-header>
+                                <x-table-header>Notas</x-table-header>
+                                <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden"

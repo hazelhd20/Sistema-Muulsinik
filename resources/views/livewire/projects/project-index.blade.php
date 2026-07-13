@@ -134,10 +134,10 @@
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="budget" label="Presupuesto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" class="numeric" align="right" />
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Ejecución</th>
+                                <x-table-header>Ejecución</x-table-header>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="actions pr-6 text-right">Acciones</th>
+                                <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden"

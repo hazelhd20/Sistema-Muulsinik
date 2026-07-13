@@ -327,7 +327,14 @@ class UserIndex extends Component
                     $q->where('active', false);
                 }
             })
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->when(true, function ($q) {
+                $dir = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
+                if (in_array($this->sortField, ['role_id', 'role'])) {
+                    $q->orderBy(\App\Models\Role::select('name')->whereColumn('roles.id', 'users.role_id'), $dir);
+                } else {
+                    $q->orderBy($this->sortField, $dir);
+                }
+            })
             ->paginate($this->perPage);
 
         $roles = Role::all();

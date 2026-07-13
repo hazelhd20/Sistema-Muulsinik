@@ -110,11 +110,11 @@
                                 </th>
                                 <x-sortable-header field="canonical_name" label="Producto" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Categoría</th>
+                                <x-table-header>Categoría</x-table-header>
                                 <x-sortable-header field="item_type" label="Tipo" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Medida</th>
+                                <x-table-header>Medida</x-table-header>
                                 <x-sortable-header field="created_at" label="Fecha de Registro" :sortField="$sortField" :sortDirection="$sortDirection" />
-                                <th class="actions pr-6 text-right">Acciones</th>
+                                <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                             </tr>
                         </thead>
                         <tbody wire:loading.class="hidden" wire:target="search, categoryFilter, measureFilter, trashedFilter, typeFilter, previousPage, nextPage, gotoPage">

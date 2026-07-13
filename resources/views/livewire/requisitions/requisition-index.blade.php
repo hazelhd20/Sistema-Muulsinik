@@ -188,13 +188,13 @@
                                             :sortDirection="$sortDirection" />
                                         <x-sortable-header field="date" label="Fecha" :sortField="$sortField"
                                             :sortDirection="$sortDirection" />
-                                        <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Creador</th>
-                                        <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Proveedor</th>
+                                        <x-table-header>Creador</x-table-header>
+                                        <x-table-header>Proveedor</x-table-header>
                                         <x-sortable-header field="total" label="Total" :sortField="$sortField"
                                             :sortDirection="$sortDirection" align="right" class="numeric" />
                                         <x-sortable-header field="status" label="Estado" :sortField="$sortField"
                                             :sortDirection="$sortDirection" />
-                                        <th class="actions pr-6 text-right">Acciones</th>
+                                        <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                                     </tr>
                                 </thead>
                                 <tbody wire:loading.class="hidden"

@@ -88,9 +88,9 @@
                             </th>
                             <x-sortable-header field="name" label="Nombre Comercial" :sortField="$sortField" :sortDirection="$sortDirection" />
                             <x-sortable-header field="rfc" label="RFC" :sortField="$sortField" :sortDirection="$sortDirection" />
-                            <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Contacto</th>
-                            <th class="text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Estado</th>
-                            <th class="actions pr-6 text-right">Acciones</th>
+                            <x-table-header>Contacto</x-table-header>
+                            <x-table-header>Estado</x-table-header>
+                            <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                         </tr>
                     </thead>
                     <tbody wire:loading.class="hidden" wire:target="search, activeFilter, trashedFilter, previousPage, nextPage, gotoPage">

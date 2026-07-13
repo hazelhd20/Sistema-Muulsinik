@@ -120,12 +120,12 @@
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="created_at" label="Fecha" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
-                                <th class="text-center text-xs-fluid font-semibold uppercase tracking-wider text-text-muted">Conceptos</th>
+                                <x-table-header align="center">Conceptos</x-table-header>
                                 <x-sortable-header field="status" label="Estado" :sortField="$sortField"
                                     :sortDirection="$sortDirection" />
                                 <x-sortable-header field="grand_total" label="Monto Total" :sortField="$sortField"
                                     :sortDirection="$sortDirection" align="right" />
-                                <th class="actions pr-6 text-right">Acciones</th>
+                                <x-table-header align="right" class="actions pr-6">Acciones</x-table-header>
                             </tr>
                         </thead>
                         <tbody>

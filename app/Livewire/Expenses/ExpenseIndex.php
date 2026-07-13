@@ -207,6 +207,8 @@ class ExpenseIndex extends Component
                 $dir = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
                 if (in_array($this->sortField, ['date', 'created_at'])) {
                     $q->orderByRaw("\"{$this->sortField}\" $dir NULLS LAST");
+                } elseif ($this->sortField === 'project_id') {
+                    $q->orderBy(\App\Models\Project::select('name')->whereColumn('projects.id', 'expenses.project_id'), $dir);
                 } else {
                     $q->orderBy($this->sortField, $dir);
                 }

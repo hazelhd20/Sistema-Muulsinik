@@ -242,6 +242,8 @@ class ProjectIndex extends Component
                 $dir = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
                 if ($this->sortField === 'status') {
                     $q->orderByRaw("CASE status WHEN 'activo' THEN 1 WHEN 'en_pausa' THEN 2 WHEN 'completado' THEN 3 WHEN 'cancelado' THEN 4 ELSE 5 END $dir");
+                } elseif ($this->sortField === 'client') {
+                    $q->orderBy(\App\Models\Client::select('name')->whereColumn('clients.id', 'projects.client_id'), $dir);
                 } elseif (in_array($this->sortField, ['start_date', 'created_at', 'end_date'])) {
                     $q->orderByRaw("\"{$this->sortField}\" $dir NULLS LAST");
                 } else {

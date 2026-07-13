@@ -169,7 +169,16 @@ class QuickBudgetIndex extends Component
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->userFilter, fn ($q) => $q->where('user_id', $this->userFilter))
             ->withCount('items')
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->when(true, function ($q) {
+                $dir = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
+                if ($this->sortField === 'client') {
+                    $q->orderBy(\App\Models\Client::select('name')->whereColumn('clients.id', 'quick_budgets.client_id'), $dir);
+                } elseif ($this->sortField === 'status') {
+                    $q->orderByRaw("CASE status WHEN 'borrador' THEN 1 WHEN 'pendiente' THEN 2 WHEN 'aprobada' THEN 3 WHEN 'rechazada' THEN 4 ELSE 5 END $dir");
+                } else {
+                    $q->orderBy($this->sortField, $dir);
+                }
+            })
             ->paginate($this->perPage);
 
         $users = \App\Models\User::orderBy('name')->get();
